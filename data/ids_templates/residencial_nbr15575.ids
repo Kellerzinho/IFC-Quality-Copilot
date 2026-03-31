@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ids xmlns="http://standards.buildingsmart.org/IDS"
+     xmlns:xs="http://www.w3.org/2001/XMLSchema"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://standards.buildingsmart.org/IDS
+                         http://standards.buildingsmart.org/IDS/1.0/ids.xsd">
+  <info>
+    <title>Requisitos NBR 15575 — Edificações Residenciais</title>
+    <description>5 verificações baseadas na NBR 15575 para modelos IFC residenciais</description>
+    <author>IFC Quality Copilot</author>
+    <date>2026-03-30</date>
+    <version>1.0</version>
+  </info>
+  <specifications>
+
+    <specification name="Paredes externas devem ter transmitância térmica"
+                   description="NBR 15575-4: paredes externas exigem ThermalTransmittance preenchido">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCWALL"/>
+            </xs:restriction>
+          </name>
+        </entity>
+        <property datatype="IfcBoolean">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_WallCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IsExternal"/>
+            </xs:restriction>
+          </baseName>
+          <value>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="TRUE"/>
+            </xs:restriction>
+          </value>
+        </property>
+      </applicability>
+      <requirements>
+        <property datatype="IfcThermalTransmittanceMeasure">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_WallCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="ThermalTransmittance"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <specification name="Paredes externas devem ter resistência ao fogo"
+                   description="NBR 15575-1: paredes externas exigem FireRating preenchido">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCWALL"/>
+            </xs:restriction>
+          </name>
+        </entity>
+        <property datatype="IfcBoolean">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_WallCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IsExternal"/>
+            </xs:restriction>
+          </baseName>
+          <value>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="TRUE"/>
+            </xs:restriction>
+          </value>
+        </property>
+      </applicability>
+      <requirements>
+        <property datatype="IfcLabel">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_WallCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="FireRating"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <specification name="Espaços devem ter nome funcional"
+                   description="Cada IfcSpace deve ter LongName preenchido com classificação funcional">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCSPACE"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <attribute>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="LongName"/>
+            </xs:restriction>
+          </name>
+          <value>
+            <xs:restriction base="xs:string">
+              <xs:minLength value="1"/>
+            </xs:restriction>
+          </value>
+        </attribute>
+      </requirements>
+    </specification>
+
+    <specification name="Portas devem estar vinculadas a paredes"
+                   description="Cada IfcDoor deve possuir IfcRelFillsElement ligando-a a uma abertura em parede">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCDOOR"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <relation>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IfcRelFillsElement"/>
+            </xs:restriction>
+          </name>
+        </relation>
+      </requirements>
+    </specification>
+
+    <specification name="Lajes devem indicar carga"
+                   description="Cada IfcSlab deve ter Pset_SlabCommon.LoadBearing preenchido">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCSLAB"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcBoolean">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_SlabCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="LoadBearing"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+  </specifications>
+</ids>
