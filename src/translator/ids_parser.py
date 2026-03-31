@@ -140,7 +140,12 @@ def parse_ids(ids_filepath: str) -> list[IDSSpecification]:
     - <attribute> em <requirements>: pset="" indica atributo direto do elemento IFC
     - <relation> em <requirements>: pset="IFC_RELATION" indica relação IFC
     """
-    tree = etree.parse(ids_filepath)
+    try:
+        tree = etree.parse(ids_filepath)
+    except OSError as exc:
+        raise ValueError(f"Arquivo IDS não encontrado ou inacessível: '{ids_filepath}' — {exc}") from exc
+    except etree.XMLSyntaxError as exc:
+        raise ValueError(f"Arquivo IDS inválido (XML malformado): '{ids_filepath}' — {exc}") from exc
     root = tree.getroot()
 
     specifications_el = root.find(f"{_IDS}specifications")

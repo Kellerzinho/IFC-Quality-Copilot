@@ -1,9 +1,11 @@
 """Testes para src/translator/ids_parser.py."""
 
+from pathlib import Path
+
 from src.models import IDSSpecification
 from src.translator.ids_parser import parse_ids
 
-IDS_PATH = "data/ids_templates/residencial_nbr15575.ids"
+IDS_PATH = str(Path(__file__).parent.parent / "data" / "ids_templates" / "residencial_nbr15575.ids")
 
 
 def test_parse_ids_reads_file():
