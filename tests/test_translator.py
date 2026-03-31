@@ -1,7 +1,5 @@
 """Testes para src/translator/ids_parser.py."""
 
-import pytest
-
 from src.models import IDSSpecification
 from src.translator.ids_parser import parse_ids
 
