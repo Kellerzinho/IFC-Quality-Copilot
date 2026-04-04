@@ -2,8 +2,6 @@
 
 from pathlib import Path
 
-import pytest
-
 from src.profiles.registry import create_default_registry, load_custom_profile_from_ids
 
 IDS_PATH = str(Path(__file__).parent.parent / "data" / "ids_templates" / "residencial_nbr15575.ids")
