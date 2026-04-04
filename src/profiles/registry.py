@@ -2,6 +2,8 @@
 
 from pathlib import Path
 
+from loguru import logger
+
 from src.models import ProfileRegistry, ReadinessProfile
 from src.translator.ids_parser import parse_ids
 
@@ -24,6 +26,8 @@ _SPACE_NAME_PROPS: set[str] = {"LongName", "Name"}
 
 def _infer_issue_type(req: dict[str, str]) -> str:
     """Infere o issue_type a partir de um requirement de IDSSpecification."""
+    # Nota: system_unclassified não é inferível a partir de facets property/attribute/relation.
+    # IDS files com requisitos de classificação serão mapeados como pset_missing.
     pset = req.get("pset", "")
     prop = req.get("prop", "")
     if pset == "IFC_RELATION":
@@ -36,6 +40,8 @@ def _infer_issue_type(req: dict[str, str]) -> str:
 def _infer_extractors(entity: str, requirements: list[dict[str, str]]) -> list[str]:
     """Infere os extractors necessários a partir da entidade e dos requirements."""
     extractors: list[str] = list(_ENTITY_TO_EXTRACTORS.get(entity, []))
+    if entity and entity not in _ENTITY_TO_EXTRACTORS:
+        logger.warning("Entidade IFC desconhecida na inferência de extractors: '{}'", entity)
     for req in requirements:
         if req.get("prop") in _THERMAL_PROPS and "thermal" not in extractors:
             extractors.append("thermal")
@@ -113,6 +119,9 @@ def load_custom_profile_from_ids(ids_path: str, profile_name: str | None = None)
     Parseia o IDS para extrair specs, infere issue_types e extractors necessários
     a partir das specs usando lookup tables, e gera um profile_id baseado no filename.
     Se profile_name não fornecido, usa o filename sem extensão.
+
+    Raises:
+        ValueError: se o arquivo IDS não for encontrado ou o XML estiver malformado.
     """
     specs = parse_ids(ids_path)
     stem = Path(ids_path).stem
