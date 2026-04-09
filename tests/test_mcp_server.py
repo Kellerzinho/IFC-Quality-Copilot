@@ -45,11 +45,14 @@ def tmp_ifc_path(tmp_path, complete_test_model):
 
 @pytest.fixture
 def mcp_session(tmp_ifc_path):
-    """Cria sessão MCP com IFCAnalyzer, IFCWriter e AuditLogger.
+    """Cria sessão MCP com IFCAnalyzer, IFCWriter, AuditLogger e ToolRegistry.
 
     Retorna (session_dict, metadata).  O session_dict tem as chaves
-    'analyzer', 'writer' e 'audit_logger', idênticas às usadas pelo server.
+    'analyzer', 'writer', 'audit_logger', 'profile_id' e 'tool_registry',
+    idênticas às usadas pelo server.
     """
+    from src.mcp_server.server import _TOOL_REGISTRY
+
     ifc_path, metadata = tmp_ifc_path
     analyzer = IFCAnalyzer(ifc_path)
     writer = IFCWriter(analyzer.ifc_file)
@@ -58,6 +61,8 @@ def mcp_session(tmp_ifc_path):
         "analyzer": analyzer,
         "writer": writer,
         "audit_logger": audit_logger,
+        "profile_id": None,
+        "tool_registry": _TOOL_REGISTRY,
     }
     return session, metadata
 
