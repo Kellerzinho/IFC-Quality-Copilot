@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ids xmlns="http://standards.buildingsmart.org/IDS"
+     xmlns:xs="http://www.w3.org/2001/XMLSchema"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://standards.buildingsmart.org/IDS
+                         http://standards.buildingsmart.org/IDS/1.0/ids.xsd">
+  <info>
+    <title>Budget Readiness — Prontidão para Orçamentação</title>
+    <description>13 verificações para garantir que o modelo IFC contém dados suficientes para extração de quantitativos e orçamentação (áreas, espessuras, comprimentos, materiais e classificações)</description>
+    <author>IFC Quality Copilot</author>
+    <date>2026-04-04</date>
+    <version>1.0</version>
+  </info>
+  <specifications>
+
+    <!-- 1. Paredes devem ter camadas de material para quantificação correta de materiais.
+         IfcMaterialLayerSet ou IfcMaterialLayerSetUsage é necessário para extrair
+         volumes por camada (bloco cerâmico, argamassa, revestimento, etc.) -->
+    <specification name="Paredes devem ter IfcMaterialLayerSet"
+                   description="IfcWall precisa de conjunto de camadas de material para quantificação e orçamento de materiais por camada">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCWALL"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <material>
+          <value>
+            <xs:restriction base="xs:string">
+              <xs:minLength value="1"/>
+            </xs:restriction>
+          </value>
+        </material>
+      </requirements>
+    </specification>
+
+    <!-- 2. Paredes devem ter área lateral líquida para orçamento de revestimentos
+         (pintura, reboco, azulejo). NetSideArea exclui aberturas de portas e janelas. -->
+    <specification name="Paredes devem ter Qto_WallBaseQuantities.NetSideArea"
+                   description="Área lateral líquida da parede é essencial para orçar revestimentos e descontar aberturas">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCWALL"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcAreaMeasure">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Qto_WallBaseQuantities"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="NetSideArea"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <!-- 3. Espessura da parede é necessária para calcular volume de material
+         (alvenaria, concreto) e conferir se corresponde ao projeto estrutural. -->
+    <specification name="Paredes devem ter Qto_WallBaseQuantities.Width"
+                   description="Espessura da parede é necessária para calcular volume de material e conferir espessura de projeto">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCWALL"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcPositiveLengthMeasure">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Qto_WallBaseQuantities"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Width"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <!-- 4. Área líquida da laje permite orçar fôrmas, armação, concreto e
+         revestimentos de piso e teto, descontando aberturas (escadas, shafts). -->
+    <specification name="Lajes devem ter Qto_SlabBaseQuantities.NetArea"
+                   description="Área líquida da laje permite orçar fôrmas, armação, concreto e revestimentos, descontando aberturas">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCSLAB"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcAreaMeasure">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Qto_SlabBaseQuantities"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="NetArea"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <!-- 5. Espessura da laje (Width) é necessária para calcular volume de concreto
+         e verificar conformidade com projeto estrutural (NBR 6118). -->
+    <specification name="Lajes devem ter Qto_SlabBaseQuantities.Width"
+                   description="Espessura da laje é necessária para calcular volume de concreto e verificar conformidade com NBR 6118">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCSLAB"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcPositiveLengthMeasure">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Qto_SlabBaseQuantities"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Width"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <!-- 6. Área da porta é necessária para orçar folhas, batentes, ferragens e
+         serviços de instalação de esquadrias. -->
+    <specification name="Portas devem ter Qto_DoorBaseQuantities.Area"
+                   description="Área da porta é necessária para orçar folhas, batentes, ferragens e instalação de esquadrias">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCDOOR"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcAreaMeasure">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Qto_DoorBaseQuantities"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Area"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <!-- 7. Área da janela é necessária para orçar caixilhos, vidros e
+         serviços de instalação de esquadrias. -->
+    <specification name="Janelas devem ter Qto_WindowBaseQuantities.Area"
+                   description="Área da janela é necessária para orçar caixilhos, vidros e instalação de esquadrias">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCWINDOW"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcAreaMeasure">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Qto_WindowBaseQuantities"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Area"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <!-- 8. Área líquida de piso por ambiente permite orçar revestimentos,
+         impermeabilizações e acabamentos ambiente a ambiente. -->
+    <specification name="Espaços devem ter Qto_SpaceBaseQuantities.NetFloorArea"
+                   description="Área líquida de piso permite orçar revestimentos e acabamentos por ambiente">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCSPACE"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcAreaMeasure">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Qto_SpaceBaseQuantities"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="NetFloorArea"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <!-- 9. Comprimento de viga permite orçar aço longitudinal,
+         estribos, concreto e fôrmas lineares para vigas. -->
+    <specification name="Vigas devem ter Qto_BeamBaseQuantities.Length"
+                   description="Comprimento da viga permite orçar aço, concreto e fôrmas lineares">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCBEAM"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcPositiveLengthMeasure">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Qto_BeamBaseQuantities"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Length"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <!-- 10. Comprimento de pilar permite orçar aço longitudinal,
+          estribos, concreto e fôrmas para pilares. -->
+    <specification name="Pilares devem ter Qto_ColumnBaseQuantities.Length"
+                   description="Comprimento do pilar permite orçar aço longitudinal, estribos, concreto e fôrmas">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCCOLUMN"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcPositiveLengthMeasure">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Qto_ColumnBaseQuantities"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Length"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <!-- 11. Vigas devem ter IfcClassificationReference para identificar o sistema
+          estrutural (ex: concreto armado NBR 6118, aço NBR 8800, madeira NBR 7190).
+          Necessário para que ferramentas de orçamento apliquem tabelas corretas. -->
+    <specification name="Vigas devem ter classificação de sistema construtivo"
+                   description="IfcBeam precisa de IfcClassificationReference para identificar o sistema estrutural e aplicar tabelas de orçamento corretas">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCBEAM"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <classification>
+          <value>
+            <xs:restriction base="xs:string">
+              <xs:minLength value="1"/>
+            </xs:restriction>
+          </value>
+        </classification>
+      </requirements>
+    </specification>
+
+    <!-- 12. Pilares também devem ter IfcClassificationReference pelo mesmo motivo
+          que vigas: identificar sistema estrutural para orçamento. -->
+    <specification name="Pilares devem ter classificação de sistema construtivo"
+                   description="IfcColumn precisa de IfcClassificationReference para identificar o sistema estrutural e aplicar tabelas de orçamento corretas">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCCOLUMN"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <classification>
+          <value>
+            <xs:restriction base="xs:string">
+              <xs:minLength value="1"/>
+            </xs:restriction>
+          </value>
+        </classification>
+      </requirements>
+    </specification>
+
+    <!-- 13. Paredes devem ter material identificável (nome não vazio).
+          IDS 1.0 não suporta negação direta de valores — a validação de que o
+          nome do material não é "Default" ou equivalente genérico é delegada
+          ao RuleEngine como heurística complementar. Este facet garante apenas
+          que o material existe e tem nome com ao menos 2 caracteres. -->
+    <specification name="Paredes devem ter material identificável"
+                   description="IfcWall deve ter material com nome não vazio — exclusão de 'Default' e nomes genéricos é tratada pelo RuleEngine (IDS 1.0 não suporta negação de valor)">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCWALL"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <material>
+          <value>
+            <xs:restriction base="xs:string">
+              <xs:minLength value="2"/>
+            </xs:restriction>
+          </value>
+        </material>
+      </requirements>
+    </specification>
+
+  </specifications>
+</ids>

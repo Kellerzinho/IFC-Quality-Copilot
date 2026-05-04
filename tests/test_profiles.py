@@ -8,14 +8,17 @@ IDS_PATH = str(Path(__file__).parent.parent / "data" / "ids_templates" / "reside
 
 
 class TestDefaultRegistry:
-    def test_default_registry_has_4_profiles(self):
-        """create_default_registry deve retornar registro com exatamente 4 perfis."""
+    def test_default_registry_has_expanded_profiles(self):
+        """create_default_registry deve expor perfis base, ids e domínios principais."""
         registry = create_default_registry()
 
-        assert len(registry.list_profiles()) == 4
+        assert len(registry.list_profiles()) == 7
+        assert registry.get("base_ifc") is not None
+        assert registry.get("ids_generic") is not None
+        assert registry.get("hvac_readiness") is not None
 
     def test_default_registry_get_budget(self):
-        """Perfil budget_readiness deve estar registrado com nome correto."""
+        """Perfil budget_readiness deve estar registrado com metadados ampliados."""
         registry = create_default_registry()
 
         profile = registry.get("budget_readiness")
@@ -26,7 +29,22 @@ class TestDefaultRegistry:
         assert "quantities" in profile.required_extractors
         assert "pset_missing" in profile.issue_types
         assert profile.blocking_severities == ["high"]
-        assert profile.is_custom is False  # ids_filename definido
+        assert "IfcWall" in profile.entity_scope
+        assert "classifications" in profile.supported_data_categories
+        assert profile.is_custom is False
+
+    def test_default_registry_energy_and_hvac_have_distinct_scope(self):
+        registry = create_default_registry()
+
+        energy = registry.get("energy_readiness")
+        hvac = registry.get("hvac_readiness")
+
+        assert energy is not None
+        assert hvac is not None
+        assert "IfcRelSpaceBoundary" in energy.entity_scope
+        assert "IfcFlowTerminal" in hvac.entity_scope
+        assert "boundaries" in energy.required_extractors
+        assert "assets" in hvac.required_extractors
 
 
 class TestLoadCustomProfile:
@@ -42,13 +60,15 @@ class TestLoadCustomProfile:
         assert "materials" in profile.required_extractors
         assert "spaces" in profile.required_extractors
         assert "thermal" in profile.required_extractors
+        assert "IfcWall" in profile.entity_scope
+        assert "property" in profile.supported_data_categories
 
     def test_load_custom_profile_accepts_custom_name(self):
         """profile_name fornecido deve sobrescrever o nome inferido do filename."""
         profile = load_custom_profile_from_ids(IDS_PATH, profile_name="Meu Perfil Custom")
 
         assert profile.name == "Meu Perfil Custom"
-        assert profile.id == "residencial_nbr15575"  # id vem sempre do filename
+        assert profile.id == "residencial_nbr15575"
 
     def test_custom_profile_is_custom_true(self):
         """Perfil carregado de IDS externo deve ter is_custom == True."""

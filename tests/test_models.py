@@ -303,7 +303,7 @@ def _make_suggestion(**kwargs) -> Suggestion:
         value="Lavabo Suíte",
         justification="4.2m² com WC e lavatório adjacente a dormitório",
         confidence="alta",
-        source="heuristic",
+        source="llm",
     )
     defaults.update(kwargs)
     return Suggestion(**defaults)
@@ -320,7 +320,7 @@ def _make_audit_entry(**kwargs) -> AuditEntry:
         new_value="Lavabo Suíte",
         decision="accepted",
         confidence="alta",
-        source="heuristic",
+        source="llm",
     )
     defaults.update(kwargs)
     return AuditEntry(**defaults)
@@ -433,6 +433,8 @@ class TestAuditEntryToCsvRow:
             "timestamp", "session_id", "element_guid", "element_class",
             "action", "field", "old_value", "new_value", "decision",
             "confidence", "normative_ref", "source", "user",
+            "grounding_mode", "grounding_sources", "bsdd_uri",
+            "ids_requirement_id", "post_validation", "prompt_hash",
         }
         assert set(row.keys()) == expected_keys
         assert all(isinstance(v, str) for v in row.values())
@@ -774,6 +776,116 @@ class TestReadinessScoreComputePartial:
         assert score.blocking_issues == 0
         assert score.score_percent == 70.0
         assert score.status == "partially_ready"
+
+
+class TestOperationalRuleNewFields:
+    def test_operational_rule_new_fields_defaults(self):
+        """Novos campos devem ter defaults corretos."""
+        rule = _make_rule()
+
+        assert rule.profile_id is None
+        assert rule.suggestion_strategy == "llm_inference"
+        assert rule.write_action == "preencher_pset"
+        assert rule.required_context == []
+        assert rule.evidence_source is None
+        assert rule.tags == []
+
+    def test_operational_rule_new_fields_explicit(self):
+        """Deve aceitar valores explícitos para todos os novos campos."""
+        rule = _make_rule(
+            profile_id="budget_readiness",
+            suggestion_strategy="lookup_table",
+            write_action="preencher_base_quantities",
+            required_context=["material", "thickness", "is_external"],
+            evidence_source="NBR 15575-4 Tab. C.2",
+            tags=["thermal", "envelope", "mandatory"],
+        )
+
+        assert rule.profile_id == "budget_readiness"
+        assert rule.suggestion_strategy == "lookup_table"
+        assert rule.write_action == "preencher_base_quantities"
+        assert rule.required_context == ["material", "thickness", "is_external"]
+        assert rule.evidence_source == "NBR 15575-4 Tab. C.2"
+        assert rule.tags == ["thermal", "envelope", "mandatory"]
+
+    def test_operational_rule_noop_write_action(self):
+        """write_action 'noop' deve ser aceito (apenas alerta, sem escrita)."""
+        rule = _make_rule(write_action="noop")
+
+        assert rule.write_action == "noop"
+
+    def test_operational_rule_user_input_only_strategy(self):
+        """suggestion_strategy 'user_input_only' deve ser aceito."""
+        rule = _make_rule(suggestion_strategy="user_input_only")
+
+        assert rule.suggestion_strategy == "user_input_only"
+
+
+class TestOperationalRuleMatchesProfile:
+    def test_matches_profile_same_id(self):
+        """Deve retornar True quando profile_id da regra coincide com o informado."""
+        rule = _make_rule(profile_id="budget_readiness")
+
+        assert rule.matches_profile("budget_readiness") is True
+
+    def test_matches_profile_different_id(self):
+        """Deve retornar False quando profile_id da regra é diferente do informado."""
+        rule = _make_rule(profile_id="energy_readiness")
+
+        assert rule.matches_profile("budget_readiness") is False
+
+    def test_matches_profile_none_matches_any(self):
+        """Regra sem profile_id (None) deve corresponder a qualquer perfil."""
+        rule = _make_rule(profile_id=None)
+
+        assert rule.matches_profile("budget_readiness") is True
+        assert rule.matches_profile("energy_readiness") is True
+        assert rule.matches_profile("any_profile") is True
+
+
+class TestIssueNewTypesLabels:
+    def test_issue_new_types_are_valid(self):
+        """Novos issue_types devem ser aceitos sem ValidationError."""
+        new_types = [
+            "quantity_missing",
+            "classification_missing",
+            "material_unmapped",
+            "asset_unidentified",
+            "thermal_incomplete",
+        ]
+        for issue_type in new_types:
+            issue = _make_issue(issue_type=issue_type)  # type: ignore[arg-type]
+            assert issue.issue_type == issue_type
+
+    def test_issue_new_types_labels(self):
+        """Novos issue_types devem ter labels em português corretos."""
+        cases = {
+            "quantity_missing": "Quantidade base ausente",
+            "classification_missing": "Referência de classificação ausente",
+            "material_unmapped": "Material não mapeado para padrão",
+            "asset_unidentified": "Equipamento sem identificação",
+            "thermal_incomplete": "Dados térmicos incompletos",
+        }
+        for issue_type, expected_label in cases.items():
+            issue = _make_issue(issue_type=issue_type)  # type: ignore[arg-type]
+            assert issue.type_label == expected_label
+
+    def test_all_issue_types_have_labels(self):
+        """Todos os issue_types definidos no Literal devem ter label no dicionário."""
+        all_types = [
+            "space_unnamed",
+            "pset_missing",
+            "relation_broken",
+            "system_unclassified",
+            "quantity_missing",
+            "classification_missing",
+            "material_unmapped",
+            "asset_unidentified",
+            "thermal_incomplete",
+        ]
+        for issue_type in all_types:
+            issue = _make_issue(issue_type=issue_type)  # type: ignore[arg-type]
+            assert issue.type_label  # não vazio
 
 
 class TestProfileRegistry:

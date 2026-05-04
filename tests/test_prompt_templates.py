@@ -4,7 +4,7 @@ import re
 
 import pytest
 
-from src.models import Issue, Suggestion
+from src.models import BSDDContext, BSDDProperty, IDSContext, Issue, Suggestion
 from collections import defaultdict
 
 from src.suggestion_engine.prompt_templates import (
@@ -127,6 +127,8 @@ def test_build_prompt_pset_fire():
     _, user = build_prompt(issue, _BUILDING_CTX)
 
     assert "FireRating" in user
+    assert "Nao use A1" in user
+    assert "EI 30" in user
 
 
 def test_build_prompt_pset_generic():
@@ -187,6 +189,7 @@ def test_parse_llm_response_valid_json():
     assert suggestions[0].label == "Sala de Estar"
     assert suggestions[0].confidence == "alta"
     assert suggestions[0].source == "llm"
+    assert suggestions[0].bsdd_uri is None
     assert suggestions[1].label == "Escritório"
     assert suggestions[1].confidence == "media"
 
@@ -221,6 +224,54 @@ def test_parse_llm_response_with_markdown_wrapper():
 
     assert len(suggestions) == 1
     assert suggestions[0].label == "Banheiro"
+
+
+def test_parse_llm_response_accepts_common_internal_field_aliases():
+    raw = (
+        '{"suggestions": ['
+        '{"name": "Escritorio", "reason": "mesa e computador", "certainty": "high"},'
+        '{"term": "Sala de Reuniao", "explanation": "mesa grande", "confidence_level": 0.6}'
+        "]}"
+    )
+
+    suggestions = parse_llm_response(raw, "space_unnamed")
+
+    assert len(suggestions) == 2
+    assert suggestions[0].label == "Escritorio"
+    assert suggestions[0].justification == "mesa e computador"
+    assert suggestions[0].confidence == "alta"
+    assert suggestions[1].label == "Sala de Reuniao"
+    assert suggestions[1].confidence == "media"
+
+
+def test_parse_llm_response_accepts_top_level_list():
+    raw = '[{"name": "Banheiro", "reason": "vaso sanitario", "confidence": "high"}]'
+
+    suggestions = parse_llm_response(raw, "space_unnamed")
+
+    assert len(suggestions) == 1
+    assert suggestions[0].label == "Banheiro"
+    assert suggestions[0].confidence == "alta"
+
+
+def test_parse_llm_response_accepts_single_object_without_options_wrapper():
+    raw = '{"action": "Verificar hospedeiro da porta", "rationale": "porta sem abertura", "certainty": "medium"}'
+
+    suggestions = parse_llm_response(raw, "relation_broken")
+
+    assert len(suggestions) == 1
+    assert suggestions[0].label == "Verificar hospedeiro da porta"
+    assert suggestions[0].confidence == "media"
+
+
+def test_parse_llm_response_accepts_nested_data_wrapper():
+    raw = '{"data": {"items": [{"name": "Cozinha", "reason": "fogao presente", "score": "90%"}]}}'
+
+    suggestions = parse_llm_response(raw, "space_unnamed")
+
+    assert len(suggestions) == 1
+    assert suggestions[0].label == "Cozinha"
+    assert suggestions[0].confidence == "alta"
     assert suggestions[0].source == "llm"
 
 
@@ -234,6 +285,15 @@ def test_parse_llm_response_with_text_before_json():
 
     assert len(suggestions) == 1
     assert suggestions[0].label == "Lavabo"
+
+
+def test_parse_llm_response_accepts_options_alias():
+    """parse_llm_response aceita alias em inglês para lista de opções."""
+    raw = '{"options": [{"label": "Banheiro", "justification": "WC presente", "confidence": "alta"}]}'
+    suggestions = parse_llm_response(raw, "space_unnamed")
+
+    assert len(suggestions) == 1
+    assert suggestions[0].label == "Banheiro"
 
 
 # ---------------------------------------------------------------------------
@@ -273,6 +333,57 @@ def test_parse_llm_response_system_unclassified():
     assert len(suggestions) == 1
     assert suggestions[0].label == "Alvenaria cerâmica"
     assert suggestions[0].value == "Alvenaria cerâmica"
+
+
+# ---------------------------------------------------------------------------
+# parse_llm_response — novo contrato semantico
+# ---------------------------------------------------------------------------
+
+def test_parse_llm_response_new_semantic_contract_fields():
+    raw = (
+        '{"opcoes": ['
+        '{"label": "Sala de Estar", "value": "Sala de Estar", "canonical_term": "Sala de Estar", '
+        '"semantic_hint": "living_room", "source_candidates": ["IfcSpace", "Pset_SpaceCommon.Category"], '
+        '"justification": "sofa presente", "confidence": "alta", "review_required": true}'
+        "]}"
+    )
+
+    suggestions = parse_llm_response(raw, "space_unnamed")
+
+    assert len(suggestions) == 1
+    assert suggestions[0].canonical_term == "Sala de Estar"
+    assert suggestions[0].semantic_hint == "living_room"
+    assert suggestions[0].source_candidates == ["IfcSpace", "Pset_SpaceCommon.Category"]
+    assert suggestions[0].review_required is True
+
+
+def test_parse_llm_response_pset_null_value_prefers_label_not_property_term():
+    raw = (
+        '{"opcoes": ['
+        '{"label": "REI 60", "value": null, "canonical_term": "FireRating", '
+        '"semantic_hint": "resistencia ao fogo", "justification": "valor sugerido", "confidence": "alta"}'
+        "]}"
+    )
+
+    suggestions = parse_llm_response(raw, "pset_missing")
+
+    assert len(suggestions) == 1
+    assert suggestions[0].label == "REI 60"
+    assert suggestions[0].value == "REI 60"
+
+
+def test_parse_llm_response_pset_null_value_does_not_promote_canonical_property_as_value():
+    raw = (
+        '{"opcoes": ['
+        '{"label": "Classificacao de resistencia ao fogo", "value": null, '
+        '"canonical_term": "FireRating", "justification": "sem valor seguro", "confidence": "alta"}'
+        "]}"
+    )
+
+    suggestions = parse_llm_response(raw, "pset_missing")
+
+    assert len(suggestions) == 1
+    assert suggestions[0].value == "Classificacao de resistencia ao fogo"
 
 
 # ---------------------------------------------------------------------------
@@ -464,3 +575,41 @@ def test_all_profile_templates_have_no_unresolved_placeholders():
             f"Template {key} tem placeholders não resolvidos: {unresolved}\n"
             f"Rendered:\n{rendered}"
         )
+
+
+def test_build_prompt_with_grounding_appends_ids_and_bsdd_blocks():
+    issue = _pset_issue("FireRating")
+    ids_context = IDSContext(
+        issue_id=issue.id,
+        requirement_id="req-1",
+        specification_name="Spec Teste",
+        check_pset="Pset_WallCommon",
+        check_property="FireRating",
+        check_type="exists",
+        severity="high",
+    )
+    bsdd_context = BSDDContext(
+        issue_id=issue.id,
+        element_class="IfcWall",
+        search_query="Wall",
+        properties=[
+            BSDDProperty(name="FireRating", allowed_values=["30", "60"])
+        ],
+        source_uris=["https://example.org/fire"],
+        source_status="live",
+    )
+
+    system, user = build_prompt(
+        issue,
+        _BUILDING_CTX,
+        ids_context=ids_context,
+        bsdd_context=bsdd_context,
+        grounding_mode="ids_bsdd",
+    )
+
+    assert "vocabulário" in system
+    assert "GROUNDING_MODE: ids_bsdd" in user
+    assert "IDS_CONTEXT:" in user
+    assert "BSDD_CONTEXT:" in user
+    assert "FireRating: 30, 60" in user
+    assert "canonical_term" in user

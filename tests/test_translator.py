@@ -8,9 +8,9 @@ import ifcopenshell.api.owner.settings
 import ifcopenshell.guid
 import ifcopenshell.util.element
 
-from src.models import IDSSpecification, OperationalRule
+from src.models import IDSSpecification, OperationalRule, ReadinessProfile
 from src.translator.ids_parser import parse_ids
-from src.translator.rule_generator import apply_rules
+from src.translator.rule_generator import apply_rules, generate_rules, generate_rules_for_profiles
 
 IDS_PATH = str(Path(__file__).parent.parent / "data" / "ids_templates" / "residencial_nbr15575.ids")
 
@@ -197,6 +197,184 @@ def test_apply_rules_unknown_entity_skipped():
     assert issues == []
 
 
+# ---------------------------------------------------------------------------
+# Helpers para testes de generate_rules
+# ---------------------------------------------------------------------------
+
+IDS_NS_DECL = (
+    'xmlns:ids="http://standards.buildingsmart.org/IDS" '
+    'xmlns:xs="http://www.w3.org/2001/XMLSchema"'
+)
+
+
+def _make_ids_xml(requirements_xml: str, entity: str = "IFCWALL") -> str:
+    """Monta XML IDS mínimo com uma specification e os requirements fornecidos."""
+    return f"""<?xml version="1.0" encoding="utf-8"?>
+<ids:ids {IDS_NS_DECL}>
+  <ids:specifications>
+    <ids:specification name="Test">
+      <ids:applicability>
+        <ids:entity>
+          <ids:name><ids:simpleValue>{entity}</ids:simpleValue></ids:name>
+        </ids:entity>
+      </ids:applicability>
+      <ids:requirements>
+        {requirements_xml}
+      </ids:requirements>
+    </ids:specification>
+  </ids:specifications>
+</ids:ids>"""
+
+
+def _make_spec(
+    entity: str,
+    pset: str,
+    prop: str,
+    constraint: str = "exists",
+    facet_type: str = "property",
+) -> IDSSpecification:
+    """Cria IDSSpecification mínima com um único requisito."""
+    return IDSSpecification(
+        name="Spec Teste",
+        applicability_entity=entity,
+        requirements=[{
+            "facet_type": facet_type,
+            "pset": pset,
+            "prop": prop,
+            "constraint": constraint,
+            "constraint_type": "",
+        }],
+    )
+
+
+def _make_profile(**kwargs) -> ReadinessProfile:
+    """Cria ReadinessProfile mínimo para testes."""
+    defaults = dict(
+        id="energy_readiness",
+        name="Energy-readiness",
+        description="Perfil de teste.",
+    )
+    defaults.update(kwargs)
+    return ReadinessProfile(**defaults)
+
+
+# ---------------------------------------------------------------------------
+# Testes de inferência em generate_rules
+# ---------------------------------------------------------------------------
+
+def test_generate_rules_thermal_gets_lookup_strategy():
+    """Requisito de ThermalTransmittance deve gerar regra com suggestion_strategy='lookup_table'."""
+    spec = _make_spec("IFCWALL", "Pset_WallCommon", "ThermalTransmittance")
+    rules = generate_rules([spec])
+
+    assert len(rules) == 1
+    assert rules[0].suggestion_strategy == "lookup_table"
+
+
+def test_generate_rules_quantities_gets_geometric_strategy():
+    """Requisito em Qto_ deve gerar regra com suggestion_strategy='geometric_calc'."""
+    spec = _make_spec("IFCWALL", "Qto_WallBaseQuantities", "NetSideArea", facet_type="quantity")
+    rules = generate_rules([spec])
+
+    assert len(rules) == 1
+    assert rules[0].suggestion_strategy == "geometric_calc"
+
+
+def test_generate_rules_space_gets_llm_strategy():
+    """Requisito de LongName em IfcSpace deve gerar regra com suggestion_strategy='llm_inference'."""
+    spec = _make_spec("IFCSPACE", "", "LongName", "not_empty")
+    rules = generate_rules([spec])
+
+    assert len(rules) == 1
+    assert rules[0].suggestion_strategy == "llm_inference"
+
+
+def test_generate_rules_with_profile_populates_profile_id():
+    """Com profile, regras devem ter profile_id e tags preenchidos a partir do perfil."""
+    profile = _make_profile(id="energy_readiness")
+    spec = _make_spec("IFCWALL", "Pset_WallCommon", "ThermalTransmittance")
+    rules = generate_rules([spec], profile=profile)
+
+    assert len(rules) == 1
+    assert rules[0].profile_id == "energy_readiness"
+    assert "energy_readiness" in rules[0].tags
+
+
+def test_generate_rules_classification_gets_domain_metadata():
+    spec = _make_spec("IFCWALL", "Uniclass", "Ss_20_10_30", "equals:Ss_20_10_30", facet_type="classification")
+    profile = _make_profile(
+        id="budget_readiness",
+        supported_data_categories=["classification", "quantity"],
+        external_classification_systems=["Uniclass"],
+    )
+
+    rules = generate_rules([spec], profile=profile)
+
+    assert rules[0].issue_type == "classification_missing"
+    assert rules[0].suggestion_strategy == "copy_from_source"
+    assert rules[0].write_action == "mapear_classificacao"
+    assert rules[0].required_context == ["classifications"]
+    assert "facet:classification" in rules[0].tags
+    assert "classification:Uniclass" in rules[0].tags
+
+
+def test_generate_rules_for_profiles_merges_multiple_ids_sources():
+    energy_profile = _make_profile(id="energy_readiness")
+    fm_profile = _make_profile(id="fm_readiness")
+    energy_spec = _make_spec("IFCWALL", "Pset_WallCommon", "ThermalTransmittance")
+    fm_spec = _make_spec("IFCSPACE", "", "LongName", "not_empty")
+
+    rules = generate_rules_for_profiles([
+        ([energy_spec], energy_profile),
+        ([fm_spec], fm_profile),
+    ])
+
+    assert len(rules) == 2
+    assert {rule.profile_id for rule in rules} == {"energy_readiness", "fm_readiness"}
+
+
+def test_generate_rules_infers_write_action():
+    """Requisito de LongName em IfcSpace deve gerar regra com write_action='renomear_espaco'."""
+    spec = _make_spec("IFCSPACE", "", "LongName", "not_empty")
+    rules = generate_rules([spec])
+
+    assert len(rules) == 1
+    assert rules[0].write_action == "renomear_espaco"
+
+
+def test_generate_rules_infers_required_context():
+    """Requisito de ThermalTransmittance deve gerar required_context com campos de envoltória."""
+    spec = _make_spec("IFCWALL", "Pset_WallCommon", "ThermalTransmittance")
+    rules = generate_rules([spec])
+
+    assert rules[0].required_context == ["material", "thickness", "is_external", "layers"]
+
+
+def test_generate_rules_quantities_infers_geometry_context():
+    """Requisito em Qto_ deve gerar required_context com ['geometry', 'bounding_box']."""
+    spec = _make_spec("IFCWALL", "Qto_WallBaseQuantities", "NetSideArea", facet_type="quantity")
+    rules = generate_rules([spec])
+
+    assert rules[0].required_context == ["geometry", "bounding_box"]
+
+
+def test_generate_rules_without_profile_leaves_profile_id_none():
+    """Sem profile, profile_id e tags devem permanecer com defaults."""
+    spec = _make_spec("IFCWALL", "Pset_WallCommon", "ThermalTransmittance")
+    rules = generate_rules([spec])
+
+    assert rules[0].profile_id is None
+    assert rules[0].tags == []
+
+
+def test_generate_rules_quantities_infers_write_action():
+    """Requisito em Qto_ deve gerar write_action='preencher_base_quantities'."""
+    spec = _make_spec("IFCWALL", "Qto_WallBaseQuantities", "NetSideArea", facet_type="quantity")
+    rules = generate_rules([spec])
+
+    assert rules[0].write_action == "preencher_base_quantities"
+
+
 def test_apply_rules_boolean_filter():
     """Filtro com operador '!=' exclui parede com IsExternal=True do check."""
     f = _make_ifc()
@@ -221,3 +399,144 @@ def test_apply_rules_boolean_filter():
 
     assert len(issues) == 1
     assert issues[0].element_guid == wall_int.GlobalId
+
+
+# ---------------------------------------------------------------------------
+# Testes de facets adicionais (parse_ids com XML inline)
+# ---------------------------------------------------------------------------
+
+def test_parse_ids_with_restriction(tmp_path: Path) -> None:
+    """<xs:restriction base="xs:double"><xs:minInclusive> deve resultar em
+    constraint='minInclusive' e constraint_type='xs:double'."""
+    xml = _make_ids_xml("""
+        <ids:property>
+          <ids:propertySet><ids:simpleValue>Pset_WallCommon</ids:simpleValue></ids:propertySet>
+          <ids:baseName><ids:simpleValue>ThermalTransmittance</ids:simpleValue></ids:baseName>
+          <ids:value>
+            <xs:restriction base="xs:double">
+              <xs:minInclusive value="0"/>
+            </xs:restriction>
+          </ids:value>
+        </ids:property>
+    """)
+    ids_file = tmp_path / "test.ids"
+    ids_file.write_text(xml, encoding="utf-8")
+
+    specs = parse_ids(str(ids_file))
+    req = specs[0].requirements[0]
+
+    assert req["constraint"] == "minInclusive"
+    assert req["constraint_type"] == "xs:double"
+
+
+def test_parse_energy_ids_reads_thermal_specs(tmp_path: Path) -> None:
+    """Requisito de ThermalTransmittance com restriction double deve ter
+    facet_type='property' e constraint_type='xs:double'."""
+    xml = _make_ids_xml("""
+        <ids:property>
+          <ids:propertySet><ids:simpleValue>Pset_WallCommon</ids:simpleValue></ids:propertySet>
+          <ids:baseName><ids:simpleValue>ThermalTransmittance</ids:simpleValue></ids:baseName>
+          <ids:value>
+            <xs:restriction base="xs:double">
+              <xs:minInclusive value="0"/>
+            </xs:restriction>
+          </ids:value>
+        </ids:property>
+    """)
+    ids_file = tmp_path / "test.ids"
+    ids_file.write_text(xml, encoding="utf-8")
+
+    specs = parse_ids(str(ids_file))
+    req = specs[0].requirements[0]
+
+    assert req["facet_type"] == "property"
+    assert req["prop"] == "ThermalTransmittance"
+    assert req["pset"] == "Pset_WallCommon"
+    assert req["constraint_type"] == "xs:double"
+
+
+def test_parse_budget_ids_reads_quantity_facets(tmp_path: Path) -> None:
+    """<property> com pset Qto_ deve resultar em facet_type='quantity'."""
+    xml = _make_ids_xml("""
+        <ids:property>
+          <ids:propertySet><ids:simpleValue>Qto_WallBaseQuantities</ids:simpleValue></ids:propertySet>
+          <ids:baseName><ids:simpleValue>NetSideArea</ids:simpleValue></ids:baseName>
+        </ids:property>
+    """)
+    ids_file = tmp_path / "test.ids"
+    ids_file.write_text(xml, encoding="utf-8")
+
+    specs = parse_ids(str(ids_file))
+    req = specs[0].requirements[0]
+
+    assert req["facet_type"] == "quantity"
+    assert req["pset"] == "Qto_WallBaseQuantities"
+    assert req["prop"] == "NetSideArea"
+    assert req["constraint"] == "exists"
+    assert req["constraint_type"] == ""
+
+
+def test_parse_ids_material_facet(tmp_path: Path) -> None:
+    """<material> com simpleValue deve resultar em facet_type='material' e prop correto."""
+    xml = _make_ids_xml("""
+        <ids:material>
+          <ids:value><ids:simpleValue>Concrete</ids:simpleValue></ids:value>
+        </ids:material>
+    """)
+    ids_file = tmp_path / "test.ids"
+    ids_file.write_text(xml, encoding="utf-8")
+
+    specs = parse_ids(str(ids_file))
+
+    assert len(specs[0].requirements) == 1
+    req = specs[0].requirements[0]
+    assert req["facet_type"] == "material"
+    assert req["pset"] == ""
+    assert req["prop"] == "Concrete"
+    assert req["constraint"] == "equals:Concrete"
+    assert req["constraint_type"] == "xs:string"
+
+
+def test_parse_ids_classification_facet(tmp_path: Path) -> None:
+    """<classification> deve resultar em facet_type='classification',
+    pset=sistema e prop=código."""
+    xml = _make_ids_xml("""
+        <ids:classification>
+          <ids:system><ids:simpleValue>Uniclass</ids:simpleValue></ids:system>
+          <ids:value><ids:simpleValue>Ss_20_10_30</ids:simpleValue></ids:value>
+        </ids:classification>
+    """)
+    ids_file = tmp_path / "test.ids"
+    ids_file.write_text(xml, encoding="utf-8")
+
+    specs = parse_ids(str(ids_file))
+    req = specs[0].requirements[0]
+
+    assert req["facet_type"] == "classification"
+    assert req["pset"] == "Uniclass"
+    assert req["prop"] == "Ss_20_10_30"
+    assert req["constraint"] == "equals:Ss_20_10_30"
+    assert req["constraint_type"] == "xs:string"
+
+
+def test_parse_ids_partof_facet(tmp_path: Path) -> None:
+    """<partOf> deve resultar em facet_type='relation', pset='IFC_RELATION'
+    e prop com o nome da entidade contenedora."""
+    xml = _make_ids_xml("""
+        <ids:partOf>
+          <ids:entity>
+            <ids:name><ids:simpleValue>IFCBUILDINGSTOREY</ids:simpleValue></ids:name>
+          </ids:entity>
+        </ids:partOf>
+    """)
+    ids_file = tmp_path / "test.ids"
+    ids_file.write_text(xml, encoding="utf-8")
+
+    specs = parse_ids(str(ids_file))
+    req = specs[0].requirements[0]
+
+    assert req["facet_type"] == "relation"
+    assert req["pset"] == "IFC_RELATION"
+    assert req["prop"] == "IFCBUILDINGSTOREY"
+    assert req["constraint"] == "exists"
+    assert req["constraint_type"] == ""

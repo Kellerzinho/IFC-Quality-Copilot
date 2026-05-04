@@ -7,7 +7,7 @@ from typing import Any
 
 from loguru import logger
 
-from src.models import Issue, Suggestion
+from src.models import BSDDContext, IDSContext, Issue, Suggestion
 
 SYSTEM_PROMPT = (
     "Você é um engenheiro civil brasileiro especialista em BIM, IFC e desempenho "
@@ -15,9 +15,25 @@ SYSTEM_PROMPT = (
     "sem explicações fora do JSON."
 )
 
+_GROUNDING_INSTRUCTION = (
+    "Se houver contexto IDS ou bSDD, use apenas o vocabulário e os requisitos fornecidos. "
+    "Nunca invente URI, código de classificação ou valor fora do vocabulário permitido."
+)
+
+_LLM_OUTPUT_CONTRACT = (
+    'Responda APENAS em JSON no formato { "opcoes": [ { '
+    '"label": "...", "canonical_term": "...", "semantic_hint": "...", '
+    '"source_candidates": ["..."], "confidence": "alta"|"media"|"baixa", '
+    '"justification": "...", "review_required": true|false, '
+    '"value": ... | null, "normative_ref": ... | null } ] }. '
+    "Nunca retorne URI final como verdade semantica."
+)
+
+_HEADER_BR = "CONTEXTO: {building_type}, zona bioclimática {bioclimatic_zone}.\n"
+
 TEMPLATES: dict[str, str] = {
     "space_unnamed": (
-        "CONTEXTO: {building_type}, zona bioclimática {bioclimatic_zone}.\n"
+        _HEADER_BR +
         "ISSUE: IfcSpace #{guid}, nome atual \"{current_name}\"\n"
         "DADOS:\n"
         "- Área: {area_m2} m²\n"
@@ -50,7 +66,7 @@ TEMPLATES: dict[str, str] = {
         '{{"opcoes": [{{"nome": "...", "justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
     ),
     "pset_missing_thermal": (
-        "CONTEXTO: {building_type}, zona bioclimática {bioclimatic_zone}.\n"
+        _HEADER_BR +
         "ISSUE: {element_class} #{guid}, propriedade ThermalTransmittance ausente\n"
         "DADOS:\n"
         "- Material: {material_name}\n"
@@ -59,27 +75,32 @@ TEMPLATES: dict[str, str] = {
         "- Elemento estrutural: {is_structural}\n"
         "NORMA: NBR 15575-4 Tabela C.2 — Transmitância térmica máxima de paredes externas\n"
         "TAREFA: Sugira 3 valores possíveis para ThermalTransmittance [W/(m²·K)] "
-        "com base no material e espessura, do mais provável ao menos provável.\n"
+        "com base no material e espessura, do mais provável ao menos provável. "
+        "Retorne valor numérico puro em JSON, sem unidade no campo valor.\n"
         "Formato JSON:\n"
         '{{"opcoes": [{{"valor": 2.48, "justificativa": "...", '
         '"ref": "NBR 15575-4 Tab. C.2", "confianca": "alta/media/baixa"}}]}}'
     ),
     "pset_missing_fire": (
-        "CONTEXTO: {building_type}, zona bioclimática {bioclimatic_zone}.\n"
+        _HEADER_BR +
         "ISSUE: {element_class} #{guid} (\"{element_name}\"), propriedade FireRating ausente\n"
         "DADOS:\n"
         "- Tipo de elemento: {element_class}\n"
         "- Nome: {element_name}\n"
         "- Material: {material_name}\n"
         "NORMA: ABNT NBR 14432 — Exigências de resistência ao fogo de elementos construtivos\n"
-        "TAREFA: Sugira 3 valores de FireRating (tempo de resistência em minutos, ex: \"30\", \"60\", \"90\") "
+        "TAREFA: Sugira 3 valores de FireRating no formato canônico \"REI 60\", \"REI 90\", \"REI 120\" "
         "para este elemento, do mais provável ao menos provável.\n"
+        "RESTRICAO: o campo valor/value deve ser gravavel no IFC e conter apenas classe de resistencia "
+        "ao fogo + minutos, como \"REI 30\", \"REI 60\", \"EI 30\" ou \"EI 60\". "
+        "Use duracoes usuais como 30, 60, 90 ou 120 minutos. "
+        "Nao use A1, N/A, NC, R 1, FireRating, nomes de propriedade, descricoes ou texto explicativo como valor.\n"
         "Formato JSON:\n"
-        '{{"opcoes": [{{"valor": "60", "justificativa": "...", '
+        '{{"opcoes": [{{"valor": "REI 60", "justificativa": "...", '
         '"ref": "NBR 14432", "confianca": "alta/media/baixa"}}]}}'
     ),
     "pset_missing_generic": (
-        "CONTEXTO: {building_type}, zona bioclimática {bioclimatic_zone}.\n"
+        _HEADER_BR +
         "ISSUE: {element_class} #{guid} (\"{element_name}\"), propriedade {check_property} ausente\n"
         "DADOS:\n"
         "- Tipo de elemento: {element_class}\n"
@@ -92,7 +113,7 @@ TEMPLATES: dict[str, str] = {
         '{{"opcoes": [{{"valor": "...", "justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
     ),
     "pset_missing_space_category": (
-        "CONTEXTO: {building_type}, zona bioclimática {bioclimatic_zone}.\n"
+        _HEADER_BR +
         "ISSUE: IfcSpace #{guid} (\"{element_name}\"), propriedade Category ausente no Pset_SpaceCommon\n"
         "DADOS:\n"
         "- Nome atual do espaço: {element_name}\n"
@@ -107,7 +128,7 @@ TEMPLATES: dict[str, str] = {
         '{{"opcoes": [{{"valor": "BEDROOM", "justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
     ),
     "system_unclassified": (
-        "CONTEXTO: {building_type}, zona bioclimática {bioclimatic_zone}.\n"
+        _HEADER_BR +
         "ISSUE: {element_class} #{guid} (\"{element_name}\"), sistema construtivo não classificado\n"
         "DADOS:\n"
         "- Tipo de elemento: {element_class}\n"
@@ -125,7 +146,7 @@ TEMPLATES: dict[str, str] = {
         '"justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
     ),
     "system_unclassified_slab": (
-        "CONTEXTO: {building_type}, zona bioclimática {bioclimatic_zone}.\n"
+        _HEADER_BR +
         "ISSUE: {element_class} #{guid} (\"{element_name}\"), sistema construtivo não classificado\n"
         "DADOS:\n"
         "- Tipo IFC (PredefinedType): {predefined_type}\n"
@@ -154,12 +175,13 @@ TEMPLATES: dict[str, str] = {
         "  - Se mencionar 'concreto', 'concrete' com espessura > 8cm → laje estrutural\n"
         "  - Se mencionar 'terra', 'soil', 'ground' → radier ou laje sobre solo\n"
         "TAREFA: Identifique o sistema construtivo/revestimento desta laje com 3 opções "
-        "ordenadas por probabilidade. Use o nome do objeto e camadas de material como pistas principais.\n"
+        "ordenadas por probabilidade. Use rótulos canônicos consistentes e sem variações redundantes "
+        "para o mesmo sistema. Use o nome do objeto e camadas de material como pistas principais.\n"
         "Formato JSON:\n"
         '{{"opcoes": [{{"sistema": "...", "justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
     ),
     "relation_fills_missing": (
-        "CONTEXTO: {building_type}, zona bioclimática {bioclimatic_zone}.\n"
+        _HEADER_BR +
         "ISSUE: {element_class} #{guid} (\"{element_name}\") não possui IfcRelFillsElement — "
         "não está inserido em nenhuma abertura de parede no modelo IFC.\n"
         "DADOS:\n"
@@ -175,7 +197,7 @@ TEMPLATES: dict[str, str] = {
         '"justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
     ),
     "relation_orphan": (
-        "CONTEXTO: {building_type}, zona bioclimática {bioclimatic_zone}.\n"
+        _HEADER_BR +
         "ISSUE: {element_class} #{guid} (\"{element_name}\") não possui "
         "IfcRelContainedInSpatialStructure — não está associado a nenhum espaço ou pavimento.\n"
         "DADOS:\n"
@@ -348,10 +370,71 @@ def _select_profile_template(profile_id: str, issue: Issue) -> str | None:
     return PROFILE_TEMPLATES.get((profile_id, issue.issue_type))
 
 
+def _format_context_value(value: Any) -> str:
+    """Formata valores arbitrarios do contexto da issue para texto legivel."""
+    if isinstance(value, list):
+        if value and all(isinstance(item, dict) for item in value):
+            if any("functional_label" in item or "ifc_class" in item for item in value):
+                return _format_elements(value)
+            if any("guid" in item or "name" in item for item in value):
+                return _format_spaces(value)
+        return _format_list(value)
+    if isinstance(value, dict):
+        return json.dumps(value, ensure_ascii=False)
+    return str(value)
+
+
+def build_grounded_prompt(
+    issue: Issue,
+    building_context: str,
+    grounding_block: str,
+    grounding_mode: str,
+    few_shot: str | None = None,
+) -> str:
+    """Constrói prompt com grounding injetado."""
+    lines = [
+        "Você é um engenheiro civil brasileiro especialista em BIM, IFC e normas de desempenho.",
+        "",
+        "CONTEXTO DA EDIFICAÇÃO:",
+        building_context.strip() if building_context.strip() else "N/D",
+        "",
+        "CONTEXTO DA ISSUE:",
+        f"- Classe do elemento: {issue.element_class}",
+        f"- Nome do elemento: {issue.element_name or 'sem nome'}",
+        f"- GUID: {issue.short_guid}",
+        f"- Tipo da issue: {issue.issue_type}",
+        f"- Descrição: {issue.description}",
+    ]
+
+    if issue.context:
+        lines.append("- Dados adicionais:")
+        for key, value in issue.context.items():
+            lines.append(f"  - {key}: {_format_context_value(value)}")
+
+    cleaned_grounding = grounding_block.strip()
+    if cleaned_grounding:
+        lines.extend(["", "GROUNDING BLOCK:", cleaned_grounding])
+        lines.append(
+            "RESTRIÇÃO: suas sugestões devem usar APENAS termos, propriedades e valores presentes no vocabulário acima. "
+            "Não invente valores fora desse vocabulário."
+        )
+    elif grounding_mode != "none":
+        lines.extend(["", "GROUNDING BLOCK:", ""])
+
+    if few_shot:
+        lines.extend(["", "EXEMPLO:", few_shot.strip()])
+
+    lines.extend(["", _LLM_OUTPUT_CONTRACT])
+    return "\n".join(lines)
+
+
 def build_prompt(
     issue: Issue,
     building_context: dict,
     profile_id: str | None = None,
+    bsdd_context: BSDDContext | None = None,
+    ids_context: IDSContext | None = None,
+    grounding_mode: str = "none",
 ) -> tuple[str, str]:
     """Monta o prompt completo para uma issue.
 
@@ -396,8 +479,32 @@ def build_prompt(
 
     safe_ctx: defaultdict[str, Any] = defaultdict(lambda: "N/D", fill_ctx)
     user_prompt = template.format_map(safe_ctx)
+    user_prompt = _inject_grounding(user_prompt, bsdd_context, ids_context, grounding_mode)
+    system_prompt = SYSTEM_PROMPT
+    if grounding_mode != "none" and (ids_context is not None or bsdd_context is not None):
+        system_prompt = f"{SYSTEM_PROMPT} {_GROUNDING_INSTRUCTION}"
+    user_prompt = f"{user_prompt}\n\nCONTRATO DE SAIDA:\n{_LLM_OUTPUT_CONTRACT}"
 
-    return SYSTEM_PROMPT, user_prompt
+    return system_prompt, user_prompt
+
+
+def _inject_grounding(
+    user_prompt: str,
+    bsdd_context: BSDDContext | None,
+    ids_context: IDSContext | None,
+    grounding_mode: str,
+) -> str:
+    """Anexa blocos de grounding estruturado ao prompt base."""
+    blocks = [f"GROUNDING_MODE: {grounding_mode}"]
+    if ids_context is not None and grounding_mode in {"ids_only", "ids_bsdd"}:
+        blocks.append("IDS_CONTEXT:")
+        blocks.append(ids_context.as_prompt_block())
+    if bsdd_context is not None and grounding_mode == "ids_bsdd":
+        blocks.append("BSDD_CONTEXT:")
+        blocks.append(bsdd_context.as_prompt_block())
+    if len(blocks) == 1:
+        return user_prompt
+    return f"{user_prompt}\n\n" + "\n".join(blocks)
 
 
 # ---------------------------------------------------------------------------
@@ -405,6 +512,129 @@ def build_prompt(
 # ---------------------------------------------------------------------------
 
 _VALID_CONFIDENCES = ("alta", "media", "baixa")
+_OPTION_LIST_KEYS = (
+    "opcoes",
+    "opções",
+    "opÃ§Ãµes",
+    "options",
+    "suggestions",
+    "sugestoes",
+    "sugestões",
+    "sugestÃµes",
+    "alternativas",
+    "alternatives",
+    "result",
+    "results",
+    "data",
+    "items",
+)
+_LABEL_KEYS = (
+    "label",
+    "nome",
+    "name",
+    "titulo",
+    "title",
+    "termo",
+    "term",
+    "canonical_term",
+    "semantic_hint",
+    "sugestao",
+    "suggestion",
+    "option",
+    "opcao",
+    "descrição",
+    "descricao",
+    "description",
+)
+_VALUE_KEYS = (
+    "value",
+    "valor",
+    "term",
+    "termo",
+    "canonical_term",
+    "suggestion",
+    "sugestao",
+    "option",
+    "opcao",
+    "action",
+    "acao",
+)
+_EXPLICIT_VALUE_KEYS = ("value", "valor")
+_FALLBACK_VALUE_KEYS = (
+    "term",
+    "termo",
+    "canonical_term",
+    "suggestion",
+    "sugestao",
+    "option",
+    "opcao",
+    "action",
+    "acao",
+)
+_JUSTIFICATION_KEYS = (
+    "justificativa",
+    "justification",
+    "justificacao",
+    "reason",
+    "rationale",
+    "explanation",
+    "motivo",
+    "porque",
+)
+_CONFIDENCE_KEYS = (
+    "confianca",
+    "confiança",
+    "confidence",
+    "certainty",
+    "probability",
+    "probabilidade",
+    "confidence_level",
+    "nivel_confianca",
+    "score",
+)
+
+
+def _first_present(opt: dict, keys: tuple[str, ...], default: Any = None) -> Any:
+    for key in keys:
+        value = opt.get(key)
+        if value is not None and value != "":
+            return value
+    return default
+
+
+def _normalize_confidence(value: Any) -> str:
+    if isinstance(value, (int, float)):
+        if value >= 0.75:
+            return "alta"
+        if value >= 0.45:
+            return "media"
+        return "baixa"
+
+    normalized = str(value or "").strip().casefold()
+    aliases = {
+        "alta": "alta",
+        "high": "alta",
+        "alto": "alta",
+        "strong": "alta",
+        "media": "media",
+        "média": "media",
+        "medium": "media",
+        "moderate": "media",
+        "baixa": "baixa",
+        "low": "baixa",
+        "baixo": "baixa",
+        "weak": "baixa",
+    }
+    if normalized.endswith("%"):
+        try:
+            return _normalize_confidence(float(normalized[:-1].replace(",", ".")) / 100)
+        except ValueError:
+            return "baixa"
+    try:
+        numeric = float(normalized.replace(",", "."))
+    except ValueError:
+        return aliases.get(normalized, "baixa")
+    return _normalize_confidence(numeric)
 
 
 def _normalize_option(opt: dict, issue_type: str) -> Suggestion | None:
@@ -412,30 +642,46 @@ def _normalize_option(opt: dict, issue_type: str) -> Suggestion | None:
 
     Retorna None se o item não tiver label válido.
     """
-    justification = opt.get("justificativa", "")
-    confidence_raw = opt.get("confianca", "baixa")
-    confidence = confidence_raw if confidence_raw in _VALID_CONFIDENCES else "baixa"
-    normative_ref: str | None = opt.get("ref")
+    justification = str(_first_present(opt, _JUSTIFICATION_KEYS, "") or "")
+    confidence = _normalize_confidence(_first_present(opt, _CONFIDENCE_KEYS, "baixa"))
+    normative_ref: str | None = opt.get("ref") or opt.get("normative_ref")
+    canonical_term = opt.get("canonical_term")
+    semantic_hint = opt.get("semantic_hint")
+    source_candidates_raw = opt.get("source_candidates") or []
+    review_required = bool(opt.get("review_required", False))
 
     if issue_type in ("space_unnamed",):
-        label = opt.get("nome", "")
-        value: Any = label
+        label = _first_present(opt, _LABEL_KEYS, "")
+        value: Any = _first_present(opt, _VALUE_KEYS, label)
     elif issue_type == "system_unclassified":
-        label = opt.get("sistema", "")
-        value = label
+        label = opt.get("sistema") or _first_present(opt, _LABEL_KEYS, "")
+        value = _first_present(opt, _VALUE_KEYS, label)
     elif issue_type == "classification_missing":
-        label = opt.get("codigo", "")
-        value = label
+        label = opt.get("codigo") or opt.get("code") or _first_present(opt, _LABEL_KEYS, "")
+        value = _first_present(opt, _VALUE_KEYS, label)
     elif issue_type == "asset_unidentified":
-        label = opt.get("nome_ativo", "")
-        value = label
+        label = opt.get("nome_ativo") or opt.get("asset_name") or _first_present(opt, _LABEL_KEYS, "")
+        value = _first_present(opt, _VALUE_KEYS, label)
     else:
-        raw_val = opt.get("valor", "")
+        raw_val = _first_present(opt, _EXPLICIT_VALUE_KEYS, None)
+        if raw_val is None:
+            raw_val = _first_present(opt, _LABEL_KEYS, "")
+        if raw_val is None or raw_val == "":
+            raw_val = _first_present(opt, _FALLBACK_VALUE_KEYS, "")
         label = str(raw_val) if raw_val != "" else ""
         value = raw_val
 
     if not label:
         return None
+    label = str(label).strip()
+    if not label:
+        return None
+
+    source_candidates: list[str] = []
+    if isinstance(source_candidates_raw, list):
+        source_candidates = [str(candidate).strip() for candidate in source_candidates_raw if str(candidate).strip()]
+    elif isinstance(source_candidates_raw, str) and source_candidates_raw.strip():
+        source_candidates = [source_candidates_raw.strip()]
 
     return Suggestion(
         label=label,
@@ -444,15 +690,50 @@ def _normalize_option(opt: dict, issue_type: str) -> Suggestion | None:
         confidence=confidence,
         normative_ref=normative_ref,
         source="llm",
+        canonical_term=str(canonical_term).strip() if canonical_term is not None and str(canonical_term).strip() else None,
+        semantic_hint=str(semantic_hint).strip() if semantic_hint is not None and str(semantic_hint).strip() else None,
+        source_candidates=source_candidates,
+        review_required=review_required,
+        ids_requirement_id=opt.get("ids_requirement_id"),
     )
+
+
+def _strip_thinking_tags(text: str) -> str:
+    """Remove blocos <think>...</think> emitidos por modelos com modo de raciocínio.
+
+    Modelos como Qwen3 e DeepSeek-R1 emitem raciocínio interno antes da resposta.
+    Trata dois casos:
+    - Bloco fechado: <think>...</think> → remove o bloco inteiro
+    - Bloco aberto (truncado por num_predict): <think>... → remove tudo até o primeiro {
+      que pareça início de JSON válido fora do bloco de thinking
+    """
+    # Caso 1: bloco fechado corretamente
+    cleaned = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
+    if cleaned:
+        return cleaned
+
+    # Caso 2: bloco aberto — tenta encontrar JSON após qualquer conteúdo de thinking
+    if '<think>' in text:
+        after_think = text.split('<think>', 1)[-1]
+        # Procura pelo primeiro { que seja início de objeto JSON válido fora do thinking
+        match = re.search(r'\{', after_think)
+        if match:
+            candidate = after_think[match.start():]
+            # Verifica se parece JSON de sugestoes.
+            if any(f'"{key}"' in candidate for key in _OPTION_LIST_KEYS):
+                return candidate
+        return ''
+
+    return text.strip()
 
 
 def _extract_json_object(raw: str) -> dict | None:
     """Tenta extrair e parsear o primeiro objeto JSON da string.
 
     Tenta três estratégias: parse direto, regex entre { e }, linha a linha.
+    Remove blocos <think>...</think> antes de tentar (Qwen3, DeepSeek-R1).
     """
-    stripped = raw.strip()
+    stripped = _strip_thinking_tags(raw.strip())
     if not stripped:
         return None
 
@@ -461,20 +742,93 @@ def _extract_json_object(raw: str) -> dict | None:
         result = json.loads(stripped)
         if isinstance(result, dict):
             return result
-    except json.JSONDecodeError:
-        pass
+        if isinstance(result, list):
+            return {"opcoes": result}
+    except json.JSONDecodeError as exc:
+        logger.debug("_extract_json_object: parse direto falhou: {}", exc)
 
-    # 2. Regex: primeiro objeto JSON entre { e }
-    match = re.search(r'\{.*\}', stripped, re.DOTALL)
-    if match:
+    # 2. Reparo de truncamento: LLMs frequentemente truncam os colchetes/chaves finais.
+    #    Tenta fechar o JSON progressivamente até ser válido.
+    repaired = _repair_truncated_json(stripped)
+    if repaired is not None:
+        logger.debug("_extract_json_object: JSON reparado com sucesso")
+        return repaired
+
+    # 3. Regex: último objeto JSON entre { e } (evita pegar fragmentos do thinking)
+    matches = list(re.finditer(r'\{.*\}', stripped, re.DOTALL))
+    for match in reversed(matches):
         try:
             result = json.loads(match.group())
             if isinstance(result, dict):
                 return result
+            if isinstance(result, list):
+                return {"opcoes": result}
+        except json.JSONDecodeError as exc:
+            logger.debug("_extract_json_object: regex match falhou: {}", exc)
+
+    logger.warning("_extract_json_object: nenhuma estratégia extraiu JSON válido. Raw: {!r}", stripped[:300])
+    return None
+
+
+def _repair_truncated_json(text: str) -> dict | None:
+    """Tenta recuperar JSON truncado pelo limite de tokens do LLM.
+
+    Estratégia: conta chaves e colchetes abertos, fecha na ordem correta.
+    Retorna o dict parseado ou None se não conseguir reparar.
+    """
+    stack: list[str] = []
+    in_string = False
+    escape_next = False
+
+    for ch in text:
+        if escape_next:
+            escape_next = False
+            continue
+        if ch == '\\' and in_string:
+            escape_next = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if ch in ('{', '['):
+            stack.append(']' if ch == '[' else '}')
+        elif ch in ('}', ']'):
+            if stack and stack[-1] == ch:
+                stack.pop()
+
+    if not stack:
+        return None  # JSON já está íntegro — falhou por outro motivo
+
+    closing = ''.join(reversed(stack))
+    for suffix in [closing, closing.rstrip('}') + '}', closing + '}']:
+        candidate = text + suffix
+        try:
+            result = json.loads(candidate)
+            if isinstance(result, dict):
+                return result
+            if isinstance(result, list):
+                return {"opcoes": result}
         except json.JSONDecodeError:
-            pass
+            continue
 
     return None
+
+
+def _get_options_robust(parsed: dict) -> Any:
+    """Extrai opcoes de resposta LLM com aliases e wrappers comuns."""
+    for key in _OPTION_LIST_KEYS:
+        options = parsed.get(key)
+        if options is not None:
+            if isinstance(options, dict):
+                nested = _get_options_robust(options)
+                if nested:
+                    return nested
+            return options
+    if any(key in parsed for key in _LABEL_KEYS + _VALUE_KEYS):
+        return [parsed]
+    return []
 
 
 def parse_llm_response(response: str, issue_type: str) -> list[Suggestion]:
@@ -484,6 +838,7 @@ def parse_llm_response(response: str, issue_type: str) -> list[Suggestion]:
     parse linha a linha. Sempre retorna lista (pode ser vazia).
     Define source="llm" em todas as sugestões geradas.
     """
+    logger.debug("parse_llm_response raw ({} chars): {!r}", len(response), response[:2000])
     parsed = _extract_json_object(response)
 
     if parsed is None:
@@ -498,11 +853,17 @@ def parse_llm_response(response: str, issue_type: str) -> list[Suggestion]:
                         s = _normalize_option(obj, issue_type)
                         if s:
                             suggestions.append(s)
+                    elif isinstance(obj, list):
+                        for item in obj:
+                            if isinstance(item, dict):
+                                s = _normalize_option(item, issue_type)
+                                if s:
+                                    suggestions.append(s)
                 except json.JSONDecodeError:
                     pass
         return suggestions
 
-    options = parsed.get("opcoes", [])
+    options = _get_options_robust(parsed)
     if not isinstance(options, list):
         logger.warning("Resposta LLM sem lista 'opcoes' válida: {}", parsed)
         return []
@@ -515,3 +876,5 @@ def parse_llm_response(response: str, issue_type: str) -> list[Suggestion]:
                 result.append(s)
 
     return result
+
+

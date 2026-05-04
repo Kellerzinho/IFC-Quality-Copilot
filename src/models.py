@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Any, Literal
 from uuid import uuid4
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 
 
 class MaterialLayer(BaseModel):
@@ -78,6 +78,11 @@ _ISSUE_TYPE_LABELS: dict[str, str] = {
     "pset_missing": "Propriedade ausente",
     "relation_broken": "Relação espacial quebrada",
     "system_unclassified": "Sistema construtivo não classificado",
+    "quantity_missing": "Quantidade base ausente",
+    "classification_missing": "Referência de classificação ausente",
+    "material_unmapped": "Material não mapeado para padrão",
+    "asset_unidentified": "Equipamento sem identificação",
+    "thermal_incomplete": "Dados térmicos incompletos",
 }
 
 _SEVERITY_ORDER: dict[str, int] = {
@@ -94,7 +99,17 @@ class Issue(BaseModel):
     element_guid: str
     element_class: str
     element_name: str | None = None
-    issue_type: Literal["space_unnamed", "pset_missing", "relation_broken", "system_unclassified"]
+    issue_type: Literal[
+        "space_unnamed",
+        "pset_missing",
+        "relation_broken",
+        "system_unclassified",
+        "quantity_missing",
+        "classification_missing",
+        "material_unmapped",
+        "asset_unidentified",
+        "thermal_incomplete",
+    ]
     severity: Literal["high", "medium", "low"]
     description: str
     context: dict[str, Any] = Field(default_factory=dict)
@@ -137,14 +152,22 @@ class Issue(BaseModel):
 
 
 class Suggestion(BaseModel):
-    """Sugestão de correção gerada por heurística ou LLM para um Issue."""
+    """Sugestão de correção gerada por LLM para um Issue."""
 
     label: str  # ex: "Lavabo Suíte" ou "2.48 W/(m².K)"
     value: Any  # valor a ser escrito no IFC
     justification: str  # ex: "4.2m² com WC e lavatório adjacente a dormitório"
     confidence: Literal["alta", "media", "baixa"]
     normative_ref: str | None = None  # ex: "NBR 15575-4 Tab. C.2"
-    source: Literal["heuristic", "llm"]
+    source: Literal["llm"] = "llm"
+    canonical_term: str | None = None
+    semantic_hint: str | None = None
+    source_candidates: list[str] = Field(default_factory=list)
+    review_required: bool = False
+    semantic_status: Literal["resolved", "pending_review", "not_applicable"] = "not_applicable"
+    semantic_source_origin: str | None = None
+    bsdd_uri: str | None = None
+    ids_requirement_id: str | None = None
 
     @property
     def confidence_emoji(self) -> str:
@@ -164,6 +187,7 @@ class SuggestionSet(BaseModel):
     suggestions: list[Suggestion] = Field(default_factory=list)  # 2-3 opções
     allow_custom: bool = True
     error: str | None = None  # se houve erro na geração
+    prompt_hash: str | None = None
 
     @property
     def has_suggestions(self) -> bool:
@@ -184,6 +208,210 @@ class SuggestionSet(BaseModel):
         return None
 
 
+class BSDDProperty(BaseModel):
+    """Representa uma propriedade relevante recuperada do bSDD."""
+
+    name: str
+    uri: str | None = None
+    data_type: str | None = None
+    unit: str | None = None
+    allowed_values: list[str] | None = None
+    description: str | None = None
+
+
+class BSDDClassification(BaseModel):
+    """Classificação sugerida ou recuperada do bSDD."""
+
+    name: str
+    code: str | None = None
+    uri: str | None = None
+    system_name: str | None = None
+
+
+class BSDDClassCandidate(BSDDClassification):
+    """Classe candidata recuperada do bSDD."""
+
+    domain: str | None = None
+    properties: list[BSDDProperty] = Field(default_factory=list)
+
+
+class BSDDContext(BaseModel):
+    """Contexto semântico do bSDD para uma issue."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
+
+    class_name: str | None = None
+    class_uri: str | None = None
+    domain_name: str | None = Field(default=None, validation_alias=AliasChoices("domain_name", "domain"))
+    related_properties: list[BSDDProperty] = Field(
+        default_factory=list,
+        validation_alias=AliasChoices("related_properties", "properties"),
+    )
+    classification_suggestions: list[BSDDClassification] = Field(
+        default_factory=list,
+        validation_alias=AliasChoices("classification_suggestions", "classes"),
+    )
+    raw_query: str | None = Field(default=None, validation_alias=AliasChoices("raw_query", "search_query"))
+    issue_id: str | None = None
+    element_class: str | None = None
+    source_uris: list[str] = Field(default_factory=list)
+    source_status: Literal["live", "cache", "empty", "offline"] = "empty"
+
+    def as_prompt_block(self) -> str:
+        """Serializa o contexto bSDD como texto estruturado para o prompt."""
+        if not self.classification_suggestions and not self.related_properties:
+            return "bSDD: sem resultados."
+
+        lines = [f"bSDD source_status: {self.source_status}"]
+        if self.classification_suggestions:
+            lines.append("Classes candidatas:")
+            for cls in self.classification_suggestions:
+                lines.append(f"- {cls.name} | URI: {cls.uri}")
+        if self.related_properties:
+            lines.append("Propriedades e valores permitidos:")
+            for prop in self.related_properties:
+                values = ", ".join(prop.allowed_values) if prop.allowed_values else "livre"
+                meta = []
+                if prop.uri:
+                    meta.append(f"URI: {prop.uri}")
+                if prop.data_type:
+                    meta.append(f"tipo: {prop.data_type}")
+                if prop.unit:
+                    meta.append(f"unidade: {prop.unit}")
+                suffix = f" ({'; '.join(meta)})" if meta else ""
+                lines.append(f"- {prop.name}: {values}{suffix}")
+        return "\n".join(lines)
+
+    @property
+    def domain(self) -> str | None:
+        return self.domain_name
+
+    @property
+    def properties(self) -> list[BSDDProperty]:
+        return self.related_properties
+
+    @property
+    def classes(self) -> list[BSDDClassification]:
+        return self.classification_suggestions
+
+    @property
+    def search_query(self) -> str | None:
+        return self.raw_query
+
+
+class IDSContext(BaseModel):
+    """Contexto do requisito IDS que gerou a issue."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
+
+    spec_name: str = Field(validation_alias=AliasChoices("spec_name", "specification_name"))
+    requirement_description: str = Field(
+        default="",
+        validation_alias=AliasChoices("requirement_description", "requirement_text"),
+    )
+    check_type: str
+    expected_pset: str | None = Field(default=None, validation_alias=AliasChoices("expected_pset", "check_pset"))
+    expected_property: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("expected_property", "check_property"),
+    )
+    expected_value: Any | None = None
+    expected_unit: str | None = Field(default=None, validation_alias=AliasChoices("expected_unit", "unit"))
+    severity: str
+    issue_id: str | None = Field(default=None, exclude=True)
+    requirement_id: str | None = Field(default=None, exclude=True)
+
+    def model_post_init(self, __context: Any) -> None:
+        if self.requirement_description:
+            return
+
+        target = ".".join(part for part in [self.expected_pset, self.expected_property] if part)
+        if self.check_type == "exists":
+            self.requirement_description = f"{target} must exist"
+        elif self.check_type == "is_numeric":
+            self.requirement_description = f"{target} must exist and be numeric"
+        elif self.check_type == "is_boolean":
+            self.requirement_description = f"{target} must be boolean"
+        elif self.check_type == "not_empty":
+            self.requirement_description = f"{target} must not be empty"
+        elif self.check_type == "equals":
+            self.requirement_description = f"{target} must equal {self.expected_value}"
+        else:
+            self.requirement_description = f"{target} must satisfy {self.check_type}"
+
+    def as_prompt_block(self) -> str:
+        """Serializa o requisito IDS como texto estruturado para o prompt."""
+        lines = [
+            f"Specification: {self.spec_name}",
+            f"Check: {self.expected_pset}.{self.expected_property} ({self.check_type})",
+            f"Severity: {self.severity}",
+        ]
+        if self.requirement_id is not None:
+            lines.insert(0, f"IDS requirement_id: {self.requirement_id}")
+        if self.expected_value is not None:
+            lines.append(f"Expected value: {self.expected_value}")
+        if self.expected_unit is not None:
+            lines.append(f"Unit: {self.expected_unit}")
+        if self.requirement_description:
+            lines.append(f"Requirement: {self.requirement_description}")
+        return "\n".join(lines)
+
+    @property
+    def specification_name(self) -> str:
+        return self.spec_name
+
+    @property
+    def check_pset(self) -> str:
+        return self.expected_pset or ""
+
+    @property
+    def check_property(self) -> str:
+        return self.expected_property or ""
+
+    @property
+    def unit(self) -> str | None:
+        return self.expected_unit
+
+    @property
+    def requirement_text(self) -> str:
+        return self.requirement_description
+
+
+class ValidationResult(BaseModel):
+    """Resultado da validação pós-correção."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
+
+    schema_valid: bool = True
+    ids_compliant: bool = True
+    errors: list[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+    guid: str | None = None
+    status: Literal["pass", "fail", "skip"] = "skip"
+    schema_errors: list[str] = Field(default_factory=list)
+    ids_errors: list[str] = Field(default_factory=list)
+
+    def model_post_init(self, __context: Any) -> None:
+        if self.schema_errors:
+            self.errors.extend(error for error in self.schema_errors if error not in self.errors)
+            self.schema_valid = False
+        if self.ids_errors:
+            self.errors.extend(error for error in self.ids_errors if error not in self.errors)
+            self.ids_compliant = False
+        if self.status == "fail":
+            if self.schema_errors:
+                self.schema_valid = False
+            if self.ids_errors:
+                self.ids_compliant = False
+        if self.status == "pass":
+            self.schema_valid = True
+            self.ids_compliant = True
+
+    @property
+    def is_valid(self) -> bool:
+        return self.schema_valid and self.ids_compliant and not self.errors
+
+
 class AuditEntry(BaseModel):
     """Registro imutável de uma ação de correção aplicada a um elemento IFC."""
 
@@ -196,10 +424,19 @@ class AuditEntry(BaseModel):
     decision: Literal["accepted", "edited", "rejected"]
     confidence: str
     normative_ref: str | None = None
-    source: Literal["heuristic", "llm"]
+    source: Literal["llm"]
     user: str = "engineer"
     timestamp: datetime = Field(default_factory=datetime.now)
     session_id: str | None = None
+    grounding_mode: str | None = "none"
+    grounding_sources: list[str] = Field(default_factory=list)
+    bsdd_uri: str | None = None
+    ids_requirement_id: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("ids_requirement_id", "ids_requirement"),
+    )
+    post_validation: Literal["pass", "fail", "skip"] = "skip"
+    prompt_hash: str | None = None
 
     def to_csv_row(self) -> dict[str, str]:
         """Retorna dict com todos os campos serializados para escrita em CSV."""
@@ -217,7 +454,17 @@ class AuditEntry(BaseModel):
             "normative_ref": self.normative_ref or "",
             "source": self.source,
             "user": self.user,
+            "grounding_mode": self.grounding_mode,
+            "grounding_sources": "|".join(self.grounding_sources),
+            "bsdd_uri": self.bsdd_uri or "",
+            "ids_requirement_id": self.ids_requirement_id or "",
+            "post_validation": self.post_validation,
+            "prompt_hash": self.prompt_hash or "",
         }
+
+    @property
+    def ids_requirement(self) -> str | None:
+        return self.ids_requirement_id
 
 
 class DiagnosticReport(BaseModel):
@@ -301,6 +548,62 @@ class OperationalRule(BaseModel):
     severity: Literal["high", "medium", "low"] = "high"
     normative_ref: str | None = None
     on_fail: Literal["create_issue", "auto_fix"] = "create_issue"
+    profile_id: str | None = None
+    suggestion_strategy: Literal[
+        "lookup_table",
+        "llm_inference",
+        "geometric_calc",
+        "copy_from_source",
+        "user_input_only",
+    ] = "llm_inference"
+    write_action: Literal[
+        "preencher_pset",
+        "renomear_espaco",
+        "criar_relacao_fills",
+        "classificar_sistema",
+        "preencher_base_quantities",
+        "mapear_classificacao",
+        "noop",
+    ] = "preencher_pset"
+    required_context: list[str] = Field(default_factory=list)
+    evidence_source: str | None = None
+    tags: list[str] = Field(default_factory=list)
+
+    def _ids_requirement_description(self) -> str:
+        """Retorna descrição legível do requisito IDS representado pela regra."""
+        target = ".".join(part for part in [self.check_pset, self.check_property] if part) or self.check_property
+        if self.check_type == "exists":
+            return f"{target} must exist"
+        if self.check_type == "is_numeric":
+            return f"{target} must exist and be numeric"
+        if self.check_type == "is_boolean":
+            return f"{target} must be boolean"
+        if self.check_type == "not_empty":
+            return f"{target} must not be empty"
+        if self.check_type == "equals":
+            value = self.expected_value
+            if self.evidence_source:
+                value = f"{value} {self.evidence_source}" if value is not None else self.evidence_source
+            return f"{target} must equal {value}"
+        return f"{target} must satisfy {self.check_type}"
+
+    def to_ids_context(self) -> IDSContext:
+        """Converte a regra operacional em IDSContext serializável."""
+        return IDSContext(
+            spec_name=self.source_spec,
+            requirement_description=self._ids_requirement_description(),
+            check_type=self.check_type,
+            expected_pset=self.check_pset or None,
+            expected_property=self.check_property or None,
+            expected_value=self.expected_value,
+            expected_unit=self.evidence_source,
+            severity=self.severity,
+            requirement_id=self.id,
+        )
+
+    def matches_profile(self, profile_id: str) -> bool:
+        """Retorna True se a regra pertence ao perfil informado ou não tem perfil restrito."""
+        return self.profile_id == profile_id or self.profile_id is None
 
     def describe(self) -> str:
         """Descrição legível da regra em português."""
@@ -325,12 +628,17 @@ class ReadinessProfile(BaseModel):
     name: str
     description: str
     version: str = "1.0"
+    profile_group: str = "general"
     ids_filename: str | None = None
+    ids_sources: list[str] = Field(default_factory=list)
     required_extractors: list[str] = Field(default_factory=list)
     rule_pack: str | None = None
     prompt_pack: str | None = None
     issue_types: list[str] = Field(default_factory=list)
-    blocking_severities: list[str] = Field(default=["high"])
+    blocking_severities: list[str] = Field(default_factory=lambda: ["high"])
+    entity_scope: list[str] = Field(default_factory=list)
+    supported_data_categories: list[str] = Field(default_factory=list)
+    external_classification_systems: list[str] = Field(default_factory=list)
 
     @property
     def is_custom(self) -> bool:

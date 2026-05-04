@@ -32,7 +32,7 @@ def make_suggestion_set(issue_id: str) -> SuggestionSet:
                 value="X",
                 justification="Justificativa",
                 confidence="alta",
-                source="heuristic",
+                source="llm",
             )
         ],
     )
@@ -62,20 +62,6 @@ class TestAddIssues:
 
 
 class TestStatusTransitions:
-    def test_heuristic_result_available_immediately(self):
-        """add_heuristic_result deve marcar status como 'heuristic_ready' e salvar SuggestionSet."""
-        store = IssueStore()
-        issue = make_issue()
-        store.add_issues([issue])
-
-        sset = make_suggestion_set(issue.id)
-        store.add_heuristic_result(issue.id, sset)
-
-        results = store.get_ready_issues()
-        assert len(results) == 1
-        assert results[0][0].id == issue.id
-        assert results[0][1].issue_id == issue.id
-
     def test_mark_processing_and_ready(self):
         """mark_processing deve mudar status para 'processing'; mark_ready para 'ready'."""
         store = IssueStore()
@@ -117,13 +103,14 @@ class TestProgressAndQuery:
         assert second == i3.id  # medium severity no grupo normal, antes de i1 (low)
 
     def test_get_ready_issues(self):
-        """get_ready_issues deve retornar tanto heuristic_ready quanto ready."""
+        """get_ready_issues deve retornar issues marcadas como ready."""
         store = IssueStore()
         i1 = make_issue()
         i2 = make_issue()
         store.add_issues([i1, i2])
 
-        store.add_heuristic_result(i1.id, make_suggestion_set(i1.id))
+        store.mark_processing(i1.id)
+        store.mark_ready(i1.id, make_suggestion_set(i1.id))
         store.mark_ready(i2.id, make_suggestion_set(i2.id))
 
         ready = store.get_ready_issues()
@@ -138,19 +125,19 @@ class TestProgressAndQuery:
         issues = [make_issue() for _ in range(4)]
         store.add_issues(issues)
 
-        store.add_heuristic_result(issues[0].id, make_suggestion_set(issues[0].id))
+        store.mark_processing(issues[0].id)
+        store.mark_ready(issues[0].id, make_suggestion_set(issues[0].id))
         store.mark_processing(issues[1].id)
         store.mark_ready(issues[2].id, make_suggestion_set(issues[2].id))
         store.mark_failed(issues[3].id, "erro simulado")
 
         p = store.get_progress()
         assert p["total"] == 4
-        assert p["heuristic_ready"] == 1
         assert p["processing"] == 1
-        assert p["ready"] == 1
+        assert p["ready"] == 2
         assert p["failed"] == 1
         assert p["queued"] == 0
-        assert p["percent_complete"] == 75.0  # 3 de 4 terminados (heuristic_ready + ready + failed)
+        assert p["percent_complete"] == 75.0  # 3 de 4 terminados (ready + failed)
 
 
 class TestThreadSafety:

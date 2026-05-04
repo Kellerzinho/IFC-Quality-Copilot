@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ids xmlns="http://standards.buildingsmart.org/IDS"
+     xmlns:xs="http://www.w3.org/2001/XMLSchema"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://standards.buildingsmart.org/IDS
+                         http://standards.buildingsmart.org/IDS/1.0/ids.xsd">
+  <info>
+    <title>Energy Readiness — Prontidão para Simulação Energética</title>
+    <description>11 verificações para garantir que o modelo IFC contém dados térmicos e de zoneamento suficientes para simulação energética (NBR 15575, ASHRAE 90.1, EnergyPlus/OpenStudio)</description>
+    <author>IFC Quality Copilot</author>
+    <date>2026-04-04</date>
+    <version>1.0</version>
+  </info>
+  <specifications>
+
+    <!-- 1. Paredes externas devem ter transmitância térmica (U-value).
+         Aplicabilidade: apenas paredes com IsExternal = TRUE.
+         NBR 15575-4 define limites de U por zona bioclimática (1,5–3,7 W/m²K). -->
+    <specification name="Paredes externas devem ter ThermalTransmittance"
+                   description="NBR 15575-4: paredes externas exigem ThermalTransmittance para verificação de desempenho térmico por zona bioclimática">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCWALL"/>
+            </xs:restriction>
+          </name>
+        </entity>
+        <property datatype="IfcBoolean">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_WallCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IsExternal"/>
+            </xs:restriction>
+          </baseName>
+          <value>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="TRUE"/>
+            </xs:restriction>
+          </value>
+        </property>
+      </applicability>
+      <requirements>
+        <property datatype="IfcThermalTransmittanceMeasure">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_WallCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="ThermalTransmittance"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <!-- 2. Paredes externas devem ter absortância solar para cálculo de ganho
+         de calor por radiação solar. Crítico para NBR 15575 (absortância <= 0,6
+         para paredes claras, <= 0,8 para escuras) e EnergyPlus. -->
+    <specification name="Paredes externas devem ter SolarAbsorptance"
+                   description="Absortância solar de paredes externas é necessária para cálculo de ganho de calor por radiação — NBR 15575 distingue superfícies claras (≤0,6) e escuras (≤0,8)">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCWALL"/>
+            </xs:restriction>
+          </name>
+        </entity>
+        <property datatype="IfcBoolean">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_WallCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IsExternal"/>
+            </xs:restriction>
+          </baseName>
+          <value>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="TRUE"/>
+            </xs:restriction>
+          </value>
+        </property>
+      </applicability>
+      <requirements>
+        <property datatype="IfcNormalisedRatioMeasure">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_WallCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="SolarAbsorptance"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <!-- 3. Janelas devem ter transmitância térmica (U-value do vidro + caixilho).
+         NBR 15575-4 e ASHRAE 90.1 definem limites de U para janelas.
+         Sem esse dado, a simulação energética não é possível. -->
+    <specification name="Janelas devem ter ThermalTransmittance"
+                   description="ThermalTransmittance de janelas (U-value do conjunto vidro+caixilho) é obrigatório para simulação energética e verificação NBR 15575-4">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCWINDOW"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcThermalTransmittanceMeasure">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_WindowCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="ThermalTransmittance"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <!-- 4. Janelas devem ter SHGC (Solar Heat Gain Coefficient / Fator Solar).
+         SHGC indica a fração de radiação solar que passa pelo vidro.
+         Essencial para cálculo de carga de resfriamento em climas tropicais. -->
+    <specification name="Janelas devem ter SolarHeatGainCoefficient"
+                   description="SHGC (fator solar) das janelas é essencial para cálculo de ganho de calor solar e dimensionamento de ar-condicionado em climas tropicais">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCWINDOW"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcNormalisedRatioMeasure">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_WindowCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="SolarHeatGainCoefficient"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <!-- 5. Lajes externas (cobertura e piso sobre pilotis) devem ter transmitância
+         térmica. NBR 15575-5 define limites para coberturas (U <= 2,3 W/m²K
+         para baixa absortância, U <= 1,5 para alta absortância). -->
+    <specification name="Lajes externas devem ter ThermalTransmittance"
+                   description="NBR 15575-5: coberturas e lajes expostas ao exterior exigem ThermalTransmittance para verificação de desempenho térmico">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCSLAB"/>
+            </xs:restriction>
+          </name>
+        </entity>
+        <property datatype="IfcBoolean">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_SlabCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IsExternal"/>
+            </xs:restriction>
+          </baseName>
+          <value>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="TRUE"/>
+            </xs:restriction>
+          </value>
+        </property>
+      </applicability>
+      <requirements>
+        <property datatype="IfcThermalTransmittanceMeasure">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_SlabCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="ThermalTransmittance"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <!-- 6. Espaços devem ter LongName funcional para identificação de zonas térmicas.
+         Ferramentas de simulação (EnergyPlus, OpenStudio) usam o nome do espaço
+         para associar programas de uso (ocupação, iluminação, equipamentos). -->
+    <specification name="Espaços devem ter LongName funcional"
+                   description="LongName do IfcSpace identifica a função do ambiente para zoneamento térmico — usado por EnergyPlus/OpenStudio para associar programas de uso">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCSPACE"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <attribute>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="LongName"/>
+            </xs:restriction>
+          </name>
+          <value>
+            <xs:restriction base="xs:string">
+              <xs:minLength value="1"/>
+            </xs:restriction>
+          </value>
+        </attribute>
+      </requirements>
+    </specification>
+
+    <!-- 7. Espaços devem ter Pset_SpaceCommon.Category para classificação funcional.
+         Category permite agrupar espaços por tipo (dormitório, sala, banheiro)
+         e aplicar perfis de ocupação e iluminação corretos na simulação. -->
+    <specification name="Espaços devem ter Pset_SpaceCommon.Category"
+                   description="Category do espaço classifica a função (dormitório, sala, etc.) e permite aplicar perfis de ocupação e iluminação corretos na simulação energética">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCSPACE"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcLabel">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_SpaceCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Category"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <!-- 8. Toda IfcWall deve ter IsExternal explicitamente definido.
+         Sem esse flag, não é possível filtrar paredes externas para aplicar
+         requisitos térmicos (specs 1 e 2 acima). Valor ausente = indeterminado. -->
+    <specification name="Paredes devem ter IsExternal definido"
+                   description="Pset_WallCommon.IsExternal deve estar definido em todas as paredes — ausência impede filtrar paredes externas para validação térmica">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCWALL"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcBoolean">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_WallCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IsExternal"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <!-- 9. Toda IfcSlab deve ter IsExternal explicitamente definido.
+         Sem esse flag, não é possível identificar coberturas e lajes sobre
+         pilotis que precisam de ThermalTransmittance (spec 5 acima). -->
+    <specification name="Lajes devem ter IsExternal definido"
+                   description="Pset_SlabCommon.IsExternal deve estar definido em todas as lajes — ausência impede identificar coberturas para validação térmica">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCSLAB"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcBoolean">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_SlabCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IsExternal"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <!-- 10. Paredes devem ter IfcRelSpaceBoundary para delimitação de zonas térmicas.
+          NOTA IMPORTANTE: IDS 1.0 não suporta regras agregadas (ex: >= 50% das
+          paredes do modelo). Esta spec verifica cada parede individualmente.
+          A lógica de "ao menos 50% das paredes têm SpaceBoundary" deve ser
+          implementada como heurística global no RuleEngine, complementando esta regra.
+          Sem SpaceBoundary, ferramentas de simulação não conseguem associar paredes
+          a zonas térmicas adjacentes. -->
+    <specification name="Paredes devem ter IfcRelSpaceBoundary"
+                   description="IfcRelSpaceBoundary conecta paredes a espaços adjacentes — necessário para delimitação de zonas térmicas em simulação (validação de cobertura >=50% do modelo é feita pelo RuleEngine)">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCWALL"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <relation>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IfcRelSpaceBoundary"/>
+            </xs:restriction>
+          </name>
+        </relation>
+      </requirements>
+    </specification>
+
+    <!-- 11. Janelas devem ter IsExternal definido.
+          Necessário para que ferramentas de simulação apliquem ganhos solares
+          apenas a janelas externas e separem janelas internas (entre espaços). -->
+    <specification name="Janelas devem ter IsExternal definido"
+                   description="Pset_WindowCommon.IsExternal deve estar definido — necessário para distinguir janelas externas (ganho solar) de janelas internas entre espaços">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCWINDOW"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcBoolean">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_WindowCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IsExternal"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+  </specifications>
+</ids>

@@ -1,12 +1,15 @@
 """Gerador de OperationalRules a partir de IDSSpecifications."""
 
+import math
+import re
 from typing import Any, Literal
 
 import ifcopenshell
 import ifcopenshell.util.element
 from loguru import logger
 
-from src.models import IDSSpecification, Issue, OperationalRule
+from src.ifc_registry import DEFAULT_IFC_DATA_REGISTRY
+from src.models import IDSSpecification, Issue, OperationalRule, ReadinessProfile
 
 # Propriedades com tipo conhecido para inferência de check_type
 _NUMERIC_PROPS: frozenset[str] = frozenset({
@@ -57,18 +60,44 @@ _MEDIUM_SEVERITY_PROPS: frozenset[str] = frozenset({
 _PSET_ATTRIBUTE = ""
 _PSET_RELATION = "IFC_RELATION"
 
+# Propriedades resolvíveis por tabela de referência normativa
+_LOOKUP_PROPS: frozenset[str] = frozenset({
+    "ThermalTransmittance",
+    "Absorptance",
+    "SHGC",
+    "SolarHeatGainCoefficient",
+    "ThermalConductivity",
+})
 
+# Propriedades de nome de espaço que disparam estratégia LLM
+_SPACE_ATTR_PROPS: frozenset[str] = frozenset({"LongName", "Name"})
+
+# Propriedades que requerem contexto térmico completo
+_THERMAL_CONTEXT_PROPS: frozenset[str] = frozenset({
+    "ThermalTransmittance",
+    "Absorptance",
+    "SHGC",
+})
+
+
+# Lookup para classes IFC com nomes compostos que capitalize() distorce
 def _to_ifc_class(entity: str) -> str:
     """Converte nome de entidade IDS uppercase para nome de classe IfcOpenShell.
 
     Exemplos:
         "IFCWALL" → "IfcWall"
-        "IFCSPACE" → "IfcSpace"
-        "IFCSLAB" → "IfcSlab"
+        "IFCBUILDINGSTOREY" → "IfcBuildingStorey"
+        "IFCWALLSTANDARDCASE" → "IfcWallStandardCase"
     """
-    if not entity.upper().startswith("IFC"):
+    definition = DEFAULT_IFC_DATA_REGISTRY.entity(entity)
+    if definition is not None:
+        return definition.name
+    key = entity.upper()
+    if not key.startswith("IFC"):
         return entity
+    # Fallback para classes não mapeadas: capitalize apenas (pode estar errado para compostos)
     suffix = entity[3:].capitalize()
+    logger.warning("Classe IFC não mapeada '{}', usando fallback '{}'", entity, f"Ifc{suffix}")
     return f"Ifc{suffix}"
 
 
@@ -121,8 +150,15 @@ def _infer_check_type(req: dict[str, str]) -> Literal["exists", "is_numeric", "i
 
 def _infer_issue_type(req: dict[str, str], filter_entity: str) -> str:
     """Infere o issue_type baseado no contexto do requisito."""
+    facet_type = req.get("facet_type", "")
     pset = req.get("pset", "")
 
+    if facet_type == "classification":
+        return "classification_missing"
+    if facet_type == "material":
+        return "material_unmapped"
+    if facet_type == "quantity":
+        return "quantity_missing"
     if pset == _PSET_RELATION:
         return "relation_broken"
 
@@ -166,12 +202,135 @@ def _build_filter_conditions(
     return conditions
 
 
-def generate_rules(specs: list[IDSSpecification]) -> list[OperationalRule]:
+def _infer_suggestion_strategy(spec: IDSSpecification, req: dict[str, str]) -> str:
+    """Infere suggestion_strategy a partir do tipo de check e do contexto do requisito.
+
+    Regras de inferência (em ordem de prioridade):
+        - Propriedades térmicas/solares conhecidas → "lookup_table"
+        - Pset de BaseQuantities (Qto_*) → "geometric_calc"
+        - Atributo de nome em IfcSpace → "llm_inference"
+        - Pset de classificação IFC → "llm_inference"
+        - Pset/prop de material → "copy_from_source"
+        - Demais → "llm_inference"
+    """
+    pset = req.get("pset", "")
+    prop = req.get("prop", "")
+    facet_type = req.get("facet_type", "")
+
+    if prop in _LOOKUP_PROPS:
+        return "lookup_table"
+
+    if facet_type == "classification":
+        return "copy_from_source"
+
+    if pset.startswith("Qto_"):
+        return "geometric_calc"
+
+    if pset == _PSET_ATTRIBUTE and prop in _SPACE_ATTR_PROPS:
+        return "llm_inference"
+
+    if "classification" in pset.lower():
+        return "llm_inference"
+
+    if "material" in pset.lower() or "material" in prop.lower():
+        return "copy_from_source"
+
+    return "llm_inference"
+
+
+def _infer_write_action(spec: IDSSpecification, req: dict[str, str]) -> str:
+    """Infere write_action a partir do issue_type e do contexto do requisito.
+
+    Regras de inferência (em ordem de prioridade):
+        - Pset de BaseQuantities (Qto_*) → "preencher_base_quantities"
+        - Atributo de nome em IfcSpace → "renomear_espaco"
+        - Pset de classificação → "mapear_classificacao"
+        - Relação IFC → "criar_relacao_fills"
+        - Demais psets → "preencher_pset"
+    """
+    pset = req.get("pset", "")
+    prop = req.get("prop", "")
+    facet_type = req.get("facet_type", "")
+
+    if pset.startswith("Qto_"):
+        return "preencher_base_quantities"
+
+    if facet_type == "classification":
+        return "mapear_classificacao"
+
+    if pset == _PSET_ATTRIBUTE and prop in _SPACE_ATTR_PROPS:
+        return "renomear_espaco"
+
+    if "classification" in pset.lower():
+        return "mapear_classificacao"
+
+    if pset == _PSET_RELATION:
+        return "criar_relacao_fills"
+
+    return "preencher_pset"
+
+
+def _infer_required_context(spec: IDSSpecification, req: dict[str, str]) -> list[str]:
+    """Infere required_context baseado no que a estratégia de sugestão vai precisar.
+
+    Regras de inferência:
+        - Propriedades térmicas → contexto de material e geometria de envoltória
+        - BaseQuantities → contexto geométrico
+        - Atributos de nome de espaço → contexto funcional do espaço
+        - Demais → lista vazia
+    """
+    pset = req.get("pset", "")
+    prop = req.get("prop", "")
+    facet_type = req.get("facet_type", "")
+
+    if prop in _THERMAL_CONTEXT_PROPS:
+        return ["material", "thickness", "is_external", "layers"]
+
+    if facet_type == "classification":
+        return ["classifications"]
+
+    if facet_type == "material":
+        return ["material"]
+
+    if pset.startswith("Qto_"):
+        return ["geometry", "bounding_box"]
+
+    if pset == _PSET_ATTRIBUTE and prop in _SPACE_ATTR_PROPS:
+        return ["area", "contained_elements", "adjacent_spaces"]
+
+    if pset == _PSET_RELATION and prop == "IFCRELSPACEBOUNDARY":
+        return ["spaces", "boundaries"]
+
+    return []
+
+
+def _infer_unit(req: dict[str, str]) -> str | None:
+    """Infere unidade base para o requisito, quando aplicável."""
+    prop = req.get("prop", "")
+    if prop == "ThermalTransmittance":
+        return "W/(m².K)"
+    if prop in {"NetFloorArea", "GrossFloorArea", "Area"}:
+        return "m²"
+    if prop in {"Volume"}:
+        return "m³"
+    if prop in {"Height", "Width", "Thickness"}:
+        return "m"
+    return None
+
+
+def generate_rules(
+    specs: list[IDSSpecification],
+    profile: ReadinessProfile | None = None,
+) -> list[OperationalRule]:
     """Converte IDSSpecifications em OperationalRules verificáveis no IFC.
 
     Cada requisito de uma spec gera uma OperationalRule independente.
     A entidade é convertida de formato IDS uppercase ("IFCWALL") para
     o formato IfcOpenShell ("IfcWall").
+
+    Se profile for fornecido, cada regra recebe profile_id e tags derivados do perfil.
+    suggestion_strategy, write_action e required_context são inferidos automaticamente
+    a partir do tipo de check e do contexto do requisito.
     """
     rules: list[OperationalRule] = []
 
@@ -183,6 +342,24 @@ def generate_rules(specs: list[IDSSpecification]) -> list[OperationalRule]:
             check_type = _infer_check_type(req)
             issue_type = _infer_issue_type(req, filter_entity)
             severity = _infer_severity(req)
+            suggestion_strategy = _infer_suggestion_strategy(spec, req)
+            write_action = _infer_write_action(spec, req)
+            required_context = _infer_required_context(spec, req)
+
+            constraint = req.get("constraint", "")
+            expected_value: str | None = None
+            if constraint.startswith("equals:"):
+                expected_value = constraint[len("equals:"):]
+
+            profile_id: str | None = profile.id if profile else None
+            tags: list[str] = [profile.id] if profile else []
+            facet_type = req.get("facet_type", "")
+            if profile is not None:
+                if facet_type:
+                    tags.append(f"facet:{facet_type}")
+                tags.extend(f"category:{item}" for item in profile.supported_data_categories if item == facet_type)
+                if facet_type == "classification":
+                    tags.extend(f"classification:{name}" for name in profile.external_classification_systems)
 
             rule = OperationalRule(
                 source_spec=spec.name,
@@ -191,9 +368,16 @@ def generate_rules(specs: list[IDSSpecification]) -> list[OperationalRule]:
                 check_pset=req.get("pset", ""),
                 check_property=req.get("prop", ""),
                 check_type=check_type,
+                expected_value=expected_value,
                 issue_type=issue_type,
                 severity=severity,
                 normative_ref=spec.description,
+                suggestion_strategy=suggestion_strategy,  # type: ignore[arg-type]
+                write_action=write_action,  # type: ignore[arg-type]
+                required_context=required_context,
+                profile_id=profile_id,
+                evidence_source=_infer_unit(req),
+                tags=tags,
             )
             rules.append(rule)
             logger.debug(
@@ -203,6 +387,16 @@ def generate_rules(specs: list[IDSSpecification]) -> list[OperationalRule]:
                 rule.check_property,
             )
 
+    return rules
+
+
+def generate_rules_for_profiles(
+    specs_by_profile: list[tuple[list[IDSSpecification], ReadinessProfile | None]],
+) -> list[OperationalRule]:
+    """Gera regras a partir de múltiplos conjuntos de IDS/perfis."""
+    rules: list[OperationalRule] = []
+    for specs, profile in specs_by_profile:
+        rules.extend(generate_rules(specs, profile=profile))
     return rules
 
 
@@ -220,10 +414,60 @@ def _normalize_bool(value: str) -> bool | None:
     return None
 
 
+_NUMERIC_WITH_UNIT_RE = re.compile(
+    r"^\s*([-+]?\d+(?:[.,]\d+)?)\s*([^\d\s].*?)?\s*$"
+)
+
+
+def _normalize_unit(unit: str | None) -> str | None:
+    """Normaliza grafias equivalentes de unidades para comparaÃ§Ã£o."""
+    if unit is None:
+        return None
+
+    normalized = (
+        unit.strip()
+        .replace(" ", "")
+        .replace("·", ".")
+        .replace("²", "2")
+        .replace("³", "3")
+    )
+    return normalized.casefold() or None
+
+
+def normalize_numeric_value(value: str, expected_unit: str | None) -> float | None:
+    """Converte uma string numÃ©rica para float normalizado na unidade esperada."""
+    match = _NUMERIC_WITH_UNIT_RE.match(str(value))
+    if match is None:
+        return None
+
+    number_str, source_unit_raw = match.groups()
+    try:
+        number = float(number_str.replace(",", "."))
+    except ValueError:
+        return None
+
+    expected = _normalize_unit(expected_unit)
+    source = _normalize_unit(source_unit_raw)
+
+    if source is None or expected is None or source == expected:
+        return number
+
+    conversions = {
+        ("mm", "m"): lambda v: v / 1000.0,
+        ("m", "mm"): lambda v: v * 1000.0,
+    }
+    conversion = conversions.get((source, expected))
+    if conversion is not None:
+        return conversion(number)
+
+    return None
+
+
 def _matches_filter(
     element: ifcopenshell.entity_instance,
     conditions: list[dict[str, str]],
     ifc_file: ifcopenshell.file | None = None,
+    psets_cache: dict[str, dict[str, dict]] | None = None,
 ) -> bool:
     """Verifica se um elemento satisfaz TODAS as filter_conditions.
 
@@ -236,7 +480,7 @@ def _matches_filter(
     _ifc: ifcopenshell.file = ifc_file or element.wrapped_data.file
     for condition in conditions:
         try:
-            if not _evaluate_condition(element, condition, _ifc):
+            if not _evaluate_condition(element, condition, _ifc, psets_cache):
                 return False
         except Exception:
             return False
@@ -248,6 +492,7 @@ def _get_pset_value(
     element: ifcopenshell.entity_instance,
     pset_name: str,
     prop_name: str,
+    psets_cache: dict[str, dict[str, dict]] | None = None,
 ) -> Any:
     """Retorna o valor de uma propriedade ou atributo de um elemento IFC.
 
@@ -255,6 +500,9 @@ def _get_pset_value(
         pset_name == ""             → atributo direto via getattr (ex: LongName, Name)
         pset_name == "IFC_RELATION" → não aplicável aqui; retorna None
         outros                      → lê via ifcopenshell.util.element.get_psets()
+
+    Se ``psets_cache`` for fornecido, evita reconstruir o dicionário de psets para o mesmo
+    elemento entre chamadas (cache por GlobalId), eliminando custo O(R) em apply_rules.
     """
     if pset_name == _PSET_ATTRIBUTE:
         return getattr(element, prop_name, None)
@@ -262,10 +510,22 @@ def _get_pset_value(
     if pset_name == _PSET_RELATION:
         return None
 
-    try:
-        psets = ifcopenshell.util.element.get_psets(element)
-    except Exception:
-        return None
+    psets: dict[str, dict] | None = None
+    if psets_cache is not None:
+        guid = getattr(element, "GlobalId", None)
+        if guid is not None:
+            psets = psets_cache.get(guid)
+            if psets is None:
+                try:
+                    psets = ifcopenshell.util.element.get_psets(element)
+                except Exception:
+                    psets = {}
+                psets_cache[guid] = psets
+    if psets is None:
+        try:
+            psets = ifcopenshell.util.element.get_psets(element)
+        except Exception:
+            return None
 
     pset_data = psets.get(pset_name)
     if pset_data is None:
@@ -277,6 +537,7 @@ def _evaluate_condition(
     element: ifcopenshell.entity_instance,
     condition: dict[str, str],
     ifc_file: ifcopenshell.file,
+    psets_cache: dict[str, dict[str, dict]] | None = None,
 ) -> bool:
     """Avalia se um elemento satisfaz uma condition dict.
 
@@ -296,7 +557,7 @@ def _evaluate_condition(
     operator = condition.get("operator", "EXISTS")
     expected_raw = condition.get("value", "")
 
-    value = _get_pset_value(element, pset, prop)
+    value = _get_pset_value(element, pset, prop, psets_cache)
 
     if operator == "EXISTS":
         return value is not None
@@ -325,6 +586,9 @@ def _passes_check(
     pset_name: str,
     prop_name: str,
     check_type: str,
+    expected_value: str | None = None,
+    expected_unit: str | None = None,
+    psets_cache: dict[str, dict[str, dict]] | None = None,
 ) -> bool:
     """Verifica se o elemento passa no check definido pela regra.
 
@@ -334,13 +598,16 @@ def _passes_check(
     if pset_name == _PSET_RELATION:
         return True
 
-    value = _get_pset_value(element, pset_name, prop_name)
+    value = _get_pset_value(element, pset_name, prop_name, psets_cache)
 
     if check_type == "exists":
         return value is not None
 
     if check_type == "is_numeric":
-        return isinstance(value, (int, float)) and not isinstance(value, bool) and value > 0
+        if isinstance(value, bool) or value is None:
+            return False
+        normalized_value = normalize_numeric_value(str(value), expected_unit)
+        return normalized_value is not None and normalized_value > 0
 
     if check_type == "is_boolean":
         return isinstance(value, bool)
@@ -351,7 +618,16 @@ def _passes_check(
         return str(value).strip() != ""
 
     if check_type == "equals":
-        return value is not None
+        if expected_value is None:
+            return value is not None
+        normalized_actual = None if value is None else normalize_numeric_value(str(value), expected_unit)
+        normalized_expected = normalize_numeric_value(expected_value, expected_unit)
+        if normalized_actual is not None and normalized_expected is not None:
+            return math.isclose(normalized_actual, normalized_expected, rel_tol=1e-9, abs_tol=1e-9)
+        normalized = _normalize_bool(expected_value)
+        if normalized is not None:
+            return value == normalized
+        return str(value) == expected_value
 
     return True
 
@@ -370,23 +646,37 @@ def apply_rules(
     """
     issues: list[Issue] = []
     seen: set[tuple[str, str, str]] = set()
+    psets_cache: dict[str, dict[str, dict]] = {}
+    elements_by_type: dict[str, list] = {}
 
     for rule in rules:
-        try:
-            elements = ifc_file.by_type(rule.filter_entity)
-        except Exception as exc:
-            logger.warning(
-                "Não foi possível buscar elementos do tipo {}: {}",
-                rule.filter_entity,
-                exc,
-            )
-            continue
+        elements = elements_by_type.get(rule.filter_entity)
+        if elements is None:
+            try:
+                elements = ifc_file.by_type(rule.filter_entity)
+            except Exception as exc:
+                logger.warning(
+                    "Não foi possível buscar elementos do tipo {}: {}",
+                    rule.filter_entity,
+                    exc,
+                )
+                elements_by_type[rule.filter_entity] = []
+                continue
+            elements_by_type[rule.filter_entity] = elements
 
         for element in elements:
-            if not _matches_filter(element, rule.filter_conditions, ifc_file):
+            if not _matches_filter(element, rule.filter_conditions, ifc_file, psets_cache):
                 continue
 
-            if _passes_check(element, rule.check_pset, rule.check_property, rule.check_type):
+            if _passes_check(
+                element,
+                rule.check_pset,
+                rule.check_property,
+                rule.check_type,
+                rule.expected_value,
+                rule.evidence_source,
+                psets_cache,
+            ):
                 continue
 
             dedup_key = (element.GlobalId, rule.check_pset, rule.check_property)
@@ -409,10 +699,14 @@ def apply_rules(
                 description=description,
                 context={
                     "rule_id": rule.id,
+                    "source_spec": rule.source_spec,
                     "check_pset": rule.check_pset,
                     "check_property": rule.check_property,
                     "check_type": rule.check_type,
+                    "expected_value": rule.expected_value,
+                    "unit": rule.evidence_source,
                     "normative_ref": rule.normative_ref,
+                    "ids_context": rule.to_ids_context().model_dump(),
                 },
             )
             issues.append(issue)

@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from src.models import Issue, Suggestion, SuggestionSet
+from src.models import BSDDClassification, BSDDContext, BSDDProperty, IDSContext, Issue, Suggestion, SuggestionSet
 from src.suggestion_engine.ollama_client import OllamaClient
 from src.suggestion_engine.suggestion import SuggestionGenerator
 
@@ -134,7 +134,7 @@ def test_generate_returns_error_after_3_failures():
 
 
 def test_generate_returns_empty_set_on_empty_llm_response():
-    """generate retorna SuggestionSet vazio (sem error) quando LLM retorna lista vazia."""
+    """generate sinaliza revisao quando LLM retorna lista vazia."""
     client = _make_client('{"opcoes": []}')
     gen = SuggestionGenerator(client)
 
@@ -142,7 +142,67 @@ def test_generate_returns_empty_set_on_empty_llm_response():
 
     assert isinstance(result, SuggestionSet)
     assert not result.has_suggestions
-    assert result.error is None
+    assert result.error is not None
+
+
+def test_generate_with_grounding():
+    client = _make_client(
+        '{"opcoes": [{"label": "Sala de Estar", "value": "Sala de Estar", '
+        '"justification": "Termo presente no vocabulário.", "confidence": "alta", '
+        '"bsdd_uri": "https://github.com/fake/category/sala"}]}'
+    )
+    gen = SuggestionGenerator(client)
+    issue = _space_issue()
+    ids_context = IDSContext(
+        issue_id=issue.id,
+        requirement_id="req-123",
+        specification_name="Spec Espaços",
+        check_pset="Pset_SpaceCommon",
+        check_property="Category",
+        check_type="exists",
+        severity="high",
+    )
+    bsdd_context = BSDDContext(
+        issue_id=issue.id,
+        element_class="IfcSpace",
+        search_query="Space",
+        properties=[BSDDProperty(name="Category", allowed_values=["Sala de Estar"])],
+        classes=[BSDDClassification(name="Sala de Estar", uri="https://identifier.buildingsmart.org/uri/example/category/sala")],
+        source_uris=["https://identifier.buildingsmart.org/uri/example/category/sala"],
+        source_status="live",
+    )
+
+    result = gen.generate(
+        issue,
+        _BUILDING_CTX,
+        bsdd_context=bsdd_context,
+        ids_context=ids_context,
+        grounding_mode="ids_bsdd",
+    )
+
+    assert result.has_suggestions
+    assert result.suggestions[0].bsdd_uri == "https://identifier.buildingsmart.org/uri/example/category/sala"
+    assert result.suggestions[0].ids_requirement_id == "req-123"
+
+    call_kwargs = client.generate.call_args.kwargs
+    assert "GROUNDING BLOCK:" in call_kwargs["prompt"]
+    assert "REQUISITO IDS VIOLADO:" in call_kwargs["prompt"]
+    assert "VOCABULARIO bSDD" in call_kwargs["prompt"]
+
+
+def test_generate_without_grounding_unchanged():
+    client = _make_client(_VALID_JSON)
+    gen = SuggestionGenerator(client)
+    issue = _space_issue()
+
+    result = gen.generate(issue, _BUILDING_CTX, grounding_mode="none")
+
+    assert result.has_suggestions
+    assert result.suggestions[0].bsdd_uri is None
+    assert result.suggestions[0].ids_requirement_id is None
+
+    call_kwargs = client.generate.call_args.kwargs
+    assert "GROUNDING BLOCK:" not in call_kwargs["prompt"]
 
 
 # ---------------------------------------------------------------------------
@@ -226,7 +286,7 @@ def test_validate_removes_duplicates():
 
     assert len(result) == 2
     assert result[0].label == "Sala"
-    assert result[1].label == "Quarto"
+    assert result[1].label == "Dormitorio"
 
 
 def test_validate_limits_to_3():
@@ -268,7 +328,7 @@ def test_validate_preserves_order():
 
     result = gen._validate_suggestions(suggestions, issue)
 
-    assert [s.label for s in result] == ["Quarto", "Sala", "Corredor"]
+    assert [s.label for s in result] == ["Dormitorio", "Sala", "Circulacao"]
 
 
 # ---------------------------------------------------------------------------
@@ -419,3 +479,45 @@ def test_suggestion_generator_without_router_backward_compat():
     assert isinstance(result, SuggestionSet)
     assert result.has_suggestions
     mock_bp.assert_called_once()
+
+
+def test_validate_filters_values_outside_bsdd_vocab():
+    gen = SuggestionGenerator(_make_client())
+    issue = _space_issue()
+    bsdd_context = BSDDContext(
+        issue_id=issue.id,
+        element_class="IfcSpace",
+        search_query="Space",
+        properties=[BSDDProperty(name="Category", allowed_values=["Sala"])],
+        classes=[BSDDClassification(name="Sala", uri="https://identifier.buildingsmart.org/uri/example/category/sala")],
+        source_uris=["https://identifier.buildingsmart.org/uri/example/category/sala"],
+    )
+    suggestions = [
+        Suggestion(label="Sala", value="Sala", justification="ok", confidence="alta", source="llm"),
+        Suggestion(label="Quarto", value="Quarto", justification="fora", confidence="media", source="llm"),
+    ]
+
+    result = gen._validate_suggestions(suggestions, issue, bsdd_context=bsdd_context)
+
+    assert [s.label for s in result] == ["Sala", "Dormitorio"]
+    assert result[0].bsdd_uri == "https://identifier.buildingsmart.org/uri/example/category/sala"
+
+
+def test_generate_propagates_prompt_hash_and_ids_requirement():
+    client = _make_client('{"opcoes": [{"nome": "Sala de Estar", "justificativa": "25m²", "confianca": "alta"}]}')
+    gen = SuggestionGenerator(client)
+    issue = _space_issue()
+    ids_context = IDSContext(
+        issue_id=issue.id,
+        requirement_id="req-123",
+        specification_name="Spec",
+        check_pset="",
+        check_property="LongName",
+        check_type="not_empty",
+        severity="low",
+    )
+
+    result = gen.generate(issue, _BUILDING_CTX, ids_context=ids_context, grounding_mode="ids_only")
+
+    assert result.prompt_hash is not None
+    assert result.suggestions[0].ids_requirement_id == "req-123"

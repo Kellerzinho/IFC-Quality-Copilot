@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ifc-quality-copilot"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "ifcopenshell>=0.8",
+    "streamlit>=1.38",
+    "ollama>=0.3",
+    "mcp>=1.0",
+    "pydantic>=2.6",
+    "pydantic-settings>=2.0",
+    "loguru>=0.7",
+    "plotly>=5.0",
+    "httpx>=0.27",
+    "lxml>=5.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.6",
+    "mypy>=1.10",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src", "src.*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF", "PT", "TID", "RET"]
+ignore = [
+    "RUF001",  # ambiguous-unicode chars (PT/BR uses acentos)
+    "RUF002",
+    "RUF003",
+    "PT011",   # pytest.raises sem match - há muitos tests legados
+    "B008",    # function call in default arg - ok para Field/Depends
+    "SIM108",  # ternário forçado, às vezes if/else fica mais legível
+]
+
+[tool.mypy]
+python_version = "3.11"
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+check_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = ["--strict-markers", "--strict-config", "-ra"]
+markers = [
+    "slow: testes lentos (>1s)",
+    "network: requer rede ou serviço externo (Ollama, bSDD)",
+    "integration: testes de integração end-to-end",
+]

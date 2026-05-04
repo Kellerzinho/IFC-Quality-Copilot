@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Placeholder do schema IDS 1.0.
+Substituir pelo XSD oficial disponível em:
+https://github.com/buildingSMART/IDS/tree/master/Development
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://standards.buildingsmart.org/IDS"
+           xmlns:ids="http://standards.buildingsmart.org/IDS"
+           elementFormDefault="qualified">
+  <xs:element name="ids">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="info" minOccurs="0" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="specifications" minOccurs="0" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="specification" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="applicability" minOccurs="0" maxOccurs="1">
+                      <xs:complexType mixed="true">
+                        <xs:sequence>
+                          <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="requirements" minOccurs="0" maxOccurs="1">
+                      <xs:complexType mixed="true">
+                        <xs:sequence>
+                          <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name="name" type="xs:string" use="optional"/>
+                  <xs:attribute name="description" type="xs:string" use="optional"/>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
