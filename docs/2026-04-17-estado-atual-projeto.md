@@ -7,8 +7,7 @@ O projeto `IFC Quality Copilot` está em estado funcional para análise, sugest�
 
 No estado atual, o sistema:
 - analisa modelos IFC e detecta issues de qualidade;
-- aplica heurísticas quando possível;
-- usa LLM para gerar sugestões quando a heurística não resolve;
+- usa LLM local para gerar sugestões de enriquecimento;
 - normaliza e valida as sugestões antes da aplicação;
 - exige revisão humana para aplicação individual ou em lote;
 - escreve no IFC com coerção defensiva;
@@ -22,13 +21,10 @@ Resultado de validação atual:
 Os principais módulos ativos do projeto são:
 
 - `src/pipeline.py`
-  Orquestra o fluxo diagnóstico -> heurística -> LLM -> validação -> escrita -> auditoria -> exportação.
+  Orquestra o fluxo diagnóstico -> LLM -> validação -> escrita -> auditoria -> exportação.
 
 - `src/ifc_analyzer/*`
   Extrai contexto do IFC e gera `Issue` para problemas como `space_unnamed`, `pset_missing`, `relation_broken` e `system_unclassified`.
-
-- `src/rule_engine/*`
-  Resolve parte das issues via heurísticas determinísticas antes de enviar ao LLM.
 
 - `src/suggestion_engine/*`
   Responsável por prompts, chamada ao Ollama, parsing do JSON do LLM, normalização e filtragem das sugestões.
@@ -50,8 +46,8 @@ Os principais módulos ativos do projeto são:
 
 ## Fluxo Atual do Pipeline
 1. O modelo IFC é aberto e analisado pelo `IFCAnalyzer`.
-2. Issues são geradas com contexto técnico suficiente para heurísticas e LLM.
-3. O `RuleEngine` tenta resolver issues determinísticas.
+2. Issues são geradas com contexto técnico suficiente para o LLM.
+3. Regras determinísticas derivadas do IDS são aplicadas ao modelo.
 4. Issues não resolvidas seguem para o `SuggestionGenerator`.
 5. O `SuggestionGenerator`:
    - monta prompt;

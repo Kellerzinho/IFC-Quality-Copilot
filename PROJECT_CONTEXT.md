@@ -7,7 +7,7 @@
 
 ## 1. Visão Geral
 
-**IFC Quality Copilot** é uma ferramenta de diagnóstico e correção assistida de modelos BIM/IFC voltada para engenheiros. O sistema combina análise determinística (heurísticas e regras) com geração de sugestões via LLM local (Ollama), e aplica correções **somente após aprovação explícita do usuário**.
+**IFC Quality Copilot** é uma ferramenta de diagnóstico e correção assistida de modelos BIM/IFC voltada para engenheiros. O sistema combina análise determinística (regras derivadas de IDS) com geração de sugestões via LLM local (Ollama), e aplica correções **somente após aprovação explícita do usuário**.
 
 ### Problema que resolve
 
@@ -61,10 +61,6 @@ QualityPipeline
     │       ├── diagnose_relations()
     │       └── diagnose_systems()
     │
-    ├── RuleEngine.process()            # heurísticas imediatas (síncrono)
-    │       ├── resolved  → IssueStore (status: heuristic_ready)
-    │       └── unresolved → IssueStore (status: queued)
-    │
     ├── SuggestionWorker.start()        # thread daemon em background
     │       └── SuggestionGenerator.generate() via Ollama
     │               └── IssueStore.mark_ready()
@@ -110,15 +106,6 @@ ifc-quality-copilot/
 │   ├── translator/
 │   │   ├── ids_parser.py            # XML IDS → list[IDSSpecification]
 │   │   └── rule_generator.py        # IDSSpecification → OperationalRule + apply_rules()
-│   │
-│   ├── rule_engine/
-│   │   ├── engine.py                # RuleEngine.process()
-│   │   ├── packs.py                 # RulePackRegistry + RulePack por perfil
-│   │   └── heuristics/
-│   │       ├── space_heuristics.py
-│   │       ├── wall_heuristics.py
-│   │       ├── relation_heuristics.py
-│   │       └── system_heuristics.py
 │   │
 │   ├── suggestion_engine/
 │   │   ├── ollama_client.py         # OllamaClient — HTTP para /api/generate
@@ -166,8 +153,7 @@ ifc-quality-copilot/
 │
 ├── data/
 │   ├── ids_templates/               # arquivos IDS de referência por perfil
-│   ├── prompts/                     # templates de prompt versionados
-│   └── heuristics/                  # tabelas NBR 15575
+│   └── prompts/                     # templates de prompt versionados
 │
 └── docs/
     ├── architecture.md
@@ -232,7 +218,7 @@ class Suggestion(BaseModel):
     justification: str   # raciocínio em português
     confidence: Literal["alta", "media", "baixa"]
     normative_ref: str | None    # ex: "NBR 15575-4 Tab. C.2"
-    source: Literal["heuristic", "llm"]
+    source: Literal["llm"]
 ```
 
 ### `OperationalRule`
@@ -277,7 +263,7 @@ class AuditEntry(BaseModel):
     new_value: Any
     decision: Literal["accepted", "edited", "rejected"]
     confidence: str
-    source: Literal["heuristic", "llm"]
+    source: Literal["llm"]
     user: str
     timestamp: datetime
 ```
@@ -329,27 +315,6 @@ O pipeline integra IDS ao diagnóstico base e mescla issues sem duplicatas.
 
 ---
 
-## 8. Rule Engine (`src/rule_engine/`)
-
-### `RuleEngine.process(issues)`
-Separa issues em dois grupos:
-- **resolved**: resolvidas por heurística → `SuggestionSet` pronto de forma determinística
-- **unresolved**: precisam do LLM
-
-### Heurísticas disponíveis
-- `space_heuristics` — classifica espaços por área + equipamentos sanitários adjacentes (banheiro, lavabo, cozinha, etc.)
-- `wall_heuristics` — sugere `ThermalTransmittance` com base em espessura e material
-- `relation_heuristics` — detecta portas próximas a aberturas existentes
-- `system_heuristics` — classifica sistema por material da parede/laje
-
-### RulePackRegistry
-Permite registrar `RulePack` específicos por perfil. Se um perfil tem um pack, ele é aplicado primeiro. Se o pack não resolver, cai nas heurísticas genéricas.
-
-### Configuração
-Heurísticas podem ser habilitadas/desabilitadas via `Settings.enable_heuristics` (default: `False`).
-
----
-
 ## 9. Suggestion Engine (`src/suggestion_engine/`)
 
 ### Arquitetura de geração progressiva
@@ -372,7 +337,7 @@ Main Thread              Worker Thread (daemon)
 ```
 
 ### `IssueStore`
-Estrutura thread-safe com `threading.Lock()`. Estados possíveis: `queued → processing → ready | heuristic_ready | failed`.
+Estrutura thread-safe com `threading.Lock()`. Estados possíveis: `queued → processing → ready | failed`.
 
 Métodos chave:
 - `add_issues(issues, priority_issue_types)` — ordena por prioridade e severidade
@@ -450,7 +415,7 @@ pipeline.export(output_dir)
 
 | Método | Descrição |
 |---|---|
-| `diagnose_and_start_suggestions()` | Diagnóstico + heurísticas + inicia worker. Retorna rápido. |
+| `diagnose_and_start_suggestions()` | Diagnóstico + inicia worker. Retorna rápido. |
 | `get_available_issues()` | Lista de `(issue, suggestion_set, status)` para a UI |
 | `get_suggestions_progress()` | Dict com contagens por status (para barra de progresso) |
 | `apply_correction(issue_id, value, decision, user)` | Escreve no IFC + registra na auditoria |
@@ -513,7 +478,7 @@ Bytes de exportação são gerados **sob demanda** ao clicar em Download, não a
 
 ### `render_issue_card()`
 Comportamento por status:
-- `heuristic_ready` / `ready` — card completo com radio de opções + botões Aplicar/Pular/Revisão posterior
+- `ready` — card completo com radio de opções + botões Aplicar/Pular/Revisão posterior
 - `processing` — card cinza com spinner
 - `queued` — card cinza com posição na fila
 - `failed` — card vermelho com botão "Tentar novamente"
@@ -543,7 +508,6 @@ Cada escrita no IFC gera exatamente uma `AuditEntry` com `old_value`, `new_value
 class Settings(BaseSettings):
     ollama_url: str = "http://localhost:11434"
     ollama_model: str = "qwen3.5:9b"
-    enable_heuristics: bool = False
     ollama_temperature: float = 0.1
     ollama_num_ctx: int = 8192
     ollama_num_predict: int = 2048
@@ -598,9 +562,6 @@ Status: `ready` (≥90% sem bloqueantes), `partially_ready` (≥50%), `not_ready
 
 ## 18. Decisões de Design Importantes
 
-### Por que heurísticas antes do LLM?
-Heurísticas são determinísticas, instantâneas e não custam tokens. Para issues simples (banheiro com WC → "Lavabo"), a regra geométrica/tipológica é mais confiável que o LLM e responde imediatamente na UI.
-
 ### Por que IssueStore + Worker ao invés de async?
 Streamlit não é compatível com `asyncio` puro. O padrão produtor-consumidor com `threading.Thread(daemon=True)` permite background processing sem bloquear o event loop do Streamlit.
 
@@ -629,7 +590,7 @@ Permite que LLMs externos (Claude Desktop, Cursor, etc.) usem as mesmas ferramen
 ## 20. Estado Atual e Pontos de Extensão
 
 ### Implementado e funcional
-- Pipeline completo: diagnóstico → heurísticas → LLM → UI → escrita → auditoria
+- Pipeline completo: diagnóstico → LLM → UI → escrita → auditoria
 - Modo progressivo com polling a cada 2s
 - Integração IDS (BuildingSMART)
 - MCP Server com 15+ tools
@@ -638,7 +599,7 @@ Permite que LLMs externos (Claude Desktop, Cursor, etc.) usem as mesmas ferramen
 - Exportação lazy (IFC corrigido + CSV + JSONL + métricas)
 
 ### Áreas para extensão/melhoria
-1. **Novos tipos de issue** — adicionar em `models.py` (Literal), criar módulo de diagnóstico, adicionar heurística e handler no writer
+1. **Novos tipos de issue** — adicionar em `models.py` (Literal), criar módulo de diagnóstico e handler no writer
 2. **Novo perfil de readiness** — criar `ReadinessProfile` em `profiles/registry.py` com IDS correspondente em `data/ids_templates/`
 3. **Paralelização LLM** — o worker atual é single-threaded (Ollama é single-threaded); para múltiplas GPUs, escalar com múltiplos workers
 4. **Persistência de sessão** — o estado atual é in-memory por sessão Streamlit; adicionar serialização de `IssueStore` para retomar sessões interrompidas

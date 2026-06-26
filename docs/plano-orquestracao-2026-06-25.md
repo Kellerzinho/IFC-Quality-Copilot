@@ -20,7 +20,7 @@
    - Entrada de teste = versão "como exportada" (com lacunas).
    - Ground truth = versão **enriquecida corretamente** pelo Felipe (**GT-by-diff**).
    - **Complemento recomendado:** 1 IFC externo completo via *masking* controlado (proveniência independente + massa estatística).
-   - **Guardrail anti-circularidade:** a LLM avaliada **nunca** define o GT; só as partes determinísticas (IDS/heurísticas/bSDD) + expertise + norma.
+   - **Guardrail anti-circularidade:** a LLM avaliada **nunca** define o GT; só as partes determinísticas (IDS/bSDD) + expertise + norma.
 
 3. **Tarefas do experimento (3):** preenchimento de Pset · nomeação de espaços · classificação de sistemas.
 
@@ -136,7 +136,7 @@ Estimativa: Fase 0 ≈ 1–2 sprints · A ≈ 1 sprint · C depende do retrabalh
 | IFC externo completo (masking) | **Complemento** | proveniência independente + massa estatística | precisa de fonte boa; nomes exigem `accepted_alternatives` |
 
 ### C.0 Guardrail anti-circularidade (obrigatório, declarar no método)
-O GT é definido por **expertise do Felipe + norma (NBR 15575) + partes determinísticas do sistema** (detecção IDS, heurísticas, vocabulário bSDD). A **LLM sob avaliação nunca gera valores do GT.** Sem isso, a avaliação é viciada.
+O GT é definido por **expertise do Felipe + norma (NBR 15575) + partes determinísticas do sistema** (detecção IDS, vocabulário bSDD). A **LLM sob avaliação nunca gera valores do GT.** Sem isso, a avaliação é viciada.
 
 ### C.1 Congelar a entrada
 - Exportar o prédio "como está" (com lacunas) → `data/evaluation/predio/predio_v1.ifc`.

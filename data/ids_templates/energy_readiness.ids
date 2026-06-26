@@ -337,12 +337,12 @@
     <!-- 10. Paredes devem ter IfcRelSpaceBoundary para delimitação de zonas térmicas.
           NOTA IMPORTANTE: IDS 1.0 não suporta regras agregadas (ex: >= 50% das
           paredes do modelo). Esta spec verifica cada parede individualmente.
-          A lógica de "ao menos 50% das paredes têm SpaceBoundary" deve ser
-          implementada como heurística global no RuleEngine, complementando esta regra.
+          A lógica de "ao menos 50% das paredes têm SpaceBoundary" fica fora do
+          escopo do IDS 1.0 (verificação agregada), como complemento a esta regra.
           Sem SpaceBoundary, ferramentas de simulação não conseguem associar paredes
           a zonas térmicas adjacentes. -->
     <specification name="Paredes devem ter IfcRelSpaceBoundary"
-                   description="IfcRelSpaceBoundary conecta paredes a espaços adjacentes — necessário para delimitação de zonas térmicas em simulação (validação de cobertura >=50% do modelo é feita pelo RuleEngine)">
+                   description="IfcRelSpaceBoundary conecta paredes a espaços adjacentes — necessário para delimitação de zonas térmicas em simulação (validação de cobertura >=50% do modelo fica fora do escopo do IDS 1.0)">
       <applicability>
         <entity>
           <name>

@@ -2,11 +2,11 @@ Fase 3 — IFC Quality Copilot
 Enriquecimento Semântico de IFC com LLMs sob Restrições openBIM
 
 1. Síntese da Nova Direção
-O recorte anterior (ablation study heurísticas vs. LLM) responde a uma pergunta interna do sistema: "qual camada resolve mais issues?". É uma pergunta válida, mas defensiva — otimiza o que já existe sem avançar a fronteira do projeto nem da literatura.
+O recorte anterior (comparação interna entre a camada determinística e o LLM) responde a uma pergunta interna do sistema: "qual camada resolve mais issues?". É uma pergunta válida, mas defensiva — otimiza o que já existe sem avançar a fronteira do projeto nem da literatura.
 A nova direção responde a uma pergunta externa e mais relevante: "um LLM pode enriquecer semanticamente um modelo IFC de forma confiável quando opera sob restrições formais do ecossistema openBIM?". Essa pergunta é mais forte por três razões:
 Primeiro, é a pergunta que a literatura está fazendo agora. Fuchs & Borrmann (EG-ICE 2025) e Forth & Borrmann (2024) exploram enriquecimento semântico com LLMs, mas sem governança formal — sem IDS como gate de requisitos, sem bSDD como âncora semântica, sem validação pós-correção e sem aprovação humana auditável. Há uma lacuna clara entre "LLM sugere" e "LLM sugere dentro de um framework verificável".
 Segundo, alinha o projeto diretamente ao ecossistema openBIM. IDS define o que é esperado; bSDD define o vocabulário correto; BCF comunica os problemas; IFC recebe as correções. Nenhum sistema existente fecha esse ciclo com LLM no meio e governança end-to-end.
-Terceiro, é mais publicável. "Heurística vs. LLM" gera um artigo incremental. "LLM governado por padrões openBIM para enriquecimento semântico" posiciona o trabalho na intersecção de três áreas ativas (LLM para AEC, interoperabilidade openBIM, governança de IA em engenharia) e produz contribuição metodológica, não apenas empírica.
+Terceiro, é mais publicável. Uma comparação interna camada-determinística vs. LLM gera um artigo incremental. "LLM governado por padrões openBIM para enriquecimento semântico" posiciona o trabalho na intersecção de três áreas ativas (LLM para AEC, interoperabilidade openBIM, governança de IA em engenharia) e produz contribuição metodológica, não apenas empírica.
 
 2. Recorte Principal Escolhido
 Enriquecimento semântico e correção assistida de modelos IFC com LLMs locais operando sob restrições formais de bSDD (vocabulário padronizado) e IDS (requisitos verificáveis), com validação pós-correção, auditoria de proveniência e aprovação humana, produzindo artefatos BCF interoperáveis.

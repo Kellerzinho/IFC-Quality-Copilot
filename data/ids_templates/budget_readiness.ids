@@ -350,11 +350,11 @@
 
     <!-- 13. Paredes devem ter material identificável (nome não vazio).
           IDS 1.0 não suporta negação direta de valores — a validação de que o
-          nome do material não é "Default" ou equivalente genérico é delegada
-          ao RuleEngine como heurística complementar. Este facet garante apenas
+          nome do material não é "Default" ou equivalente genérico fica fora do
+          escopo do IDS 1.0. Este facet garante apenas
           que o material existe e tem nome com ao menos 2 caracteres. -->
     <specification name="Paredes devem ter material identificável"
-                   description="IfcWall deve ter material com nome não vazio — exclusão de 'Default' e nomes genéricos é tratada pelo RuleEngine (IDS 1.0 não suporta negação de valor)">
+                   description="IfcWall deve ter material com nome não vazio — exclusão de 'Default' e nomes genéricos fica fora do escopo do IDS 1.0 (que não suporta negação de valor)">
       <applicability>
         <entity>
           <name>

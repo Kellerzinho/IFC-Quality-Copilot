@@ -226,7 +226,7 @@ Pontos frágeis: não há `README.md` identificado; não há Dockerfile; o `.env
 - Principais funções/classes: `IFCElement`, `Issue`, `Suggestion`, `SuggestionSet`, `BSDDContext`, `IDSContext`, `ValidationResult`, `AuditEntry`, `DiagnosticReport`, `OperationalRule`, `ReadinessProfile`, `ReadinessScore`, `ProfileRegistry`.
 - Explicação detalhada: `Issue` organiza cada não conformidade com GUID, classe IFC, tipo, severidade, descrição, contexto, status e valor resolvido. `SuggestionSet` limita e ordena sugestões por confiança. `OperationalRule` representa um requisito IDS convertido para execução sobre IFC e gera `IDSContext`. `ReadinessScore.compute()` calcula prontidão com base em issues, severidades bloqueantes e total de verificações.
 - Papel no projeto: fornece a linguagem comum entre analisador, pipeline, UI, MCP, LLM, writer e auditoria.
-- Possíveis melhorias: alinhar `Issue.issue_type` com todos os perfis; incluir `location_missing` ou removê-lo dos perfis; permitir `source` diferente de `"llm"` se heurísticas voltarem a existir como fonte explícita.
+- Possíveis melhorias: alinhar `Issue.issue_type` com todos os perfis; incluir `location_missing` ou removê-lo dos perfis; permitir `source` diferente de `"llm"` (ex.: fonte determinística) se necessário.
 - Evidências no repositório: `src/models.py`, `src/profiles/hvac/__init__.py`, `src/profiles/fm/__init__.py`.
 
 ### Configuração
@@ -416,7 +416,7 @@ Pontos frágeis: não há `README.md` identificado; não há Dockerfile; o `.env
 
 ## 12. Algoritmos, métodos e lógica computacional
 
-**Detecção de nomes genéricos de espaços.** Implementada em `src/ifc_analyzer/space_diagnostics.py`, usa padrões textuais para detectar nomes como `Room`, `Space`, `Sala`, valores numéricos ou vazios. A finalidade é identificar espaços sem semântica funcional. Entradas são `IfcSpace`; saídas são issues `space_unnamed`. A complexidade é linear no número de espaços e nas relações consultadas para contexto. Limitações: heurística linguística pode gerar falsos positivos/negativos em modelos multilíngues.
+**Detecção de nomes genéricos de espaços.** Implementada em `src/ifc_analyzer/space_diagnostics.py`, usa padrões textuais para detectar nomes como `Room`, `Space`, `Sala`, valores numéricos ou vazios. A finalidade é identificar espaços sem semântica funcional. Entradas são `IfcSpace`; saídas são issues `space_unnamed`. A complexidade é linear no número de espaços e nas relações consultadas para contexto. Limitações: a detecção por padrões textuais pode gerar falsos positivos/negativos em modelos multilíngues.
 
 **Verificação de Psets obrigatórios.** Implementada em `src/ifc_analyzer/pset_diagnostics.py`, com `DEFAULT_REQUIRED_PSETS`. Para cada classe IFC alvo, verifica Pset/propriedade e trata valores vazios. Entradas são elementos IFC e dicionários de Psets; saídas são issues `pset_missing`. Custo aproximado linear no número de elementos alvo vezes propriedades esperadas. Limitações: depende de tabela interna e aliases.
 
