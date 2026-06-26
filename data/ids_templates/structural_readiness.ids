@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ids xmlns="http://standards.buildingsmart.org/IDS"
+     xmlns:xs="http://www.w3.org/2001/XMLSchema"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://standards.buildingsmart.org/IDS
+                         http://standards.buildingsmart.org/IDS/1.0/ids.xsd">
+  <info>
+    <title>Prontidão Estrutural — NBR 6118 / NBR 7190 / ABNT NBR 16868</title>
+    <description>Verificações de dados estruturais para intercâmbio com software de análise (SAP2000, ETABS, Robot Structural Analysis). Cobre paredes, lajes, vigas, pilares e escadas.</description>
+    <author>IFC Quality Copilot</author>
+    <date>2026-05-04</date>
+    <version>1.0</version>
+  </info>
+  <specifications>
+
+    <specification name="Paredes devem indicar se são estruturais"
+                   description="Diferenciação entre vedação e estrutural é essencial para análise FEM e SINAPI">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCWALL"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcBoolean">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_WallCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IsLoadBearing"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <specification name="Lajes devem indicar se são estruturais"
+                   description="NBR 6118: lajes estruturais devem ser identificadas para correta transferência de cargas">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCSLAB"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcBoolean">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_SlabCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="LoadBearing"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <specification name="Vigas devem indicar função estrutural"
+                   description="Vigas devem ter LoadBearing preenchido para distinguir vigas estruturais de vigas de amarração">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCBEAM"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcBoolean">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_BeamCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="LoadBearing"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <specification name="Pilares devem indicar função estrutural"
+                   description="Pilares devem ter LoadBearing para distinguir elementos portantes de decorativos">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCCOLUMN"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcBoolean">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_ColumnCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="LoadBearing"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <specification name="Vigas estruturais devem ter resistência ao fogo"
+                   description="NBR 14432 / NBR 6118: vigas portantes devem ter TRRF (Tempo Requerido de Resistência ao Fogo) documentado">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCBEAM"/>
+            </xs:restriction>
+          </name>
+        </entity>
+        <property datatype="IfcBoolean">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_BeamCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="LoadBearing"/>
+            </xs:restriction>
+          </baseName>
+          <value>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="TRUE"/>
+            </xs:restriction>
+          </value>
+        </property>
+      </applicability>
+      <requirements>
+        <property datatype="IfcLabel">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_BeamCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="FireRating"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <specification name="Pilares estruturais devem ter resistência ao fogo"
+                   description="NBR 14432 / NBR 6118: pilares portantes devem ter TRRF documentado">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCCOLUMN"/>
+            </xs:restriction>
+          </name>
+        </entity>
+        <property datatype="IfcBoolean">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_ColumnCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="LoadBearing"/>
+            </xs:restriction>
+          </baseName>
+          <value>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="TRUE"/>
+            </xs:restriction>
+          </value>
+        </property>
+      </applicability>
+      <requirements>
+        <property datatype="IfcLabel">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_ColumnCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="FireRating"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <specification name="Lajes estruturais devem ter transmitância térmica"
+                   description="NBR 15575-5: lajes externas (coberturas, balcões) devem ter ThermalTransmittance para análise de desempenho">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCSLAB"/>
+            </xs:restriction>
+          </name>
+        </entity>
+        <property datatype="IfcBoolean">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_SlabCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IsExternal"/>
+            </xs:restriction>
+          </baseName>
+          <value>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="TRUE"/>
+            </xs:restriction>
+          </value>
+        </property>
+      </applicability>
+      <requirements>
+        <property datatype="IfcThermalTransmittanceMeasure">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_SlabCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="ThermalTransmittance"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <specification name="Escadas devem ter superfície antiderrapante indicada"
+                   description="NBR 9077 / NBR 9050: escadas devem ter HasNonSkidSurface documentado para segurança e acessibilidade">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCSTAIR"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcBoolean">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_StairCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="HasNonSkidSurface"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <specification name="Elementos devem estar contidos em estrutura espacial"
+                   description="ISO 16739-1: vigas e pilares devem ter IfcRelContainedInSpatialStructure para localização correta no modelo">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCBEAM"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <relation>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IfcRelContainedInSpatialStructure"/>
+            </xs:restriction>
+          </name>
+        </relation>
+      </requirements>
+    </specification>
+
+  </specifications>
+</ids>

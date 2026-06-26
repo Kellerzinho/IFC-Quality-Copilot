@@ -313,3 +313,30 @@ def test_streamlit_ui_no_deprecated_use_container_width() -> None:
 def test_normalize_value_for_issue_rejects_invalid_custom_numeric() -> None:
     issue = _pset_issue("ThermalTransmittance")
     assert normalize_value_for_issue(issue, "0 W/(m².K)") is None
+
+
+def test_quantity_missing_accepts_only_numeric_values() -> None:
+    issue = Issue(
+        element_guid="S" * 22,
+        element_class="IfcSpace",
+        issue_type="quantity_missing",
+        severity="low",
+        description="NetFloorArea ausente",
+        context={"check_pset": "Qto_SpaceBaseQuantities", "check_property": "NetFloorArea"},
+    )
+
+    assert normalize_value_for_issue(issue, "NetFloorArea = 12,5 m2") == pytest.approx(12.5)
+    assert normalize_value_for_issue(issue, "Ausencia de dados numericos para NetFloorArea") is None
+
+
+def test_material_unmapped_rejects_llm_text_as_writable_value() -> None:
+    issue = Issue(
+        element_guid="W" * 22,
+        element_class="IfcWallStandardCase",
+        issue_type="material_unmapped",
+        severity="low",
+        description="Material nao mapeado",
+        context={},
+    )
+
+    assert normalize_value_for_issue(issue, "Material nao mapeado para IfcWallStandardCase") is None

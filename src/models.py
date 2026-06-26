@@ -180,6 +180,27 @@ class Suggestion(BaseModel):
         return {"alta": 0, "media": 1, "baixa": 2}[self.confidence]
 
 
+class SuggestionMetrics(BaseModel):
+    """Métricas de geração de sugestão para uma issue (telemetria leve)."""
+
+    issue_id: str
+    queue_wait_ms: float = 0.0
+    grounding_ms: float = 0.0
+    cache_lookup_ms: float = 0.0
+    llm_total_ms: float = 0.0
+    ollama_load_ms: float = 0.0
+    ollama_prompt_eval_ms: float = 0.0
+    ollama_eval_ms: float = 0.0
+    parse_ms: float = 0.0
+    validation_ms: float = 0.0
+    cache_hit: bool = False
+    reused_from_issue_id: str | None = None
+    prompt_tokens: int = 0
+    output_tokens: int = 0
+    final_status: str = "pending"
+    group_id: str | None = None
+
+
 class SuggestionSet(BaseModel):
     """Conjunto de sugestões geradas para um Issue específico."""
 
@@ -188,6 +209,7 @@ class SuggestionSet(BaseModel):
     allow_custom: bool = True
     error: str | None = None  # se houve erro na geração
     prompt_hash: str | None = None
+    metrics: SuggestionMetrics | None = None
 
     @property
     def has_suggestions(self) -> bool:

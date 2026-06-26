@@ -217,19 +217,14 @@ def _start_analysis(
 def _render_post_analysis_sidebar() -> dict | None:
     """Renderiza progresso, seção de exportação e controles pós-análise."""
     pipeline = st.session_state.get("pipeline")
-    issues = []
-    if pipeline and pipeline.issues_suggestions:
-        issues = [issue for issue, _ in pipeline.issues_suggestions]
+    issues = _current_issues(pipeline)
 
     building_context: dict = st.session_state.get("building_context", {})
     profile_id: str | None = building_context.get("profile_id")
 
     if profile_id is not None:
-        _render_readiness_score_card(profile_id, issues)
+        _render_readiness_score_card_current(profile_id, issues)
         st.divider()
-
-    _render_pipeline_mode_card(pipeline, building_context)
-    st.divider()
 
     total = len(issues)
     resolved = sum(1 for i in issues if i.status != "pending")
@@ -245,7 +240,7 @@ def _render_post_analysis_sidebar() -> dict | None:
         st.caption("Aguardando análise para habilitar exportação.")
     else:
         model_name = pipeline.report.model_name if pipeline.report else "modelo"
-        _render_export_buttons(pipeline, model_name)
+        _render_export_buttons_lazy(pipeline, model_name)
 
     st.divider()
 
@@ -279,6 +274,37 @@ def _render_readiness_score_card(profile_id: str, issues: list) -> None:
         st.warning("Parcialmente pronto 🟡")
     else:
         st.error("Não pronto 🔴")
+
+    blocking = score.blocking_issues
+    label = "issue bloqueante" if blocking == 1 else "issues bloqueantes"
+    st.caption(f"{blocking} {label}")
+
+
+def _render_readiness_score_card_current(profile_id: str, issues: list) -> None:
+    """Renderiza readiness considerando apenas issues pendentes do perfil."""
+    profile = _registry.get(profile_id)
+    if profile is None:
+        return
+
+    from src.models import ReadinessScore
+
+    relevant = [issue for issue in issues if issue.issue_type in profile.issue_types]
+    unresolved = [issue for issue in relevant if issue.status == "pending"]
+    total_checks = len(relevant) or 1
+    score = ReadinessScore.compute(profile, unresolved, total_checks)
+
+    st.subheader("Readiness Score")
+    st.markdown(
+        f"<p style='font-size:2.5rem;font-weight:700;margin:0'>{score.score_percent:.0f}%</p>",
+        unsafe_allow_html=True,
+    )
+
+    if score.status == "ready":
+        st.success("Pronto")
+    elif score.status == "partially_ready":
+        st.warning("Parcialmente pronto")
+    else:
+        st.error("Nao pronto")
 
     blocking = score.blocking_issues
     label = "issue bloqueante" if blocking == 1 else "issues bloqueantes"
@@ -348,6 +374,82 @@ def _render_export_buttons(pipeline, model_name: str) -> None:
     )
 
 
+def _render_export_buttons_lazy(pipeline, model_name: str) -> None:
+    """Renderiza exportacao preparada sob demanda, sem bloquear cada rerun."""
+    _render_lazy_download(
+        label="IFC Corrigido",
+        file_name=f"{model_name}_corrigido.ifc",
+        mime="application/octet-stream",
+        cache_key="corrected_ifc_bytes",
+        prepare_key="prepare_ifc",
+        prepare_fn=lambda: _get_ifc_bytes(pipeline),
+    )
+    _render_lazy_download(
+        label="Auditoria (CSV)",
+        file_name=f"{model_name}_auditoria.csv",
+        mime="text/csv",
+        cache_key="audit_csv_bytes",
+        prepare_key="prepare_audit_csv",
+        prepare_fn=lambda: _get_audit_csv_bytes(pipeline),
+    )
+    _render_lazy_download(
+        label="Auditoria (JSON)",
+        file_name=f"{model_name}_auditoria.jsonl",
+        mime="application/json",
+        cache_key="audit_json_bytes",
+        prepare_key="prepare_audit_json",
+        prepare_fn=lambda: _get_audit_json_bytes(pipeline),
+    )
+    _render_lazy_download(
+        label="Issues (BCF)",
+        file_name=f"{model_name}_issues.bcf",
+        mime="application/octet-stream",
+        cache_key="bcf_bytes",
+        prepare_key="prepare_bcf",
+        prepare_fn=lambda: _get_bcf_bytes(pipeline),
+    )
+    _render_lazy_download(
+        label="Metricas (JSON)",
+        file_name=f"{model_name}_metricas.json",
+        mime="application/json",
+        cache_key="metrics_bytes",
+        prepare_key="prepare_metrics",
+        prepare_fn=lambda: _get_metrics_bytes(pipeline, model_name),
+    )
+
+
+def _render_lazy_download(
+    *,
+    label: str,
+    file_name: str,
+    mime: str,
+    cache_key: str,
+    prepare_key: str,
+    prepare_fn,
+) -> None:
+    """Prepara o artefato somente quando o usuario pedir."""
+    cached = st.session_state.get(cache_key)
+    if cached:
+        st.download_button(
+            label=f"Baixar {label}",
+            data=cached,
+            file_name=file_name,
+            mime=mime,
+            width="stretch",
+            key=f"download_{cache_key}",
+        )
+        return
+
+    if st.button(f"Preparar {label}", width="stretch", key=prepare_key):
+        with st.spinner(f"Preparando {label}..."):
+            data = prepare_fn()
+        if data:
+            st.session_state[cache_key] = data
+            st.rerun()
+        else:
+            st.warning(f"Nao foi possivel preparar {label}.")
+
+
 def _render_pipeline_mode_card(pipeline, building_context: dict) -> None:
     """Renderiza resumo do modo de grounding e da pós-validação."""
     grounding_mode = "ids_bsdd"
@@ -370,6 +472,19 @@ def _render_pipeline_mode_card(pipeline, building_context: dict) -> None:
 # ---------------------------------------------------------------------------
 # Helpers de geração de bytes
 # ---------------------------------------------------------------------------
+
+
+def _current_issues(pipeline) -> list:
+    """Retorna issues atuais tanto no modo progressivo quanto no legado."""
+    if pipeline is None:
+        return []
+    if getattr(pipeline, "issue_store", None) is not None:
+        return [item["issue"] for item in pipeline.issue_store.get_all_with_status()]
+    if getattr(pipeline, "issues_suggestions", None):
+        return [issue for issue, _ in pipeline.issues_suggestions]
+    if getattr(pipeline, "report", None) is not None:
+        return list(pipeline.report.issues)
+    return []
 
 
 def _get_ifc_bytes(pipeline) -> bytes | None:
@@ -454,12 +569,16 @@ def _get_metrics_bytes(pipeline, model_name: str) -> bytes:
     if cached:
         return cached
 
-    progress = pipeline.get_progress()
+    progress = (
+        pipeline.get_suggestions_progress()
+        if getattr(pipeline, "issue_store", None) is not None
+        else pipeline.get_progress()
+    )
     audit_summary = pipeline.audit_logger.get_summary()
 
     # Contagens por status
     status_counts: dict[str, int] = {"accepted": 0, "edited": 0, "rejected": 0, "skipped": 0, "pending": 0}
-    for issue, _ in pipeline.issues_suggestions:
+    for issue in _current_issues(pipeline):
         if issue.status in status_counts:
             status_counts[issue.status] += 1
 

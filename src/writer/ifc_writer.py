@@ -99,7 +99,7 @@ class IFCWriter:
             return False, None
 
         element.LongName = novo_long_name
-        logger.info(
+        logger.debug(
             "renomear_espaco: guid={} | '{}' → '{}'",
             guid,
             valor_anterior,
@@ -612,7 +612,7 @@ class IFCWriter:
         """
         self.ifc_file.write(output_path)
         absolute_path = os.path.abspath(output_path)
-        logger.info("salvar: arquivo salvo em {}", absolute_path)
+        logger.debug("salvar: arquivo salvo em {}", absolute_path)
         return absolute_path
 
     def _coerce_property_value(self, prop_name: str, prop_value: Any) -> Any:

@@ -26,7 +26,7 @@ class PostValidator:
 
     def validate_element(self, guid: str) -> ValidationResult:
         """Valida o elemento com o GUID dado."""
-        logger.info("PostValidator: iniciando validacao do elemento {}", guid)
+        logger.debug("PostValidator: iniciando validacao do elemento {}", guid)
 
         try:
             element = self._ifc_file.by_guid(guid)
@@ -59,7 +59,7 @@ class PostValidator:
             ids_errors=[*ids_errors, *semantic_errors],
             warnings=warnings,
         )
-        logger.info(
+        logger.debug(
             "PostValidator: guid={} status={} schema_valid={} ids_compliant={} warnings={} errors={}",
             guid,
             result.status,

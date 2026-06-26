@@ -8,13 +8,16 @@ from loguru import logger
 
 from src.ifc_registry import DEFAULT_IFC_DATA_REGISTRY
 from src.models import ProfileRegistry, ReadinessProfile
+from src.profiles.acoustic import build_profile as build_acoustic_profile
 from src.profiles.base_ifc import build_profile as build_base_ifc_profile
 from src.profiles.budget import build_profile as build_budget_profile
 from src.profiles.compliance import build_profile as build_compliance_profile
 from src.profiles.energy import build_profile as build_energy_profile
+from src.profiles.fire_safety import build_profile as build_fire_safety_profile
 from src.profiles.fm import build_profile as build_fm_profile
 from src.profiles.hvac import build_profile as build_hvac_profile
 from src.profiles.ids import build_profile as build_ids_profile
+from src.profiles.structural import build_profile as build_structural_profile
 from src.translator.ids_parser import parse_ids
 
 _PROPERTY_TO_EXTRACTORS: dict[str, list[str]] = {
@@ -112,6 +115,9 @@ def create_default_registry() -> ProfileRegistry:
         build_hvac_profile(),
         build_fm_profile(),
         build_compliance_profile(),
+        build_fire_safety_profile(),
+        build_acoustic_profile(),
+        build_structural_profile(),
     ]:
         registry.register(profile)
     return registry

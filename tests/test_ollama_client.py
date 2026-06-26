@@ -34,7 +34,10 @@ def test_generate_success():
     with patch.object(client._client, "post", return_value=mock_resp) as mock_post:
         result = client.generate(prompt="Descreva o espaço.", system="Você é um assistente BIM.")
 
-    assert result == expected_text
+    assert isinstance(result, tuple)
+    text, metrics = result
+    assert text == expected_text
+    assert isinstance(metrics, dict)
     mock_post.assert_called_once()
     call_kwargs = mock_post.call_args
     payload = call_kwargs.kwargs.get("json") or call_kwargs.args[1]
@@ -56,6 +59,81 @@ def test_generate_without_system_omits_system_key():
         assert "system" not in payload
 
 
+def test_generate_sends_think_false_by_default():
+    """generate envia think=false por padrao para evitar saida no campo thinking."""
+    client = OllamaClient()
+    mock_resp = _make_response({"response": "ok"})
+
+    with patch.object(client._client, "post", return_value=mock_resp) as mock_post:
+        text, _ = client.generate(prompt="teste")
+
+    assert text == "ok"
+    payload = mock_post.call_args.kwargs["json"]
+    assert payload["think"] is False
+
+
+def test_generate_uses_thinking_field_when_response_is_empty():
+    """generate aproveita thinking quando Ollama coloca a saida JSON nesse campo."""
+    client = OllamaClient()
+    mock_resp = _make_response(
+        {
+            "response": "",
+            "thinking": '{"opcoes":[{"valor":"ok","justificativa":"teste","confianca":"alta"}]}',
+        }
+    )
+
+    with patch.object(client._client, "post", return_value=mock_resp):
+        text, _ = client.generate(prompt="teste")
+
+    assert text == '{"opcoes":[{"valor":"ok","justificativa":"teste","confianca":"alta"}]}'
+
+
+def test_generate_retries_without_think_when_response_is_empty_and_think_is_enabled():
+    """generate tenta novamente sem think quando Ollama devolve response vazia."""
+    client = OllamaClient()
+    empty_resp = _make_response({"response": ""})
+    fallback_resp = _make_response({"response": '{"suggestions": []}'})
+
+    with (
+        patch("src.suggestion_engine.ollama_client.get_settings") as mock_settings,
+        patch.object(client._client, "post", side_effect=[empty_resp, fallback_resp]) as mock_post,
+    ):
+        settings = mock_settings.return_value
+        settings.ollama_temperature = 0.1
+        settings.ollama_num_ctx = 8192
+        settings.ollama_num_predict = 1024
+        settings.ollama_repeat_penalty = 1.1
+        settings.ollama_top_p = 0.9
+        settings.ollama_seed = 42
+        settings.ollama_think = True
+        settings.ollama_keep_alive = "15m"
+        text, _ = client.generate(prompt="teste")
+
+    assert text == '{"suggestions": []}'
+    assert mock_post.call_count == 2
+    first_payload = mock_post.call_args_list[0].kwargs["json"]
+    second_payload = mock_post.call_args_list[1].kwargs["json"]
+    assert first_payload["think"] is True
+    assert second_payload["think"] is False
+
+
+def test_generate_retries_without_json_format_when_response_is_empty():
+    """generate tenta modo texto quando Ollama devolve response vazia em format=json."""
+    client = OllamaClient()
+    empty_resp = _make_response({"response": ""})
+    fallback_resp = _make_response({"response": '{"suggestions": []}'})
+
+    with patch.object(client._client, "post", side_effect=[empty_resp, fallback_resp]) as mock_post:
+        text, _ = client.generate(prompt="teste")
+
+    assert text == '{"suggestions": []}'
+    assert mock_post.call_count == 2
+    first_payload = mock_post.call_args_list[0].kwargs["json"]
+    second_payload = mock_post.call_args_list[1].kwargs["json"]
+    assert first_payload["format"] == "json"
+    assert "format" not in second_payload
+
+
 def test_generate_retries_on_timeout():
     """generate tenta novamente em caso de TimeoutException e retorna na segunda tentativa."""
     client = OllamaClient()
@@ -68,7 +146,8 @@ def test_generate_retries_on_timeout():
     ) as mock_post:
         result = client.generate(prompt="teste retry")
 
-    assert result == "sucesso na retry"
+    text, _ = result
+    assert text == "sucesso na retry"
     assert mock_post.call_count == 2
 
 
@@ -82,7 +161,8 @@ def test_generate_uses_backoff_between_retries():
     ):
         result = client.generate(prompt="teste retry")
 
-    assert result == "ok"
+    text, _ = result
+    assert text == "ok"
     assert mock_post.call_count == 2
     mock_sleep.assert_called_once()
 

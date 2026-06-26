@@ -34,7 +34,6 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-_PAGE_SIZE = 10
 _PROFILE_REGISTRY = create_default_registry()
 # ---------------------------------------------------------------------------
 # Entrypoint
@@ -117,7 +116,8 @@ def _store_pipeline(pipeline: QualityPipeline) -> None:
     st.session_state.current_page = 0
     # Limpar estado residual de filtros/lote de sessões anteriores
     for _k in ("bulk_confirmed", "bulk_candidates", "_filter_state", "bulk_select_all", "all_done_shown",
-               "corrected_ifc_bytes", "audit_csv_bytes", "audit_json_bytes", "metrics_bytes"):
+               "_last_progressive_snapshot", "corrected_ifc_bytes", "audit_csv_bytes",
+               "audit_json_bytes", "metrics_bytes"):
         st.session_state.pop(_k, None)
 
 
@@ -148,14 +148,12 @@ def _render_main_tabs(pipeline: QualityPipeline) -> None:
 def _render_issues_tab(pipeline: QualityPipeline) -> None:
     """Renderiza a aba de revisão de issues.
 
-    Modo progressivo: quando pipeline.issue_store está ativo, usa fragmento com
-    polling automático a cada 2 segundos para exibir progresso em tempo real.
+    Modo progressivo: quando pipeline.issue_store está ativo, usa um watcher
+    leve para atualizar a revisão somente quando o worker muda algum status.
     Modo legado: comportamento original com lista completa de issues.
     """
     if pipeline.issue_store is not None:
         # Modo progressivo: sugestões chegando em background
-        # _handle_bulk_apply é chamado dentro do fragment para garantir que
-        # rode no mesmo ciclo de rerun que seta bulk_confirmed.
         _render_progressive_issues_fragment()
     else:
         # Modo legado: todas as sugestões já foram geradas
@@ -165,45 +163,62 @@ def _render_issues_tab(pipeline: QualityPipeline) -> None:
         _handle_bulk_apply(pipeline)
         render_progress(_build_progress_dict(pipeline))
         st.divider()
-        filtered = render_filters(issues_suggestions)
-        if not filtered:
-            st.info("Nenhuma issue corresponde aos filtros aplicados.")
+        all_items = render_filters(issues_suggestions)
+        if not all_items:
+            st.info("Nenhuma issue disponível para revisão.")
             return
-        _render_paginated_cards(pipeline, filtered)
+        _render_issue_cards(pipeline, all_items)
 
 
-@st.fragment(run_every="2s")
+_AVAILABLE_FOR_REVIEW = {"ready", "cached", "reused", "review_required"}
+
+
 def _render_progressive_issues_fragment() -> None:
-    """Fragmento com auto-refresh a cada 2s para sugestões progressivas.
+    """Fragmento de revisão progressiva com atualização manual.
 
-    Lê pipeline do session_state, exibe métricas em tempo real, cards de
-    placeholder para issues em processamento/fila e cards completos para
-    issues prontas.
+    Estende a UI com status finos (cached / reused / review_required) e
+    permite reprocessar individualmente. O worker continua em background, mas
+    a lista não rerenderiza em loop para preservar a revisão em uma página só.
     """
     pipeline: QualityPipeline | None = st.session_state.get("pipeline")
     if pipeline is None or pipeline.issue_store is None:
         return
 
-    # Precisa estar aqui (dentro do fragment) para rodar no mesmo rerun
-    # em que on_click seta bulk_confirmed — o fragment rerun não propaga
-    # para o contexto pai.
     _handle_bulk_apply(pipeline)
+    _handle_requeue_request(pipeline)
 
     prog = pipeline.get_suggestions_progress()
     is_done = pipeline.issue_store.is_all_done()
-    ready_count = prog.get("ready", 0)
+    ready_count = (
+        prog.get("ready", 0)
+        + prog.get("cached", 0)
+        + prog.get("reused", 0)
+        + prog.get("review_required", 0)
+    )
     total = prog.get("total", 0)
     pct = prog.get("percent_complete", 0.0) / 100.0
 
     # --- Métricas em tempo real ---
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4, col_refresh = st.columns([1, 1, 1, 1, 1.15])
     with col1:
-        st.metric("Sugestões prontas", f"{ready_count}/{total}")
+        st.metric("Disponíveis", f"{ready_count}/{total}")
     with col2:
-        st.metric("Falhas", prog.get("failed", 0))
+        st.metric("Cache", prog.get("cached", 0) + prog.get("reused", 0))
     with col3:
+        st.metric("Falhas", prog.get("failed", 0) + prog.get("invalid", 0))
+    with col4:
         pending_llm = prog.get("queued", 0) + prog.get("processing", 0)
         st.metric("LLM pendente", pending_llm)
+    with col_refresh:
+        if st.button(
+            "Atualizar lista",
+            key="refresh_progressive_issues",
+            width="stretch",
+            help="O processamento continua em background; clique para buscar novas sugestões sem atualizar a página em loop.",
+        ):
+            st.session_state["_last_progressive_snapshot"] = _progress_snapshot(prog)
+
+    _watch_progressive_updates()
 
     # --- Barra de progresso animada ---
     if not is_done:
@@ -237,27 +252,34 @@ def _render_progressive_issues_fragment() -> None:
 
     st.divider()
 
-    # --- Separar issues por status e montar mapa id→status ---
+    # --- Separar issues por status ---
     ready_pairs: list[tuple[Issue, SuggestionSet]] = []
-    pending_items: list[tuple[Issue, str]] = []  # (issue, status)
+    pending_items: list[tuple[Issue, str]] = []
+    failed_items: list[tuple[Issue, str, str | None]] = []
     status_map: dict[str, str] = {}
 
     for issue, sset, status in all_issues_raw:
         status_map[issue.id] = status
-        if status == "ready" and sset is not None:
+        if status in _AVAILABLE_FOR_REVIEW and sset is not None:
             ready_pairs.append((issue, sset))
         elif status in ("processing", "queued"):
             pending_items.append((issue, status))
+        elif status in ("failed", "invalid"):
+            error = sset.error if sset is not None else None
+            failed_items.append((issue, status, error))
 
     if ready_pairs:
-        filtered = render_filters(ready_pairs)
-        if filtered:
-            _render_paginated_cards(pipeline, filtered, status_map=status_map)
-        else:
-            st.info("Nenhuma issue corresponde aos filtros aplicados.")
+        all_ready = render_filters(ready_pairs)
+        _render_issue_cards(pipeline, all_ready, status_map=status_map)
+
+    if failed_items:
+        st.divider()
+        st.markdown("**Issues com falha**")
+        for issue, status, error in failed_items:
+            _render_failed_card(issue, status, error)
 
     if pending_items:
-        if ready_pairs:
+        if ready_pairs or failed_items:
             st.divider()
         queue_position = 0
         for issue, status in pending_items:
@@ -266,8 +288,41 @@ def _render_progressive_issues_fragment() -> None:
             else:
                 queue_position += 1
                 _render_queued_card(issue, queue_position)
-    elif not ready_pairs:
-        st.info("Nenhuma issue disponível.")
+    elif not ready_pairs and not failed_items:
+        st.info("Nenhuma issue disponível para revisão no momento.")
+
+
+@st.fragment(run_every="2s")
+def _watch_progressive_updates() -> None:
+    """Observa o worker e rerenderiza a revisão apenas quando uma issue muda de status."""
+    pipeline: QualityPipeline | None = st.session_state.get("pipeline")
+    if pipeline is None or pipeline.issue_store is None:
+        return
+
+    snapshot = _progress_snapshot(pipeline.get_suggestions_progress())
+    previous = st.session_state.get("_last_progressive_snapshot")
+    if previous is None:
+        st.session_state["_last_progressive_snapshot"] = snapshot
+        return
+    if snapshot != previous:
+        st.session_state["_last_progressive_snapshot"] = snapshot
+        st.rerun()
+
+
+def _progress_snapshot(progress: dict) -> tuple[int, ...]:
+    """Assinatura estável do progresso; muda quando uma sugestão fica pronta/falha."""
+    keys = (
+        "ready",
+        "cached",
+        "reused",
+        "review_required",
+        "failed",
+        "invalid",
+        "processing",
+        "queued",
+        "total",
+    )
+    return tuple(int(progress.get(key, 0) or 0) for key in keys)
 
 
 def _render_processing_card(issue: Issue) -> None:
@@ -298,70 +353,68 @@ def _render_queued_card(issue: Issue, position: int) -> None:
         st.caption(f"Aguardando... (#{position} na fila)")
 
 
-def _render_paginated_cards(
+def _render_failed_card(issue: Issue, status: str, error: str | None) -> None:
+    """Card de issue com falha + botão de reprocessamento."""
+    with st.container(border=True):
+        col_info, col_btn = st.columns([0.78, 0.22])
+        with col_info:
+            st.markdown(
+                f"**{issue.issue_type}** &nbsp;·&nbsp; `{issue.element_name or issue.element_guid}`"
+                f" &nbsp;·&nbsp; status: `{status}`"
+            )
+            if error:
+                st.caption(f"Erro: {error[:160]}")
+        with col_btn:
+            if st.button("Reprocessar", key=f"requeue_{issue.id}", width="stretch"):
+                st.session_state["_requeue_request"] = issue.id
+
+
+def _handle_requeue_request(pipeline: QualityPipeline) -> None:
+    """Recoloca issue na fila quando o engenheiro clicar em Reprocessar."""
+    issue_id = st.session_state.pop("_requeue_request", None)
+    if issue_id is None or pipeline.issue_store is None:
+        return
+    pipeline.issue_store.requeue(issue_id)
+    if pipeline.worker is None or not pipeline.worker.is_running:
+        # Worker pode ter parado quando is_all_done; reinicia
+        try:
+            pipeline.worker = pipeline.worker  # mantém atributo
+            from src.suggestion_engine.worker import SuggestionWorker  # local import
+            pipeline.worker = SuggestionWorker(
+                store=pipeline.issue_store,
+                generator=pipeline.suggestion_gen,
+                building_context=pipeline.building_context,
+                profile=pipeline.profile,
+                ids_context_map=pipeline.ids_context_map,
+                bsdd_context_map=pipeline.bsdd_context_map,
+                context_builder=pipeline.bsdd_builder,
+                grounding_mode=pipeline.grounding_mode,
+                reuse_map=pipeline._reuse_map,
+                warm_up=True,
+            )
+            pipeline.worker.start()
+        except Exception as exc:
+            logger.error("Falha ao reiniciar worker para reprocesso: {}", exc)
+
+
+def _render_issue_cards(
     pipeline: QualityPipeline,
     filtered: list[tuple[Issue, SuggestionSet]],
     status_map: dict[str, str] | None = None,
 ) -> None:
-    """Renderiza cards paginados com controles de navegação."""
-    total_pages = max(1, (len(filtered) + _PAGE_SIZE - 1) // _PAGE_SIZE)
-    current_page = min(st.session_state.get("current_page", 0), total_pages - 1)
-    st.session_state.current_page = current_page
-
-    page_items = filtered[current_page * _PAGE_SIZE : (current_page + 1) * _PAGE_SIZE]
-    global_start = current_page * _PAGE_SIZE
-
-    for local_idx, (issue, suggestion_set) in enumerate(page_items):
+    """Renderiza todos os cards filtrados na mesma pagina."""
+    for local_idx, (issue, suggestion_set) in enumerate(filtered):
         card_status = (status_map or {}).get(issue.id, "ready")
         result = render_issue_card(
             issue,
             suggestion_set,
-            index=global_start + local_idx + 1,
+            index=local_idx + 1,
             status=card_status,
             audit_entry=pipeline.applied_entries.get(issue.id),
             validation_result=pipeline.get_post_validation_result(issue.id),
         )
         if result is not None:
             _handle_card_decision(pipeline, issue.id, result)
-            st.rerun()
-
-    _render_pagination(current_page, total_pages, len(filtered))
-
-
-def _render_pagination(current_page: int, total_pages: int, total_items: int) -> None:
-    """Renderiza controles de paginação."""
-    st.divider()
-    col_prev, col_info, col_next = st.columns([1, 3, 1])
-
-    with col_prev:
-        if st.button(
-            "Anterior",
-            disabled=current_page == 0,
-            key="page_prev",
-            width="stretch",
-        ):
-            st.session_state.current_page -= 1
-            st.rerun()
-
-    with col_info:
-        start = current_page * _PAGE_SIZE + 1
-        end = min(start + _PAGE_SIZE - 1, total_items)
-        st.markdown(
-            f"<div style='text-align:center; padding-top:0.4rem; color:#94A3B8; font-size:0.85rem;'>"
-            f"Página {current_page + 1} de {total_pages} &nbsp;·&nbsp; "
-            f"Issues {start}–{end} de {total_items}"
-            f"</div>",
-            unsafe_allow_html=True,
-        )
-
-    with col_next:
-        if st.button(
-            "Próxima",
-            disabled=current_page >= total_pages - 1,
-            key="page_next",
-            width="stretch",
-        ):
-            st.session_state.current_page += 1
             st.rerun()
 
 

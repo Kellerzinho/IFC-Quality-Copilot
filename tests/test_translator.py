@@ -313,7 +313,7 @@ def test_generate_rules_classification_gets_domain_metadata():
     assert rules[0].issue_type == "classification_missing"
     assert rules[0].suggestion_strategy == "copy_from_source"
     assert rules[0].write_action == "mapear_classificacao"
-    assert rules[0].required_context == ["classifications"]
+    assert rules[0].required_context == ["classifications", "material"]
     assert "facet:classification" in rules[0].tags
     assert "classification:Uniclass" in rules[0].tags
 
@@ -347,15 +347,15 @@ def test_generate_rules_infers_required_context():
     spec = _make_spec("IFCWALL", "Pset_WallCommon", "ThermalTransmittance")
     rules = generate_rules([spec])
 
-    assert rules[0].required_context == ["material", "thickness", "is_external", "layers"]
+    assert rules[0].required_context == ["material", "thickness", "is_external", "layers", "has_insulation"]
 
 
 def test_generate_rules_quantities_infers_geometry_context():
-    """Requisito em Qto_ deve gerar required_context com ['geometry', 'bounding_box']."""
+    """Requisito em Qto_ deve gerar required_context com campos de geometria base."""
     spec = _make_spec("IFCWALL", "Qto_WallBaseQuantities", "NetSideArea", facet_type="quantity")
     rules = generate_rules([spec])
 
-    assert rules[0].required_context == ["geometry", "bounding_box"]
+    assert rules[0].required_context == ["width", "height", "length", "volume", "net_side_area", "net_floor_area"]
 
 
 def test_generate_rules_without_profile_leaves_profile_id_none():

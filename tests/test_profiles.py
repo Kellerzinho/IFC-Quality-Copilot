@@ -12,10 +12,13 @@ class TestDefaultRegistry:
         """create_default_registry deve expor perfis base, ids e domínios principais."""
         registry = create_default_registry()
 
-        assert len(registry.list_profiles()) == 7
+        assert len(registry.list_profiles()) == 10
         assert registry.get("base_ifc") is not None
         assert registry.get("ids_generic") is not None
         assert registry.get("hvac_readiness") is not None
+        assert registry.get("fire_safety_readiness") is not None
+        assert registry.get("acoustic_readiness") is not None
+        assert registry.get("structural_readiness") is not None
 
     def test_default_registry_get_budget(self):
         """Perfil budget_readiness deve estar registrado com metadados ampliados."""

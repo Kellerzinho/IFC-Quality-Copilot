@@ -12,6 +12,7 @@ from src.ifc_analyzer.space_diagnostics import diagnose_spaces
 from src.ifc_analyzer.pset_diagnostics import diagnose_psets
 from src.ifc_analyzer.relation_diagnostics import diagnose_relations
 from src.ifc_analyzer.system_diagnostics import diagnose_systems
+from src.ifc_analyzer.universal_extractor import UniversalExtractor
 
 
 # ---------------------------------------------------------------------------
@@ -66,6 +67,36 @@ _EXTRACTOR_DEFAULT_FIELDS: dict[str, list[str]] = {
     "quantities": ["width", "height", "length", "volume", "net_side_area", "net_floor_area"],
     "classifications": ["has_classification", "classification_code", "classification_name"],
     "assets": ["manufacturer", "asset_type", "model_reference"],
+    "universal": [
+        "all_psets",
+        "material_name",
+        "total_thickness_m",
+        "layers",
+        "geometry",
+        "has_classification",
+        "classification_code",
+        "containing_space",
+        "floor",
+        "existing_properties",
+    ],
+}
+
+# Campos do UniversalExtractor mapeados para o _CONTEXT_FIELD_MAP
+_UNIVERSAL_CONTEXT_FIELDS: dict[str, str] = {
+    "all_psets": "all_psets",
+    "material_name": "material_name",
+    "total_thickness_m": "total_thickness_m",
+    "layers": "layers",
+    "geometry": "geometry",
+    "has_classification": "has_classification",
+    "classification_code": "classification_code",
+    "classification_system": "classification_system",
+    "containing_space": "containing_space",
+    "floor": "floor",
+    "existing_properties": "existing_properties",
+    "ifc_long_name": "ifc_long_name",
+    "object_type": "object_type",
+    "predefined_type": "predefined_type",
 }
 
 
@@ -108,6 +139,8 @@ class IFCAnalyzer:
         elif name == "classifications":
             from src.ifc_analyzer.extractors import ClassificationExtractor
             self.extractors[name] = ClassificationExtractor(self.ifc_file)
+        elif name == "universal":
+            self.extractors[name] = UniversalExtractor(self.ifc_file)
         else:
             raise ValueError(f"Extrator desconhecido: '{name}'")
 
@@ -234,6 +267,73 @@ class IFCAnalyzer:
 
         return report
 
+    def analyze_from_ids(
+        self,
+        ids_path: str,
+        profile: ReadinessProfile | None = None,
+    ) -> DiagnosticReport:
+        """Executa análise IDS completa com enriquecimento automático de contexto.
+
+        Diferente de analyze_for_profile, não exige um perfil pré-definido:
+        funciona com qualquer IDS customizado carregado pelo usuário.
+
+        Para cada issue gerada, enriquece o contexto automaticamente usando:
+          1. required_context inferido da regra (baseado em padrões semânticos)
+          2. UniversalExtractor como fallback — garante all_psets, material, geometry
+             mesmo para propriedades desconhecidas
+
+        Isso elimina sugestões "cegas" (sem contexto) para IDS customizados.
+        """
+        from src.translator.ids_parser import parse_ids
+        from src.translator.rule_generator import apply_rules, generate_rules
+
+        specs = parse_ids(ids_path)
+        rules = generate_rules(specs, profile)
+        issues = apply_rules(self.ifc_file, rules)
+
+        # Índice rápido rule_id → rule para recuperar required_context
+        rules_by_id: dict[str, Any] = {r.id: r for r in rules}
+
+        universal_ext = self.get_extractor("universal")
+
+        for issue in issues:
+            rule = rules_by_id.get(issue.context.get("rule_id", ""))
+
+            # Enriquecimento via required_context da regra
+            if rule and rule.required_context:
+                self.enrich_issue_context(issue, rule.required_context)
+
+            # Enriquecimento universal: injeta contexto completo de todos os Psets,
+            # material e geometria, independentemente do perfil ou regra
+            try:
+                element = self.ifc_file.by_guid(issue.element_guid)
+                if element is not None:
+                    universal_data = universal_ext.extract(element)
+                    # Não sobrescreve chaves já preenchidas pelo enrichment da regra
+                    for key, value in universal_data.items():
+                        if key not in issue.context or issue.context[key] is None:
+                            issue.context[key] = value
+            except Exception as exc:
+                logger.debug(
+                    "analyze_from_ids: erro no universal extractor para {}: {}",
+                    issue.element_guid[:8], exc,
+                )
+
+        deduped = self._deduplicate_issues(issues)
+        sorted_issues = sorted(deduped, key=lambda i: i.severity_order)
+
+        return DiagnosticReport(
+            model_name=self.model_name,
+            model_path=self.ifc_path,
+            total_elements=len(self.ifc_file.by_type("IfcProduct")),
+            total_spaces=len(self.ifc_file.by_type("IfcSpace")),
+            total_walls=len(self.ifc_file.by_type("IfcWall")),
+            total_doors=len(self.ifc_file.by_type("IfcDoor")),
+            total_windows=len(self.ifc_file.by_type("IfcWindow")),
+            total_slabs=len(self.ifc_file.by_type("IfcSlab")),
+            issues=sorted_issues,
+        )
+
     def analyze_spaces_only(self) -> list[Issue]:
         """Diagnóstico apenas de espaços."""
         return diagnose_spaces(self.ifc_file)
@@ -313,14 +413,17 @@ class IFCAnalyzer:
         ifc_class = element.is_a()
 
         if extractor_name == "thermal":
-            if "Wall" in ifc_class:
+            if "Wall" in ifc_class or "CurtainWall" in ifc_class:
                 return extractor.extract_wall_thermal(element)
             elif "Window" in ifc_class:
                 return extractor.extract_window_thermal(element)
-            elif "Slab" in ifc_class:
+            elif "Slab" in ifc_class or "Roof" in ifc_class:
                 return extractor.extract_slab_thermal(element)
             elif "Space" in ifc_class:
                 return extractor.extract_space_thermal_zone(element)
+            elif "Beam" in ifc_class or "Column" in ifc_class or "Stair" in ifc_class:
+                # Vigas, pilares e escadas: usa extração de parede como fallback para material/espessura
+                return extractor.extract_wall_thermal(element)
             return {}
         elif extractor_name == "quantities":
             return extractor.extract_all(element)
@@ -328,6 +431,8 @@ class IFCAnalyzer:
             return extractor.extract_classification(element)
         elif extractor_name == "assets":
             return extractor.extract_asset_info(element)
+        elif extractor_name == "universal":
+            return extractor.extract(element)
         return {}
 
     def _count_elements(self) -> int:

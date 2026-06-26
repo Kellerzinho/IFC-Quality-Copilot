@@ -1,4 +1,4 @@
-.PHONY: install test test-cov lint format run-ui run-mcp clean
+.PHONY: install test test-cov lint format run-ui run-mcp run-mcp-http clean
 
 install:
 	pip install -e ".[dev]"
@@ -20,6 +20,9 @@ run-ui:
 
 run-mcp:
 	python -m src.mcp_server.server
+
+run-mcp-http:
+	python -m src.mcp_server.http_server
 
 clean:
 	rm -rf __pycache__ .pytest_cache htmlcov/

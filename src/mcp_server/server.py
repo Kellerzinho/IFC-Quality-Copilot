@@ -22,6 +22,19 @@ from src.mcp_server.tools_read import (
     handle_listar_tools_disponiveis,
     handle_verificar_readiness,
 )
+from src.mcp_server.tools_pipeline import (
+    PIPELINE_TOOLS,
+    handle_aplicar_sugestao,
+    handle_explicar_sugestao,
+    handle_exportar_artefatos,
+    handle_fechar_pipeline,
+    handle_iniciar_pipeline,
+    handle_listar_issues,
+    handle_listar_sugestoes,
+    handle_obter_contexto_issue,
+    handle_pos_validar_issue,
+    handle_progresso_sugestoes,
+)
 from src.mcp_server.tools_write import (
     WRITE_TOOLS,
     handle_associar_zona_termica,
@@ -41,6 +54,7 @@ _session: dict[str, Any] = {
     "analyzer": None,
     "writer": None,
     "audit_logger": AuditLogger(),
+    "pipeline": None,
     "profile_id": None,
     "tool_registry": None,
 }
@@ -186,7 +200,9 @@ async def _wrap_diagnosticar_sistemas(session: dict, arguments: dict) -> list[ty
 def _build_registry() -> ToolRegistry:
     """Constrói e retorna o ToolRegistry com todas as tools e seus perfis."""
     # Indexa DIAGNOSTIC_TOOLS e WRITE_TOOLS por nome para extrair description/schema
-    _tool_meta: dict[str, types.Tool] = {t.name: t for t in [*DIAGNOSTIC_TOOLS, *WRITE_TOOLS]}
+    _tool_meta: dict[str, types.Tool] = {
+        t.name: t for t in [*DIAGNOSTIC_TOOLS, *WRITE_TOOLS, *PIPELINE_TOOLS]
+    }
 
     registry = ToolRegistry()
 
@@ -250,6 +266,29 @@ def _build_registry() -> ToolRegistry:
             description=tool.description,
             profiles=_diag_profiles[name],
             category="readiness" if name == "verificar_readiness" else "diagnostic",
+        )
+
+    # --- Ferramentas integradas ao QualityPipeline ---
+    _pipeline_handlers: dict[str, Any] = {
+        "iniciar_pipeline": handle_iniciar_pipeline,
+        "progresso_sugestoes": handle_progresso_sugestoes,
+        "listar_issues": handle_listar_issues,
+        "obter_contexto_issue": handle_obter_contexto_issue,
+        "listar_sugestoes": handle_listar_sugestoes,
+        "explicar_sugestao": handle_explicar_sugestao,
+        "aplicar_sugestao": handle_aplicar_sugestao,
+        "pos_validar_issue": handle_pos_validar_issue,
+        "exportar_artefatos": handle_exportar_artefatos,
+        "fechar_pipeline": handle_fechar_pipeline,
+    }
+    for tool in PIPELINE_TOOLS:
+        registry.register(
+            name=tool.name,
+            handler=_pipeline_handlers[tool.name],
+            schema=tool.inputSchema,
+            description=tool.description,
+            profiles=None,
+            category="pipeline",
         )
 
     # --- Ferramentas de escrita ---

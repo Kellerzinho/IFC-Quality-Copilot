@@ -31,6 +31,15 @@ class Settings(BaseSettings):
     ollama_generate_timeout_seconds: float = Field(default=120.0, description="Timeout de geracao no Ollama")
     ollama_max_retries: int = Field(default=3, description="Numero maximo de tentativas no Ollama")
     ollama_retry_backoff_seconds: float = Field(default=1.0, description="Backoff base entre tentativas do Ollama")
+    ollama_seed: int | None = Field(default=42, description="Seed determinista para o Ollama (None = aleatorio)")
+    ollama_top_p: float = Field(default=0.9, description="Top-p para amostragem do Ollama")
+    ollama_repeat_penalty: float = Field(default=1.1, description="Penalidade de repeticao do Ollama")
+    suggestion_cache_enabled: bool = Field(default=True, description="Habilita cache persistente de sugestoes")
+    suggestion_cache_path: str = Field(
+        default="data/cache/suggestion_cache.db",
+        description="Caminho do banco SQLite de cache de sugestoes",
+    )
+    max_concurrent_llm_calls: int = Field(default=1, description="Concorrencia maxima de chamadas LLM ativas")
     log_level: str = Field(default="DEBUG", description="Nivel de log")
     ifc_upload_dir: str = Field(default="./uploads", description="Diretorio para armazenar arquivos IFC enviados")
     bsdd_base_url: str = Field(default="https://api.bsdd.buildingsmart.org", description="URL base da API bSDD")

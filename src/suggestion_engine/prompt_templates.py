@@ -3,17 +3,81 @@
 import json
 import re
 from collections import defaultdict
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from loguru import logger
 
 from src.models import BSDDContext, IDSContext, Issue, Suggestion
+
+if TYPE_CHECKING:
+    from src.suggestion_engine.grounding import GroundedIssueContext
+
+PROMPT_VERSION = "v2"
+
+SYSTEM_PROMPT_COMPACT = (
+    "Voce e um engenheiro BIM/IFC criterioso. Analise as evidencias fornecidas, "
+    "nao corrija valores por suposicao e responda APENAS com JSON valido."
+)
 
 SYSTEM_PROMPT = (
     "Você é um engenheiro civil brasileiro especialista em BIM, IFC e desempenho "
     "de edificações conforme a NBR 15575. Responda sempre em JSON válido, sem markdown, "
     "sem explicações fora do JSON."
 )
+
+_COMPACT_OUTPUT_CONTRACT = (
+    'Retorne JSON: {"opcoes":[{"issue_id":"...","action":"suggest_value|review_required|abstain",'
+    '"suggested_value":...,"canonical_term":"...","semantic_hint":"...",'
+    '"confidence":"alta|media|baixa","justification":"<=120 chars","review_required":true|false}]}.'
+    " Maximo 3 opcoes. Nao retorne URI. Se nao houver candidato confiavel, use review_required=true."
+    " Ordene opcoes por confianca decrescente. Nao trate diferenca de espessura, material ou dimensao como erro de digitacao."
+)
+
+
+def build_compact_prompt(grounded: "GroundedIssueContext") -> tuple[str, str]:
+    """Monta prompt mínimo a partir de GroundedIssueContext.
+
+    Retorna (system_prompt, user_prompt). Sem texto normativo extenso,
+    sem few-shot, sem pedido de URI oficial.
+    """
+    lines: list[str] = [
+        f"issue_id: {grounded.issue_id}",
+        f"tipo: {grounded.issue_type}",
+        f"classe: {grounded.ifc_class}",
+        f"guid: {grounded.global_id[:8]}",
+    ]
+    if grounded.element_name:
+        lines.append(f"elemento: {grounded.element_name}")
+    if grounded.canonical_pset:
+        lines.append(f"pset_alvo: {grounded.canonical_pset}")
+    if grounded.canonical_property:
+        lines.append(f"propriedade: {grounded.canonical_property}")
+    if grounded.expected_datatype:
+        lines.append(f"tipo_dado: {grounded.expected_datatype}")
+    if grounded.expected_unit:
+        lines.append(f"unidade: {grounded.expected_unit}")
+    if grounded.expected_value is not None:
+        lines.append(f"valor_esperado: {grounded.expected_value}")
+    if grounded.current_value is not None:
+        lines.append(f"valor_atual: {grounded.current_value}")
+    if grounded.requirement_summary:
+        lines.append(f"requisito: {grounded.requirement_summary}")
+    if grounded.official_candidates:
+        cand = ", ".join(grounded.official_candidates[:12])
+        lines.append(f"candidatos: {cand}")
+        lines.append("instrucao: escolha entre os candidatos acima quando aplicavel.")
+    else:
+        lines.append("candidatos: (nenhum oficial; use review_required=true se incerto)")
+    if grounded.relevant_constraints:
+        lines.append("restricoes: " + "; ".join(grounded.relevant_constraints))
+
+    lines.append(
+        "criterio: nao presuma que diferencas de espessura, material, dimensao ou tipo "
+        "sejam erro de digitacao; use esses dados para diferenciar elementos."
+    )
+    lines.append("")
+    lines.append(_COMPACT_OUTPUT_CONTRACT)
+    return SYSTEM_PROMPT_COMPACT, "\n".join(lines)
 
 _GROUNDING_INSTRUCTION = (
     "Se houver contexto IDS ou bSDD, use apenas o vocabulário e os requisitos fornecidos. "
@@ -209,6 +273,209 @@ TEMPLATES: dict[str, str] = {
         "Formato JSON:\n"
         '{{"opcoes": [{{"valor": "...", "justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
     ),
+    "pset_missing_acoustic": (
+        _HEADER_BR +
+        "ISSUE: {element_class} #{guid} (\"{element_name}\"), propriedade {check_property} ausente\n"
+        "DADOS:\n"
+        "- Tipo de elemento: {element_class}\n"
+        "- Material: {material_name}\n"
+        "- Espessura total: {thickness_m} m\n"
+        "- Externo: {is_external}\n"
+        "NORMA: NBR 15575-4/5 — Desempenho acústico de vedações e lajes\n"
+        "CLASSES DE DESEMPENHO (NBR 15575): D (mínimo) | M (intermediário) | S (superior)\n"
+        "EXEMPLOS DE VALORES IFC para AcousticRating:\n"
+        "  - Alvenaria 14cm: 'D' ou '35 dB'\n"
+        "  - Concreto 12cm: 'M' ou '42 dB'\n"
+        "  - Drywall duplo: 'S' ou '50 dB'\n"
+        "TAREFA: Sugira 3 valores de {check_property} para este elemento, "
+        "do mais provável ao menos provável. Use a classe de desempenho (D/M/S) ou valor em dB.\n"
+        "Formato JSON:\n"
+        '{{"opcoes": [{{"valor": "...", "justificativa": "...", '
+        '"ref": "NBR 15575", "confianca": "alta/media/baixa"}}]}}'
+    ),
+    "pset_missing_u_value_slab": (
+        _HEADER_BR +
+        "ISSUE: {element_class} #{guid} (\"{element_name}\"), propriedade ThermalTransmittance ausente\n"
+        "DADOS:\n"
+        "- Tipo IFC: {element_class}\n"
+        "- Material: {material_name}\n"
+        "- Espessura total: {thickness_m} m\n"
+        "- É externo/cobertura: {is_external}\n"
+        "NORMA: NBR 15575-5 — Transmitância térmica de lajes e coberturas\n"
+        "LIMITES MÁXIMOS (U em W/m²·K):\n"
+        "  Zona 1-2 (frio): cobertura ≤ 2,30 | piso ≤ 2,00\n"
+        "  Zona 3-6 (ameno): cobertura ≤ 2,30 | piso ≤ 2,00\n"
+        "  Zona 7-8 (quente): cobertura ≤ 1,00 | piso ≤ 2,00\n"
+        "TAREFA: Sugira 3 valores para ThermalTransmittance [W/(m²·K)] "
+        "com base no material e espessura, do mais provável ao menos provável.\n"
+        "Formato JSON:\n"
+        '{{"opcoes": [{{"valor": 1.80, "justificativa": "...", '
+        '"ref": "NBR 15575-5", "confianca": "alta/media/baixa"}}]}}'
+    ),
+    "pset_missing_solar": (
+        _HEADER_BR +
+        "ISSUE: IfcWindow #{guid} (\"{element_name}\"), propriedade {check_property} ausente\n"
+        "DADOS:\n"
+        "- Material/tipo de vidro: {material_name}\n"
+        "- Externo: {is_external}\n"
+        "- ThermalTransmittance (U): {existing_psets}\n"
+        "REFERÊNCIAS TÍPICAS:\n"
+        "  SolarHeatGainCoefficient (SHGC / Fator Solar):\n"
+        "    Vidro simples incolor 6mm: 0,87\n"
+        "    Vidro duplo Low-E: 0,35–0,55\n"
+        "    Vidro laminado fumê: 0,45–0,65\n"
+        "    Vidro reflexivo: 0,20–0,35\n"
+        "  VisibleTransmittance:\n"
+        "    Incolor: 0,85–0,90 | Fumê: 0,45–0,65 | Reflexivo: 0,20–0,45\n"
+        "NORMA: NBR 15575-4, RTQ-C, ASHRAE 90.1\n"
+        "TAREFA: Sugira 3 valores para {check_property} (adimensional, 0–1), "
+        "do mais provável ao menos provável, com base no tipo de vidro.\n"
+        "Formato JSON:\n"
+        '{{"opcoes": [{{"valor": 0.87, "justificativa": "...", '
+        '"ref": "NBR 15575-4", "confianca": "alta/media/baixa"}}]}}'
+    ),
+    "pset_missing_structural": (
+        _HEADER_BR +
+        "ISSUE: {element_class} #{guid} (\"{element_name}\"), propriedade {check_property} ausente\n"
+        "DADOS:\n"
+        "- Tipo de elemento: {element_class}\n"
+        "- Nome: {element_name}\n"
+        "- Material: {material_name}\n"
+        "- Espessura/seção: {thickness_m} m\n"
+        "INTERPRETAÇÃO:\n"
+        "  IfcBeam/IfcColumn em concreto armado → normalmente LoadBearing = True\n"
+        "  IfcWall fina (< 10cm) ou Drywall → geralmente LoadBearing = False\n"
+        "  IfcSlab entre pavimentos → normalmente LoadBearing = True\n"
+        "TAREFA: Sugira 3 valores booleanos (True/False) para {check_property} "
+        "com justificativa baseada no tipo de elemento e material.\n"
+        "Formato JSON:\n"
+        '{{"opcoes": [{{"valor": true, "justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
+    ),
+    "system_unclassified_structural": (
+        _HEADER_BR +
+        "ISSUE: {element_class} #{guid} (\"{element_name}\"), sistema estrutural não classificado\n"
+        "DADOS:\n"
+        "- Tipo de elemento: {element_class}\n"
+        "- Nome: {element_name}\n"
+        "- Espessura/seção: {thickness_m} m\n"
+        "- Camadas de material: {material_layers}\n"
+        "SISTEMAS ESTRUTURAIS COMUNS (Brasil):\n"
+        "  IfcBeam: Viga de concreto armado moldada in loco, Viga pré-moldada protendida, "
+        "Viga metálica perfil I/H, Viga de madeira laminada colada (MLC), Vigota treliçada\n"
+        "  IfcColumn: Pilar de concreto armado moldado in loco, Pilar pré-moldado de concreto, "
+        "Pilar metálico tubular, Pilar metálico perfil I/H, Pilar de madeira\n"
+        "TAREFA: Classifique o sistema estrutural deste elemento com 3 opções "
+        "ordenadas por probabilidade.\n"
+        "Formato JSON:\n"
+        '{{"opcoes": [{{"sistema": "Viga de concreto armado moldada in loco", '
+        '"justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
+    ),
+    "quantity_missing": (
+        _HEADER_BR +
+        "ISSUE: {element_class} #{guid} (\"{element_name}\"), quantidade base ausente\n"
+        "DADOS GEOMÉTRICOS DISPONÍVEIS:\n"
+        "- Bounding box / dimensões: {geometry_data}\n"
+        "- Material: {material_name}\n"
+        "- Espessura: {thickness_m} m\n"
+        "- Pset existente: {existing_psets}\n"
+        "QUANTIDADE FALTANTE: {check_property}\n"
+        "MÉTODO DE CÁLCULO:\n"
+        "  NetSideArea = comprimento × altura líquida\n"
+        "  Volume = área × espessura\n"
+        "  NetFloorArea = área interna do espaço\n"
+        "  Perimeter = soma dos lados do espaço\n"
+        "TAREFA: Calcule ou estime {check_property} com base nos dados disponíveis. "
+        "Se o cálculo for direto, dê o valor exato. Se for estimativa, justifique o método.\n"
+        "Formato JSON:\n"
+        '{{"opcoes": [{{"valor": ..., "unidade": "m²/m³/m", '
+        '"metodo": "calculo_direto|estimativa", "justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
+    ),
+    "classification_missing": (
+        _HEADER_BR +
+        "ISSUE: {element_class} #{guid} (\"{element_name}\"), referência de classificação ausente\n"
+        "DADOS:\n"
+        "- Tipo de elemento: {element_class}\n"
+        "- Nome: {element_name}\n"
+        "- Material: {material_name}\n"
+        "- Sistema construtivo: {existing_psets}\n"
+        "SISTEMAS DE CLASSIFICAÇÃO (Brasil):\n"
+        "  SINAPI — Composições de custo da Caixa Econômica Federal\n"
+        "  TCPO — Tabelas de Composições de Preços para Orçamentos (PINI)\n"
+        "  NBR 15965 — Sistema de classificação da construção (ABNT)\n"
+        "  OmniClass — Mesa 13 (Produtos) ou Mesa 21 (Elementos)\n"
+        "TAREFA: Sugira 3 classificações para este elemento, com código e descrição, "
+        "priorizando SINAPI e NBR 15965 para o contexto brasileiro.\n"
+        "Formato JSON:\n"
+        '{{"opcoes": [{{"codigo": "74209/001", "sistema": "SINAPI", "descricao": "...", '
+        '"justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
+    ),
+    "thermal_incomplete": (
+        _HEADER_BR +
+        "ISSUE: {element_class} #{guid} (\"{element_name}\"), dados térmicos incompletos\n"
+        "DADOS:\n"
+        "- Propriedade faltante: {check_property}\n"
+        "- Material: {material_name}\n"
+        "- Espessura total: {thickness_m} m\n"
+        "- Externo: {is_external}\n"
+        "- Zona bioclimática: {bioclimatic_zone}\n"
+        "- Psets existentes: {existing_psets}\n"
+        "PROPRIEDADES TÉRMICAS COMUNS:\n"
+        "  ThermalTransmittance (U) [W/m²·K]: resistência global ao calor\n"
+        "  SolarAbsorptance (α): 0–1, superfície escura ≈ 0,8, clara ≈ 0,2\n"
+        "  SolarHeatGainCoefficient (SHGC): 0–1, apenas para janelas\n"
+        "  ThermalMass [kJ/m²·K]: inércia térmica do elemento\n"
+        "NORMA: NBR 15575, RTQ-C, ISO 6946\n"
+        "TAREFA: Sugira 3 valores para {check_property} com referência normativa, "
+        "considerando o material e zona bioclimática.\n"
+        "Formato JSON:\n"
+        '{{"opcoes": [{{"valor": ..., "unidade": "...", "justificativa": "...", '
+        '"ref": "NBR 15575", "confianca": "alta/media/baixa"}}]}}'
+    ),
+    "material_unmapped": (
+        _HEADER_BR +
+        "ISSUE: {element_class} #{guid} (\"{element_name}\"), material não mapeado para padrão\n"
+        "DADOS:\n"
+        "- Nome do material no modelo: {material_name}\n"
+        "- Tipo de elemento: {element_class}\n"
+        "- Espessura: {thickness_m} m\n"
+        "- Camadas: {existing_psets}\n"
+        "CATEGORIAS PADRÃO IFC (IfcMaterialCategory):\n"
+        "  Concrete, Masonry, Metal, Wood, Glass, Gypsum, Stone, Plastic, "
+        "Insulation, Membrane, Earth, Finish, Liquid, Aggregate\n"
+        "EXEMPLOS DE MAPEAMENTO:\n"
+        "  'bloco cerâmico' → Masonry | 'concreto fck25' → Concrete\n"
+        "  'perfil HEA 200' → Metal | 'OSB 18mm' → Wood\n"
+        "  'EPS 50mm' → Insulation | 'gesso acartonado' → Gypsum\n"
+        "TAREFA: Sugira 3 mapeamentos do material '{material_name}' para categorias IFC padrão, "
+        "do mais adequado ao menos adequado.\n"
+        "Formato JSON:\n"
+        '{{"opcoes": [{{"categoria_ifc": "Concrete", "nome_canonico": "Concreto armado fck≥20MPa", '
+        '"justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
+    ),
+    "asset_unidentified": (
+        _HEADER_BR +
+        "ISSUE: {element_class} #{guid} (\"{element_name}\"), equipamento sem identificação\n"
+        "DADOS:\n"
+        "- Classe IFC: {element_class}\n"
+        "- PredefinedType: {predefined_type}\n"
+        "- Nome atual (genérico): {element_name}\n"
+        "- Espaço contentor: {containing_space}\n"
+        "- Pavimento: {floor}\n"
+        "CATEGORIAS DE ATIVOS COMUNS:\n"
+        "  IfcFlowTerminal → luminária, tomada, ponto de hidráulica, sprinkler, difusor de ar\n"
+        "  IfcFlowTerminal (SANITARYTERMINAL) → vaso sanitário, pia, chuveiro, banheira, tanque\n"
+        "  IfcEnergyConversionDevice → caldeira, bomba de calor, aquecedor, chiller\n"
+        "  IfcFlowMovingDevice → bomba hidráulica, ventilador, exaustor, fan-coil\n"
+        "  IfcFlowStorageDevice → reservatório, caixa d'água, tanque de combustível\n"
+        "  IfcDistributionControlElement → termostato, sensor, controlador, painel elétrico\n"
+        "  IfcFurnishingElement → mobiliário de escritório, equipamento de academia\n"
+        "TAREFA: Sugira 3 identificações funcionais para este ativo (nome + categoria de manutenção), "
+        "baseando-se na classe IFC e no espaço contentor.\n"
+        "Formato JSON:\n"
+        '{{"opcoes": [{{"nome_ativo": "...", "categoria": "...", '
+        '"periodicidade_manutencao": "mensal/trimestral/semestral/anual", '
+        '"justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
+    ),
 }
 
 
@@ -296,11 +563,19 @@ def _select_template(issue: Issue) -> str:
     if issue.issue_type == "pset_missing":
         prop = issue.context.get("check_property", "")
         if prop == "ThermalTransmittance":
+            if issue.element_class in ("IfcSlab", "IfcSlabStandardCase", "IfcRoof", "IfcCurtainWall"):
+                return TEMPLATES["pset_missing_u_value_slab"]
             return TEMPLATES["pset_missing_thermal"]
         if prop == "FireRating":
             return TEMPLATES["pset_missing_fire"]
-        if prop == "Category" and issue.element_class in ("IfcSpace",):
+        if prop == "Category" and issue.element_class == "IfcSpace":
             return TEMPLATES["pset_missing_space_category"]
+        if prop in ("AcousticRating", "SoundTransmissionLoss"):
+            return TEMPLATES["pset_missing_acoustic"]
+        if prop in ("SolarHeatGainCoefficient", "VisibleTransmittance"):
+            return TEMPLATES["pset_missing_solar"]
+        if prop in ("LoadBearing", "IsLoadBearing", "HasNonSkidSurface"):
+            return TEMPLATES["pset_missing_structural"]
         return TEMPLATES["pset_missing_generic"]
     if issue.issue_type == "relation_broken":
         expected = issue.context.get("expected_relation", "")
@@ -310,7 +585,19 @@ def _select_template(issue: Issue) -> str:
     if issue.issue_type == "system_unclassified":
         if issue.element_class in ("IfcSlab", "IfcSlabStandardCase"):
             return TEMPLATES["system_unclassified_slab"]
+        if issue.element_class in ("IfcBeam", "IfcColumn"):
+            return TEMPLATES["system_unclassified_structural"]
         return TEMPLATES["system_unclassified"]
+    if issue.issue_type == "quantity_missing":
+        return TEMPLATES["quantity_missing"]
+    if issue.issue_type == "material_unmapped":
+        return TEMPLATES["material_unmapped"]
+    if issue.issue_type == "thermal_incomplete":
+        return TEMPLATES["thermal_incomplete"]
+    if issue.issue_type == "classification_missing":
+        return TEMPLATES["classification_missing"]
+    if issue.issue_type == "asset_unidentified":
+        return TEMPLATES["asset_unidentified"]
     template = TEMPLATES.get(issue.issue_type)
     if template is None:
         logger.warning("Nenhum template para issue_type '{}', usando genérico", issue.issue_type)
@@ -483,7 +770,12 @@ def build_prompt(
     system_prompt = SYSTEM_PROMPT
     if grounding_mode != "none" and (ids_context is not None or bsdd_context is not None):
         system_prompt = f"{SYSTEM_PROMPT} {_GROUNDING_INSTRUCTION}"
-    user_prompt = f"{user_prompt}\n\nCONTRATO DE SAIDA:\n{_LLM_OUTPUT_CONTRACT}"
+    user_prompt = (
+        f"{user_prompt}\n\nCRITERIO DE ENGENHARIA:\n"
+        "Nao presuma que diferencas de espessura, material, dimensao ou tipo sejam erro de digitacao. "
+        "Use esses dados para diferenciar elementos e ordenar as opcoes por confianca decrescente."
+        f"\n\nCONTRATO DE SAIDA:\n{_LLM_OUTPUT_CONTRACT}"
+    )
 
     return system_prompt, user_prompt
 
@@ -547,6 +839,7 @@ _LABEL_KEYS = (
     "description",
 )
 _VALUE_KEYS = (
+    "suggested_value",
     "value",
     "valor",
     "term",
@@ -559,7 +852,8 @@ _VALUE_KEYS = (
     "action",
     "acao",
 )
-_EXPLICIT_VALUE_KEYS = ("value", "valor")
+_COMPACT_FORBIDDEN_KEYS = ("bsdd_uri", "uri", "ids_uri", "official_uri")
+_EXPLICIT_VALUE_KEYS = ("suggested_value", "value", "valor")
 _FALLBACK_VALUE_KEYS = (
     "term",
     "termo",
@@ -876,5 +1170,3 @@ def parse_llm_response(response: str, issue_type: str) -> list[Suggestion]:
                 result.append(s)
 
     return result
-
-

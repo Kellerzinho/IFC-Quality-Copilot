@@ -36,10 +36,16 @@ _STATUS_COLOR: dict[str, str] = {
 
 _SOURCE_BADGE: dict[str, str] = {
     "ready": "🤖 Sugestão do LLM",
+    "cached": "💾 Cache",
+    "reused": "♻️ Reusado",
+    "review_required": "⚠️ Revisar",
 }
 
 _SOURCE_BADGE_STYLE: dict[str, str] = {
     "ready": "background:#1E3A5F20; color:#93C5FD; border: 1px solid #1E3A5F60;",
+    "cached": "background:#0F4C5C30; color:#67E8F9; border: 1px solid #155E7560;",
+    "reused": "background:#3B0A4530; color:#D8B4FE; border: 1px solid #6B21A860;",
+    "review_required": "background:#52341230; color:#FBBF24; border: 1px solid #92400E60;",
 }
 
 _CUSTOM_OPTION_LABEL = "Outro (valor customizado)"
@@ -348,6 +354,10 @@ def _render_pending_controls(
     if suggestion_set.error:
         st.warning(f"Não foi possível gerar sugestões: {suggestion_set.error}")
 
+    suggestion_set.suggestions = sorted(
+        suggestion_set.suggestions,
+        key=lambda suggestion: suggestion.confidence_order,
+    )
     radio_options, option_meta = _build_radio_options(suggestion_set)
 
     selected = st.radio(

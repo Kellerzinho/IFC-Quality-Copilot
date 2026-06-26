@@ -123,6 +123,14 @@ def normalize_suggestion(
 
 def normalize_value_for_issue(issue: Issue, raw_value: Any) -> Any | None:
     """Converte o valor cru para o tipo e formato esperados pela issue."""
+    if issue.issue_type == "quantity_missing":
+        return parse_numeric_value(raw_value)
+
+    if issue.issue_type == "material_unmapped":
+        # Nome/material construtivo nao deve ser inventado pelo LLM. Sem uma
+        # ferramenta de escrita de materiais e sem fonte oficial, exige revisao.
+        return None
+
     if issue.issue_type == "pset_missing":
         prop = str(issue.context.get("check_property") or "").strip()
         if prop == "ThermalTransmittance":

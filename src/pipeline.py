@@ -35,10 +35,12 @@ from src.models import (
     SuggestionSet,
     ValidationResult,
 )
+from src.suggestion_engine.issue_deduplicator import IssueDeduplicator
 from src.suggestion_engine.issue_store import IssueStore
 from src.suggestion_engine.normalization import normalize_value_for_issue
 from src.suggestion_engine.ollama_client import OllamaClient
 from src.suggestion_engine.suggestion import SuggestionGenerator
+from src.suggestion_engine.suggestion_cache import PROMPT_VERSION, SuggestionCache
 from src.suggestion_engine.worker import SuggestionWorker
 from src.translator.ids_parser import parse_ids
 from src.translator.rule_generator import apply_rules, generate_rules
@@ -52,9 +54,13 @@ _PSET_FOR_CLASS: dict[str, str] = {
     "IfcDoor": "Pset_DoorCommon",
     "IfcWindow": "Pset_WindowCommon",
     "IfcSlab": "Pset_SlabCommon",
+    "IfcSlabStandardCase": "Pset_SlabCommon",
     "IfcSpace": "Pset_SpaceCommon",
     "IfcColumn": "Pset_ColumnCommon",
     "IfcBeam": "Pset_BeamCommon",
+    "IfcRoof": "Pset_RoofCommon",
+    "IfcStair": "Pset_StairCommon",
+    "IfcCurtainWall": "Pset_CurtainWallCommon",
 }
 
 
@@ -98,7 +104,22 @@ class QualityPipeline:
         self.writer = IFCWriter(self.ifc_file)
         self.audit_logger = AuditLogger(model_name=Path(ifc_path).stem)
         self._ollama_client = OllamaClient()
-        self.suggestion_gen = SuggestionGenerator(self._ollama_client)
+        self.suggestion_cache: SuggestionCache | None = None
+        if self.settings.suggestion_cache_enabled:
+            try:
+                cache_path = Path(self.settings.suggestion_cache_path)
+                if not cache_path.is_absolute():
+                    cache_path = Path(__file__).parent.parent / cache_path
+                self.suggestion_cache = SuggestionCache(cache_path)
+                self.suggestion_cache.invalidate_by_model(self._ollama_client.model)
+                self.suggestion_cache.invalidate_by_prompt(PROMPT_VERSION)
+            except Exception as exc:
+                logger.warning("SuggestionCache desabilitado: {}", exc)
+                self.suggestion_cache = None
+        self.suggestion_gen = SuggestionGenerator(self._ollama_client, cache=self.suggestion_cache)
+        self.deduplicator = IssueDeduplicator()
+        self._reuse_map: dict[str, str] = {}
+        self.suggestion_metrics: list[dict] = []
         self.bsdd_client: BSDDClient | None = BSDDClient()
         self.bsdd_builder: BSDDContextBuilder | None = BSDDContextBuilder(self.bsdd_client)
         self.operational_rules: list[OperationalRule] = []
@@ -126,11 +147,16 @@ class QualityPipeline:
         logger.info("QualityPipeline iniciado: {}", ifc_path)
 
     def close(self) -> None:
-        """Libera recursos do pipeline (fecha conexão HTTP do Ollama)."""
+        """Libera recursos do pipeline (fecha conexão HTTP do Ollama e cache)."""
         self.stop_worker()
         self._ollama_client.close()
         if self.bsdd_client is not None:
             self.bsdd_client.close()
+        if self.suggestion_cache is not None:
+            try:
+                self.suggestion_cache.close()
+            except Exception:
+                pass
 
     # ------------------------------------------------------------------
     # Diagnóstico
@@ -244,9 +270,16 @@ class QualityPipeline:
 
         priority_types = list(self.profile.issue_types) if self.profile else None
 
-        self.issue_store = IssueStore()
+        self.issue_store = IssueStore(max_concurrent=self.settings.max_concurrent_llm_calls)
         self.issue_store.add_issues(report.issues, priority_issue_types=priority_types)
         self._prepare_grounding_contexts(report.issues)
+        self._reuse_map = self.deduplicator.build_reuse_map(list(report.issues))
+        if self._reuse_map:
+            logger.info(
+                "Deduplicacao: {} issues secundarias reusarao sugestoes ({} grupos)",
+                len(self._reuse_map),
+                len(set(self._reuse_map.values())),
+            )
 
         self.worker = SuggestionWorker(
             store=self.issue_store,
@@ -257,6 +290,8 @@ class QualityPipeline:
             bsdd_context_map=self.bsdd_context_map,
             context_builder=self.bsdd_builder,
             grounding_mode=self.grounding_mode,
+            reuse_map=self._reuse_map,
+            warm_up=True,
         )
         self.worker.start()
 
@@ -274,10 +309,32 @@ class QualityPipeline:
                 "queued": 0,
                 "processing": 0,
                 "ready": 0,
+                "cached": 0,
+                "reused": 0,
+                "invalid": 0,
                 "failed": 0,
+                "review_required": 0,
+                "cancelled": 0,
                 "percent_complete": 0.0,
             }
         return self.issue_store.get_progress()
+
+    def collect_suggestion_metrics(self) -> list[dict]:
+        """Coleta métricas de todas as sugestões geradas até agora.
+
+        Útil para exportação ao final ou debug. Retorna lista de dicts.
+        """
+        out: list[dict] = []
+        if self.issue_store is None:
+            return out
+        for item in self.issue_store.get_all_with_status():
+            sset = item.get("suggestion")
+            if sset is None or sset.metrics is None:
+                continue
+            payload = sset.metrics.model_dump()
+            payload["status"] = item["status"]
+            out.append(payload)
+        return out
 
     def get_available_issues(self) -> list[tuple[Issue, SuggestionSet | None, str]]:
         """Retorna issues com sugestões prontas + issues ainda em processamento.
@@ -356,7 +413,7 @@ class QualityPipeline:
         self._validation_results[issue.id] = validation_result
         issue.resolve(value=normalized_value, decision=decision)
 
-        logger.info(
+        logger.debug(
             "apply_correction: issue={} decision={} value={}",
             issue_id,
             decision,
@@ -415,6 +472,18 @@ class QualityPipeline:
                 metrics["readiness_blocking_issues"] = score.blocking_issues
             except Exception as exc:
                 logger.warning("compute_readiness no export falhou: {}", exc)
+
+        suggestion_metrics = self.collect_suggestion_metrics()
+        if suggestion_metrics:
+            metrics["suggestion_metrics"] = suggestion_metrics
+            cache_hits = sum(1 for m in suggestion_metrics if m.get("cache_hit"))
+            reused = sum(1 for m in suggestion_metrics if m.get("reused_from_issue_id"))
+            metrics["llm_call_summary"] = {
+                "total": len(suggestion_metrics),
+                "cache_hits": cache_hits,
+                "reused": reused,
+                "fresh_calls": len(suggestion_metrics) - cache_hits - reused,
+            }
         with open(metrics_out, "w", encoding="utf-8") as fh:
             json.dump(metrics, fh, ensure_ascii=False, indent=2)
 
@@ -572,6 +641,8 @@ class QualityPipeline:
         return {
             "space_unnamed": "renomear_espaco",
             "pset_missing": "preencher_pset",
+            "quantity_missing": "preencher_base_quantities",
+            "classification_missing": "mapear_classificacao",
             "relation_broken": "criar_relacao_fills",
             "system_unclassified": "classificar_sistema",
         }.get(issue.issue_type, "correcao_generica")
@@ -582,6 +653,12 @@ class QualityPipeline:
             return "LongName"
         if issue.issue_type == "pset_missing":
             return issue.context.get("check_property", "propriedade")
+        if issue.issue_type == "quantity_missing":
+            return issue.context.get("check_property", "quantidade")
+        if issue.issue_type == "classification_missing":
+            return "IfcClassificationReference"
+        if issue.issue_type == "material_unmapped":
+            return "material"
         if issue.issue_type == "relation_broken":
             return "IfcRelFillsElement"
         if issue.issue_type == "system_unclassified":
@@ -604,6 +681,30 @@ class QualityPipeline:
                 issue.element_guid, pset, {prop: value}
             )
             return old_props.get(prop)
+
+        if issue.issue_type == "quantity_missing":
+            quantity = issue.context.get("check_property", "")
+            qto = issue.context.get("check_pset", "")
+            if not qto or not quantity:
+                raise ValueError(f"Contexto Qto incompleto para issue {issue.id}")
+            _, old_quantities = self.writer.preencher_base_quantities(
+                issue.element_guid, qto, {quantity: float(value)}
+            )
+            return old_quantities.get(quantity)
+
+        if issue.issue_type == "classification_missing":
+            _, old = self.writer.mapear_classificacao(
+                issue.element_guid,
+                "Sistema de classificacao orcamentaria",
+                str(value),
+                str(value),
+            )
+            return old
+
+        if issue.issue_type == "material_unmapped":
+            raise ValueError(
+                "Material nao mapeado exige revisao manual; nao ha escrita automatica segura"
+            )
 
         if issue.issue_type == "relation_broken":
             wall_guid = issue.context.get("wall_host_guid") or ""
@@ -784,6 +885,15 @@ class QualityPipeline:
             )
             if old_value is not None:
                 self.writer.preencher_pset(issue.element_guid, pset, {prop: old_value})
+            return
+
+        if issue.issue_type == "quantity_missing":
+            quantity = issue.context.get("check_property", "")
+            qto = issue.context.get("check_pset", "")
+            if old_value is not None and qto and quantity:
+                self.writer.preencher_base_quantities(
+                    issue.element_guid, qto, {quantity: float(old_value)}
+                )
             return
 
         if issue.issue_type == "system_unclassified" and old_value:

@@ -10,6 +10,7 @@ from loguru import logger
 
 from src.ifc_registry import DEFAULT_IFC_DATA_REGISTRY
 from src.models import IDSSpecification, Issue, OperationalRule, ReadinessProfile
+from src.translator.pset_resolver import resolve_property
 
 # Propriedades com tipo conhecido para inferência de check_type
 _NUMERIC_PROPS: frozenset[str] = frozenset({
@@ -271,37 +272,71 @@ def _infer_write_action(spec: IDSSpecification, req: dict[str, str]) -> str:
 
 
 def _infer_required_context(spec: IDSSpecification, req: dict[str, str]) -> list[str]:
-    """Infere required_context baseado no que a estratégia de sugestão vai precisar.
+    """Infere required_context baseado em padrões semânticos da propriedade e do Pset.
 
-    Regras de inferência:
-        - Propriedades térmicas → contexto de material e geometria de envoltória
-        - BaseQuantities → contexto geométrico
-        - Atributos de nome de espaço → contexto funcional do espaço
-        - Demais → lista vazia
+    Usa correspondência por keywords no nome da propriedade e do Pset para funcionar
+    com qualquer IDS customizado, não apenas propriedades canônicas conhecidas.
+    Garante contexto mínimo (material) para qualquer propriedade desconhecida.
     """
     pset = req.get("pset", "")
     prop = req.get("prop", "")
     facet_type = req.get("facet_type", "")
+    prop_lower = prop.lower()
+    pset_lower = pset.lower()
 
-    if prop in _THERMAL_CONTEXT_PROPS:
-        return ["material", "thickness", "is_external", "layers"]
-
-    if facet_type == "classification":
-        return ["classifications"]
-
-    if facet_type == "material":
-        return ["material"]
-
-    if pset.startswith("Qto_"):
-        return ["geometry", "bounding_box"]
-
+    # ---- Contexto de espaço funcional ------------------------------------
     if pset == _PSET_ATTRIBUTE and prop in _SPACE_ATTR_PROPS:
         return ["area", "contained_elements", "adjacent_spaces"]
 
+    # ---- Relações IFC ---------------------------------------------------
     if pset == _PSET_RELATION and prop == "IFCRELSPACEBOUNDARY":
         return ["spaces", "boundaries"]
 
-    return []
+    # ---- Classificação --------------------------------------------------
+    if facet_type == "classification" or "classification" in pset_lower:
+        return ["classifications", "material"]
+
+    # ---- Material/constituinte ------------------------------------------
+    if facet_type == "material":
+        return ["material", "layers", "total_thickness_m"]
+
+    # ---- Quantidades de base --------------------------------------------
+    if pset.startswith("Qto_") or facet_type == "quantity":
+        return ["width", "height", "length", "volume", "net_side_area", "net_floor_area"]
+
+    # ---- Propriedades térmicas (canônicas + keywords genéricas) ---------
+    _thermal_kw = ("thermal", "transmittance", "conductivity", "u_value", "uvalue",
+                   "u-value", "shgc", "solar", "absorptance", "heat", "insulation",
+                   "conductance", "resistance", "r_value", "rvalue")
+    if any(kw in prop_lower for kw in _thermal_kw):
+        return ["material", "thickness", "is_external", "layers", "has_insulation"]
+
+    # ---- Propriedades acústicas -----------------------------------------
+    _acoustic_kw = ("acoustic", "sound", "noise", "rw", "dntw", "stc", "decibel",
+                    "attenuation", "absorption")
+    if any(kw in prop_lower for kw in _acoustic_kw):
+        return ["material", "thickness", "is_external", "layers"]
+
+    # ---- Propriedades de fogo -------------------------------------------
+    _fire_kw = ("fire", "flame", "combusti", "rei", "trrf", "ignition",
+                "flammability", "smoke")
+    if any(kw in prop_lower for kw in _fire_kw):
+        return ["material", "thickness", "is_external"]
+
+    # ---- Propriedades estruturais / carga --------------------------------
+    _structural_kw = ("load", "bearing", "structural", "strength", "stress",
+                      "stiffness", "modulus", "compressive", "tensile", "yield")
+    if any(kw in prop_lower for kw in _structural_kw):
+        return ["material", "thickness", "is_external"]
+
+    # ---- Dimensões / geometria ------------------------------------------
+    _geo_kw = ("area", "volume", "length", "width", "height", "perimeter",
+               "depth", "thickness", "dimension", "size", "span")
+    if any(kw in prop_lower for kw in _geo_kw):
+        return ["width", "height", "length", "volume", "net_side_area"]
+
+    # ---- Contexto mínimo garantido: sempre entregue material ------------
+    return ["material", "total_thickness_m"]
 
 
 def _infer_unit(req: dict[str, str]) -> str | None:
@@ -499,7 +534,7 @@ def _get_pset_value(
     Convenções:
         pset_name == ""             → atributo direto via getattr (ex: LongName, Name)
         pset_name == "IFC_RELATION" → não aplicável aqui; retorna None
-        outros                      → lê via ifcopenshell.util.element.get_psets()
+        outros                      → busca via resolve_property (suporta aliases e Psets alternativos)
 
     Se ``psets_cache`` for fornecido, evita reconstruir o dicionário de psets para o mesmo
     elemento entre chamadas (cache por GlobalId), eliminando custo O(R) em apply_rules.
@@ -510,27 +545,10 @@ def _get_pset_value(
     if pset_name == _PSET_RELATION:
         return None
 
-    psets: dict[str, dict] | None = None
-    if psets_cache is not None:
-        guid = getattr(element, "GlobalId", None)
-        if guid is not None:
-            psets = psets_cache.get(guid)
-            if psets is None:
-                try:
-                    psets = ifcopenshell.util.element.get_psets(element)
-                except Exception:
-                    psets = {}
-                psets_cache[guid] = psets
-    if psets is None:
-        try:
-            psets = ifcopenshell.util.element.get_psets(element)
-        except Exception:
-            return None
-
-    pset_data = psets.get(pset_name)
-    if pset_data is None:
-        return None
-    return pset_data.get(prop_name)
+    value, _found_pset, _found_prop, _exact = resolve_property(
+        element, pset_name, prop_name, psets_cache
+    )
+    return value
 
 
 def _evaluate_condition(

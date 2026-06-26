@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ids xmlns="http://standards.buildingsmart.org/IDS"
+     xmlns:xs="http://www.w3.org/2001/XMLSchema"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://standards.buildingsmart.org/IDS
+                         http://standards.buildingsmart.org/IDS/1.0/ids.xsd">
+  <info>
+    <title>Segurança contra Incêndio — NBR 14432 / IT do CBPMESP</title>
+    <description>Verificações de resistência ao fogo para elementos construtivos conforme ABNT NBR 14432 e Instruções Técnicas do CBPMESP</description>
+    <author>IFC Quality Copilot</author>
+    <date>2026-05-04</date>
+    <version>1.0</version>
+  </info>
+  <specifications>
+
+    <specification name="Paredes devem ter classificação de resistência ao fogo"
+                   description="NBR 14432: paredes (estruturais ou de compartimentação) devem ter FireRating preenchido">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCWALL"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcLabel">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_WallCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="FireRating"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <specification name="Lajes devem ter classificação de resistência ao fogo"
+                   description="NBR 14432: lajes entre pavimentos e coberturas devem ter FireRating preenchido">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCSLAB"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcLabel">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_SlabCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="FireRating"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <specification name="Portas devem ter classificação de resistência ao fogo"
+                   description="NBR 14432: portas corta-fogo devem ter FireRating especificado (ex: P-30, P-60, P-90)">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCDOOR"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcLabel">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_DoorCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="FireRating"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <specification name="Vigas devem ter classificação de resistência ao fogo"
+                   description="NBR 14432: vigas estruturais devem ter TRRF (Tempo Requerido de Resistência ao Fogo) documentado">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCBEAM"/>
+            </xs:restriction>
+          </name>
+        </entity>
+        <property datatype="IfcBoolean">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_BeamCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="LoadBearing"/>
+            </xs:restriction>
+          </baseName>
+          <value>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="TRUE"/>
+            </xs:restriction>
+          </value>
+        </property>
+      </applicability>
+      <requirements>
+        <property datatype="IfcLabel">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_BeamCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="FireRating"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <specification name="Pilares devem ter classificação de resistência ao fogo"
+                   description="NBR 14432: pilares estruturais devem ter TRRF documentado — geralmente REI 60 a REI 120 para edificações residenciais">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCCOLUMN"/>
+            </xs:restriction>
+          </name>
+        </entity>
+        <property datatype="IfcBoolean">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_ColumnCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="LoadBearing"/>
+            </xs:restriction>
+          </baseName>
+          <value>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="TRUE"/>
+            </xs:restriction>
+          </value>
+        </property>
+      </applicability>
+      <requirements>
+        <property datatype="IfcLabel">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_ColumnCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="FireRating"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <specification name="Escadas devem ter classificação de resistência ao fogo"
+                   description="NBR 14432: escadas em rotas de saída devem ter FireRating preenchido">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCSTAIR"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcLabel">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_StairCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="FireRating"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <specification name="Coberturas devem ter classificação de resistência ao fogo"
+                   description="NBR 14432: coberturas (IfcRoof) devem ter FireRating preenchido">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCROOF"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcLabel">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_RoofCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="FireRating"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <specification name="Paredes externas devem indicar IsExternal"
+                   description="Paredes externas participam do compartilhamento de fogo e devem ser identificadas como externas">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCWALL"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcBoolean">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_WallCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IsExternal"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+  </specifications>
+</ids>

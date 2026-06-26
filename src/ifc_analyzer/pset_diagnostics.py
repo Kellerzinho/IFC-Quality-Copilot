@@ -18,27 +18,88 @@ from src.ifc_analyzer.space_diagnostics import (
 
 DEFAULT_REQUIRED_PSETS: dict[str, dict[str, list[str]]] = {
     "IfcWall": {
-        "Pset_WallCommon": ["ThermalTransmittance", "IsExternal", "FireRating", "IsLoadBearing"],
+        "Pset_WallCommon": [
+            "ThermalTransmittance",
+            "IsExternal",
+            "FireRating",
+            "IsLoadBearing",
+            "AcousticRating",
+        ],
     },
     "IfcSlab": {
-        "Pset_SlabCommon": ["IsExternal", "LoadBearing"],
+        "Pset_SlabCommon": [
+            "IsExternal",
+            "LoadBearing",
+            "ThermalTransmittance",
+            "FireRating",
+        ],
     },
     "IfcDoor": {
-        "Pset_DoorCommon": ["FireRating", "IsExternal"],
+        "Pset_DoorCommon": [
+            "FireRating",
+            "IsExternal",
+            "AcousticRating",
+        ],
     },
     "IfcWindow": {
-        "Pset_WindowCommon": ["ThermalTransmittance", "IsExternal"],
+        "Pset_WindowCommon": [
+            "ThermalTransmittance",
+            "IsExternal",
+            "SolarHeatGainCoefficient",
+        ],
     },
     "IfcSpace": {
         "Pset_SpaceCommon": ["Category"],
     },
+    "IfcBeam": {
+        "Pset_BeamCommon": [
+            "FireRating",
+            "LoadBearing",
+            "IsExternal",
+        ],
+    },
+    "IfcColumn": {
+        "Pset_ColumnCommon": [
+            "FireRating",
+            "LoadBearing",
+            "IsExternal",
+        ],
+    },
+    "IfcRoof": {
+        "Pset_RoofCommon": [
+            "ThermalTransmittance",
+            "FireRating",
+            "IsExternal",
+        ],
+    },
+    "IfcStair": {
+        "Pset_StairCommon": [
+            "FireRating",
+            "HasNonSkidSurface",
+        ],
+    },
+    "IfcCurtainWall": {
+        "Pset_CurtainWallCommon": [
+            "ThermalTransmittance",
+            "IsExternal",
+            "FireRating",
+        ],
+    },
 }
 
 # Propriedades cuja ausência é severidade alta (impede simulação ou verificação normativa)
-_HIGH_SEVERITY_PROPERTIES: frozenset[str] = frozenset({"ThermalTransmittance", "FireRating"})
+_HIGH_SEVERITY_PROPERTIES: frozenset[str] = frozenset({
+    "ThermalTransmittance",
+    "FireRating",
+    "SolarHeatGainCoefficient",
+    "LoadBearing",
+})
 
 # Propriedades numéricas onde 0.0 é fisicamente impossível ou sem sentido
-_ZERO_IS_INVALID: frozenset[str] = frozenset({"ThermalTransmittance"})
+_ZERO_IS_INVALID: frozenset[str] = frozenset({
+    "ThermalTransmittance",
+    "SolarHeatGainCoefficient",
+})
 
 
 # ---------------------------------------------------------------------------

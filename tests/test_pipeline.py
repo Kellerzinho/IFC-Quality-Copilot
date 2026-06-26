@@ -7,6 +7,7 @@ import ifcopenshell
 import ifcopenshell.api
 import ifcopenshell.api.owner.settings
 import ifcopenshell.guid
+import ifcopenshell.util.element
 import pytest
 
 import json
@@ -447,6 +448,58 @@ def test_apply_correction_rejects_invalid_numeric_value(pipeline):
 
     with pytest.raises(ValueError, match="Valor invalido"):
         pipeline.apply_correction(issue.id, "zero", "edited", "eng")
+
+
+def test_apply_correction_writes_quantity_missing_to_qto(pipeline):
+    pipeline.diagnose()
+    space = pipeline.ifc_file.by_type("IfcSpace")[0]
+    issue = Issue(
+        element_guid=space.GlobalId,
+        element_class="IfcSpace",
+        issue_type="quantity_missing",
+        severity="low",
+        description="NetFloorArea ausente",
+        context={"check_pset": "Qto_SpaceBaseQuantities", "check_property": "NetFloorArea"},
+    )
+    pipeline.issues_suggestions = [
+        (
+            issue,
+            SuggestionSet(
+                issue_id=issue.id,
+                suggestions=[
+                    Suggestion(
+                        label="12.5",
+                        value=12.5,
+                        justification="valor editado",
+                        confidence="alta",
+                    )
+                ],
+            ),
+        )
+    ]
+
+    entry = pipeline.apply_correction(issue.id, "12,5 m2", "edited", "eng")
+
+    qtos = ifcopenshell.util.element.get_psets(space, qtos_only=True)
+    assert qtos["Qto_SpaceBaseQuantities"]["NetFloorArea"] == pytest.approx(12.5)
+    assert entry.action == "preencher_base_quantities"
+
+
+def test_apply_correction_rejects_material_unmapped_auto_write(pipeline):
+    pipeline.diagnose()
+    space = pipeline.ifc_file.by_type("IfcSpace")[0]
+    issue = Issue(
+        element_guid=space.GlobalId,
+        element_class="IfcSpace",
+        issue_type="material_unmapped",
+        severity="low",
+        description="Material nao mapeado",
+        context={},
+    )
+    pipeline.issues_suggestions = [(issue, SuggestionSet(issue_id=issue.id, suggestions=[]))]
+
+    with pytest.raises(ValueError, match="Valor invalido"):
+        pipeline.apply_correction(issue.id, "Material nao mapeado para IfcMaterial", "accepted", "eng")
 
 
 def test_post_validation_disabled_skips(pipeline):

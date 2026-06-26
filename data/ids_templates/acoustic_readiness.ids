@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ids xmlns="http://standards.buildingsmart.org/IDS"
+     xmlns:xs="http://www.w3.org/2001/XMLSchema"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://standards.buildingsmart.org/IDS
+                         http://standards.buildingsmart.org/IDS/1.0/ids.xsd">
+  <info>
+    <title>Desempenho Acústico — NBR 15575-4/5</title>
+    <description>Verificações de isolamento acústico para vedações verticais, horizontais e esquadrias conforme ABNT NBR 15575 partes 4 e 5</description>
+    <author>IFC Quality Copilot</author>
+    <date>2026-05-04</date>
+    <version>1.0</version>
+  </info>
+  <specifications>
+
+    <specification name="Paredes externas devem ter classificação acústica"
+                   description="NBR 15575-4: paredes externas devem ter AcousticRating (D/M/S ou valor em dB) preenchido">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCWALL"/>
+            </xs:restriction>
+          </name>
+        </entity>
+        <property datatype="IfcBoolean">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_WallCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IsExternal"/>
+            </xs:restriction>
+          </baseName>
+          <value>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="TRUE"/>
+            </xs:restriction>
+          </value>
+        </property>
+      </applicability>
+      <requirements>
+        <property datatype="IfcLabel">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_WallCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="AcousticRating"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <specification name="Paredes internas entre unidades devem ter classificação acústica"
+                   description="NBR 15575-4 Tabela 1: paredes entre unidades autônomas exigem isolamento mínimo D (≥ 40 dB)">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCWALL"/>
+            </xs:restriction>
+          </name>
+        </entity>
+        <property datatype="IfcBoolean">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_WallCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IsExternal"/>
+            </xs:restriction>
+          </baseName>
+          <value>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="FALSE"/>
+            </xs:restriction>
+          </value>
+        </property>
+      </applicability>
+      <requirements>
+        <property datatype="IfcLabel">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_WallCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="AcousticRating"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <specification name="Lajes devem ter classificação acústica"
+                   description="NBR 15575-5: lajes entre unidades devem ter AcousticRating documentado (isolamento de ruído aéreo e de impacto)">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCSLAB"/>
+            </xs:restriction>
+          </name>
+        </entity>
+        <property datatype="IfcBoolean">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_SlabCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="LoadBearing"/>
+            </xs:restriction>
+          </baseName>
+          <value>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="TRUE"/>
+            </xs:restriction>
+          </value>
+        </property>
+      </applicability>
+      <requirements>
+        <property datatype="IfcLabel">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_SlabCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="AcousticRating"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <specification name="Portas devem ter classificação acústica"
+                   description="NBR 15575-4: portas entre dormitórios e áreas comuns devem ter AcousticRating preenchido">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCDOOR"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <property datatype="IfcLabel">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_DoorCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="AcousticRating"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <specification name="Janelas externas devem ter classificação acústica"
+                   description="NBR 15575-4: janelas externas devem ter AcousticRating documentado (atenuação de ruído externo)">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCWINDOW"/>
+            </xs:restriction>
+          </name>
+        </entity>
+        <property datatype="IfcBoolean">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_WindowCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IsExternal"/>
+            </xs:restriction>
+          </baseName>
+          <value>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="TRUE"/>
+            </xs:restriction>
+          </value>
+        </property>
+      </applicability>
+      <requirements>
+        <property datatype="IfcLabel">
+          <propertySet>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Pset_WindowCommon"/>
+            </xs:restriction>
+          </propertySet>
+          <baseName>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="AcousticRating"/>
+            </xs:restriction>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+
+    <specification name="Espaços de dormitório devem ter nome funcional para rastreabilidade acústica"
+                   description="Dormitórios possuem requisitos acústicos mais restritivos — espaços devem ter LongName para classificação correta">
+      <applicability>
+        <entity>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="IFCSPACE"/>
+            </xs:restriction>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <attribute>
+          <name>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="LongName"/>
+            </xs:restriction>
+          </name>
+          <value>
+            <xs:restriction base="xs:string">
+              <xs:minLength value="1"/>
+            </xs:restriction>
+          </value>
+        </attribute>
+      </requirements>
+    </specification>
+
+  </specifications>
+</ids>

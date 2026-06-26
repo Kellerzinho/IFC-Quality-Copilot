@@ -1,33 +1,8 @@
-"""Componente de filtros, busca e ações em lote para issues IFC."""
+"""Componente de ações em lote para issues IFC."""
 
 import streamlit as st
 
 from src.models import Issue, SuggestionSet
-
-_ISSUE_TYPE_OPTIONS: dict[str, str] = {
-    "space_unnamed": "Espaço sem nome",
-    "pset_missing": "Propriedade ausente",
-    "relation_broken": "Relação quebrada",
-    "system_unclassified": "Sistema não classificado",
-}
-
-_SEVERITY_OPTIONS: dict[str, str] = {
-    "high": "Alta",
-    "medium": "Média",
-    "low": "Baixa",
-}
-
-_STATUS_OPTIONS: dict[str, str] = {
-    "pending": "Pendente",
-    "accepted": "Aceita",
-    "edited": "Editada",
-    "rejected": "Rejeitada",
-    "skipped": "Ignorada",
-}
-
-# Chaves de widget — centralizadas para facilitar limpeza
-_FILTER_KEYS = ("filter_type", "filter_severity", "filter_status", "search")
-
 
 # ---------------------------------------------------------------------------
 # Dialog de confirmação (deve estar no nível do módulo)
@@ -74,123 +49,13 @@ def render_filters(
     issues: list[tuple[Issue, SuggestionSet]],
 ) -> list[tuple[Issue, SuggestionSet]]:
     """
-    Renderiza filtros, busca e ações em lote.
+    Renderiza ações em lote e retorna todas as issues.
 
-    Retorna sublista filtrada de issues. Não modifica a lista original.
+    A revisão deve sempre mostrar a lista completa; filtros e busca foram
+    desativados para evitar que issues fiquem ocultas durante a conferência.
     """
-    type_filter, severity_filter, status_filter = _render_filter_expander()
-
-    search = st.text_input(
-        "Buscar por GUID ou nome",
-        placeholder="ex: 3AbKuMX... ou 'Sala de Reuniões'",
-        key="search",
-    )
-
-    filtered = _apply_filters(issues, type_filter, severity_filter, status_filter, search)
-
-    _reset_page_on_filter_change(type_filter, severity_filter, status_filter, search)
-
-    _render_batch_actions(filtered)
-
-    return filtered
-
-
-# ---------------------------------------------------------------------------
-# Filtros
-# ---------------------------------------------------------------------------
-
-
-def _render_filter_expander() -> tuple[list[str], list[str], list[str]]:
-    """Renderiza o expander com multiselects e botão de limpeza."""
-    with st.expander("Filtros", expanded=False):
-        col_type, col_sev, col_status, col_clear = st.columns([2, 2, 2, 1])
-
-        with col_type:
-            type_filter: list[str] = st.multiselect(
-                "Tipo",
-                options=list(_ISSUE_TYPE_OPTIONS.keys()),
-                format_func=lambda k: _ISSUE_TYPE_OPTIONS[k],
-                key="filter_type",
-            )
-
-        with col_sev:
-            severity_filter: list[str] = st.multiselect(
-                "Severidade",
-                options=list(_SEVERITY_OPTIONS.keys()),
-                format_func=lambda k: _SEVERITY_OPTIONS[k],
-                key="filter_severity",
-            )
-
-        with col_status:
-            status_filter: list[str] = st.multiselect(
-                "Status",
-                options=list(_STATUS_OPTIONS.keys()),
-                format_func=lambda k: _STATUS_OPTIONS[k],
-                key="filter_status",
-            )
-
-        with col_clear:
-            # Alinha o botão verticalmente com os multiselects
-            st.markdown(
-                "<div style='padding-top:1.65rem;'></div>",
-                unsafe_allow_html=True,
-            )
-            if st.button("Limpar", key="clear_filters", width="stretch"):
-                for k in _FILTER_KEYS:
-                    st.session_state.pop(k, None)
-                st.session_state.current_page = 0
-                st.rerun()
-
-    return type_filter, severity_filter, status_filter
-
-
-def _apply_filters(
-    issues: list[tuple[Issue, SuggestionSet]],
-    type_filter: list[str],
-    severity_filter: list[str],
-    status_filter: list[str],
-    search: str,
-) -> list[tuple[Issue, SuggestionSet]]:
-    """Aplica todos os filtros ativos e retorna sublista."""
-    result = issues
-
-    if type_filter:
-        result = [(i, s) for i, s in result if i.issue_type in type_filter]
-
-    if severity_filter:
-        result = [(i, s) for i, s in result if i.severity in severity_filter]
-
-    if status_filter:
-        result = [(i, s) for i, s in result if i.status in status_filter]
-
-    if search.strip():
-        q = search.strip().lower()
-        result = [
-            (i, s)
-            for i, s in result
-            if q in i.element_guid.lower()
-            or (i.element_name and q in i.element_name.lower())
-        ]
-
-    return result
-
-
-def _reset_page_on_filter_change(
-    type_filter: list[str],
-    severity_filter: list[str],
-    status_filter: list[str],
-    search: str,
-) -> None:
-    """Volta para a página 0 quando os filtros ou busca mudam."""
-    state = (
-        tuple(sorted(type_filter)),
-        tuple(sorted(severity_filter)),
-        tuple(sorted(status_filter)),
-        search.strip(),
-    )
-    if state != st.session_state.get("_filter_state"):
-        st.session_state._filter_state = state
-        st.session_state.current_page = 0
+    _render_batch_actions(issues)
+    return issues
 
 
 # ---------------------------------------------------------------------------
