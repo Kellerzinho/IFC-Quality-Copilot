@@ -161,16 +161,16 @@ def _make_issue(**kwargs) -> Issue:
 
 class TestIssueCreate:
     def test_issue_auto_generates_id(self):
-        """Deve gerar id automaticamente com 8 caracteres."""
+        """Deve gerar id determinístico automaticamente (SHA1, 12 caracteres)."""
         issue = _make_issue()
 
-        assert issue.id is not None
-        assert len(issue.id) == 8
+        assert issue.id
+        assert len(issue.id) == 12
 
     def test_issue_ids_are_unique(self):
-        """Dois Issues criados sem id explícito devem ter ids diferentes."""
-        a = _make_issue()
-        b = _make_issue()
+        """Issues de elementos distintos têm ids distintos (id deriva do conteúdo)."""
+        a = _make_issue(element_guid="3nJOFsJsX8QO2odKZbQnBj")
+        b = _make_issue(element_guid="1aBcDeFgHiJkLmNoPqRsTu")
 
         assert a.id != b.id
 
@@ -653,10 +653,10 @@ class TestOperationalRuleDescribe:
         assert "IfcWall" in description
 
     def test_operational_rule_auto_generates_id(self):
-        """id deve ser gerado automaticamente com 8 caracteres."""
+        """id deve ser gerado automaticamente (SHA1 determinístico, 12 caracteres)."""
         rule = _make_rule()
 
-        assert len(rule.id) == 8
+        assert len(rule.id) == 12
 
     def test_operational_rule_describe_multiple_conditions(self):
         """describe com múltiplas condições deve separá-las com AND."""

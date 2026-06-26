@@ -2,6 +2,7 @@
 
 import time
 from unittest.mock import MagicMock
+from uuid import uuid4
 
 import pytest
 
@@ -21,7 +22,7 @@ _BUILDING_CTX = {
 
 
 def _make_issue(severity: str = "medium", issue_type: str = "space_unnamed") -> Issue:
-    return Issue(
+    issue = Issue(
         element_guid="G" * 22,
         element_class="IfcSpace",
         element_name="Room 1",
@@ -30,6 +31,10 @@ def _make_issue(severity: str = "medium", issue_type: str = "space_unnamed") -> 
         description="Espaço sem nome funcional",
         context={},
     )
+    # Cada issue de teste e um item distinto; ids deterministicos colidiriam por
+    # terem o mesmo conteudo, entao atribuimos um id unico por fixture.
+    object.__setattr__(issue, "id", str(uuid4())[:8])
+    return issue
 
 
 def _make_suggestion_set(issue_id: str) -> SuggestionSet:

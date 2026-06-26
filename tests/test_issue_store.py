@@ -1,6 +1,7 @@
 """Testes para src/suggestion_engine/issue_store.py."""
 
 import threading
+from uuid import uuid4
 
 import pytest
 
@@ -18,8 +19,9 @@ def make_issue(severity: str = "medium", issue_type: str = "pset_missing", uid: 
         severity=severity,
         description="Teste",
     )
-    if uid:
-        object.__setattr__(issue, "id", uid)
+    # Ids deterministicos colidem para issues de mesmo conteudo. Nestes testes de
+    # store cada issue representa um item distinto, entao forcamos um id unico.
+    object.__setattr__(issue, "id", uid or str(uuid4())[:8])
     return issue
 
 

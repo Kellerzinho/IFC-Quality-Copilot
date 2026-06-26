@@ -1,10 +1,16 @@
 """Modelos de dados Pydantic para o IFC Quality Copilot."""
 
+import hashlib
 from datetime import datetime
 from typing import Any, Literal
-from uuid import uuid4
 
-from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator, model_validator
+
+
+def _content_hash(*parts: str) -> str:
+    """Hash SHA1 (12 chars) de um conteúdo-chave, para ids determinísticos e reprodutíveis."""
+    raw = "|".join(parts)
+    return hashlib.sha1(raw.encode("utf-8")).hexdigest()[:12]
 
 
 class MaterialLayer(BaseModel):
@@ -95,7 +101,7 @@ _SEVERITY_ORDER: dict[str, int] = {
 class Issue(BaseModel):
     """Representa um problema de qualidade detectado em um elemento IFC."""
 
-    id: str = Field(default_factory=lambda: str(uuid4())[:8])
+    id: str = ""
     element_guid: str
     element_class: str
     element_name: str | None = None
@@ -117,6 +123,20 @@ class Issue(BaseModel):
     created_at: datetime = Field(default_factory=datetime.now)
     resolved_at: datetime | None = None
     resolution_value: Any = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _ensure_deterministic_id(cls, data: Any) -> Any:
+        """Deriva um id determinístico do conteúdo-chave quando nenhum id é fornecido."""
+        if isinstance(data, dict) and not data.get("id"):
+            ctx = data.get("context") or {}
+            data["id"] = _content_hash(
+                str(data.get("element_guid", "")),
+                str(data.get("issue_type", "")),
+                str(ctx.get("check_pset", "")),
+                str(ctx.get("check_property", "")),
+            )
+        return data
 
     @property
     def short_guid(self) -> str:
@@ -558,7 +578,7 @@ class IDSSpecification(BaseModel):
 class OperationalRule(BaseModel):
     """Regra verificável gerada a partir de uma IDSSpecification."""
 
-    id: str = Field(default_factory=lambda: str(uuid4())[:8])
+    id: str = ""
     source_spec: str
     filter_entity: str  # ex: "IfcWall"
     filter_conditions: list[dict[str, str]] = Field(default_factory=list)  # [{pset, prop, operator, value}]
@@ -590,6 +610,21 @@ class OperationalRule(BaseModel):
     required_context: list[str] = Field(default_factory=list)
     evidence_source: str | None = None
     tags: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _ensure_deterministic_id(cls, data: Any) -> Any:
+        """Deriva um id determinístico do conteúdo-chave quando nenhum id é fornecido."""
+        if isinstance(data, dict) and not data.get("id"):
+            data["id"] = _content_hash(
+                str(data.get("source_spec", "")),
+                str(data.get("filter_entity", "")),
+                str(data.get("check_pset", "")),
+                str(data.get("check_property", "")),
+                str(data.get("check_type", "")),
+                str(data.get("expected_value") or ""),
+            )
+        return data
 
     def _ids_requirement_description(self) -> str:
         """Retorna descrição legível do requisito IDS representado pela regra."""
