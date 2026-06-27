@@ -604,11 +604,9 @@ def test_build_prompt_with_grounding_appends_ids_and_bsdd_blocks():
         _BUILDING_CTX,
         ids_context=ids_context,
         bsdd_context=bsdd_context,
-        grounding_mode="ids_bsdd",
     )
 
     assert "vocabulário" in system
-    assert "GROUNDING_MODE: ids_bsdd" in user
     assert "IDS_CONTEXT:" in user
     assert "BSDD_CONTEXT:" in user
     assert "FireRating: 30, 60" in user

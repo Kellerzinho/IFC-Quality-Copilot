@@ -277,5 +277,5 @@ def test_logger_export_csv_includes_grounding_fields(tmp_path: Path):
     al.export_csv(csv_path)
 
     header = Path(csv_path).read_text(encoding="utf-8").splitlines()[0]
-    assert "grounding_mode" in header
+    assert "grounding_sources" in header
     assert "post_validation" in header

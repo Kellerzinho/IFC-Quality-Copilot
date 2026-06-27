@@ -1,6 +1,6 @@
 """Cache persistente de sugestões via SQLite.
 
-A assinatura de cache combina (model_version, prompt_version, grounding_mode, issue_type,
+A assinatura de cache combina (model_version, prompt_version, issue_type,
 ifc_class, target_pset, target_property, expected_type, expected_unit,
 requirement_id, candidatos oficiais, hash do contexto normalizado).
 
@@ -36,7 +36,6 @@ def compute_signature(
     expected_unit: str | None,
     requirement_id: str | None,
     candidates: list[str] | None,
-    grounding_mode: str = "",
     context_payload: dict | None = None,
 ) -> str:
     """Gera assinatura SHA256 estável para cache lookup."""
@@ -47,7 +46,6 @@ def compute_signature(
     parts = [
         model_version,
         prompt_version,
-        grounding_mode,
         issue_type,
         ifc_class,
         target_pset or "",

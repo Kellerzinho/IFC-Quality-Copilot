@@ -518,7 +518,6 @@ def _render_provenance(
 ) -> None:
     """Exibe grounding, proveniência e pós-validação quando disponíveis."""
     top = suggestion_set.top_suggestion if suggestion_set is not None else None
-    grounding_mode = audit_entry.grounding_mode if audit_entry is not None else issue.context.get("grounding_mode")
     bsdd_uri = None
 
     if audit_entry is not None:
@@ -527,8 +526,6 @@ def _render_provenance(
         bsdd_uri = top.bsdd_uri
 
     details: list[str] = []
-    if grounding_mode:
-        details.append(f"<span class='prov-chip'>Base semantica: {grounding_mode}</span>")
     if bsdd_uri:
         details.append(
             f"<a class='prov-chip' href='{bsdd_uri}' target='_blank' "

@@ -2,7 +2,6 @@
 
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -49,10 +48,6 @@ class Settings(BaseSettings):
     bsdd_cache_path: str = Field(
         default="data/cache/bsdd_cache.json",
         description="Caminho do cache persistente local do bSDD",
-    )
-    grounding_mode: Literal["none", "ids_only", "ids_bsdd"] = Field(
-        default="ids_bsdd",
-        description="Modo de grounding para prompts e sugestoes",
     )
     post_validation_enabled: bool = Field(default=True, description="Habilita validacao pos-correcao")
     ids_xsd_path: str = Field(default="data/ids_schema/ids.xsd", description="Caminho do XSD oficial do IDS")

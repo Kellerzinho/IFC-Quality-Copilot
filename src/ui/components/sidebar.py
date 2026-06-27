@@ -21,9 +21,6 @@ _BUILDING_TYPES = [
 ]
 
 _BIOCLIMATIC_ZONES = [f"Zona {i}" for i in range(1, 9)]
-_GROUNDING_LABELS = {
-    "ids_bsdd": "IDS do perfil + bSDD obrigatorio",
-}
 
 _PROFILE_NONE = "Nenhum (análise genérica)"
 _PROFILE_CUSTOM = "Personalizado (upload IDS)"
@@ -76,8 +73,6 @@ def render_sidebar() -> dict | None:
 
 def _render_pre_analysis_sidebar() -> dict | None:
     """Renderiza formulário de configuração antes da análise."""
-    st.session_state["grounding_mode"] = "ids_bsdd"
-
     ifc_file = st.file_uploader(
         "Upload do modelo IFC",
         type=["ifc"],
@@ -153,7 +148,6 @@ def _render_pre_analysis_sidebar() -> dict | None:
         state,
         profile_id=profile_id,
         is_custom_ids=selected_profile_name == _PROFILE_CUSTOM,
-        grounding_mode="ids_bsdd",
     )
 
 
@@ -166,7 +160,6 @@ def _start_analysis(
     state: str,
     profile_id: str | None = None,
     is_custom_ids: bool = False,
-    grounding_mode: str = "ids_bsdd",
 ) -> dict | None:
     """Persiste arquivos e contexto no session_state e retorna o dict de configuração."""
     try:
@@ -190,12 +183,10 @@ def _start_analysis(
             "profile_id": profile_id,
             "custom_ids_path": custom_ids_path,
             "ids_path": custom_ids_path,
-            "grounding_mode": grounding_mode,
         }
 
         st.session_state.ifc_path = ifc_path
         st.session_state.building_context = building_context
-        st.session_state.grounding_mode = grounding_mode
         st.session_state.analysis_started = True
 
         logger.info(
@@ -451,12 +442,8 @@ def _render_lazy_download(
 
 
 def _render_pipeline_mode_card(pipeline, building_context: dict) -> None:
-    """Renderiza resumo do modo de grounding e da pós-validação."""
-    grounding_mode = "ids_bsdd"
+    """Renderiza resumo da pós-validação."""
     st.subheader("Modo do Pipeline")
-    st.markdown(
-        f"**Base semantica:** {_GROUNDING_LABELS.get(grounding_mode, grounding_mode)}  \n"
-    )
 
     validations = getattr(pipeline, "validation_results", {})
     if validations:

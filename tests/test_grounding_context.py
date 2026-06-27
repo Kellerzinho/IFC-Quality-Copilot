@@ -45,21 +45,8 @@ def test_format_ids_context_none_returns_empty():
     assert format_ids_context(None) == ""
 
 
-def test_build_grounding_block_none_mode():
-    result = build_grounding_block(_make_ids_context(), _make_bsdd_context(), "none")
-
-    assert result == ""
-
-
-def test_build_grounding_block_ids_only():
-    result = build_grounding_block(_make_ids_context(), _make_bsdd_context(), "ids_only")
-
-    assert "REQUISITO IDS VIOLADO:" in result
-    assert "VOCABULARIO bSDD" not in result
-
-
-def test_build_grounding_block_ids_bsdd():
-    result = build_grounding_block(_make_ids_context(), _make_bsdd_context(), "ids_bsdd")
+def test_build_grounding_block_includes_ids_and_bsdd():
+    result = build_grounding_block(_make_ids_context(), _make_bsdd_context())
 
     assert "REQUISITO IDS VIOLADO:" in result
     assert "VOCABULARIO bSDD" in result

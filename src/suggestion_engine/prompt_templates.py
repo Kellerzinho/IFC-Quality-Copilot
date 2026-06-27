@@ -675,7 +675,6 @@ def build_grounded_prompt(
     issue: Issue,
     building_context: str,
     grounding_block: str,
-    grounding_mode: str,
     few_shot: str | None = None,
 ) -> str:
     """Constrói prompt com grounding injetado."""
@@ -705,8 +704,6 @@ def build_grounded_prompt(
             "RESTRIÇÃO: suas sugestões devem usar APENAS termos, propriedades e valores presentes no vocabulário acima. "
             "Não invente valores fora desse vocabulário."
         )
-    elif grounding_mode != "none":
-        lines.extend(["", "GROUNDING BLOCK:", ""])
 
     if few_shot:
         lines.extend(["", "EXEMPLO:", few_shot.strip()])
@@ -721,7 +718,6 @@ def build_prompt(
     profile_id: str | None = None,
     bsdd_context: BSDDContext | None = None,
     ids_context: IDSContext | None = None,
-    grounding_mode: str = "none",
 ) -> tuple[str, str]:
     """Monta o prompt completo para uma issue.
 
@@ -766,9 +762,9 @@ def build_prompt(
 
     safe_ctx: defaultdict[str, Any] = defaultdict(lambda: "N/D", fill_ctx)
     user_prompt = template.format_map(safe_ctx)
-    user_prompt = _inject_grounding(user_prompt, bsdd_context, ids_context, grounding_mode)
+    user_prompt = _inject_grounding(user_prompt, bsdd_context, ids_context)
     system_prompt = SYSTEM_PROMPT
-    if grounding_mode != "none" and (ids_context is not None or bsdd_context is not None):
+    if ids_context is not None or bsdd_context is not None:
         system_prompt = f"{SYSTEM_PROMPT} {_GROUNDING_INSTRUCTION}"
     user_prompt = (
         f"{user_prompt}\n\nCRITERIO DE ENGENHARIA:\n"
@@ -784,17 +780,16 @@ def _inject_grounding(
     user_prompt: str,
     bsdd_context: BSDDContext | None,
     ids_context: IDSContext | None,
-    grounding_mode: str,
 ) -> str:
-    """Anexa blocos de grounding estruturado ao prompt base."""
-    blocks = [f"GROUNDING_MODE: {grounding_mode}"]
-    if ids_context is not None and grounding_mode in {"ids_only", "ids_bsdd"}:
+    """Anexa blocos de grounding estruturado (IDS + bSDD) ao prompt base."""
+    blocks: list[str] = []
+    if ids_context is not None:
         blocks.append("IDS_CONTEXT:")
         blocks.append(ids_context.as_prompt_block())
-    if bsdd_context is not None and grounding_mode == "ids_bsdd":
+    if bsdd_context is not None:
         blocks.append("BSDD_CONTEXT:")
         blocks.append(bsdd_context.as_prompt_block())
-    if len(blocks) == 1:
+    if not blocks:
         return user_prompt
     return f"{user_prompt}\n\n" + "\n".join(blocks)
 

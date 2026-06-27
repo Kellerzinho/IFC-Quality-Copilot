@@ -112,7 +112,6 @@ def _build_pipeline(
     building_context: dict[str, Any],
     profile_id: str | None,
     ids_path: str | None,
-    grounding_mode: str,
 ) -> QualityPipeline:
     registry = create_default_registry()
     profile = registry.get(profile_id) if profile_id else None
@@ -121,7 +120,6 @@ def _build_pipeline(
         building_context,
         ids_path=ids_path,
         profile=profile,
-        grounding_mode=grounding_mode,
     )
 
 
@@ -140,16 +138,14 @@ async def handle_iniciar_pipeline(session: dict, arguments: dict) -> list[types.
 
     profile_id = arguments.get("profile_id")
     ids_path = arguments.get("ids_path")
-    grounding_mode = arguments.get("grounding_mode") or "ids_bsdd"
     building_context = dict(arguments.get("building_context") or {})
     if profile_id:
         building_context.setdefault("profile_id", profile_id)
     if ids_path:
         building_context.setdefault("ids_path", ids_path)
-    building_context.setdefault("grounding_mode", grounding_mode)
 
     try:
-        pipeline = _build_pipeline(filepath, building_context, profile_id, ids_path, grounding_mode)
+        pipeline = _build_pipeline(filepath, building_context, profile_id, ids_path)
         report = pipeline.diagnose_and_start_suggestions()
     except Exception as exc:
         return _json_response({"sucesso": False, "erro": str(exc)})
@@ -452,7 +448,6 @@ PIPELINE_TOOLS = [
                 },
                 "ids_path": {"type": "string", "description": "IDS customizado opcional."},
                 "building_context": {"type": "object", "description": "Contexto livre da edificacao."},
-                "grounding_mode": {"type": "string", "default": "ids_bsdd"},
             },
             "required": ["filepath"],
         },

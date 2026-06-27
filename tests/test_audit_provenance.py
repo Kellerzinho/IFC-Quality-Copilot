@@ -68,7 +68,7 @@ def ifc_file_path(tmp_path) -> str:
 @pytest.fixture
 def pipeline(ifc_file_path) -> QualityPipeline:
     """Pipeline com grounding ids_bsdd para validar proveniência."""
-    return QualityPipeline(ifc_file_path, _BUILDING_CTX, grounding_mode="ids_bsdd")
+    return QualityPipeline(ifc_file_path, _BUILDING_CTX)
 
 
 def _mock_batch_with_suggestion(issues, ctx, on_progress=None):
@@ -129,7 +129,6 @@ def test_audit_entry_has_grounding_sources(pipeline):
     ):
         entry = pipeline.apply_correction(issue.id, "Sala de Estar", "accepted", "eng")
 
-    assert entry.grounding_mode == "ids_bsdd"
     assert entry.grounding_sources == ["ids", "bsdd"]
 
 
@@ -171,7 +170,6 @@ def test_csv_export_includes_new_columns(tmp_path: Path):
             decision="accepted",
             confidence="alta",
             source="llm",
-            grounding_mode="ids_bsdd",
             grounding_sources=["ids", "bsdd"],
             bsdd_uri="https://example.org/bsdd/space",
             ids_requirement_id="req-space-name",
@@ -211,7 +209,6 @@ def test_json_export_includes_new_fields(tmp_path: Path):
             decision="accepted",
             confidence="alta",
             source="llm",
-            grounding_mode="ids_bsdd",
             grounding_sources=["ids", "bsdd"],
             bsdd_uri="https://example.org/bsdd/space",
             ids_requirement_id="req-space-name",
@@ -225,7 +222,6 @@ def test_json_export_includes_new_fields(tmp_path: Path):
 
     payload = json.loads(json_path.read_text(encoding="utf-8").strip())
 
-    assert payload["grounding_mode"] == "ids_bsdd"
     assert payload["grounding_sources"] == ["ids", "bsdd"]
     assert payload["bsdd_uri"] == "https://example.org/bsdd/space"
     assert payload["ids_requirement_id"] == "req-space-name"

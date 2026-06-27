@@ -104,7 +104,6 @@ class SuggestionGenerator:
         rule: OperationalRule | None = None,
         bsdd_context: BSDDContext | None = None,
         ids_context: IDSContext | None = None,
-        grounding_mode: str = "none",
     ) -> SuggestionSet:
         """Gera SuggestionSet para uma issue.
 
@@ -126,7 +125,7 @@ class SuggestionGenerator:
         signature: str | None = None
         if self.cache is not None and settings.suggestion_cache_enabled:
             t1 = time.perf_counter()
-            signature = self._compute_signature(grounded, issue, grounding_mode)
+            signature = self._compute_signature(grounded, issue)
             cached = self.cache.get(signature)
             metrics.cache_lookup_ms = (time.perf_counter() - t1) * 1000
             if cached:
@@ -154,7 +153,6 @@ class SuggestionGenerator:
                 profile_id=profile.id if profile is not None else None,
                 bsdd_context=bsdd_context,
                 ids_context=ids_context,
-                grounding_mode=grounding_mode,
             )
 
         prompt_hash = self._hash_prompt(system, user)
@@ -270,9 +268,7 @@ class SuggestionGenerator:
             return False
         return True
 
-    def _compute_signature(
-        self, grounded: GroundedIssueContext, issue: Issue, grounding_mode: str = ""
-    ) -> str:
+    def _compute_signature(self, grounded: GroundedIssueContext, issue: Issue) -> str:
         """Calcula assinatura de cache para o par (issue, grounding).
 
         Inclui características específicas do elemento para evitar cache hits
@@ -354,7 +350,6 @@ class SuggestionGenerator:
             expected_unit=grounded.expected_unit,
             requirement_id=grounded.requirement_id,
             candidates=grounded.official_candidates,
-            grounding_mode=grounding_mode,
             context_payload=context_payload,
         )
 
@@ -402,7 +397,6 @@ class SuggestionGenerator:
         on_progress: Callable[[int, int], None] | None = None,
         ids_context_map: dict[str, IDSContext] | None = None,
         bsdd_context_map: dict[str, BSDDContext] | None = None,
-        grounding_mode: str = "none",
         reuse_map: dict[str, str] | None = None,
     ) -> list[SuggestionSet]:
         """Gera sugestões para várias issues sequencialmente.
@@ -438,7 +432,6 @@ class SuggestionGenerator:
                     building_context,
                     bsdd_context=bsdd_context_map.get(issue.id) if bsdd_context_map else None,
                     ids_context=ids_context_map.get(issue.id) if ids_context_map else None,
-                    grounding_mode=grounding_mode,
                 )
                 primary_results[issue.id] = result
 

@@ -53,13 +53,6 @@ def test_signature_changes_with_model_version():
     assert sig_qwen != sig_llama
 
 
-def test_signature_changes_with_grounding_mode():
-    """Modos de grounding distintos não devem colidir no cache (F4)."""
-    sig_none = _signature(grounding_mode="none")
-    sig_bsdd = _signature(grounding_mode="ids_bsdd")
-    assert sig_none != sig_bsdd
-
-
 def test_signature_changes_with_prompt_version():
     sig_v1 = _signature(prompt_version="v1")
     sig_v2 = _signature(prompt_version="v2")

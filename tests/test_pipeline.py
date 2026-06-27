@@ -209,8 +209,8 @@ def test_pipeline_sends_all_issues_to_llm(ifc_file_path):
     assert len(pairs) == len(pipeline.report.issues)
 
 
-def test_pipeline_grounding_mode_ids_bsdd(ifc_file_path):
-    """Em ids_bsdd, o pipeline preserva hooks de generate_batch e repassa o grounding."""
+def test_pipeline_passes_ids_and_bsdd_context(ifc_file_path):
+    """O pipeline preserva hooks de generate_batch e repassa o contexto IDS+bSDD."""
     fake_bsdd = BSDDContext(
         class_name="IfcSpace",
         class_uri="https://bsdd.example/IfcSpace",
@@ -226,7 +226,7 @@ def test_pipeline_grounding_mode_ids_bsdd(ifc_file_path):
         mock_builder = mock_builder_cls.return_value
         mock_builder.build.return_value = fake_bsdd
 
-        pipeline = QualityPipeline(ifc_file_path, _BUILDING_CTX, grounding_mode="ids_bsdd")
+        pipeline = QualityPipeline(ifc_file_path, _BUILDING_CTX)
         report = pipeline.diagnose()
         issue = report.issues[0]
         issue.context["ids_context"] = IDSContext(
@@ -247,14 +247,12 @@ def test_pipeline_grounding_mode_ids_bsdd(ifc_file_path):
             on_progress=None,
             ids_context_map=None,
             bsdd_context_map=None,
-            grounding_mode="none",
         ):
             calls.append(
                 {
                     "issue_ids": [current.id for current in issues],
                     "ids_context_map": ids_context_map,
                     "bsdd_context_map": bsdd_context_map,
-                    "grounding_mode": grounding_mode,
                 }
             )
             if on_progress:
@@ -267,7 +265,6 @@ def test_pipeline_grounding_mode_ids_bsdd(ifc_file_path):
 
     assert len(pairs) == len(report.issues)
     assert len(calls) == 1
-    assert calls[0]["grounding_mode"] == "ids_bsdd"
     assert issue.id in calls[0]["ids_context_map"]
     assert isinstance(calls[0]["ids_context_map"][issue.id], IDSContext)
     assert calls[0]["ids_context_map"][issue.id].spec_name == "Spec Thermal"
@@ -277,20 +274,19 @@ def test_pipeline_grounding_mode_ids_bsdd(ifc_file_path):
     mock_builder.build.assert_called()
 
 
-def test_pipeline_forces_bsdd_even_when_none_is_requested(ifc_file_path):
-    """O pipeline normaliza modos legados para ids_bsdd e inicializa bSDD."""
+def test_pipeline_initializes_bsdd(ifc_file_path):
+    """O pipeline sempre inicializa o cliente/builder bSDD (grounding IDS+bSDD)."""
     with (
         patch("src.pipeline.BSDDClient") as mock_bsdd_client,
         patch("src.pipeline.BSDDContextBuilder") as mock_builder_cls,
     ):
-        pipeline = QualityPipeline(ifc_file_path, _BUILDING_CTX, grounding_mode="none")
+        pipeline = QualityPipeline(ifc_file_path, _BUILDING_CTX)
         pipeline.diagnose()
         pipeline.suggestion_gen.generate_batch = _mock_batch
 
         pairs = pipeline.generate_suggestions()
 
     assert len(pairs) == len(pipeline.report.issues)
-    assert pipeline.grounding_mode == "ids_bsdd"
     mock_bsdd_client.assert_called_once()
     mock_builder_cls.assert_called_once_with(mock_bsdd_client.return_value)
 
@@ -380,7 +376,7 @@ def test_pipeline_apply_correction_logs_to_audit(pipeline):
 
 def test_apply_correction_falls_back_to_grounded_provenance_when_top_suggestion_is_missing_fields(ifc_file_path):
     """apply_correction() usa a proveniencia do grounding quando a sugestao nao a preenche."""
-    pipeline = QualityPipeline(ifc_file_path, _BUILDING_CTX, grounding_mode="ids_bsdd")
+    pipeline = QualityPipeline(ifc_file_path, _BUILDING_CTX)
     pipeline.diagnose()
 
     issue = pipeline.report.issues[0]

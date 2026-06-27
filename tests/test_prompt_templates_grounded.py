@@ -55,13 +55,12 @@ def _make_bsdd_context() -> BSDDContext:
 
 def test_build_grounded_prompt_with_full_grounding():
     issue = _make_issue()
-    grounding_block = build_grounding_block(_make_ids_context(issue), _make_bsdd_context(), "ids_bsdd")
+    grounding_block = build_grounding_block(_make_ids_context(issue), _make_bsdd_context())
 
     prompt = build_grounded_prompt(
         issue=issue,
         building_context="Edificacao residencial multifamiliar na zona bioclimatica 3.",
         grounding_block=grounding_block,
-        grounding_mode="ids_bsdd",
         few_shot='{"opcoes": [{"label": "60", "value": "60"}]}',
     )
 
@@ -82,7 +81,6 @@ def test_build_grounded_prompt_no_grounding():
         issue=issue,
         building_context="Edificacao residencial multifamiliar na zona bioclimatica 3.",
         grounding_block="",
-        grounding_mode="none",
     )
 
     assert "GROUNDING BLOCK:" not in prompt
@@ -90,15 +88,14 @@ def test_build_grounded_prompt_no_grounding():
     assert "FireRating ausente" in prompt
 
 
-def test_build_grounded_prompt_ids_only():
+def test_build_grounded_prompt_ids_without_bsdd():
     issue = _make_issue()
-    grounding_block = build_grounding_block(_make_ids_context(issue), None, "ids_only")
+    grounding_block = build_grounding_block(_make_ids_context(issue), None)
 
     prompt = build_grounded_prompt(
         issue=issue,
         building_context="Edificacao residencial multifamiliar na zona bioclimatica 3.",
         grounding_block=grounding_block,
-        grounding_mode="ids_only",
     )
 
     assert "GROUNDING BLOCK:" in prompt

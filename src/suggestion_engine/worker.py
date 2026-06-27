@@ -40,7 +40,6 @@ class SuggestionWorker:
         ids_context_map: dict[str, IDSContext] | None = None,
         bsdd_context_map: dict[str, BSDDContext] | None = None,
         context_builder: BSDDContextBuilder | None = None,
-        grounding_mode: str = "ids_bsdd",
         reuse_map: dict[str, str] | None = None,
         warm_up: bool = True,
     ) -> None:
@@ -51,7 +50,6 @@ class SuggestionWorker:
         self.ids_context_map = ids_context_map or {}
         self.bsdd_context_map = bsdd_context_map or {}
         self.context_builder = context_builder
-        self.grounding_mode = "ids_bsdd"
         self.reuse_map = reuse_map or {}
         self._warm_up = warm_up
         self._thread: threading.Thread | None = None
@@ -137,8 +135,6 @@ class SuggestionWorker:
                     kwargs["ids_context"] = ids_context
                 if "bsdd_context" in params:
                     kwargs["bsdd_context"] = bsdd_context
-                if "grounding_mode" in params:
-                    kwargs["grounding_mode"] = self.grounding_mode
 
                 t0 = time.perf_counter()
                 suggestion_set = self.generator.generate(issue, self.building_context, **kwargs)
@@ -226,7 +222,7 @@ class SuggestionWorker:
         issue,
         ids_context: IDSContext | None = None,
     ) -> BSDDContext | None:
-        if self.grounding_mode != "ids_bsdd" or self.context_builder is None:
+        if self.context_builder is None:
             return None
         if issue.id in self.bsdd_context_map:
             return self.bsdd_context_map[issue.id]

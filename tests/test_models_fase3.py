@@ -95,7 +95,6 @@ def test_audit_entry_backward_compatibility_without_new_fields() -> None:
     assert entry.bsdd_uri is None
     assert entry.ids_requirement_id is None
     assert entry.post_validation == "skip"
-    assert entry.grounding_mode == "none"
 
 
 def test_audit_entry_new_fields_serialization() -> None:
@@ -112,7 +111,6 @@ def test_audit_entry_new_fields_serialization() -> None:
         bsdd_uri="https://example.org/prop",
         ids_requirement_id="req-123",
         post_validation="pass",
-        grounding_mode="ids_bsdd",
     )
 
     payload = entry.model_dump()
@@ -121,4 +119,3 @@ def test_audit_entry_new_fields_serialization() -> None:
     assert payload["bsdd_uri"] == "https://example.org/prop"
     assert payload["ids_requirement_id"] == "req-123"
     assert payload["post_validation"] == "pass"
-    assert payload["grounding_mode"] == "ids_bsdd"

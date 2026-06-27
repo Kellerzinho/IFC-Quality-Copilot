@@ -178,7 +178,6 @@ def test_generate_with_grounding():
         _BUILDING_CTX,
         bsdd_context=bsdd_context,
         ids_context=ids_context,
-        grounding_mode="ids_bsdd",
     )
 
     assert result.has_suggestions
@@ -195,19 +194,16 @@ def test_generate_with_grounding():
     assert "Nao retorne URI" in call_kwargs["prompt"]
 
 
-def test_generate_without_grounding_unchanged():
+def test_generate_uses_compact_grounding_by_default():
     client = _make_client(_VALID_JSON)
     gen = SuggestionGenerator(client)
     issue = _space_issue()
 
-    result = gen.generate(issue, _BUILDING_CTX, grounding_mode="none")
+    result = gen.generate(issue, _BUILDING_CTX)
 
     assert result.has_suggestions
     assert result.suggestions[0].bsdd_uri is None
     assert result.suggestions[0].ids_requirement_id is None
-
-    call_kwargs = client.generate.call_args.kwargs
-    assert "GROUNDING BLOCK:" not in call_kwargs["prompt"]
 
 
 # ---------------------------------------------------------------------------
@@ -522,7 +518,7 @@ def test_generate_propagates_prompt_hash_and_ids_requirement():
         severity="low",
     )
 
-    result = gen.generate(issue, _BUILDING_CTX, ids_context=ids_context, grounding_mode="ids_only")
+    result = gen.generate(issue, _BUILDING_CTX, ids_context=ids_context)
 
     assert result.prompt_hash is not None
     assert result.suggestions[0].ids_requirement_id == "req-123"

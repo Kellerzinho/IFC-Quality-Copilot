@@ -470,7 +470,6 @@ class AuditEntry(BaseModel):
     user: str = "engineer"
     timestamp: datetime = Field(default_factory=datetime.now)
     session_id: str | None = None
-    grounding_mode: str | None = "none"
     grounding_sources: list[str] = Field(default_factory=list)
     bsdd_uri: str | None = None
     ids_requirement_id: str | None = Field(
@@ -496,7 +495,6 @@ class AuditEntry(BaseModel):
             "normative_ref": self.normative_ref or "",
             "source": self.source,
             "user": self.user,
-            "grounding_mode": self.grounding_mode,
             "grounding_sources": "|".join(self.grounding_sources),
             "bsdd_uri": self.bsdd_uri or "",
             "ids_requirement_id": self.ids_requirement_id or "",

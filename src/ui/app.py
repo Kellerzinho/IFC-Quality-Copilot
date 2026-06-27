@@ -82,7 +82,6 @@ def _init_pipeline() -> QualityPipeline | None:
             building_context,
             ids_path,
             profile=profile,
-            grounding_mode="ids_bsdd",
         )
     except Exception as exc:
         st.error(f"Erro ao abrir o arquivo IFC: {exc}")
@@ -388,7 +387,6 @@ def _handle_requeue_request(pipeline: QualityPipeline) -> None:
                 ids_context_map=pipeline.ids_context_map,
                 bsdd_context_map=pipeline.bsdd_context_map,
                 context_builder=pipeline.bsdd_builder,
-                grounding_mode=pipeline.grounding_mode,
                 reuse_map=pipeline._reuse_map,
                 warm_up=True,
             )

@@ -13,7 +13,7 @@ _CSV_FIELDNAMES = [
     "timestamp", "session_id", "element_guid", "element_class",
     "action", "field", "old_value", "new_value",
     "decision", "confidence", "normative_ref", "source", "user",
-    "grounding_mode", "grounding_sources", "bsdd_uri",
+    "grounding_sources", "bsdd_uri",
     "ids_requirement_id", "post_validation", "prompt_hash",
 ]
 

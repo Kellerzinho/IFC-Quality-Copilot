@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import re
-from typing import Literal
 
 import httpx
 
@@ -84,21 +83,16 @@ def format_bsdd_context(context: BSDDContext | None) -> str:
 def build_grounding_block(
     ids_context: IDSContext | None,
     bsdd_context: BSDDContext | None,
-    grounding_mode: Literal["none", "ids_only", "ids_bsdd"],
 ) -> str:
-    """Combina os contextos conforme o modo de grounding ativo."""
-    if grounding_mode == "none":
-        return ""
-
+    """Combina os contextos IDS e bSDD para grounding do prompt."""
     blocks: list[str] = []
     ids_block = format_ids_context(ids_context)
-    if grounding_mode in {"ids_only", "ids_bsdd"} and ids_block:
+    if ids_block:
         blocks.append(ids_block)
 
-    if grounding_mode == "ids_bsdd":
-        bsdd_block = format_bsdd_context(bsdd_context)
-        if bsdd_block:
-            blocks.append(bsdd_block)
+    bsdd_block = format_bsdd_context(bsdd_context)
+    if bsdd_block:
+        blocks.append(bsdd_block)
 
     return "\n\n".join(blocks)
 

@@ -73,14 +73,10 @@ class QualityPipeline:
         building_context: dict,
         ids_path: str | None = None,
         profile: ReadinessProfile | None = None,
-        grounding_mode: str = "ids_bsdd",
     ) -> None:
         self.ifc_path = ifc_path
         self.building_context = building_context
         self.profile = profile
-        if grounding_mode != "ids_bsdd":
-            logger.info("Grounding '{}' ignorado: bSDD e IDS+bSDD sao obrigatorios.", grounding_mode)
-        self.grounding_mode = "ids_bsdd"
         self.settings = get_settings()
 
         # ids_path explícito tem prioridade; se não fornecido, tenta inferir do perfil
@@ -290,7 +286,6 @@ class QualityPipeline:
             ids_context_map=self.ids_context_map,
             bsdd_context_map=self.bsdd_context_map,
             context_builder=self.bsdd_builder,
-            grounding_mode=self.grounding_mode,
             reuse_map=self._reuse_map,
             warm_up=True,
         )
@@ -398,7 +393,6 @@ class QualityPipeline:
             normative_ref=top.normative_ref if top else None,
             source=top.source if top else "llm",
             user=user,
-            grounding_mode=self.grounding_mode,  # type: ignore[arg-type]
             grounding_sources=self._grounding_sources_for(issue.id),
             bsdd_uri=(top.bsdd_uri if top and top.bsdd_uri else self._default_bsdd_uri(issue.id)),
             ids_requirement=(
@@ -460,7 +454,6 @@ class QualityPipeline:
             "issues_from_ids_count": self._ids_issues_count,
             "profile_id": self.profile.id if self.profile else None,
             "profile_name": self.profile.name if self.profile else None,
-            "grounding_mode": self.grounding_mode,
             "post_validation": {
                 issue_id: result.status for issue_id, result in self._validation_results.items()
             },
@@ -740,9 +733,8 @@ class QualityPipeline:
         on_progress: Callable[[int, int], None] | None = None,
     ) -> list[SuggestionSet]:
         """Chama generate_batch aceitando implementações legadas/mocadas."""
-        if self.grounding_mode != "none":
-            for issue in issues:
-                self._resolve_grounding_for_issue(issue)
+        for issue in issues:
+            self._resolve_grounding_for_issue(issue)
 
         kwargs: dict[str, Any] = {"on_progress": on_progress}
         params = _cached_signature_params(self.suggestion_gen.generate_batch)
@@ -750,8 +742,6 @@ class QualityPipeline:
             kwargs["ids_context_map"] = self.ids_context_map
         if "bsdd_context_map" in params:
             kwargs["bsdd_context_map"] = self.bsdd_context_map
-        if "grounding_mode" in params:
-            kwargs["grounding_mode"] = self.grounding_mode
         return self.suggestion_gen.generate_batch(issues, self.building_context, **kwargs)
 
     def _generate_with_grounding(
@@ -773,8 +763,6 @@ class QualityPipeline:
                 kwargs["ids_context"] = ids_context
             if "bsdd_context" in params:
                 kwargs["bsdd_context"] = bsdd_context
-            if "grounding_mode" in params:
-                kwargs["grounding_mode"] = self.grounding_mode
             results.append(self.suggestion_gen.generate(issue, self.building_context, **kwargs))
             if on_progress is not None:
                 on_progress(index, total)
@@ -846,7 +834,7 @@ class QualityPipeline:
         ids_context: IDSContext | None = None,
     ) -> BSDDContext | None:
         """Resolve BSDDContext sob demanda e com cache por issue."""
-        if self.grounding_mode != "ids_bsdd" or self.bsdd_builder is None:
+        if self.bsdd_builder is None:
             return None
         if issue.id in self.bsdd_context_map:
             return self.bsdd_context_map[issue.id]
@@ -863,7 +851,7 @@ class QualityPipeline:
         """Resolve IDS + bSDD para a issue e monta o bloco final de grounding."""
         ids_context = self._issue_ids_context(issue)
         bsdd_context = self._issue_bsdd_context(issue, ids_context)
-        grounding_block = build_grounding_block(ids_context, bsdd_context, self.grounding_mode)
+        grounding_block = build_grounding_block(ids_context, bsdd_context)
         return ids_context, bsdd_context, grounding_block
 
     def _validate_after_write(self, issue: Issue) -> ValidationResult:
@@ -903,9 +891,9 @@ class QualityPipeline:
     def _grounding_sources_for(self, issue_id: str) -> list[str]:
         """Lista as fontes de grounding efetivamente usadas pela issue."""
         sources: list[str] = []
-        if issue_id in self.ids_context_map and self.grounding_mode in ("ids_only", "ids_bsdd"):
+        if issue_id in self.ids_context_map:
             sources.append("ids")
-        if issue_id in self.bsdd_context_map and self.grounding_mode == "ids_bsdd":
+        if issue_id in self.bsdd_context_map:
             sources.append("bsdd")
         return sources
 
