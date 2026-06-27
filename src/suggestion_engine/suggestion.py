@@ -126,7 +126,7 @@ class SuggestionGenerator:
         signature: str | None = None
         if self.cache is not None and settings.suggestion_cache_enabled:
             t1 = time.perf_counter()
-            signature = self._compute_signature(grounded, issue)
+            signature = self._compute_signature(grounded, issue, grounding_mode)
             cached = self.cache.get(signature)
             metrics.cache_lookup_ms = (time.perf_counter() - t1) * 1000
             if cached:
@@ -270,7 +270,9 @@ class SuggestionGenerator:
             return False
         return True
 
-    def _compute_signature(self, grounded: GroundedIssueContext, issue: Issue) -> str:
+    def _compute_signature(
+        self, grounded: GroundedIssueContext, issue: Issue, grounding_mode: str = ""
+    ) -> str:
         """Calcula assinatura de cache para o par (issue, grounding).
 
         Inclui características específicas do elemento para evitar cache hits
@@ -352,6 +354,7 @@ class SuggestionGenerator:
             expected_unit=grounded.expected_unit,
             requirement_id=grounded.requirement_id,
             candidates=grounded.official_candidates,
+            grounding_mode=grounding_mode,
             context_payload=context_payload,
         )
 

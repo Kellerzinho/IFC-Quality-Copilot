@@ -296,6 +296,53 @@ def test_pipeline_forces_bsdd_even_when_none_is_requested(ifc_file_path):
 
 
 # ---------------------------------------------------------------------------
+# cache multi-modelo (F4)
+# ---------------------------------------------------------------------------
+
+def test_pipeline_init_preserves_other_model_cache(ifc_file_path, tmp_path, monkeypatch):
+    """Instanciar a pipeline NÃO deve apagar o cache de outros modelos (benchmark multi-modelo, F4)."""
+    from src.config import get_settings
+    from src.suggestion_engine.suggestion_cache import (
+        PROMPT_VERSION,
+        SuggestionCache,
+        compute_signature,
+    )
+
+    cache_path = tmp_path / "sug_cache.db"
+    cache = SuggestionCache(cache_path)
+    sig = compute_signature(
+        model_version="modelo-antigo",
+        prompt_version=PROMPT_VERSION,
+        issue_type="pset_missing",
+        ifc_class="IfcWall",
+        target_pset=None,
+        target_property=None,
+        expected_type=None,
+        expected_unit=None,
+        requirement_id=None,
+        candidates=None,
+    )
+    cache.set(
+        sig,
+        [Suggestion(label="x", value="x", justification="j", confidence="alta", source="llm")],
+        model_version="modelo-antigo",
+        prompt_version=PROMPT_VERSION,
+    )
+    cache.close()
+
+    monkeypatch.setenv("SUGGESTION_CACHE_ENABLED", "true")
+    monkeypatch.setenv("SUGGESTION_CACHE_PATH", str(cache_path))
+    get_settings.cache_clear()
+    try:
+        pipeline = QualityPipeline(ifc_file_path, _BUILDING_CTX)
+        assert pipeline.suggestion_cache is not None
+        # A entrada de "modelo-antigo" deve sobreviver (modelo atual difere dela).
+        assert pipeline.suggestion_cache.size() == 1
+    finally:
+        get_settings.cache_clear()
+
+
+# ---------------------------------------------------------------------------
 # apply_correction
 # ---------------------------------------------------------------------------
 

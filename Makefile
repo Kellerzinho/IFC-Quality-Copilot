@@ -1,4 +1,4 @@
-.PHONY: install test test-cov lint format run-ui run-mcp run-mcp-http clean
+.PHONY: install test test-cov lint format run-ui run-mcp run-mcp-http clean clean-cache
 
 install:
 	pip install -e ".[dev]"
@@ -26,3 +26,6 @@ run-mcp-http:
 
 clean:
 	rm -rf __pycache__ .pytest_cache htmlcov/
+
+clean-cache:
+	rm -f data/cache/suggestion_cache.db

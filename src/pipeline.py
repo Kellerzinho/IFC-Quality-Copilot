@@ -111,7 +111,8 @@ class QualityPipeline:
                 if not cache_path.is_absolute():
                     cache_path = Path(__file__).parent.parent / cache_path
                 self.suggestion_cache = SuggestionCache(cache_path)
-                self.suggestion_cache.invalidate_by_model(self._ollama_client.model)
+                # Invalidacao por modelo NAO e feita aqui: apagaria o cache dos demais
+                # modelos e inviabilizaria o benchmark multi-modelo. Use `make clean-cache`.
                 self.suggestion_cache.invalidate_by_prompt(PROMPT_VERSION)
             except Exception as exc:
                 logger.warning("SuggestionCache desabilitado: {}", exc)
