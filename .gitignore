@@ -45,3 +45,8 @@ Thumbs.db
 
 # Uploads
 uploads/
+
+# Cache de sugestoes (SQLite, gerado em runtime/testes)
+data/cache/suggestion_cache.db
+data/cache/suggestion_cache.db-shm
+data/cache/suggestion_cache.db-wal
