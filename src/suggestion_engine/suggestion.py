@@ -163,16 +163,24 @@ class SuggestionGenerator:
         suggestions: list[Suggestion] = []
         ollama_metrics: dict = {}
         error: str | None = None
+        # Instrumentação de estabilidade (F12)
+        attempts_made = 0
+        json_repaired = False
+        failure_reason: str | None = None
 
         for attempt in range(self._MAX_ATTEMPTS):
             try:
                 t_llm = time.perf_counter()
                 raw_result = self.client.generate(prompt=current_user_prompt, system=system)
+                attempts_made += 1
                 raw, ollama_metrics = _coerce_generate_result(raw_result)
                 metrics.llm_total_ms += (time.perf_counter() - t_llm) * 1000
 
                 t_parse = time.perf_counter()
-                parsed = parse_llm_response(raw, issue.issue_type)
+                parse_telemetry: dict = {}
+                parsed = parse_llm_response(raw, issue.issue_type, telemetry=parse_telemetry)
+                if parse_telemetry.get("json_repaired"):
+                    json_repaired = True
                 metrics.parse_ms += (time.perf_counter() - t_parse) * 1000
 
                 t_val = time.perf_counter()
@@ -192,10 +200,17 @@ class SuggestionGenerator:
 
                 if suggestions:
                     error = None
+                    failure_reason = None
                     break
 
                 # JSON inválido / sem opções aproveitáveis: retry com instrução corretiva
                 error = "Saida do LLM invalida ou fora do schema esperado"
+                if not parse_telemetry.get("json_found"):
+                    failure_reason = "json_invalid"
+                elif not parsed:
+                    failure_reason = "empty"
+                else:
+                    failure_reason = "schema_invalid"
                 if attempt < self._MAX_ATTEMPTS - 1:
                     logger.debug(
                         "LLM rejeitado para issue {} (tentativa {}/{}). Raw: {!r}",
@@ -214,6 +229,11 @@ class SuggestionGenerator:
             except Exception as exc:
                 last_exc = exc
                 error = str(exc)
+                exc_text = str(exc).lower()
+                if "timeout" in exc_text or "indispon" in exc_text or "timed out" in exc_text:
+                    failure_reason = "timeout"
+                else:
+                    failure_reason = "other"
                 logger.warning(
                     "Geracao LLM para issue {} falhou sem retry externo: {}",
                     issue.id,
@@ -243,7 +263,10 @@ class SuggestionGenerator:
                 else "Saida do LLM invalida"
             )
 
+        metrics.attempts = attempts_made
+        metrics.json_repaired = json_repaired
         metrics.final_status = "ready" if suggestions else "failed"
+        metrics.failure_reason = None if suggestions else (failure_reason or "other")
 
         return SuggestionSet(
             issue_id=issue.id,

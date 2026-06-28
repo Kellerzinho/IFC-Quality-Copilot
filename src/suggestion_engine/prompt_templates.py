@@ -1016,11 +1016,13 @@ def _strip_thinking_tags(text: str) -> str:
     return text.strip()
 
 
-def _extract_json_object(raw: str) -> dict | None:
+def _extract_json_object(raw: str, telemetry: dict | None = None) -> dict | None:
     """Tenta extrair e parsear o primeiro objeto JSON da string.
 
     Tenta três estratégias: parse direto, regex entre { e }, linha a linha.
     Remove blocos <think>...</think> antes de tentar (Qwen3, DeepSeek-R1).
+    Quando ``telemetry`` é fornecido, registra ``json_repaired`` (reparo de
+    truncamento usado).
     """
     stripped = _strip_thinking_tags(raw.strip())
     if not stripped:
@@ -1041,6 +1043,8 @@ def _extract_json_object(raw: str) -> dict | None:
     repaired = _repair_truncated_json(stripped)
     if repaired is not None:
         logger.debug("_extract_json_object: JSON reparado com sucesso")
+        if telemetry is not None:
+            telemetry["json_repaired"] = True
         return repaired
 
     # 3. Regex: último objeto JSON entre { e } (evita pegar fragmentos do thinking)
@@ -1120,15 +1124,23 @@ def _get_options_robust(parsed: dict) -> Any:
     return []
 
 
-def parse_llm_response(response: str, issue_type: str) -> list[Suggestion]:
+def parse_llm_response(
+    response: str, issue_type: str, telemetry: dict | None = None
+) -> list[Suggestion]:
     """Parseia a resposta JSON do LLM e retorna lista de Suggestions.
 
     Tenta json.loads direto, extração via regex e, como último recurso,
     parse linha a linha. Sempre retorna lista (pode ser vazia).
     Define source="llm" em todas as sugestões geradas.
+
+    Quando ``telemetry`` é fornecido (dict mutável), registra ``json_found``
+    (algum objeto JSON foi extraído) e ``json_repaired`` (reparo de truncamento
+    usado), para instrumentação de estabilidade (F12).
     """
     logger.debug("parse_llm_response raw ({} chars): {!r}", len(response), response[:2000])
-    parsed = _extract_json_object(response)
+    parsed = _extract_json_object(response, telemetry=telemetry)
+    if telemetry is not None:
+        telemetry["json_found"] = parsed is not None
 
     if parsed is None:
         # Fallback: linha a linha

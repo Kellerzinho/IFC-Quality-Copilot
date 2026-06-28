@@ -219,6 +219,13 @@ class SuggestionMetrics(BaseModel):
     output_tokens: int = 0
     final_status: str = "pending"
     group_id: str | None = None
+    # Estabilidade da saída estruturada (F12) — instrumentada em SuggestionGenerator.generate
+    attempts: int = 0
+    """Número de chamadas reais ao LLM feitas para esta issue (0 em cache/reuse)."""
+    failure_reason: Literal["json_invalid", "schema_invalid", "empty", "timeout", "other"] | None = None
+    """Motivo da falha quando nenhuma sugestão válida foi produzida, senão None."""
+    json_repaired: bool = False
+    """True se o JSON do LLM precisou de reparo de truncamento para ser parseado."""
 
 
 class SuggestionSet(BaseModel):
