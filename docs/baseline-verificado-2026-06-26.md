@@ -7,6 +7,8 @@
 **Objetivo:** estabelecer o estado real do código **antes** de executar a Fase 0 do
 `docs/plano-orquestracao-2026-06-25.md`. Nada foi editado nesta auditoria.
 
+> **Atualização (2026-06-26, mais tarde):** decisão experimental posterior **abandonou a ablação de grounding** — `grounding_mode` e os modos `none`/`ids_only` foram **removidos do projeto**. Onde a sequência recomendada abaixo cita "0.1 / F1+F13 `grounding_mode` funcional", leia como **resolvido por remoção** (não há mais modos a tornar funcionais).
+
 ---
 
 ## 0. Headline (leia isto primeiro)

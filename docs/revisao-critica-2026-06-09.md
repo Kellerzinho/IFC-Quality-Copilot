@@ -5,6 +5,8 @@
 **Escopo:** código-fonte em `src/`, `tests/`, documentação (`CLAUDE.md`, `PROJECT_CONTEXT.md`, `fase3.md`) e alinhamento com o eixo de pesquisa (grounding openBIM, alvo A ERA BIM / ENTAC-SBTIC).
 **Método:** todos os achados abaixo foram confirmados por leitura direta do código antes de afirmados. Onde a suspeita original estava errada, isso está dito explicitamente.
 
+> **Atualização (2026-06-26):** este é um registro datado. A decisão experimental posterior **abandonou a ablação de grounding** — os modos `none`/`ids_only` e o conceito `grounding_mode` foram **removidos do projeto**; o sistema sempre faz grounding IDS+bSDD. Onde os achados abaixo (F1, F4, F13) tratam `grounding_mode` como algo a tornar "funcional", leia como **resolvido por remoção**. Os números F1–F15 são preservados como referência histórica.
+
 ---
 
 ## 1. Pontos fortes (o que está bem-feito)

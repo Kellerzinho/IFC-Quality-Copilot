@@ -5,6 +5,8 @@
 **Alvo de publicação:** 9º Congresso Internacional **A ERA BIM** (resumo já estruturado em `Artigo/`), com ENTAC/SBTIC 2027 como destino posterior do artigo completo. Orientador: Maj. Rafael Otranto.
 **Decisão científica vigente (confirmar com orientador e registrar):** o experimento central **não é mais a ablação de 3 condições de grounding** — `ids_bsdd` é o padrão fixo do sistema. O experimento central passa a ser o **benchmark de famílias de LLMs locais** sob o mesmo arcabouço de grounding, em **3 tarefas** (preenchimento de Pset, nomeação de espaços, classificação de sistemas).
 
+> **Atualização (2026-06-26):** executado. O conceito `grounding_mode` e os modos `none`/`ids_only` foram **removidos do código e dos docs**; o sistema sempre faz grounding IDS+bSDD. As recomendações abaixo que mencionam "remover/typar `grounding_mode`" estão **concluídas por remoção total**.
+
 **Regra inviolável em todas as fases:** o IFC só é alterado após aprovação humana explícita (`aprovado_pelo_usuario == True`). Nenhuma tarefa abaixo propõe escrita automática sem revisão; o "revisor simulado" da Fase 0 opera sobre **cópias** do modelo, em ambiente de experimento, e isso será declarado no artigo.
 
 ---

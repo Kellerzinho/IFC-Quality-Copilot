@@ -1,5 +1,7 @@
 # Prompt de handoff — Claude Fable
 
+> **Atualização (2026-06-26):** registro datado. A ablação de grounding foi **abandonada** — `grounding_mode` e os modos `none`/`ids_only` foram **removidos do projeto**; o sistema sempre faz grounding IDS+bSDD. Trechos abaixo que pedem para "fazer `grounding_mode` fluir" estão superados (resolvidos por remoção).
+
 > Cole o bloco abaixo (tudo dentro de `=== INÍCIO ===` / `=== FIM ===`) como primeira
 > mensagem para o Claude Fable, com o repositório `ifc-quality-copilot` aberto e o MCP do
 > Obsidian conectado.

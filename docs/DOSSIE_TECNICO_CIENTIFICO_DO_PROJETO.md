@@ -22,7 +22,7 @@ Do ponto de vista tecnológico, o núcleo é Python 3.11+ (`pyproject.toml`). A 
 
 O diferencial técnico do projeto é a combinação de quatro camadas: diagnóstico determinístico IFC, requisitos IDS, grounding bSDD e LLM local com normalização defensiva. A LLM não é usada como fonte livre e soberana; ela gera opções que são parseadas, limitadas, normalizadas, validadas semanticamente e registradas. O código explicitamente ignora URI bSDD inventada pelo modelo ao limpar `s.bsdd_uri` antes da validação em `src/suggestion_engine/suggestion.py`, resolve URI somente a partir de contexto confiável em `src/suggestion_engine/normalization.py` e mantém uma política de fontes oficiais em `src/semantic_registry/`. Essa arquitetura torna o projeto relevante para uma narrativa científica sobre uso controlado de LLMs em openBIM, especialmente quando comparado a abordagens que aplicam LLMs diretamente sobre texto ou propriedades IFC sem restrições normativas e sem validação posterior.
 
-O projeto já possui material para um artigo técnico-científico sobre enriquecimento semântico supervisionado de IFC com LLMs sob restrições IDS/bSDD. O arquivo `fase3.md` formula uma direção de pesquisa explícita: investigar se o grounding por IDS e bSDD aumenta a confiabilidade do enriquecimento semântico, com hipótese de melhoria em conformidade pós-IDS, redução de edição humana e ausência de regressões de schema. Essa formulação está parcialmente refletida no código, mas ainda não está plenamente realizada experimentalmente. `src/experiment/runner.py` tenta executar modos `none`, `ids_only` e `ids_bsdd`, porém `src/pipeline.py` força `grounding_mode = "ids_bsdd"`, o que impede comparação fiel entre condições sem ajuste experimental. Além disso, não foi identificado dataset real versionado, ground truth externo, logs experimentais consolidados ou resultados estatísticos no repositório. Existem testes automatizados e framework de avaliação em `tests/evaluation/evaluation_framework.py`, mas ainda falta uma campanha experimental com modelos reais, critérios de amostragem, baselines e métricas reportáveis.
+O projeto já possui material para um artigo técnico-científico sobre enriquecimento semântico supervisionado de IFC com LLMs sob restrições IDS/bSDD. O arquivo `fase3.md` formula uma direção de pesquisa explícita: avaliar quais LLMs locais, operando sob grounding IDS+bSDD, produzem enriquecimento confiável (conformidade pós-IDS, baixa edição humana, zero regressões de schema). O sistema sempre aplica grounding IDS+bSDD — a ablação de grounding foi abandonada (jun/26) e o conceito `grounding_mode` removido do código. Ainda não foi identificado dataset real versionado, ground truth externo, logs experimentais consolidados ou resultados estatísticos no repositório. Existem testes automatizados e framework de avaliação em `tests/evaluation/evaluation_framework.py`, mas ainda falta uma campanha experimental com modelos reais, critérios de amostragem e métricas reportáveis.
 
 Para publicação, as principais melhorias são: consolidar divergências entre documentação e código; disponibilizar ou descrever um conjunto de modelos IFC de avaliação; reexecutar e registrar a suíte de testes; corrigir a comparação de modos de grounding; coletar ground truth de especialistas; medir acurácia top-1/top-3, taxa de aceitação, taxa de edição, redução de issues, tempo de revisão, impacto no readiness e regressões de validação; e explicitar as limitações por domínio. Com isso, o projeto pode virar artigo de engenharia de software aplicada a BIM, artigo de sistemas inteligentes para openBIM ou relatório técnico-científico de validação de pipeline de qualidade IFC assistido por IA.
 
@@ -40,7 +40,7 @@ O projeto se conecta a temas maiores da área: qualidade de dados BIM, interoper
 
 **Problema central:** modelos IFC frequentemente não têm completude semântica suficiente para usos técnicos especializados, e a correção manual é trabalhosa, sujeita a inconsistências e pouco rastreável. O desafio é saber se um pipeline que combina diagnóstico determinístico, IDS, bSDD, LLM local e revisão humana consegue melhorar a qualidade semântica do IFC sem introduzir regressões.
 
-**Pergunta de pesquisa principal:** em que medida um pipeline human-in-the-loop com grounding IDS/bSDD melhora a qualidade, a rastreabilidade e a confiabilidade de sugestões de correção semântica em modelos IFC quando comparado a diagnósticos sem grounding ou a sugestões não restritas?
+**Pergunta de pesquisa principal:** quais LLMs locais, operando num pipeline human-in-the-loop com grounding IDS+bSDD, produzem sugestões de correção semântica em modelos IFC com melhor qualidade, rastreabilidade, confiabilidade e eficiência computacional no hardware-alvo?
 
 **Perguntas secundárias:**
 
@@ -50,7 +50,7 @@ O projeto se conecta a temas maiores da área: qualidade de dados BIM, interoper
 - A pós-validação por schema, IDS e checks semânticos detecta regressões introduzidas por correções aceitas?
 - Perfis de readiness diferentes produzem diagnósticos e prioridades significativamente diferentes para o mesmo modelo?
 
-**Hipótese potencial:** o uso de grounding IDS/bSDD melhora a conformidade pós-correção, reduz a taxa de edição humana e mantém regressões de schema em zero, em comparação com um fluxo sem grounding. Essa hipótese é sugerida em `fase3.md`, mas ainda precisa ser operacionalizada porque `src/pipeline.py` força `ids_bsdd`, apesar de `src/experiment/runner.py` listar modos `none`, `ids_only` e `ids_bsdd`.
+**Hipótese potencial:** LLMs locais (7–9B quantizados) sob grounding IDS+bSDD atingem conformidade pós-correção e aceitação adequadas ao uso assistido, com zero regressões de schema, e apresentam diferenças mensuráveis de qualidade e eficiência entre famílias — permitindo recomendar quais modelos são viáveis no hardware-alvo. O sistema aplica grounding IDS+bSDD de forma fixa (ablação abandonada).
 
 **Justificativa técnica:** o código já implementa os blocos necessários para avaliar a hipótese: diagnóstico em `src/ifc_analyzer/`, IDS em `src/translator/`, bSDD em `src/bsdd/`, geração LLM em `src/suggestion_engine/`, validação em `src/validation/post_validator.py`, auditoria em `src/audit/logger.py` e avaliação em `tests/evaluation/evaluation_framework.py`.
 
@@ -81,7 +81,7 @@ Estão implementados: análise IFC; extração de quantidades, térmica, classif
 
 ### 5.4 Objetivos ainda não implementados
 
-Ainda não há, no repositório, um dataset científico versionado, ground truth de especialistas, notebooks de análise estatística, relatórios de experimentos com múltiplos modelos reais, comparação efetiva entre modos `none`, `ids_only` e `ids_bsdd`, Dockerfile ou README de reprodução. Também há perfis com `ids_filename` sem arquivo correspondente, como `fm_readiness.ids` e `compliance_readiness.ids`, referenciados em `src/profiles/fm/__init__.py` e `src/profiles/compliance/__init__.py`, mas não identificados em `data/ids_templates/`. Há ainda `location_missing` em perfis HVAC/FM (`src/profiles/hvac/__init__.py`, `src/profiles/fm/__init__.py`) sem estar listado no `Literal` de `Issue.issue_type` em `src/models.py`.
+Ainda não há, no repositório, um dataset científico versionado, ground truth de especialistas, notebooks de análise estatística, relatórios de experimentos com múltiplos modelos reais, Dockerfile ou README de reprodução. Também há perfis com `ids_filename` sem arquivo correspondente, como `fm_readiness.ids` e `compliance_readiness.ids`, referenciados em `src/profiles/fm/__init__.py` e `src/profiles/compliance/__init__.py`, mas não identificados em `data/ids_templates/`. Há ainda `location_missing` em perfis HVAC/FM (`src/profiles/hvac/__init__.py`, `src/profiles/fm/__init__.py`) sem estar listado no `Literal` de `Issue.issue_type` em `src/models.py`.
 
 ## 6. Visão geral da arquitetura
 
@@ -211,9 +211,9 @@ python -m src.mcp_server.http_server
 
 O `Makefile` também define `test` (`pytest -v --tb=short`), `test-cov`, `lint` (`ruff check src/ tests/ && mypy src/`), `format` e `clean`. O target `clean` usa sintaxe Unix (`rm -rf`), o que pode ser frágil em Windows sem shell compatível.
 
-As variáveis de ambiente estão em `.env.example`: `OLLAMA_URL`, `OLLAMA_MODEL`, `OLLAMA_TEMPERATURE`, `OLLAMA_NUM_CTX`, `OLLAMA_NUM_PREDICT`, `OLLAMA_THINK`, `OLLAMA_TIMEOUT_SECONDS`, `OLLAMA_MAX_RETRIES`, `GROUNDING_MODE`, `POST_VALIDATION_ENABLED`, `BSDD_API_BASE`, `BSDD_CACHE_PATH`, `IDS_XSD_PATH`, `IFC_UPLOAD_DIR` e `LOG_LEVEL`. O código usa `src/config.py` para carregar esses valores.
+As variáveis de ambiente estão em `.env.example`: `OLLAMA_URL`, `OLLAMA_MODEL`, `OLLAMA_TEMPERATURE`, `OLLAMA_NUM_CTX`, `OLLAMA_NUM_PREDICT`, `OLLAMA_THINK`, `OLLAMA_TIMEOUT_SECONDS`, `OLLAMA_MAX_RETRIES`, `POST_VALIDATION_ENABLED`, `BSDD_API_BASE`, `BSDD_CACHE_PATH`, `IDS_XSD_PATH`, `IFC_UPLOAD_DIR` e `LOG_LEVEL`. O código usa `src/config.py` para carregar esses valores.
 
-Pontos frágeis: não há `README.md` identificado; não há Dockerfile; o `.env.example` diverge de `src/config.py` em modelo e grounding padrão; `src/pipeline.py` força `ids_bsdd`, reduzindo o efeito de `GROUNDING_MODE`; e alguns perfis referenciam IDS inexistentes. Para reprodução científica, esses pontos devem ser corrigidos ou explicitados.
+Pontos frágeis: não há `README.md` identificado; não há Dockerfile; o `.env.example` diverge de `src/config.py` no modelo padrão; e alguns perfis referenciam IDS inexistentes. Para reprodução científica, esses pontos devem ser corrigidos ou explicitados.
 
 ## 10. Funcionamento interno detalhado
 
@@ -250,7 +250,7 @@ Pontos frágeis: não há `README.md` identificado; não há Dockerfile; o `.env
 - Principais funções/classes: `QualityPipeline`, `diagnose()`, `_integrate_ids()`, `generate_suggestions()`, `diagnose_and_start_suggestions()`, `apply_correction()`, `export()`, `compute_readiness()`.
 - Explicação detalhada: ao inicializar, o pipeline abre o IFC via `IFCAnalyzer`, reaproveita o `ifc_file` no `IFCWriter`, cria auditoria, cliente LLM, cache, gerador, deduplicador, cliente bSDD, construtor bSDD, pós-validador e BCF exporter. `diagnose()` gera issues nativas e integra IDS se houver caminho de IDS. `_integrate_ids()` parseia IDS, gera regras, aplica regras e deduplica issues por tupla de GUID, tipo e propriedade. `diagnose_and_start_suggestions()` cria `IssueStore`, prepara grounding, calcula reuso por assinatura e inicia `SuggestionWorker`. `apply_correction()` normaliza valor, escreve no IFC, pós-valida, registra auditoria e marca a issue como resolvida.
 - Papel no projeto: é o eixo operacional e a principal evidência de sistema funcional.
-- Possíveis melhorias: permitir realmente os modos `none` e `ids_only`; reverter escrita quando pós-validação falhar ou documentar por que não reverte; tornar explícito quando schema check está desabilitado; tratar `material_unmapped`; resolver inconsistência de IDS ausentes.
+- Possíveis melhorias: reverter escrita quando pós-validação falhar ou documentar por que não reverte; tornar explícito quando schema check está desabilitado; tratar `material_unmapped`; resolver inconsistência de IDS ausentes.
 - Evidências: `src/pipeline.py`, `src/experiment/runner.py`.
 
 ### Analisador IFC
@@ -461,7 +461,6 @@ Para transformar o projeto em artigo, devem ser coletados: conjunto de modelos I
 | `OLLAMA_THINK` | `false` | `.env.example`, `src/config.py` | Modo de raciocínio | Afeta saída e parsing |
 | `OLLAMA_TIMEOUT_SECONDS` | `120` | `.env.example`, `src/config.py` | Timeout de geração | Afeta robustez |
 | `OLLAMA_MAX_RETRIES` | `3` | `.env.example`, `src/config.py` | Tentativas | Afeta resiliência |
-| `GROUNDING_MODE` | `none` em `.env.example`; `ids_bsdd` em `src/config.py` | Ambos | Modo de grounding | Divergência importante; pipeline força `ids_bsdd` |
 | `POST_VALIDATION_ENABLED` | `true` | `.env.example`, `src/config.py` | Ativa pós-validação | Segurança pós-escrita |
 | `BSDD_API_BASE` | `https://api.bsdd.buildingsmart.org` | `.env.example`, `src/config.py` | API semântica | Dependência externa |
 | `BSDD_CACHE_PATH` | `data/cache/bsdd_cache.json` | `.env.example`, `src/config.py` | Cache bSDD | Reduz chamadas externas |
@@ -501,7 +500,7 @@ Os riscos de erro concentram-se em contexto IFC incompleto, propriedades com nom
 
 A primeira limitação é a ausência de dataset científico no repositório. Sem modelos reais ou benchmark controlado, a suíte de testes comprova funcionamento de software, mas não comprova desempenho em uso real. Isso importa porque arquivos IFC de mercado costumam conter variações de autoria, versões, Psets customizados, convenções de idioma e modelagem incompleta que não aparecem em fixtures sintéticas.
 
-A segunda limitação é a comparação experimental incompleta. `src/experiment/runner.py` lista modos `none`, `ids_only` e `ids_bsdd`, mas `src/pipeline.py` força `ids_bsdd`. Assim, qualquer resultado atual de comparação de grounding seria metodologicamente inválido se não corrigir esse comportamento.
+A segunda limitação é a campanha experimental ainda não executada: falta rodar o benchmark de múltiplos modelos locais sob grounding IDS+bSDD, com ground truth versionado e métricas consolidadas. (A ablação de grounding foi abandonada; o desenho atual é o benchmark de modelos.)
 
 A terceira limitação é a divergência entre documentação e código. `PROJECT_CONTEXT.md`, `CLAUDE.md` e `docs/2026-04-17-estado-atual-projeto.md` citam `src/rule_engine/*`, mas esse diretório não foi identificado. Isso pode indicar documentação obsoleta, refatoração incompleta ou intenção não implementada.
 
@@ -519,7 +518,7 @@ O potencial científico é **alto**, condicionado à execução de experimentos 
 
 O que há de cientificamente interessante: a arquitetura restringe a LLM com fontes oficiais; descarta URI inventada; registra proveniência; diferencia perfis de uso; e trata correção IFC como ato validável, não como texto livre. O que é apenas engenharia: UI, cache, wrappers MCP e dashboards, salvo quando usados como infraestrutura para medir desempenho e rastreabilidade. A originalidade deve ser buscada na metodologia de validação, no protocolo de grounding e nas métricas de readiness por domínio.
 
-Para transformar em contribuição de artigo, é necessário comparar com literatura e baselines: checagem IFC determinística sem LLM, LLM sem grounding, LLM com IDS apenas, LLM com IDS+bSDD, e revisão manual tradicional. Sem essa comparação, o projeto é um protótipo técnico forte, mas ainda não uma contribuição científica demonstrada.
+Para transformar em contribuição de artigo, é necessário comparar com literatura e baselines: checagem IFC determinística sem LLM, o conjunto de LLMs locais sob grounding IDS+bSDD (o benchmark), e revisão manual tradicional. Sem essa comparação, o projeto é um protótipo técnico forte, mas ainda não uma contribuição científica demonstrada.
 
 ## 19. Relação com literatura e temas para revisão bibliográfica
 
@@ -563,18 +562,18 @@ Problema: modelos IFC incompletos dificultam usos computacionais. Lacuna: LLMs p
 
 1. **Introdução:** apresentar BIM/IFC, problema de qualidade, custo de correção manual, risco de LLMs sem restrição e proposta do pipeline.
 2. **Trabalhos relacionados:** revisar qualidade IFC, model checking, IDS, bSDD, semantic enrichment, LLMs com grounding e human-in-the-loop.
-3. **Metodologia:** descrever dataset, perfis, tipos de issue, modos de grounding, ground truth, variáveis e métricas.
+3. **Metodologia:** descrever dataset, perfis, tipos de issue, grounding IDS+bSDD, conjunto de modelos, ground truth, variáveis e métricas.
 4. **Implementação:** explicar arquitetura com `src/pipeline.py`, `src/ifc_analyzer/`, `src/translator/`, `src/bsdd/`, `src/suggestion_engine/`, `src/writer/` e `src/validation/`.
-5. **Experimentos:** comparar condições `none`, `ids_only`, `ids_bsdd`, perfis e modelos; registrar ambiente e modelo Ollama.
+5. **Experimentos:** comparar modelos LLM locais (sob grounding IDS+bSDD), perfis e tarefas; registrar ambiente e versão do Ollama.
 6. **Resultados:** tabelas de acurácia, tempo, edição humana, readiness, falhas de validação e ablação de cache/deduplicação.
 7. **Discussão:** interpretar ganhos, falhas, tipos de issue mais difíceis, impacto da qualidade do IFC e limitações.
 8. **Conclusão:** sintetizar contribuição, limitações, próximos passos e disponibilização do artefato.
 
 ## 21. Metodologia científica recomendada
 
-O desenho experimental recomendado é uma avaliação controlada por múltiplos modelos IFC e múltiplas condições de grounding. As variáveis independentes seriam: modo de grounding (`none`, `ids_only`, `ids_bsdd`), perfil de readiness, tipo de issue, modelo LLM, presença/ausência de cache e nível de completude do IFC. As variáveis dependentes seriam: acurácia top-1/top-3, precision, recall, F1, taxa de aceitação, taxa de edição, taxa de rejeição, tempo por issue, melhoria de readiness, número de falhas de pós-validação e redução de issues.
+O desenho experimental recomendado é uma avaliação controlada por múltiplos modelos LLM locais (sob grounding IDS+bSDD fixo) e múltiplos modelos IFC. As variáveis independentes seriam: modelo LLM, perfil de readiness, tipo de issue, presença/ausência de cache e nível de completude do IFC. As variáveis dependentes seriam: acurácia top-1/top-3, precision, recall, F1, taxa de aceitação, taxa de edição, taxa de rejeição, tempo por issue, tokens/s, uso de VRAM/RAM, melhoria de readiness, número de falhas de pós-validação e redução de issues.
 
-Os baselines devem incluir: diagnóstico sem sugestão LLM; LLM sem IDS/bSDD; LLM com IDS; LLM com IDS+bSDD; e revisão manual de especialista. Os cenários de teste devem cobrir energia, orçamento, incêndio, acústica, estrutura e FM, com pelo menos modelos de pequena, média e alta complexidade. O número de amostras depende da disponibilidade, mas um artigo inicial deveria ter ao menos dezenas de issues por tipo e mais de um modelo por perfil.
+Os baselines devem incluir: diagnóstico sem sugestão LLM; o conjunto de LLMs locais sob grounding IDS+bSDD; e revisão manual de especialista. Os cenários de teste devem cobrir energia, orçamento, incêndio, acústica, estrutura e FM, com pelo menos modelos de pequena, média e alta complexidade. O número de amostras depende da disponibilidade, mas um artigo inicial deveria ter ao menos dezenas de issues por tipo e mais de um modelo por perfil.
 
 O procedimento: congelar ambiente; limpar ou fixar caches; executar diagnóstico; gerar sugestões em cada condição; coletar ground truth; aplicar simulação de decisão ou revisão humana; pós-validar; exportar logs; calcular métricas; aplicar análise estatística descritiva e, se possível, testes pareados por issue/modelo. Critério de sucesso: ganho estatisticamente e praticamente relevante em top-1/top-3 ou redução de edição, sem aumento de falhas pós-validação.
 
@@ -582,7 +581,7 @@ O procedimento: congelar ambiente; limpar ou fixar caches; executar diagnóstico
 
 | Experimento | Objetivo | Procedimento | Métrica | Importância para o artigo |
 |---|---|---|---|---|
-| Comparação de grounding | Medir efeito de IDS/bSDD | Corrigir `grounding_mode` e executar `none`, `ids_only`, `ids_bsdd` | Top-1/top-3, edit rate, falhas | Principal hipótese |
+| Benchmark de modelos | Comparar LLMs locais sob IDS+bSDD | Executar cada modelo (Qwen/Llama/Mistral/Gemma/Phi) nas 3 tarefas | Top-1/top-3, edit rate, tokens/s, VRAM, falhas | Principal hipótese |
 | Avaliação por perfil | Ver variação por uso final | Rodar orçamento, energia, incêndio, acústica, estrutura | Readiness delta, issues por perfil | Mostra aplicabilidade |
 | Ground truth especialista | Validar sugestões | Especialistas definem correção esperada por issue | Accuracy, F1 | Base científica |
 | Robustez IFC real | Testar generalização | Rodar em modelos reais de fontes diferentes | Falhas, cobertura, tempo | Evita overfit em fixtures |
@@ -607,7 +606,6 @@ Contribuições para engenharia: fluxo de qualidade de software robusto com test
 
 ## 24. Riscos e pontos em aberto
 
-- [CRÍTICO] Comparação experimental bloqueada pelo `grounding_mode` forçado em `src/pipeline.py`.
 - [CRÍTICO] Ausência de dataset/ground truth real no repositório.
 - [CRÍTICO] Perfis `fm_readiness` e `compliance_readiness` referenciam IDS não identificados em `data/ids_templates/`.
 - [IMPORTANTE] `location_missing` aparece em perfis, mas não no `Literal` de `Issue.issue_type`.

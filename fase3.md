@@ -13,10 +13,10 @@ Enriquecimento semântico e correção assistida de modelos IFC com LLMs locais 
 Em uma frase para abstract: o projeto investiga se o grounding de LLMs em padrões openBIM (bSDD + IDS) reduz erros semânticos e aumenta aceitação humana no enriquecimento de modelos IFC, comparando estratégias com e sem restrições formais em um pipeline auditável.
 
 3. Pergunta de Pesquisa Central
-Em que medida o grounding de um LLM local em dicionários padronizados (bSDD) e requisitos formais (IDS 1.0) melhora a precisão, a consistência semântica e a aceitação humana de sugestões de enriquecimento em modelos IFC, comparado ao mesmo LLM operando sem restrições formais?
+Quais LLMs locais, operando sob grounding openBIM (bSDD + IDS 1.0), produzem sugestões de enriquecimento de modelos IFC com melhor precisão, consistência semântica, aceitação humana e eficiência computacional no hardware-alvo?
 
 4. Hipótese Principal
-Um LLM local que recebe como contexto (a) as propriedades e classificações válidas extraídas do bSDD e (b) os requisitos verificáveis do IDS produz sugestões de enriquecimento com maior taxa de conformidade IDS pós-correção (≥ 20 pontos percentuais acima do baseline sem grounding), menor taxa de edição humana (≤ 25% vs. ≥ 40% sem grounding) e zero regressões de schema IFC, em um conjunto de tarefas de enriquecimento semântico (nomeação de espaços, preenchimento de Psets, classificação de sistemas).
+LLMs locais (7–9B, quantizados) operando com grounding IDS+bSDD atingem conformidade IDS pós-correção e taxa de aceitação adequadas ao uso assistido (com revisão humana), com zero regressões de schema IFC e diferenças mensuráveis de qualidade e eficiência entre famílias (Qwen/Llama/Mistral/Gemma/Phi) — permitindo recomendar quais modelos são viáveis no hardware-alvo, nas 3 tarefas de enriquecimento (nomeação de espaços, preenchimento de Psets, classificação de sistemas).
 
 5. Contribuição Científica Esperada
 O que é engenharia/integração (necessário, mas não publicável isoladamente)
@@ -29,7 +29,7 @@ Implementar validação pós-correção com ifcopenshell.validate.
 O que é contribuição acadêmica legítima
 
 Framework de grounding openBIM para LLMs em enriquecimento de IFC. Nenhum trabalho publicado combina bSDD + IDS como restrições formais para um LLM que enriquece modelos IFC. Propor e avaliar esse framework é a contribuição principal.
-Evidência empírica de que grounding formal reduz erros de LLM em domínio AEC. A literatura de LLM em BIM carece de avaliação quantitativa com baselines controlados. Medir o delta entre "LLM livre" e "LLM com grounding" em métricas de conformidade, aceitação e consistência é dado que o campo não possui.
+Evidência empírica quantitativa da viabilidade de LLMs locais para enriquecimento de IFC sob grounding openBIM. A literatura de LLM em BIM carece de avaliação quantitativa com modelos locais reprodutíveis. Medir conformidade, aceitação, consistência e custo computacional por família de modelo é dado que o campo não possui.
 Protocolo de avaliação reprodutível para enriquecimento semântico de IFC. Dataset + IDS + ground truth + métricas + script de reprodução — contribuição metodológica que permite comparação futura por outros pesquisadores.
 Pipeline auditável com proveniência end-to-end. Demonstrar que cada correção tem rastreabilidade completa (issue → evidência bSDD/IDS → sugestão LLM → decisão humana → escrita → validação) é contribuição para governança de IA em engenharia.
 
@@ -48,7 +48,6 @@ Módulos que precisam ser estendidos
 suggestion_engine/prompt_templates.py
 
 Novos templates que injetam contexto bSDD (classes válidas, propriedades permitidas, URIs) e contexto IDS (requisito violado, tipo de check, severidade) diretamente no prompt.
-Template "sem grounding" (baseline) que envia apenas contexto IFC bruto.
 
 suggestion_engine/suggestion.py (SuggestionGenerator)
 
@@ -65,7 +64,6 @@ pipeline.py
 
 Integrar gate de validação pós-correção.
 Integrar chamada bSDD antes de gerar sugestões.
-Suportar modo experimento: grounding_mode: Literal["none", "ids_only", "ids_bsdd"].
 
 audit/logger.py
 
@@ -104,7 +102,7 @@ Sem viewpoints 3D nesta fase.
 
 src/experiment/runner.py — Execução em lote dos experimentos.
 
-Configura e executa o pipeline em cada condição (sem grounding, IDS-only, IDS+bSDD).
+Configura e executa o pipeline para cada modelo do benchmark (grounding IDS+bSDD).
 Coleta métricas por issue e agrega.
 
 src/experiment/metrics.py — Cálculo de métricas.

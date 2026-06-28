@@ -11,10 +11,7 @@
 
 ## Decisões fixadas nesta sessão (25/06)
 
-1. **Desenho experimental = HÍBRIDO** *(confirmar com Maj. Otranto)*:
-   - **B1 — Ablação de grounding em 1 modelo fixo:** `none` × `ids_only` × `ids_bsdd`, nas 3 tarefas. Valida a **hipótese central** do `fase3.md` (grounding melhora conformidade/aceitação).
-   - **B2 — Benchmark de famílias de LLM** sob `ids_bsdd` fixo, nas 3 tarefas. Responde "qual modelo local é viável aqui".
-   - **Consequência forte vs. plano de 09/06:** `grounding_mode` **NÃO é removido** — ele precisa ficar **funcional e correto** (os 3 modos têm de gerar prompts/saídas realmente distintos). Isso muda a Fase 0.1.
+1. **Desenho experimental = BENCHMARK de famílias de LLM locais** sob grounding **`ids_bsdd` fixo**, nas 3 tarefas. Responde "qual modelo local é viável aqui". **A ablação de grounding foi abandonada** (jun/26): os modos `none`/`ids_only` e o conceito `grounding_mode` foram **removidos do projeto**; o sistema sempre faz grounding IDS+bSDD.
 
 2. **Modelo de estudo = prédio de autoria do Felipe** (projeto de engenharia, com lacunas reais), **não a CASA**.
    - Entrada de teste = versão "como exportada" (com lacunas).
@@ -58,7 +55,7 @@ Fase 0 — Fundação experimental (correções de base)         [bloqueia tudo]
    │
    ├──► Fase C — Modelo de estudo + Ground Truth (prédio)   [paralela à A; bloqueia B]
    │
-   └──────────► Fase B — Experimento (B1 ablação + B2 benchmark)
+   └──────────► Fase B — Experimento (benchmark de LLMs)
                     │
                     └──► Fase D — Consolidação e redação
 ```
@@ -71,15 +68,9 @@ Estimativa: Fase 0 ≈ 1–2 sprints · A ≈ 1 sprint · C depende do retrabalh
 
 > **Estado auditado:** quase nada da Fase 0 foi feito desde 09/06. Os arquivos `src/experiment/` continuam stubs de abril. As correções abaixo são pré-requisito de qualquer número do artigo.
 
-### 0.1 `grounding_mode` FUNCIONAL (mudança vs. 09/06 — NÃO remover)
-- Tipar `grounding_mode: Literal["none", "ids_only", "ids_bsdd"]` em `QualityPipeline.__init__`. Default `"ids_bsdd"`.
-- **Fazer os 3 modos diferirem de verdade:**
-  - `none` → prompt só com contexto IFC bruto (sem IDS, sem bSDD).
-  - `ids_only` → injeta requisito IDS, **sem** vocabulário bSDD.
-  - `ids_bsdd` → injeta IDS + candidatos/valores oficiais do bSDD.
-- Corrigir **F13** (vazamento de IDS no modo `none`): `prepare_llm_grounding`/`generate_batch` só usam `ids_context`/`bsdd_context` conforme o modo.
-- Remover do código atual o overwrite silencioso (`src/pipeline.py:81-83`). Manter `grounding_mode` no `AuditEntry` e nos exports.
-- **Critérios:** os 3 modos produzem prompts mensuravelmente distintos (teste compara o texto do prompt por modo); nenhuma fonte de grounding vaza para `none`; `make test` verde.
+### 0.1 Remoção da ablação de grounding (CONCLUÍDO)
+- O conceito `grounding_mode` e os modos `none`/`ids_only` foram **removidos** de todo o projeto (config, pipeline, suggestion/cache, worker, prompt_templates, bSDD, audit, MCP, UI, experiment). O sistema **sempre** faz grounding IDS+bSDD quando o contexto está disponível (resolve também o F13: não há mais modo onde o IDS "vaze").
+- **Critérios:** `grep -rn "grounding_mode\|ids_only" src/ tests/` retorna vazio; `make test` verde.
 
 ### 0.2 IDs determinísticos (F3 — CRÍTICO)
 - `Issue.id` (hoje `uuid4()[:8]` em `src/models.py:98`) → `sha1(f"{element_guid}|{issue_type}|{check_pset}|{check_property}")[:12]`, via factory/validator que recalcula quando os campos-chave existem (fallback: `check_property=""`).
@@ -93,17 +84,16 @@ Estimativa: Fase 0 ≈ 1–2 sprints · A ≈ 1 sprint · C depende do retrabalh
 - Formalizar definições de métricas (docstring + seção no relatório): top-1/top-3 sobre issues com GT; precisão/revocação/F1 com definição defensável (ou substituir por top-k + conformidade IDS — decisão a registrar).
 - **Critérios:** GT de arquivo casa com issues entre execuções distintas; teste parametrizado de `2.5` vs `"2,50"` vs `"2.50 W/m²K"`, `True` vs `"true"` vs `"sim"`; documento de métricas existe.
 
-### 0.4 Higiene do cache para multi-modelo (F4)
-- Incluir `grounding_mode` na `compute_signature` (`src/suggestion_engine/suggestion_cache.py`).
-- **Remover a chamada `invalidate_by_model` do `__init__` do pipeline** (`src/pipeline.py:114`) — ela apaga o cache dos outros modelos e inviabiliza o benchmark multi-modelo. Invalidação vira operação explícita (`make clean-cache`).
-- Bypass de cache no modo experimento (réplicas de variância precisam de chamadas reais — flag por run; `suggestion_cache_enabled` já existe em `config.py`).
-- **Critérios:** alternar modelos não apaga entradas de outros; assinatura muda quando `grounding_mode` muda; harness roda com e sem cache.
+### 0.4 Higiene do cache para multi-modelo (F4 — CONCLUÍDO)
+- **Removida a chamada `invalidate_by_model` do `__init__` do pipeline** — ela apagava o cache dos outros modelos e inviabilizava o benchmark multi-modelo. Invalidação vira operação explícita (`make clean-cache`).
+- Bypass de cache no modo experimento (réplicas de variância precisam de chamadas reais; `suggestion_cache_enabled` já existe em `config.py`).
+- **Critérios:** alternar modelos não apaga entradas de outros; harness roda com e sem cache.
 
 ### 0.5 Reescrever `src/experiment/` como harness real (F2, F6, F12)
-- `runner.py`: dado `(ifc_path, ids_path, ground_truth_path, model_name, grounding_mode | lista de modos, n_réplicas, cache on/off)` → `diagnose()` → gera sugestões (batch, grounding conforme modo) → avalia vs GT (Evaluator) → aplica **revisor simulado** → exporta JSON versionável.
+- `runner.py`: dado `(ifc_path, ids_path, ground_truth_path, model_name, n_réplicas, cache on/off)` → `diagnose()` → gera sugestões (batch, grounding IDS+bSDD) → avalia vs GT (Evaluator) → aplica **revisor simulado** → exporta JSON versionável.
 - **Revisor simulado (proxy de decisão humana, F6):** top-1 casa GT (normalizado) → `accepted`; algo do top-3 casa → `edited`; nada casa → `rejected`; `review_required` sem match → `review`. **Sem escrever no IFC original** — conformidade IDS pós-correção medida aplicando as correções aceitas numa **cópia descartável** + `PostValidator`, rotulado como simulação.
 - Instrumentar estabilidade (**F12**): adicionar a `SuggestionMetrics` (`src/models.py:183`) os campos `attempts: int`, `failure_reason: Literal["json_invalid","schema_invalid","empty","timeout","other"] | None`, `json_repaired: bool`.
-- Metadados por run (F7): modelo + digest, versão do Ollama, seed, temperature, top_p, num_ctx, num_predict, hash SHA256 do IFC, hash do IDS, versão do prompt (`PROMPT_VERSION`), commit do repo, `grounding_mode`.
+- Metadados por run (F7): modelo + digest, versão do Ollama, seed, temperature, top_p, num_ctx, num_predict, hash SHA256 do IFC, hash do IDS, versão do prompt (`PROMPT_VERSION`), commit do repo.
 - `metrics.py`: `ExperimentResult` Pydantic agregando Evaluator + proxy + telemetria.
 - **Critérios:** `python -m src.experiment.runner --help` funcional; run com Ollama **mockado** gera JSON com todas as métricas; teste de **hash do IFC antes/depois** prova que o revisor simulado não toca o arquivo original.
 
@@ -160,23 +150,14 @@ O GT é definido por **expertise do Felipe + norma (NBR 15575) + partes determin
 
 ---
 
-## 6. Fase B — Experimento (B1 ablação + B2 benchmark)
+## 6. Fase B — Experimento (benchmark de LLMs locais)
 
 ### B.0 Travar a matriz de modelos com `llmfit` → `src/experiment/results/models.lock.json`
 *(Resultado da análise `llmfit` desta sessão é anexado abaixo na seção "Matriz de modelos travada".)*
 - Validar cada modelo com **smoke test** (1 issue de cada tarefa) antes do run completo.
 - Registrar nome, tag, digest, tamanho, quantização.
 
-### B.1 Ablação de grounding (1 modelo fixo)
-| Dimensão | Valores |
-|---|---|
-| Modelo | **1 fixo** (escolhido pela análise llmfit — melhor equilíbrio qualidade/velocidade; ou o default `qwen3.5:9b`) |
-| Modos | `none` × `ids_only` × `ids_bsdd` |
-| Tarefas | Pset · nomeação de espaços · classificação de sistemas |
-| Réplicas | n = 3, cache off, seed fixo |
-- **Hipótese H1:** `ids_bsdd` ≥ +20 p.p. de conformidade vs. `none`; edição ≤ 25% (vs. ≥ 40% em `none`); zero regressões de schema.
-
-### B.2 Benchmark de famílias (grounding fixo `ids_bsdd`)
+### B.1 Benchmark de famílias (grounding fixo `ids_bsdd`)
 | Dimensão | Valores |
 |---|---|
 | Modelos | matriz travada por llmfit (Qwen · Llama · Mistral · Gemma/Phi — 1+/família; quantização Q4 documentada) |
@@ -201,7 +182,7 @@ O GT é definido por **expertise do Felipe + norma (NBR 15575) + partes determin
 ## 7. Fase D — Consolidação e documentação
 
 1. Atualizar `PROJECT_CONTEXT.md` (remover `rule_engine/`, refletir `translator/`, seção do experimento novo) — F9.
-2. Registrar em `fase3.md` a mudança de desenho (ablação → **híbrido ablação+benchmark**) com justificativa, ou criar `docs/fase4-benchmark.md`.
+2. Registrar em `fase3.md` a mudança de desenho (**ablação abandonada → benchmark sob `ids_bsdd` fixo**) com justificativa.
 3. Consolidar dualidade de nomes em `models.py` (F8) — PR mecânico, depois das fases experimentais.
 4. Completar a lista de issue types no `CLAUDE.md` (9, não 4).
 5. Relatório técnico versionado da release.
@@ -210,7 +191,7 @@ O GT é definido por **expertise do Felipe + norma (NBR 15575) + partes determin
 
 ## 8. Riscos e pontos de decisão
 
-1. **Confirmar com o orientador** o desenho híbrido (ablação + benchmark). É a decisão que mais afeta o plano — **antes da Fase 0**.
+1. **Desenho experimental fixado:** benchmark de LLMs sob `ids_bsdd` (ablação abandonada). Comunicar/confirmar com o Maj. Otranto.
 2. **VRAM 8 GB / RAM 16 GB:** 14B é lento (offload); Mixtral não cabe. Matriz validada por `llmfit` + smoke test.
 3. **GT do prédio:** circularidade (guardrail C.0) e tamanho (≥ 30/tarefa → daí o modelo externo).
 4. **Modelos citáveis:** fixar tags/digests oficiais; evitar fine-tunes custom.
@@ -221,7 +202,7 @@ O GT é definido por **expertise do Felipe + norma (NBR 15575) + partes determin
 
 - `make test` / `make lint` verdes ao fim de cada fase.
 - 0.2: duas execuções de `diagnose()` no mesmo IFC → conjuntos de `Issue.id`/`OperationalRule.id` idênticos (teste).
-- 0.1: prompts dos 3 modos são distintos e `none` não contém IDS/bSDD (teste).
+- 0.1: `grounding_mode`/`none`/`ids_only` removidos (grep vazio em `src/` e `tests/`); grounding IDS+bSDD sempre aplicado.
 - 0.5: `python -m src.experiment.runner --help`; run com Ollama mockado → JSON com todas as métricas; **hash do IFC antes == depois** (revisor simulado não toca o original).
 - Fase A: 3 cenários de bSDD (mock) end-to-end; prefill determinístico não chama Ollama.
 - Fase C: `gt_extractor` sobre fixtures IFC em memória; `ground_truth.yaml` casa com `diagnose()` em 2 execuções.
@@ -240,7 +221,7 @@ O GT é definido por **expertise do Felipe + norma (NBR 15575) + partes determin
 
 | Família | Tag Ollama | Params | VRAM Q4 | tok/s (est. llmfit) | Papel no experimento |
 |---|---|---|---|---|---|
-| Qwen | `qwen2.5:7b-instruct` | 7.6B | ~4.7 GB | ~39 | **Principal + modelo da ablação (B1).** Score 90.2, quality 77, tool use, ctx 32k |
+| Qwen | `qwen2.5:7b-instruct` | 7.6B | ~4.7 GB | ~39 | **Modelo principal do benchmark.** Score 90.2, quality 77, tool use, ctx 32k |
 | Qwen (JSON) | `qwen2.5-coder:7b` | 7.6B | ~4.7 GB | ~39 | Opcional: especialista em saída estruturada (score 91.1, quality 83) |
 | Llama | `llama3.1:8b` | 8.0B | ~5.5 GB | ~37 | Representante Llama (score 89.7, quality 80, tool use) |
 | Mistral | `mistral:7b` (v0.3) | 7.2B | ~5.1 GB | ~41 (mais rápido) | Representante Mistral (score 89.2, quality 73) |
@@ -248,7 +229,7 @@ O GT é definido por **expertise do Felipe + norma (NBR 15575) + partes determin
 | Phi | `phi3.5` | 3.8B | ~2.5 GB | rápido | Modelo pequeno (piso de tamanho/velocidade) |
 | Teto (lento) | `qwen3:14b` *(já instalado)* | 14B | ~9.3 GB (offload→RAM) | lento | Teto de qualidade; reportar latência maior |
 
-**Ablação (B1):** modelo fixo = `qwen2.5:7b-instruct` (oficial, forte, reprodutível). Alternativa: o default atual `qwen3.5:9b`. Decidir após smoke test.
+**Modelo principal do benchmark:** `qwen2.5:7b-instruct` (oficial, forte, reprodutível). Alternativa: o default atual `qwen3.5:9b`. Decidir após smoke test.
 
 **A baixar (`ollama pull`):** `qwen2.5:7b-instruct`, `llama3.1:8b`, `mistral:7b`, `gemma2:9b`, `phi3.5` (+ opcional `qwen2.5-coder:7b`). Já instalados: `qwen3:14b`, `llama3:8b` (atualizar p/ `llama3.1:8b`).
 
