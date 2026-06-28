@@ -13,7 +13,7 @@ from src.models import (
     Suggestion,
     SuggestionSet,
 )
-from tests.evaluation.evaluation_framework import Evaluator, GroundTruth
+from src.experiment.evaluator import Evaluator, GroundTruth
 
 
 # ---------------------------------------------------------------------------
