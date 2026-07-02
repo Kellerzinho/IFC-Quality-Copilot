@@ -1,0 +1,60 @@
+{
+  "locked_at": "2026-07-02T17:09:51",
+  "purpose": "Matriz de modelos do benchmark (Fase B). Digests fixados para reprodutibilidade; nao atualizar os modelos durante o experimento.",
+  "models": [
+    {
+      "name": "qwen2.5:7b-instruct",
+      "digest": "845dbda0ea48",
+      "size": "4.7 GB",
+      "architecture": "qwen2",
+      "parameters": "7.6B",
+      "context_length": "32768",
+      "quantization": "Q4_K_M"
+    },
+    {
+      "name": "llama3.1:8b",
+      "digest": "46e0c10c039e",
+      "size": "4.9 GB",
+      "architecture": "llama",
+      "parameters": "8.0B",
+      "context_length": "131072",
+      "quantization": "Q4_K_M"
+    },
+    {
+      "name": "mistral:7b",
+      "digest": "6577803aa9a0",
+      "size": "4.4 GB",
+      "architecture": "llama",
+      "parameters": "7.2B",
+      "context_length": "32768",
+      "quantization": "Q4_K_M"
+    },
+    {
+      "name": "gemma2:9b",
+      "digest": "ff02c3702f32",
+      "size": "5.4 GB",
+      "architecture": "gemma2",
+      "parameters": "9.2B",
+      "context_length": "8192",
+      "quantization": "Q4_0"
+    },
+    {
+      "name": "phi3.5:latest",
+      "digest": "61819fb370a3",
+      "size": "2.2 GB",
+      "architecture": "phi3",
+      "parameters": "3.8B",
+      "context_length": "131072",
+      "quantization": "Q4_0"
+    },
+    {
+      "name": "qwen3:14b",
+      "digest": "bdbd181c33f2",
+      "size": "9.3 GB",
+      "architecture": "qwen3",
+      "parameters": "14.8B",
+      "context_length": "40960",
+      "quantization": "Q4_K_M"
+    }
+  ]
+}

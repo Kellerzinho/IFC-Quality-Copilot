@@ -61,10 +61,20 @@ def _ollama_show(model: str) -> dict:
     return info
 
 
+def _resolve(model: str, installed: dict[str, dict]) -> str | None:
+    """Resolve o nome no índice do ollama list (tags sem ':' viram ':latest')."""
+    if model in installed:
+        return model
+    if ":" not in model and f"{model}:latest" in installed:
+        return f"{model}:latest"
+    return None
+
+
 def main() -> int:
     """Gera o lock; falha se algum modelo da matriz não estiver instalado."""
     installed = _ollama_list()
-    missing = [m for m in BENCHMARK_MODELS if m not in installed]
+    resolved = {m: _resolve(m, installed) for m in BENCHMARK_MODELS}
+    missing = [m for m, r in resolved.items() if r is None]
     if missing:
         print(f"ERRO: modelos ausentes (rodar ollama pull): {missing}", file=sys.stderr)
         return 1
@@ -76,13 +86,13 @@ def main() -> int:
             "reprodutibilidade; nao atualizar os modelos durante o experimento."
         ),
         "models": [
-            {"name": model, **installed[model], **_ollama_show(model)}
+            {"name": resolved[model], **installed[resolved[model]], **_ollama_show(resolved[model])}
             for model in BENCHMARK_MODELS
         ],
     }
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT.write_text(json.dumps(lock, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"models.lock.json: {len(lock['models'])} modelos → {OUTPUT}")
+    print(f"models.lock.json: {len(lock['models'])} modelos -> {OUTPUT}")
     for entry in lock["models"]:
         print(f"  {entry['name']}: digest={entry['digest']} quant={entry.get('quantization', '?')}")
     return 0
