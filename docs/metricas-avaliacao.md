@@ -99,3 +99,25 @@ No artigo, as métricas **principais** reportadas são **top-1 / top-3** e a
 GT** sobre o score de prontidão de um perfil (`ReadinessScore`). É um indicador de
 impacto do enriquecimento, independente de qual modelo gerou as sugestões — não deve ser
 confundido com a qualidade das sugestões do LLM.
+
+---
+
+## Adendo (2026-07-02): métricas sob amostragem (`--max-issues`)
+
+O runner passou a suportar amostragem estratificada determinística
+(`--max-issues N --sample-seed S`). Sob amostragem, as métricas devem ser
+interpretadas assim:
+
+- **Válidas por construção:** `accuracy_top1`, `accuracy_top3` e `precision`
+  são computadas **sobre as issues amostradas com GT** — continuam bem
+  definidas e comparáveis entre modelos (mesma seed ⇒ mesma amostra).
+- **Distorcidas — não reportar:** `recall` e `f1` usam |GT| **completo** no
+  denominador (2546 itens no prédio); num run amostrado de 24 issues o recall
+  fica artificialmente ~0 (observado no smoke de 2026-07-02: recall 0,0031).
+  Em runs amostrados, reportar apenas top-1/top-3/precision + estabilidade +
+  eficiência, ou recomputar recall contra o subconjunto de GT da amostra.
+- A amostra usada fica registrada em `issue_counts.sampled_from` e
+  `issue_counts.sample_seed` de cada `run_*.json` (auditável).
+
+Para os números finais do artigo, preferir runs com a amostra fixa acordada
+com o orientador (mesma seed em todos os modelos) ou runs completos.
