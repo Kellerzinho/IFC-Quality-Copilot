@@ -44,11 +44,22 @@ item continua obrigatória — é ela que transforma o rascunho em padrão-ouro.
 3. ✅ **C.2 passo 3 (rota norm-derived)** — `ground_truth.yaml` gerado com 2546
    itens (`verified: false`) + 246 abstenções documentadas; regras e memórias
    de cálculo em `scripts/build_predio_gt.py` e resumo em `REVISAO_GT.md`.
-4. ⬜ **C.2 passo 4** — revisão humana: aprovar linha a linha o `REVISAO_GT.md`
-   (cada linha agrupa itens idênticos), virar `verified: true` no YAML e
-   decidir os casos "CONFERIR" e os skips "decisão do revisor".
-5. ⬜ **C.2 passo 5** — congelar `ground_truth.yaml` (hash + data + revisor) e
-   comunicar a mudança de rota ao orientador (declarar o método no artigo).
+4. ✅ **C.2 passo 4** — revisão humana concluída em 2026-07-02: Felipe Keller
+   revisou o `REVISAO_GT.md` (itens agrupados) e aprovou integralmente;
+   todos os 2546 itens com `verified: true`.
+5. ✅ **C.2 passo 5** — `ground_truth.yaml` **congelado**:
+
+   | Campo | Valor |
+   |---|---|
+   | SHA256 | `3924D611219A00A05BF2643EB19D43300DC9EBDF391DB72B0E5AFF3E5F366BA3` |
+   | Itens | 2546 (1674 `pset_missing` + 872 `system_unclassified`), 100% verified |
+   | Abstenções | 246 (documentadas no próprio YAML, seção `skipped`) |
+   | Revisor | Felipe Keller (autor do projeto) |
+   | Data | 2026-07-02 |
+
+   Qualquer alteração posterior exige nova revisão e novo hash.
+   Pendência externa: comunicar a rota norm-derived ao orientador e declarar
+   o método na seção de materiais do artigo.
 
 ## Conteúdo do modelo (contagem de entidades)
 
