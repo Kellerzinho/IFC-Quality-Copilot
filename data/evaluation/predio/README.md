@@ -114,8 +114,9 @@ alerta de cobertura abaixo:
 | Arquivo | `predio_v1_masked.ifc` (não versionado; `*.ifc` no `.gitignore`) |
 | SHA256 | `D867AA3D97884815A02953B4CE636D12DA0901E67539BCDDCE28089F531F2277` |
 | Derivação | `predio_v1.ifc` com `LongName` dos 82 IfcSpaces removidos (o `Name` numérico do Revit é preservado e dispara `space_unnamed`) |
-| GT | `ground_truth_spaces.yaml` — 82 itens (`verified: false`), nomes originais do autor |
-| Curadoria pendente | revisão humana + `accepted_alternatives` para sinônimos (ex.: "Lavatório Social" ≈ "Lavabo") |
+| GT | `ground_truth_spaces.yaml` — 82 itens, nomes originais do autor, **100% verified** |
+| Curadoria | concluída em 2026-07-02 (delegada pelo autor): sinônimos conservadores em `accepted_alternatives` para todos os 82 itens (ex.: "Lavatório Social" ≈ "Lavabo Social"/"WC Social"; "Quarto N" ≈ "Dormitório N"; "Sacada" ≈ "Varanda") |
+| SHA256 (congelado) | `F1451E983F7A6A869C908051A7C527F394CAE670E07FC3DA2A4432682C065AC8` |
 
 Verificado: `diagnose` no modelo mascarado gera exatamente 82 issues
 `space_unnamed`, casando com o GT pela chave natural.

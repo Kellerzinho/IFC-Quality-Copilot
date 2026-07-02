@@ -1,7 +1,7 @@
 metadata:
   protocol: masking
   extracted_at: '2026-07-02T15:51:47'
-  verified_by: null
+  verified_by: Felipe Keller (autor) — curadoria de sinônimos delegada
   input_ifc_sha256: a71c8be30d82760218f5b3f3a1c476b49e3f30e608b0065916b9d5206a1a6dd0
   gt_ifc_sha256: null
   ids_sha256: null
@@ -11,661 +11,874 @@ metadata:
     dispara space_unnamed. Sem participação de LLM (guardrail C.0).
   source_ifc: data/evaluation/predio/predio_v1.ifc
   masked_ifc: data/evaluation/predio/predio_v1_masked.ifc
-  requires_human_review: true
+  requires_human_review: false
+  verified_at: '2026-07-02'
+  review_note: Curadoria de sinônimos autorizada pelo autor em 2026-07-02; alternativas conservadoras
+    de uso corrente em projetos residenciais brasileiros.
 items:
 - element_guid: 0XcpLWvAH8RQVLy1AxF8Oz
   issue_type: space_unnamed
   check_property: ''
   expected_value: Pátio
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Pátio Interno
+  - Pátio Descoberto
+  - Terraço
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2g0CQDb2fFTvILvs3Jbgka
   issue_type: space_unnamed
   check_property: ''
   expected_value: Cisternas e Casa de Maquinas
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Casa de Máquinas
+  - Cisternas
+  - Casa de Máquinas e Cisternas
+  - Reservatórios
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2g0CQDb2fFTvILvs3Jbm85
   issue_type: space_unnamed
   check_property: ''
   expected_value: Banheiro Guarita
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Banheiro da Guarita
+  - WC Guarita
+  - Banheiro Portaria
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2g0CQDb2fFTvILvs3Jbm8C
   issue_type: space_unnamed
   check_property: ''
   expected_value: Guarita
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Portaria
+  - Guarita de Segurança
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2g0CQDb2fFTvILvs3JbmFA
   issue_type: space_unnamed
   check_property: ''
   expected_value: Depósito de Gás
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Central de Gás
+  - Central de GLP
+  - Abrigo de Gás
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2g0CQDb2fFTvILvs3JbmFk
   issue_type: space_unnamed
   check_property: ''
   expected_value: Depósito de Lixo
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Lixeira
+  - Central de Resíduos
+  - Depósito de Resíduos
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2g0CQDb2fFTvILvs3JbmFs
   issue_type: space_unnamed
   check_property: ''
   expected_value: Casa de Hidrômeros
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Casa de Hidrômetros
+  - Hidrômetros
+  - Central de Hidrômetros
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2g0CQDb2fFTvILvs3JbmFy
   issue_type: space_unnamed
   check_property: ''
   expected_value: Medidores de Luz
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Central de Medidores
+  - Medidores
+  - Quadro de Medidores
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2g0CQDb2fFTvILvs3JbnZI
   issue_type: space_unnamed
   check_property: ''
   expected_value: Lava Pés
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Lava-pés
+  - Lava Pés da Piscina
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2g0CQDb2fFTvILvs3Jbnn2
   issue_type: space_unnamed
   check_property: ''
   expected_value: Área de Churrasco
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Churrasqueira
+  - Espaço Gourmet
+  - Área Gourmet
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2g0CQDb2fFTvILvs3JbnpN
   issue_type: space_unnamed
   check_property: ''
   expected_value: Área de Recreação Infantil
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Playground
+  - Recreação Infantil
+  - Brinquedoteca
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2g0CQDb2fFTvILvs3Jbnq_
   issue_type: space_unnamed
   check_property: ''
   expected_value: Hall de Entrada
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Hall
+  - Entrada
+  - Lobby
+  - Recepção
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2g0CQDb2fFTvILvs3Jbnr5
   issue_type: space_unnamed
   check_property: ''
   expected_value: Quadra de Basquete
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Quadra
+  - Quadra Esportiva
+  - Quadra Poliesportiva
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2g0CQDb2fFTvILvs3JbnwZ
   issue_type: space_unnamed
   check_property: ''
   expected_value: Depósito Geral
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Depósito
+  - Almoxarifado
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2g0CQDb2fFTvILvs3Jbnwe
   issue_type: space_unnamed
   check_property: ''
   expected_value: Escadas de Incêndio
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Escada de Incêndio
+  - Escada de Emergência
+  - Escada Enclausurada
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2g0CQDb2fFTvILvs3Jbnwp
   issue_type: space_unnamed
   check_property: ''
   expected_value: Banheiro SF
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Banheiro Salão de Festas
+  - WC SF
+  - WC Salão de Festas
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2g0CQDb2fFTvILvs3Jbnww
   issue_type: space_unnamed
   check_property: ''
   expected_value: Lavatório SF
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Lavabo SF
+  - Lavabo Salão de Festas
+  - Lavatório Salão de Festas
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2g0CQDb2fFTvILvs3JbnxH
   issue_type: space_unnamed
   check_property: ''
   expected_value: Despensa
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Depósito
+  - Dispensa
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2g0CQDb2fFTvILvs3JbnxP
   issue_type: space_unnamed
   check_property: ''
   expected_value: Cozinha Salão de Festas
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Cozinha do Salão de Festas
+  - Cozinha SF
+  - Copa Salão de Festas
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2g0CQDb2fFTvILvs3JbnxW
   issue_type: space_unnamed
   check_property: ''
   expected_value: Salão de Festas
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Salão
+  - Espaço de Festas
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2g0CQDb2fFTvILvs3Jbnyr
   issue_type: space_unnamed
   check_property: ''
   expected_value: Banheiro Geral
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - WC Geral
+  - Banheiro
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2g0CQDb2fFTvILvs3Jbnyy
   issue_type: space_unnamed
   check_property: ''
   expected_value: Lavatório Geral
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Lavabo Geral
+  - Lavabo
+  - WC Geral
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2lmpK7ZjbCF9MJzBk9Q8S2
   issue_type: space_unnamed
   check_property: ''
   expected_value: Quarto 1
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Dormitório 1
+  - Dormitório
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2lmpK7ZjbCF9MJzBk9Q8S5
   issue_type: space_unnamed
   check_property: ''
   expected_value: Sacada
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Varanda
+  - Terraço
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2lmpK7ZjbCF9MJzBk9Q8S9
   issue_type: space_unnamed
   check_property: ''
   expected_value: Corredor
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Circulação
+  - Hall de Circulação
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2lmpK7ZjbCF9MJzBk9Q8SC
   issue_type: space_unnamed
   check_property: ''
   expected_value: Suíte
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Quarto Suíte
+  - Dormitório Suíte
+  - Suíte Master
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2lmpK7ZjbCF9MJzBk9Q8SF
   issue_type: space_unnamed
   check_property: ''
   expected_value: Quarto 2
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Dormitório 2
+  - Dormitório
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2lmpK7ZjbCF9MJzBk9Q8SX
   issue_type: space_unnamed
   check_property: ''
   expected_value: Banheiro Suíte
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Banheiro da Suíte
+  - WC Suíte
+  - WC da Suíte
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2lmpK7ZjbCF9MJzBk9Q8Sa
   issue_type: space_unnamed
   check_property: ''
   expected_value: Lavatório Suíte
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Lavabo Suíte
+  - Lavabo da Suíte
+  - WC Suíte
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2lmpK7ZjbCF9MJzBk9Q8Sd
   issue_type: space_unnamed
   check_property: ''
   expected_value: Banheiro Social
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - WC Social
+  - Banheiro
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2lmpK7ZjbCF9MJzBk9Q8Sk
   issue_type: space_unnamed
   check_property: ''
   expected_value: Banheiro Área de Serviço
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Banheiro de Serviço
+  - WC Serviço
+  - WC Área de Serviço
+  - Banheiro da Área de Serviço
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2lmpK7ZjbCF9MJzBk9Q8Sm
   issue_type: space_unnamed
   check_property: ''
   expected_value: Cozinha
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Copa-Cozinha
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2lmpK7ZjbCF9MJzBk9Q8Sp
   issue_type: space_unnamed
   check_property: ''
   expected_value: Sala de Jantar
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Jantar
+  - Sala de Refeições
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2lmpK7ZjbCF9MJzBk9Q8Ss
   issue_type: space_unnamed
   check_property: ''
   expected_value: Sala de Estar
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Estar
+  - Living
+  - Sala
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2lmpK7ZjbCF9MJzBk9Q8Sw
   issue_type: space_unnamed
   check_property: ''
   expected_value: Lavatório Social
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Lavabo Social
+  - Lavabo
+  - WC Social
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2lmpK7ZjbCF9MJzBk9Q8Sz
   issue_type: space_unnamed
   check_property: ''
   expected_value: Área de Serviço
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Lavanderia
+  - Serviço
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 2lw5CFWof01vxpHX3iC3OA
   issue_type: space_unnamed
   check_property: ''
   expected_value: Hall de Circulação
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Hall
+  - Circulação
+  - Corredor
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYa15
   issue_type: space_unnamed
   check_property: ''
   expected_value: Sacada
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Varanda
+  - Terraço
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYa19
   issue_type: space_unnamed
   check_property: ''
   expected_value: Quarto 2
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Dormitório 2
+  - Dormitório
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYa1B
   issue_type: space_unnamed
   check_property: ''
   expected_value: Quarto 1
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Dormitório 1
+  - Dormitório
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYa1D
   issue_type: space_unnamed
   check_property: ''
   expected_value: Corredor
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Circulação
+  - Hall de Circulação
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYa1F
   issue_type: space_unnamed
   check_property: ''
   expected_value: Suíte
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Quarto Suíte
+  - Dormitório Suíte
+  - Suíte Master
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYa1H
   issue_type: space_unnamed
   check_property: ''
   expected_value: Sala de Jantar
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Jantar
+  - Sala de Refeições
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYa1J
   issue_type: space_unnamed
   check_property: ''
   expected_value: Sala de Estar
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Estar
+  - Living
+  - Sala
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYa1L
   issue_type: space_unnamed
   check_property: ''
   expected_value: Área de Serviço
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Lavanderia
+  - Serviço
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYa1N
   issue_type: space_unnamed
   check_property: ''
   expected_value: Cozinha
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Copa-Cozinha
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYa1P
   issue_type: space_unnamed
   check_property: ''
   expected_value: Banheiro Social
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - WC Social
+  - Banheiro
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYa1R
   issue_type: space_unnamed
   check_property: ''
   expected_value: Lavatório Social
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Lavabo Social
+  - Lavabo
+  - WC Social
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYa1T
   issue_type: space_unnamed
   check_property: ''
   expected_value: Banheiro Suíte
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Banheiro da Suíte
+  - WC Suíte
+  - WC da Suíte
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYa1V
   issue_type: space_unnamed
   check_property: ''
   expected_value: Lavatório Suíte
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Lavabo Suíte
+  - Lavabo da Suíte
+  - WC Suíte
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYa2Z
   issue_type: space_unnamed
   check_property: ''
   expected_value: Banheiro Área de Serviço
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Banheiro de Serviço
+  - WC Serviço
+  - WC Área de Serviço
+  - Banheiro da Área de Serviço
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdEf
   issue_type: space_unnamed
   check_property: ''
   expected_value: Hall de Circulação
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Hall
+  - Circulação
+  - Corredor
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdJU
   issue_type: space_unnamed
   check_property: ''
   expected_value: Hall de Circulação
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Hall
+  - Circulação
+  - Corredor
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdU$
   issue_type: space_unnamed
   check_property: ''
   expected_value: Banheiro Suíte
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Banheiro da Suíte
+  - WC Suíte
+  - WC da Suíte
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdUb
   issue_type: space_unnamed
   check_property: ''
   expected_value: Quarto 1
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Dormitório 1
+  - Dormitório
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdUd
   issue_type: space_unnamed
   check_property: ''
   expected_value: Sacada
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Varanda
+  - Terraço
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdUf
   issue_type: space_unnamed
   check_property: ''
   expected_value: Suíte
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Quarto Suíte
+  - Dormitório Suíte
+  - Suíte Master
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdUh
   issue_type: space_unnamed
   check_property: ''
   expected_value: Quarto 2
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Dormitório 2
+  - Dormitório
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdUj
   issue_type: space_unnamed
   check_property: ''
   expected_value: Sala de Estar
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Estar
+  - Living
+  - Sala
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdUl
   issue_type: space_unnamed
   check_property: ''
   expected_value: Corredor
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Circulação
+  - Hall de Circulação
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdUn
   issue_type: space_unnamed
   check_property: ''
   expected_value: Cozinha
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Copa-Cozinha
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdUp
   issue_type: space_unnamed
   check_property: ''
   expected_value: Sala de Jantar
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Jantar
+  - Sala de Refeições
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdUr
   issue_type: space_unnamed
   check_property: ''
   expected_value: Lavatório Social
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Lavabo Social
+  - Lavabo
+  - WC Social
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdUt
   issue_type: space_unnamed
   check_property: ''
   expected_value: Área de Serviço
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Lavanderia
+  - Serviço
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdUv
   issue_type: space_unnamed
   check_property: ''
   expected_value: Lavatório Suíte
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Lavabo Suíte
+  - Lavabo da Suíte
+  - WC Suíte
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdUx
   issue_type: space_unnamed
   check_property: ''
   expected_value: Banheiro Social
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - WC Social
+  - Banheiro
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdUz
   issue_type: space_unnamed
   check_property: ''
   expected_value: Banheiro Área de Serviço
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Banheiro de Serviço
+  - WC Serviço
+  - WC Área de Serviço
+  - Banheiro da Área de Serviço
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdZK
   issue_type: space_unnamed
   check_property: ''
   expected_value: Sacada
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Varanda
+  - Terraço
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdZO
   issue_type: space_unnamed
   check_property: ''
   expected_value: Quarto 2
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Dormitório 2
+  - Dormitório
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdZQ
   issue_type: space_unnamed
   check_property: ''
   expected_value: Quarto 1
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Dormitório 1
+  - Dormitório
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdZS
   issue_type: space_unnamed
   check_property: ''
   expected_value: Corredor
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Circulação
+  - Hall de Circulação
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdZU
   issue_type: space_unnamed
   check_property: ''
   expected_value: Suíte
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Quarto Suíte
+  - Dormitório Suíte
+  - Suíte Master
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdnF
   issue_type: space_unnamed
   check_property: ''
   expected_value: Hall de Circulação
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Hall
+  - Circulação
+  - Corredor
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdyW
   issue_type: space_unnamed
   check_property: ''
   expected_value: Sala de Jantar
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Jantar
+  - Sala de Refeições
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdyY
   issue_type: space_unnamed
   check_property: ''
   expected_value: Sala de Estar
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Estar
+  - Living
+  - Sala
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdya
   issue_type: space_unnamed
   check_property: ''
   expected_value: Área de Serviço
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Lavanderia
+  - Serviço
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdyc
   issue_type: space_unnamed
   check_property: ''
   expected_value: Cozinha
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Copa-Cozinha
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdye
   issue_type: space_unnamed
   check_property: ''
   expected_value: Banheiro Social
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - WC Social
+  - Banheiro
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdyg
   issue_type: space_unnamed
   check_property: ''
   expected_value: Lavatório Social
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Lavabo Social
+  - Lavabo
+  - WC Social
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdyi
   issue_type: space_unnamed
   check_property: ''
   expected_value: Banheiro Suíte
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Banheiro da Suíte
+  - WC Suíte
+  - WC da Suíte
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdyk
   issue_type: space_unnamed
   check_property: ''
   expected_value: Lavatório Suíte
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Lavabo Suíte
+  - Lavabo da Suíte
+  - WC Suíte
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
 - element_guid: 39y4kuOCPAhulXzxtzYdyo
   issue_type: space_unnamed
   check_property: ''
   expected_value: Banheiro Área de Serviço
-  accepted_alternatives: []
-  verified: false
+  accepted_alternatives:
+  - Banheiro de Serviço
+  - WC Serviço
+  - WC Área de Serviço
+  - Banheiro da Área de Serviço
+  verified: true
   notes: 'Nome original do autor, removido por masking (protocolo C.3). Curadoria: adicionar accepted_alternatives
     para sinônimos.'
