@@ -29,19 +29,26 @@ este README é a referência canônica com hash de integridade.
 - `data/ids_templates/residencial_nbr15575.ids`
 - SHA256 do IDS registrado por run nos metadados do experimento (`RunMetadata`).
 
-## Protocolo GT-by-diff (próximos passos)
+## Protocolo do ground truth (rota adotada: norm-derived-draft)
+
+Em vez do retrabalho completo no Revit (GT-by-diff puro), o GT candidato foi
+**derivado deterministicamente, sem LLM** (guardrail C.0 preservado), por
+`scripts/build_predio_gt.py`, a partir de: propagação por tipo (valores já
+preenchidos pelo projetista no modelo), cálculo NBR 15220-2, TRRF NBR 14432
+(Tab. A.1: A-2, P3 → 60 min) e mapeamentos fechados. A revisão humana item a
+item continua obrigatória — é ela que transforma o rascunho em padrão-ouro.
 
 1. ✅ **C.1** — entrada congelada (este README).
 2. ✅ **C.2 passo 1** — `diagnose()` executado; CSV de trabalho com chave natural
    em `issues_v1.csv` (distribuição abaixo).
-3. ⬜ **C.2 passo 2** — Felipe enriquece o prédio corretamente no Revit
-   (guiado pelo CSV, pela NBR 15575 e pelo vocabulário bSDD — **nunca** pela
-   LLM avaliada; guardrail anti-circularidade C.0) → exporta `predio_gt.ifc`.
-4. ⬜ **C.2 passo 3** — `python -m src.experiment.gt_extractor --ifc predio_v1.ifc
-   --ids ... --gt-ifc predio_gt.ifc --output ground_truth.yaml`.
-5. ⬜ **C.2 passo 4** — revisão humana do YAML item a item (`verified: true`,
-   `accepted_alternatives` onde houver múltiplos valores corretos).
-6. ⬜ **C.2 passo 5** — congelar `ground_truth.yaml` (hash + data + revisor).
+3. ✅ **C.2 passo 3 (rota norm-derived)** — `ground_truth.yaml` gerado com 2546
+   itens (`verified: false`) + 246 abstenções documentadas; regras e memórias
+   de cálculo em `scripts/build_predio_gt.py` e resumo em `REVISAO_GT.md`.
+4. ⬜ **C.2 passo 4** — revisão humana: aprovar linha a linha o `REVISAO_GT.md`
+   (cada linha agrupa itens idênticos), virar `verified: true` no YAML e
+   decidir os casos "CONFERIR" e os skips "decisão do revisor".
+5. ⬜ **C.2 passo 5** — congelar `ground_truth.yaml` (hash + data + revisor) e
+   comunicar a mudança de rota ao orientador (declarar o método no artigo).
 
 ## Conteúdo do modelo (contagem de entidades)
 
