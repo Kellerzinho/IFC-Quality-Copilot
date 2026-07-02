@@ -104,6 +104,22 @@ item continua obrigatória — é ela que transforma o rascunho em padrão-ouro.
 | Category (Pset_SpaceCommon) | 82 |
 | LoadBearing | 29 |
 
+## Variante mascarada: tarefa de nomeação de espaços (Fase C.3)
+
+Gerada por `python -m src.experiment.mask_extractor` em 2026-07-02, resolve o
+alerta de cobertura abaixo:
+
+| Campo | Valor |
+|---|---|
+| Arquivo | `predio_v1_masked.ifc` (não versionado; `*.ifc` no `.gitignore`) |
+| SHA256 | `D867AA3D97884815A02953B4CE636D12DA0901E67539BCDDCE28089F531F2277` |
+| Derivação | `predio_v1.ifc` com `LongName` dos 82 IfcSpaces removidos (o `Name` numérico do Revit é preservado e dispara `space_unnamed`) |
+| GT | `ground_truth_spaces.yaml` — 82 itens (`verified: false`), nomes originais do autor |
+| Curadoria pendente | revisão humana + `accepted_alternatives` para sinônimos (ex.: "Lavatório Social" ≈ "Lavabo") |
+
+Verificado: `diagnose` no modelo mascarado gera exatamente 82 issues
+`space_unnamed`, casando com o GT pela chave natural.
+
 ## ⚠️ Alerta de cobertura: nomeação de espaços
 
 Os 82 IfcSpaces do prédio **já têm nomes funcionais** (nenhum nome genérico

@@ -22,6 +22,7 @@ import argparse
 import hashlib
 import json
 import os
+import random
 import re
 import shutil
 import subprocess
@@ -110,6 +111,51 @@ def _sanitize(name: str) -> str:
     return re.sub(r"[^A-Za-z0-9._-]+", "_", name)
 
 
+def stratified_sample(issues: list, max_issues: int, seed: int = 42) -> list:
+    """Amostra determinística de issues, estratificada por ``issue_type``.
+
+    Aloca cotas proporcionais ao tamanho de cada estrato (mínimo 1 por tipo
+    enquanto couber) e sorteia dentro do estrato com ``random.Random(seed)``.
+    Como os ``Issue.id`` são determinísticos (Fase 0.2) e a ordem do diagnose
+    é estável, a amostra é reprodutível entre execuções. A ordem original do
+    diagnóstico é preservada no resultado.
+    """
+    if max_issues <= 0 or len(issues) <= max_issues:
+        return list(issues)
+
+    by_type: dict[str, list] = {}
+    for issue in issues:
+        by_type.setdefault(issue.issue_type, []).append(issue)
+
+    total = len(issues)
+    # Cotas proporcionais (piso), depois distribui o resto aos maiores estratos
+    quotas = {
+        t: max(1, (max_issues * len(members)) // total) for t, members in by_type.items()
+    }
+    while sum(quotas.values()) > max_issues:
+        largest = max(quotas, key=lambda t: quotas[t])
+        quotas[largest] -= 1
+    remainders = sorted(
+        by_type,
+        key=lambda t: (max_issues * len(by_type[t])) % total,
+        reverse=True,
+    )
+    idx = 0
+    while sum(quotas.values()) < max_issues:
+        t = remainders[idx % len(remainders)]
+        if quotas[t] < len(by_type[t]):
+            quotas[t] += 1
+        idx += 1
+
+    rng = random.Random(seed)
+    selected_ids: set[str] = set()
+    for t, members in by_type.items():
+        quota = min(quotas.get(t, 0), len(members))
+        selected_ids.update(issue.id for issue in rng.sample(members, quota))
+
+    return [issue for issue in issues if issue.id in selected_ids]
+
+
 class ExperimentRunner:
     """Executa o experimento de benchmark sobre cópias descartáveis do IFC."""
 
@@ -138,11 +184,19 @@ class ExperimentRunner:
         replica_index: int = 0,
         profile: ReadinessProfile | None = None,
         timestamp: str | None = None,
+        max_issues: int | None = None,
+        sample_seed: int = 42,
     ) -> ExperimentResult:
         """Executa uma réplica e retorna o ExperimentResult agregado.
 
         O pipeline roda sobre uma cópia descartável do IFC; o arquivo original
         em ``ifc_path`` nunca é modificado.
+
+        Args:
+            max_issues: se fornecido, limita a geração de sugestões a uma
+                amostra determinística estratificada por issue_type (smoke
+                tests e runs econômicos). None = todas as issues.
+            sample_seed: semente da amostragem (reprodutibilidade).
         """
         ground_truth = GroundTruth.from_yaml(ground_truth_path)
         evaluator = Evaluator()
@@ -164,7 +218,17 @@ class ExperimentRunner:
                     if self.suggestion_batch_fn is not None:
                         pipeline.suggestion_gen.generate_batch = self.suggestion_batch_fn  # type: ignore[method-assign]
 
-                    pipeline.diagnose()
+                    report = pipeline.diagnose()
+                    total_diagnosed = len(report.issues)
+                    if max_issues is not None and total_diagnosed > max_issues:
+                        sampled = stratified_sample(report.issues, max_issues, sample_seed)
+                        report.issues = sampled
+                        logger.info(
+                            "Amostragem estratificada: {}/{} issues (seed={})",
+                            len(sampled),
+                            total_diagnosed,
+                            sample_seed,
+                        )
                     pipeline.generate_suggestions()
 
                     # 1) Avaliação vs ground truth (antes de qualquer mutação do modelo)
@@ -193,6 +257,8 @@ class ExperimentRunner:
                         "issues_from_ids": pipeline._ids_issues_count,
                         "ids_rules": pipeline._ids_rules_count,
                         "with_ground_truth": evaluation.total_evaluated,
+                        "sampled_from": total_diagnosed,
+                        "sample_seed": sample_seed if max_issues is not None else None,
                     }
 
                     metadata = RunMetadata(
@@ -247,6 +313,8 @@ class ExperimentRunner:
         profile: ReadinessProfile | None = None,
         output_dir: str | None = None,
         timestamp: str | None = None,
+        max_issues: int | None = None,
+        sample_seed: int = 42,
     ) -> list[ExperimentResult]:
         """Executa N réplicas e, se ``output_dir`` for dado, exporta um JSON por réplica."""
         results: list[ExperimentResult] = []
@@ -262,6 +330,8 @@ class ExperimentRunner:
                 replica_index=i,
                 profile=profile,
                 timestamp=timestamp,
+                max_issues=max_issues,
+                sample_seed=sample_seed,
             )
             results.append(result)
             if output_dir is not None:
@@ -312,6 +382,18 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     parser.set_defaults(cache=False)
     parser.add_argument("--output", default=None, help="Diretório de saída dos JSON por réplica.")
     parser.add_argument("--building-context", default=None, help="JSON inline do building_context.")
+    parser.add_argument(
+        "--max-issues",
+        type=int,
+        default=None,
+        help="Limita a amostra de issues (estratificada por tipo, determinística).",
+    )
+    parser.add_argument(
+        "--sample-seed",
+        type=int,
+        default=42,
+        help="Semente da amostragem estratificada (default 42).",
+    )
     return parser
 
 
@@ -334,6 +416,8 @@ def main(argv: list[str] | None = None) -> int:
         cache_enabled=args.cache,
         n_replicas=args.replicas,
         output_dir=args.output,
+        max_issues=args.max_issues,
+        sample_seed=args.sample_seed,
     )
     logger.info("Concluído: {} réplicas.", len(results))
     if results:

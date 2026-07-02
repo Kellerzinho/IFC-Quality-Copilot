@@ -9,8 +9,8 @@ import ifcopenshell.guid
 import pytest
 
 from src.experiment.metrics import aggregate_stability, aggregate_timing
-from src.experiment.runner import ExperimentRunner, sha256_of
-from src.models import Suggestion, SuggestionMetrics, SuggestionSet
+from src.experiment.runner import ExperimentRunner, sha256_of, stratified_sample
+from src.models import Issue, Suggestion, SuggestionMetrics, SuggestionSet
 
 _BUILDING_CTX = {"building_type": "Residencial unifamiliar", "bioclimatic_zone": "3"}
 _SPACE_NAME = "Sala de Estar"
@@ -98,6 +98,72 @@ def _mock_batch_correct(issues, ctx, on_progress=None):
             )
         )
     return out
+
+
+# ---------------------------------------------------------------------------
+# Amostragem estratificada (--max-issues)
+# ---------------------------------------------------------------------------
+
+
+def _make_issues(counts: dict[str, int]) -> list[Issue]:
+    """Gera issues sintéticas com GUIDs distintos por tipo."""
+    issues: list[Issue] = []
+    for issue_type, n in counts.items():
+        for i in range(n):
+            issues.append(
+                Issue(
+                    element_guid=f"{issue_type[:1].upper()}{i:021d}",
+                    element_class="IfcWall",
+                    issue_type=issue_type,  # type: ignore[arg-type]
+                    severity="medium",
+                    description=f"{issue_type} {i}",
+                    context={"check_property": "P"},
+                )
+            )
+    return issues
+
+
+class TestStratifiedSample:
+    def test_sample_respects_max_and_covers_all_types(self):
+        issues = _make_issues(
+            {"pset_missing": 80, "system_unclassified": 15, "space_unnamed": 5}
+        )
+        sampled = stratified_sample(issues, 20, seed=42)
+
+        assert len(sampled) == 20
+        types = {i.issue_type for i in sampled}
+        assert types == {"pset_missing", "system_unclassified", "space_unnamed"}
+
+    def test_sample_is_deterministic_for_same_seed(self):
+        issues = _make_issues({"pset_missing": 50, "system_unclassified": 50})
+        a = [i.id for i in stratified_sample(issues, 10, seed=42)]
+        b = [i.id for i in stratified_sample(issues, 10, seed=42)]
+        c = [i.id for i in stratified_sample(issues, 10, seed=7)]
+
+        assert a == b
+        assert a != c
+
+    def test_sample_preserves_diagnose_order(self):
+        issues = _make_issues({"pset_missing": 30, "system_unclassified": 30})
+        sampled = stratified_sample(issues, 12, seed=42)
+        original_index = {issue.id: idx for idx, issue in enumerate(issues)}
+        indices = [original_index[i.id] for i in sampled]
+
+        assert indices == sorted(indices)
+
+    def test_no_sampling_when_under_limit(self):
+        issues = _make_issues({"pset_missing": 5})
+        assert stratified_sample(issues, 10, seed=42) == issues
+
+    def test_proportional_allocation(self):
+        """Estrato 9x maior recebe ~9x mais amostras."""
+        issues = _make_issues({"pset_missing": 90, "space_unnamed": 10})
+        sampled = stratified_sample(issues, 20, seed=42)
+        from collections import Counter
+
+        counts = Counter(i.issue_type for i in sampled)
+        assert counts["pset_missing"] == 18
+        assert counts["space_unnamed"] == 2
 
 
 # ---------------------------------------------------------------------------
