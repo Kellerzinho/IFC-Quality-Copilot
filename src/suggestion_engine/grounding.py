@@ -33,6 +33,14 @@ class GroundedIssueContext(BaseModel):
     requirement_summary: str | None = None
     requirement_id: str | None = None
     grounding_sources: list[str] = Field(default_factory=list)
+    # Contexto rico do elemento (Fase A.1) — mesmos sinais da assinatura de cache
+    material_layers: list[dict] = Field(default_factory=list)
+    material_name: str | None = None
+    thickness_m: float | None = None
+    predefined_type: str | None = None
+    is_external: bool | None = None
+    floor: str | None = None
+    existing_psets: list[str] = Field(default_factory=list)
 
     @property
     def has_official_candidates(self) -> bool:
@@ -42,6 +50,55 @@ class GroundedIssueContext(BaseModel):
     def is_grounded(self) -> bool:
         """True quando há ao menos uma fonte de grounding confiável."""
         return bool(self.grounding_sources)
+
+
+def _coerce_float(value: object) -> float | None:
+    """Converte valor arbitrário do contexto em float, retornando None se inviável."""
+    if isinstance(value, bool) or value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, str):
+        try:
+            return float(value.strip().replace(",", "."))
+        except ValueError:
+            return None
+    return None
+
+
+def _coerce_bool(value: object) -> bool | None:
+    """Converte valor arbitrário do contexto em bool, retornando None se ambíguo."""
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip().casefold()
+        if normalized in {"true", "sim", "yes", "1"}:
+            return True
+        if normalized in {"false", "nao", "não", "no", "0"}:
+            return False
+    return None
+
+
+def _coerce_material_layers(value: object) -> list[dict]:
+    """Extrai lista de camadas de material (dicts) do contexto da issue."""
+    if not isinstance(value, list):
+        return []
+    layers: list[dict] = []
+    for item in value:
+        if isinstance(item, dict):
+            layers.append(item)
+        elif item is not None:
+            layers.append({"name": str(item)})
+    return layers
+
+
+def _coerce_pset_names(value: object) -> list[str]:
+    """Extrai nomes de psets existentes do contexto (lista ou dict)."""
+    if isinstance(value, dict):
+        return [str(k) for k in value]
+    if isinstance(value, list):
+        return [str(item) for item in value if item is not None]
+    return []
 
 
 def _truncate(text: str | None, max_chars: int = 120) -> str | None:
@@ -114,6 +171,29 @@ def prepare_llm_grounding(
     current_value = issue.context.get("current_value")
     current_value_str = str(current_value) if current_value is not None else None
 
+    # Contexto rico do elemento (Fase A.1): sinais que já alimentam a assinatura
+    # de cache passam a alimentar também o prompt grounded.
+    material_layers = _coerce_material_layers(
+        issue.context.get("materials") or issue.context.get("layers")
+    )
+    material_name_raw = issue.context.get("material_name")
+    material_name = str(material_name_raw).strip() if material_name_raw else None
+    thickness_m = _coerce_float(
+        issue.context.get("thickness_m")
+        if issue.context.get("thickness_m") is not None
+        else issue.context.get("total_thickness")
+    )
+    predefined_type_raw = issue.context.get("predefined_type")
+    predefined_type = str(predefined_type_raw).strip() if predefined_type_raw else None
+    is_external = _coerce_bool(
+        issue.context.get("is_external")
+        if issue.context.get("is_external") is not None
+        else issue.context.get("is_on_exterior")
+    )
+    floor_raw = issue.context.get("floor")
+    floor = str(floor_raw).strip() if floor_raw else None
+    existing_psets = _coerce_pset_names(issue.context.get("existing_psets"))
+
     return GroundedIssueContext(
         issue_id=issue.id,
         issue_type=issue.issue_type,
@@ -132,4 +212,11 @@ def prepare_llm_grounding(
         requirement_summary=_truncate(ids_context.requirement_description) if ids_context else None,
         requirement_id=ids_context.requirement_id if ids_context else None,
         grounding_sources=sources,
+        material_layers=material_layers,
+        material_name=material_name,
+        thickness_m=thickness_m,
+        predefined_type=predefined_type,
+        is_external=is_external,
+        floor=floor,
+        existing_psets=existing_psets,
     )

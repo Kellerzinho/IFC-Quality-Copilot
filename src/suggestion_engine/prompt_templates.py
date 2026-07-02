@@ -12,7 +12,7 @@ from src.models import BSDDContext, IDSContext, Issue, Suggestion
 if TYPE_CHECKING:
     from src.suggestion_engine.grounding import GroundedIssueContext
 
-PROMPT_VERSION = "v2"
+PROMPT_VERSION = "v3"
 
 SYSTEM_PROMPT_COMPACT = (
     "Voce e um engenheiro BIM/IFC criterioso. Analise as evidencias fornecidas, "
@@ -70,6 +70,110 @@ def build_compact_prompt(grounded: "GroundedIssueContext") -> tuple[str, str]:
         lines.append("candidatos: (nenhum oficial; use review_required=true se incerto)")
     if grounded.relevant_constraints:
         lines.append("restricoes: " + "; ".join(grounded.relevant_constraints))
+
+    lines.append(
+        "criterio: nao presuma que diferencas de espessura, material, dimensao ou tipo "
+        "sejam erro de digitacao; use esses dados para diferenciar elementos."
+    )
+    lines.append("")
+    lines.append(_COMPACT_OUTPUT_CONTRACT)
+    return SYSTEM_PROMPT_COMPACT, "\n".join(lines)
+
+
+def _element_context_lines(grounded: "GroundedIssueContext") -> list[str]:
+    """Formata o contexto rico do elemento (Fase A.1) para o prompt grounded."""
+    lines: list[str] = []
+    if grounded.material_layers:
+        lines.append(f"camadas_material: {_format_material_layers(grounded.material_layers)}")
+    elif grounded.material_name:
+        lines.append(f"material: {grounded.material_name}")
+    if grounded.thickness_m is not None:
+        lines.append(f"espessura_total_m: {grounded.thickness_m}")
+    if grounded.predefined_type:
+        lines.append(f"predefined_type: {grounded.predefined_type}")
+    if grounded.is_external is not None:
+        lines.append(f"is_external: {grounded.is_external}")
+    if grounded.floor:
+        lines.append(f"pavimento: {grounded.floor}")
+    if grounded.existing_psets:
+        lines.append(f"psets_existentes: {', '.join(grounded.existing_psets[:8])}")
+    return lines
+
+
+def build_pset_grounded_prompt(grounded: "GroundedIssueContext") -> tuple[str, str]:
+    """Template ``pset_missing_generic_grounded`` (Fase A.1).
+
+    Prompt para issues ``pset_missing`` sem template especializado, COM grounding.
+    Injeta vocabulário fechado do bSDD (allowed_values, data_type, unit), contexto
+    rico do elemento (material, espessura, PredefinedType, IsExternal, pavimento),
+    requisito IDS e contrato JSON compacto. Comportamento por cenário:
+
+    - bSDD com allowed_values → vocabulário fechado ("escolha APENAS entre os
+      valores permitidos"); sugestão fora do vocabulário é rebaixada/descartada
+      na validação (``_validate_against_bsdd``).
+    - bSDD só com data_type/unit → valor tipado + justificativa técnica;
+      ``review_required=true`` se a confiança não for alta.
+    - bSDD vazio/offline → abstenção preferível a chute: justificativa
+      obrigatória e ``review_required=true`` por padrão.
+
+    Retorna (system_prompt, user_prompt).
+    """
+    lines: list[str] = [
+        f"issue_id: {grounded.issue_id}",
+        "tipo: pset_missing",
+        f"classe: {grounded.ifc_class}",
+        f"guid: {grounded.global_id[:8]}",
+    ]
+    if grounded.element_name:
+        lines.append(f"elemento: {grounded.element_name}")
+
+    lines.extend(_element_context_lines(grounded))
+
+    lines.append("")
+    lines.append("REQUISITO IDS:")
+    if grounded.canonical_pset:
+        lines.append(f"pset_alvo: {grounded.canonical_pset}")
+    if grounded.canonical_property:
+        lines.append(f"propriedade: {grounded.canonical_property}")
+    if grounded.expected_datatype:
+        lines.append(f"tipo_dado: {grounded.expected_datatype}")
+    if grounded.expected_unit:
+        lines.append(f"unidade: {grounded.expected_unit}")
+    if grounded.expected_value is not None:
+        lines.append(f"valor_esperado: {grounded.expected_value}")
+    if grounded.current_value is not None:
+        lines.append(f"valor_atual: {grounded.current_value}")
+    if grounded.relevant_constraints:
+        lines.append("restricoes: " + "; ".join(grounded.relevant_constraints))
+    if grounded.requirement_summary:
+        lines.append(f"requisito: {grounded.requirement_summary}")
+
+    lines.append("")
+    if grounded.official_candidates:
+        # Cenário 1: vocabulário fechado do bSDD
+        lines.append("VALORES PERMITIDOS (bSDD): " + ", ".join(grounded.official_candidates[:12]))
+        lines.append(
+            "instrucao: escolha suggested_value APENAS entre os valores permitidos acima. "
+            "Valor fora do vocabulario sera descartado. Se nenhum valor permitido couber, "
+            "use review_required=true e explique na justification."
+        )
+    elif grounded.expected_datatype or grounded.expected_unit:
+        # Cenário 2: sem vocabulário, mas com tipo/unidade
+        tipo = grounded.expected_datatype or "definido pelo IDS"
+        unidade = f" em {grounded.expected_unit}" if grounded.expected_unit else ""
+        lines.append(
+            f"instrucao: sugira valor TIPADO ({tipo}{unidade}) com justificativa tecnica "
+            "baseada no material, espessura e classe do elemento. "
+            "Use review_required=true sempre que a confianca nao for alta."
+        )
+    else:
+        # Cenário 3: bSDD vazio/offline — abstenção preferível a chute
+        lines.append(
+            "instrucao: NAO ha vocabulario oficial disponivel (bSDD vazio/offline). "
+            "Prefira abster-se: use review_required=true por padrao em toda opcao, "
+            "justifique tecnicamente qualquer valor proposto e nunca invente valores "
+            "sem base no material/espessura/classe informados."
+        )
 
     lines.append(
         "criterio: nao presuma que diferencas de espessura, material, dimensao ou tipo "
@@ -173,8 +277,12 @@ TEMPLATES: dict[str, str] = {
         "TAREFA: Sugira 3 valores possíveis para a propriedade IFC \"{check_property}\" "
         "do Pset \"{pset_name}\", do mais provável ao menos provável. "
         "Considere o tipo de elemento e o contexto construtivo brasileiro.\n"
+        "ABSTENÇÃO: não há vocabulário oficial (IDS/bSDD) disponível para esta propriedade. "
+        "Prefira abster-se a chutar: use review_required=true em toda opção cuja confiança "
+        "não seja alta e justifique tecnicamente cada valor proposto.\n"
         "Formato JSON:\n"
-        '{{"opcoes": [{{"valor": "...", "justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
+        '{{"opcoes": [{{"valor": "...", "justificativa": "...", '
+        '"review_required": true, "confianca": "alta/media/baixa"}}]}}'
     ),
     "pset_missing_space_category": (
         _HEADER_BR +
@@ -558,24 +666,43 @@ def _format_list(items: list[str] | Any) -> str:
     return str(items)
 
 
+def _specialized_pset_template_key(issue: Issue) -> str | None:
+    """Retorna a chave do template especializado de pset_missing, ou None se genérico."""
+    prop = issue.context.get("check_property", "")
+    if prop == "ThermalTransmittance":
+        if issue.element_class in ("IfcSlab", "IfcSlabStandardCase", "IfcRoof", "IfcCurtainWall"):
+            return "pset_missing_u_value_slab"
+        return "pset_missing_thermal"
+    if prop == "FireRating":
+        return "pset_missing_fire"
+    if prop == "Category" and issue.element_class == "IfcSpace":
+        return "pset_missing_space_category"
+    if prop in ("AcousticRating", "SoundTransmissionLoss"):
+        return "pset_missing_acoustic"
+    if prop in ("SolarHeatGainCoefficient", "VisibleTransmittance"):
+        return "pset_missing_solar"
+    if prop in ("LoadBearing", "IsLoadBearing", "HasNonSkidSurface"):
+        return "pset_missing_structural"
+    return None
+
+
+def has_specialized_pset_template(issue: Issue) -> bool:
+    """True se a issue pset_missing tem template especializado (térmico, fogo, etc.).
+
+    Usado pelo roteamento da Fase A.2: issues genéricas COM grounding vão para
+    ``build_pset_grounded_prompt``; as especializadas mantêm o caminho atual.
+    """
+    if issue.issue_type != "pset_missing":
+        return False
+    return _specialized_pset_template_key(issue) is not None
+
+
 def _select_template(issue: Issue) -> str:
     """Seleciona o template correto pelo issue_type, sub-tipo e contexto."""
     if issue.issue_type == "pset_missing":
-        prop = issue.context.get("check_property", "")
-        if prop == "ThermalTransmittance":
-            if issue.element_class in ("IfcSlab", "IfcSlabStandardCase", "IfcRoof", "IfcCurtainWall"):
-                return TEMPLATES["pset_missing_u_value_slab"]
-            return TEMPLATES["pset_missing_thermal"]
-        if prop == "FireRating":
-            return TEMPLATES["pset_missing_fire"]
-        if prop == "Category" and issue.element_class == "IfcSpace":
-            return TEMPLATES["pset_missing_space_category"]
-        if prop in ("AcousticRating", "SoundTransmissionLoss"):
-            return TEMPLATES["pset_missing_acoustic"]
-        if prop in ("SolarHeatGainCoefficient", "VisibleTransmittance"):
-            return TEMPLATES["pset_missing_solar"]
-        if prop in ("LoadBearing", "IsLoadBearing", "HasNonSkidSurface"):
-            return TEMPLATES["pset_missing_structural"]
+        key = _specialized_pset_template_key(issue)
+        if key is not None:
+            return TEMPLATES[key]
         return TEMPLATES["pset_missing_generic"]
     if issue.issue_type == "relation_broken":
         expected = issue.context.get("expected_relation", "")

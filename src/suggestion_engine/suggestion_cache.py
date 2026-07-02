@@ -15,13 +15,13 @@ import sqlite3
 import threading
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 from loguru import logger
 
 from src.models import Suggestion
+from src.suggestion_engine.prompt_templates import PROMPT_VERSION
 
-PROMPT_VERSION = "v2"
+__all__ = ["PROMPT_VERSION", "SuggestionCache", "compute_signature"]
 
 
 def compute_signature(

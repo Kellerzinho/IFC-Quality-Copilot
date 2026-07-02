@@ -25,6 +25,7 @@ from src.models import (
     SuggestionMetrics,
     SuggestionSet,
 )
+from src.suggestion_engine.deterministic import generate_deterministic_suggestions
 from src.suggestion_engine.grounding import GroundedIssueContext, prepare_llm_grounding
 from src.suggestion_engine.issue_deduplicator import (
     _bucket_area,
@@ -45,10 +46,10 @@ from src.suggestion_engine.normalization import (
 from src.suggestion_engine.ollama_client import OllamaClient
 from src.suggestion_engine.prompt_templates import (
     PROMPT_VERSION,
-    SYSTEM_PROMPT,
-    SYSTEM_PROMPT_COMPACT,
     build_compact_prompt,
     build_prompt,
+    build_pset_grounded_prompt,
+    has_specialized_pset_template,
     parse_llm_response,
 )
 from src.suggestion_engine.suggestion_cache import (
@@ -117,6 +118,18 @@ class SuggestionGenerator:
         settings = get_settings()
         metrics = SuggestionMetrics(issue_id=issue.id, final_status="processing")
 
+        # ----- Prefill determinístico (Fase A.3): casos triviais não chamam LLM -----
+        deterministic = generate_deterministic_suggestions(issue)
+        if deterministic:
+            metrics.final_status = "deterministic"
+            return SuggestionSet(
+                issue_id=issue.id,
+                suggestions=deterministic,
+                error=None,
+                prompt_hash=None,
+                metrics=metrics,
+            )
+
         t0 = time.perf_counter()
         grounded = prepare_llm_grounding(issue, ids_context=ids_context, bsdd_context=bsdd_context)
         metrics.grounding_ms = (time.perf_counter() - t0) * 1000
@@ -143,7 +156,12 @@ class SuggestionGenerator:
         # ----- Selecionar prompt -----
         use_compact = self._should_use_compact(grounded, profile, rule)
         if use_compact:
-            system, user = build_compact_prompt(grounded)
+            # Fase A.2: pset_missing genérico COM grounding → template grounded
+            # dedicado (vocabulário fechado bSDD + contexto rico do elemento).
+            if issue.issue_type == "pset_missing" and not has_specialized_pset_template(issue):
+                system, user = build_pset_grounded_prompt(grounded)
+            else:
+                system, user = build_compact_prompt(grounded)
         elif self.prompt_router is not None:
             system, user = self._build_prompt_via_router(issue, building_context, profile, rule)
         else:
