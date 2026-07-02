@@ -344,6 +344,28 @@ class TestSuggestionConfidenceEmoji:
         assert _make_suggestion(confidence="baixa").confidence_order == 2
 
 
+class TestSuggestionSource:
+    def test_suggestion_source_default_is_llm(self):
+        """source deve ser 'llm' por padrão (retrocompatibilidade)."""
+        assert _make_suggestion().source == "llm"
+
+    def test_suggestion_accepts_deterministic_source(self):
+        """Sugestões determinísticas (Fase A.3) devem ser aceitas pelo modelo."""
+        suggestion = _make_suggestion(source="deterministic")
+        assert suggestion.source == "deterministic"
+
+    def test_audit_entry_accepts_deterministic_source(self):
+        """AuditEntry deve preservar a proveniência determinística na auditoria."""
+        entry = _make_audit_entry(source="deterministic")
+        assert entry.source == "deterministic"
+        assert entry.to_csv_row()["source"] == "deterministic"
+
+    def test_suggestion_rejects_unknown_source(self):
+        """Valores fora do Literal devem ser rejeitados pelo Pydantic."""
+        with pytest.raises(ValidationError):
+            _make_suggestion(source="human")
+
+
 # ---------------------------------------------------------------------------
 # SuggestionSet
 # ---------------------------------------------------------------------------

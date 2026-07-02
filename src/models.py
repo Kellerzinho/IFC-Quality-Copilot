@@ -179,7 +179,7 @@ class Suggestion(BaseModel):
     justification: str  # ex: "4.2m² com WC e lavatório adjacente a dormitório"
     confidence: Literal["alta", "media", "baixa"]
     normative_ref: str | None = None  # ex: "NBR 15575-4 Tab. C.2"
-    source: Literal["llm"] = "llm"
+    source: Literal["llm", "deterministic"] = "llm"
     canonical_term: str | None = None
     semantic_hint: str | None = None
     source_candidates: list[str] = Field(default_factory=list)
@@ -473,7 +473,7 @@ class AuditEntry(BaseModel):
     decision: Literal["accepted", "edited", "rejected"]
     confidence: str
     normative_ref: str | None = None
-    source: Literal["llm"]
+    source: Literal["llm", "deterministic"]
     user: str = "engineer"
     timestamp: datetime = Field(default_factory=datetime.now)
     session_id: str | None = None
