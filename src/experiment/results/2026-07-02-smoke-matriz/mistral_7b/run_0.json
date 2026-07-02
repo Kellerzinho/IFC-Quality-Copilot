@@ -1,0 +1,98 @@
+{
+  "metadata": {
+    "model_name": "mistral:7b",
+    "model_digest": null,
+    "ollama_version": null,
+    "seed": 42,
+    "temperature": 0.1,
+    "top_p": 0.9,
+    "num_ctx": 8192,
+    "num_predict": 1024,
+    "repeat_penalty": 1.1,
+    "ifc_sha256": "a71c8be30d82760218f5b3f3a1c476b49e3f30e608b0065916b9d5206a1a6dd0",
+    "ids_sha256": "f698f2c020d79140bb314f077f8de680f492fd7ba42867e4000a4cead5d20905",
+    "ground_truth_sha256": "3924d611219a00a05bf2643eb19d43300dc9ebdf391db72b0e5aff3e5f366ba3",
+    "prompt_version": "v3",
+    "repo_commit": "99c98b1b69d58a09b66086ed7efbd17713ec2c22",
+    "cache_enabled": false,
+    "replica_index": 0,
+    "timestamp": null
+  },
+  "evaluation": {
+    "accuracy_top1": 0.5,
+    "accuracy_top3": 0.5,
+    "precision": 0.5,
+    "recall": 0.0004,
+    "f1": 0.0008,
+    "total_evaluated": 2,
+    "profile_id": null,
+    "readiness_before": null,
+    "readiness_after": null,
+    "readiness_improvement": 0.0,
+    "by_profile": {}
+  },
+  "review_proxy": {
+    "simulation": true,
+    "accepted": 1,
+    "edited": 0,
+    "rejected": 0,
+    "review": 1,
+    "total": 2,
+    "acceptance_rate": 0.5,
+    "edit_rate": 0.0,
+    "rejection_rate": 0.0,
+    "review_rate": 0.5,
+    "ids_post_pass": 1,
+    "ids_post_fail": 0,
+    "ids_post_skip": 0,
+    "ids_conformity_rate": 1.0
+  },
+  "stability": {
+    "total_generated": 3,
+    "json_valid_first_try": 3,
+    "json_valid_first_try_rate": 1.0,
+    "avg_attempts": 1.0,
+    "json_repaired_count": 0,
+    "json_repaired_rate": 0.0,
+    "failed_count": 0,
+    "failure_rate": 0.0,
+    "failure_reasons": {}
+  },
+  "timing": {
+    "samples": 3,
+    "latency_ms_p50": 12136.381200005417,
+    "latency_ms_p95": 18511.828739999328,
+    "latency_ms_mean": 11614.251600001202,
+    "output_tokens_total": 1279,
+    "output_tokens_per_sample": 426.3333333333333,
+    "cache_hits": 0,
+    "reused": 0
+  },
+  "decisions": {
+    "total_issues": 3,
+    "accepted": 1,
+    "edited": 0,
+    "rejected": 0,
+    "acceptance_rate": 0.3333333333333333,
+    "edit_rate": 0.0,
+    "resolution_rate": 0.3333333333333333,
+    "issues_by_type": {
+      "pset_missing": 1,
+      "system_unclassified": 1,
+      "relation_broken": 1
+    },
+    "issues_by_severity": {
+      "high": 1,
+      "medium": 1,
+      "low": 1
+    }
+  },
+  "issue_counts": {
+    "total_issues": 3,
+    "issues_from_ids": 222,
+    "ids_rules": 5,
+    "with_ground_truth": 2,
+    "sampled_from": 2792,
+    "sample_seed": 42
+  }
+}

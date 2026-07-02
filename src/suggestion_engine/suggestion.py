@@ -189,8 +189,11 @@ class SuggestionGenerator:
         for attempt in range(self._MAX_ATTEMPTS):
             try:
                 t_llm = time.perf_counter()
-                raw_result = self.client.generate(prompt=current_user_prompt, system=system)
+                # Conta a tentativa ANTES da chamada: uma falha de transporte
+                # (HTTP 500, timeout) ainda é uma chamada real ao LLM e precisa
+                # aparecer na telemetria de estabilidade (F12).
                 attempts_made += 1
+                raw_result = self.client.generate(prompt=current_user_prompt, system=system)
                 raw, ollama_metrics = _coerce_generate_result(raw_result)
                 metrics.llm_total_ms += (time.perf_counter() - t_llm) * 1000
 

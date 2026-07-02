@@ -101,6 +101,48 @@ def _mock_batch_correct(issues, ctx, on_progress=None):
 
 
 # ---------------------------------------------------------------------------
+# Telemetria de falha de transporte (F12) — HTTP 500 / timeout contam tentativa
+# ---------------------------------------------------------------------------
+
+
+class TestTransportFailureTelemetry:
+    def test_http_error_counts_as_attempt_and_failure(self):
+        """Falha de transporte (ex.: Ollama HTTP 500) deve aparecer na
+        estabilidade: attempts=1, final_status=failed — nunca invisível."""
+        from unittest.mock import MagicMock
+
+        from src.models import Issue
+        from src.suggestion_engine.ollama_client import OllamaClient
+        from src.suggestion_engine.suggestion import SuggestionGenerator
+
+        client = MagicMock(spec=OllamaClient)
+        client.generate.side_effect = RuntimeError(
+            "Ollama HTTP error: Server error '500 Internal Server Error'"
+        )
+        gen = SuggestionGenerator(client)
+        issue = Issue(
+            element_guid="W" * 22,
+            element_class="IfcWall",
+            issue_type="pset_missing",
+            severity="medium",
+            description="Reference ausente",
+            context={"check_pset": "Pset_WallCommon", "check_property": "Reference"},
+        )
+
+        result = gen.generate(issue, _BUILDING_CTX)
+
+        assert result.metrics is not None
+        assert result.metrics.attempts == 1
+        assert result.metrics.final_status == "failed"
+        assert result.metrics.failure_reason == "other"
+
+        stability = aggregate_stability([result.metrics])
+        assert stability.total_generated == 1
+        assert stability.failed_count == 1
+        assert stability.failure_rate == 1.0
+
+
+# ---------------------------------------------------------------------------
 # Amostragem estratificada (--max-issues)
 # ---------------------------------------------------------------------------
 
