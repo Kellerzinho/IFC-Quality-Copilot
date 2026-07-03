@@ -9,7 +9,12 @@ import ifcopenshell.guid
 import pytest
 
 from src.experiment.metrics import aggregate_stability, aggregate_timing
-from src.experiment.runner import ExperimentRunner, sha256_of, stratified_sample
+from src.experiment.runner import (
+    ExperimentRunner,
+    filter_issues_by_type,
+    sha256_of,
+    stratified_sample,
+)
 from src.models import Issue, Suggestion, SuggestionMetrics, SuggestionSet
 
 _BUILDING_CTX = {"building_type": "Residencial unifamiliar", "bioclimatic_zone": "3"}
@@ -103,6 +108,56 @@ def _mock_batch_correct(issues, ctx, on_progress=None):
 # ---------------------------------------------------------------------------
 # Filtro de issue_types (--issue-types) — dataset mascarado só gera nomeação
 # ---------------------------------------------------------------------------
+
+
+class TestFilterIssuesByType:
+    def test_dedups_ids_duplicate_of_same_element(self):
+        """Issue do IDS para o mesmo (guid, tipo) é descartada; a base (primeira,
+        com chave natural que casa o GT) é mantida."""
+        guid = "S" * 22
+        base = Issue(
+            element_guid=guid,
+            element_class="IfcSpace",
+            issue_type="space_unnamed",
+            severity="low",
+            description="base diagnostics",
+            context={},
+        )
+        from_ids = Issue(
+            element_guid=guid,
+            element_class="IfcSpace",
+            issue_type="space_unnamed",
+            severity="low",
+            description="gerada pelo IDS",
+            context={"check_pset": "Attributes", "check_property": "Name"},
+        )
+        other = Issue(
+            element_guid="X" * 22,
+            element_class="IfcWall",
+            issue_type="pset_missing",
+            severity="medium",
+            description="fora do filtro",
+            context={"check_property": "FireRating"},
+        )
+
+        result = filter_issues_by_type([base, from_ids, other], ["space_unnamed"])
+
+        assert result == [base]
+
+    def test_keeps_distinct_elements_of_same_type(self):
+        issues = [
+            Issue(
+                element_guid=f"{i:022d}",
+                element_class="IfcSpace",
+                issue_type="space_unnamed",
+                severity="low",
+                description=f"espaço {i}",
+                context={},
+            )
+            for i in range(3)
+        ]
+
+        assert len(filter_issues_by_type(issues, ["space_unnamed"])) == 3
 
 
 class TestIssueTypesFilter:

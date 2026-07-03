@@ -127,6 +127,30 @@ def _sanitize(name: str) -> str:
     return re.sub(r"[^A-Za-z0-9._-]+", "_", name)
 
 
+def filter_issues_by_type(issues: list, issue_types: list[str]) -> list:
+    """Filtra issues pelos tipos pedidos, com dedup por ``(guid, issue_type)``.
+
+    O IDS pode gerar uma issue própria para o mesmo elemento/tarefa que o
+    diagnóstico base já apontou (ex.: ``space_unnamed`` via requisito de
+    atributo do IfcSpace). Mantém a **primeira** ocorrência — o diagnóstico
+    base vem antes da integração IDS, tem o contexto rico e a chave natural
+    ``(guid, tipo, "")`` que casa o ground truth. Sem o dedup, o dataset
+    mascarado dobra as issues de nomeação e dilui as taxas do revisor simulado.
+    """
+    allowed = set(issue_types)
+    seen_keys: set[tuple[str, str]] = set()
+    filtered: list = []
+    for issue in issues:
+        if issue.issue_type not in allowed:
+            continue
+        key = (issue.element_guid, issue.issue_type)
+        if key in seen_keys:
+            continue
+        seen_keys.add(key)
+        filtered.append(issue)
+    return filtered
+
+
 def stratified_sample(issues: list, max_issues: int, seed: int = 42) -> list:
     """Amostra determinística de issues, estratificada por ``issue_type``.
 
@@ -242,13 +266,10 @@ class ExperimentRunner:
                     report = pipeline.diagnose()
                     total_diagnosed = len(report.issues)
                     if issue_types:
-                        allowed = set(issue_types)
-                        report.issues = [
-                            issue for issue in report.issues if issue.issue_type in allowed
-                        ]
+                        report.issues = filter_issues_by_type(report.issues, issue_types)
                         logger.info(
-                            "Filtro issue_types {}: {}/{} issues",
-                            sorted(allowed),
+                            "Filtro issue_types {} (dedup por guid): {}/{} issues",
+                            sorted(issue_types),
                             len(report.issues),
                             total_diagnosed,
                         )
