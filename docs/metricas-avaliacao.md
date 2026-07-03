@@ -121,3 +121,28 @@ interpretadas assim:
 
 Para os números finais do artigo, preferir runs com a amostra fixa acordada
 com o orientador (mesma seed em todos os modelos) ou runs completos.
+
+---
+
+## Adendo (2026-07-03): geração por instância no benchmark (decisão de desenho)
+
+O fluxo de produção (Streamlit) usa deduplicação com reuso: issues
+estruturalmente equivalentes recebem **uma** chamada de LLM e as demais copiam
+o resultado da primária (`IssueDeduplicator.build_reuse_map`). O benchmark,
+deliberadamente, **não** usa o reuso (decisão do autor em 2026-07-03): cada
+instância gera a sua própria chamada, com cache desligado.
+
+**Justificativa:** cada instância carrega variações reais de contexto
+(dimensões, pavimento, vizinhança) e a geração por instância mede a
+estabilidade do modelo sobre essas variações — o comportamento que o
+engenheiro observaria ao processar o modelo inteiro sem otimizações.
+
+**Implicações reconhecidas:**
+- as ~2792 amostras por run contêm grupos de instâncias quase idênticas
+  (3 tipos de parede, 13 de laje...); as amostras são **correlacionadas
+  dentro de grupos** e o n efetivo para acurácia é menor que o nominal —
+  reportar isso na análise (ou agregar por grupo em análise de sensibilidade);
+- o custo computacional por réplica é ~20–50× maior que com reuso
+  (~7–8 h/modelo vs ~20 min) — assumido como custo do desenho;
+- o reuso permanece como otimização de produção, fora do escopo das métricas
+  do benchmark.
