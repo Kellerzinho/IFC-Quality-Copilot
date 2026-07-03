@@ -101,6 +101,51 @@ def _mock_batch_correct(issues, ctx, on_progress=None):
 
 
 # ---------------------------------------------------------------------------
+# Filtro de issue_types (--issue-types) — dataset mascarado só gera nomeação
+# ---------------------------------------------------------------------------
+
+
+class TestIssueTypesFilter:
+    def test_run_single_restricts_generation_to_requested_types(
+        self, ifc_with_space, ground_truth_yaml
+    ):
+        """Com issue_types=['space_unnamed'], nenhuma issue de outro tipo é gerada."""
+        ifc_path, _ = ifc_with_space
+        runner = ExperimentRunner(suggestion_batch_fn=_mock_batch_correct)
+
+        result = runner.run_single(
+            ifc_path=ifc_path,
+            ground_truth_path=ground_truth_yaml,
+            building_context=_BUILDING_CTX,
+            model_name="mock-model:test",
+            cache_enabled=False,
+            issue_types=["space_unnamed"],
+        )
+
+        assert set(result.decisions["issues_by_type"]) == {"space_unnamed"}
+        assert result.issue_counts["issue_types_filter"] == ["space_unnamed"]
+        assert result.issue_counts["total_issues"] < result.issue_counts["sampled_from"]
+
+    def test_filter_composes_with_sampling(self, ifc_with_space, ground_truth_yaml):
+        """Filtro e amostragem convivem: primeiro filtra o tipo, depois amostra."""
+        ifc_path, _ = ifc_with_space
+        runner = ExperimentRunner(suggestion_batch_fn=_mock_batch_correct)
+
+        result = runner.run_single(
+            ifc_path=ifc_path,
+            ground_truth_path=ground_truth_yaml,
+            building_context=_BUILDING_CTX,
+            model_name="mock-model:test",
+            cache_enabled=False,
+            issue_types=["space_unnamed"],
+            max_issues=1,
+        )
+
+        assert result.issue_counts["total_issues"] == 1
+        assert set(result.decisions["issues_by_type"]) == {"space_unnamed"}
+
+
+# ---------------------------------------------------------------------------
 # Telemetria de falha de transporte (F12) — HTTP 500 / timeout contam tentativa
 # ---------------------------------------------------------------------------
 

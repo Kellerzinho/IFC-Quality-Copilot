@@ -84,6 +84,22 @@ def _repo_commit() -> str | None:
         return None
 
 
+def _ollama_version() -> str | None:
+    """Retorna a versão do Ollama instalado (best-effort), ou None."""
+    try:
+        out = subprocess.run(
+            ["ollama", "--version"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
+        )
+        match = re.search(r"(\d+\.\d+\.\d+)", out.stdout or "")
+        return match.group(1) if match else None
+    except Exception:
+        return None
+
+
 @contextmanager
 def _settings_override(model_name: str | None, cache_enabled: bool):
     """Aplica modelo e toggle de cache via env + limpa o cache de get_settings."""
@@ -186,6 +202,7 @@ class ExperimentRunner:
         timestamp: str | None = None,
         max_issues: int | None = None,
         sample_seed: int = 42,
+        issue_types: list[str] | None = None,
     ) -> ExperimentResult:
         """Executa uma réplica e retorna o ExperimentResult agregado.
 
@@ -197,6 +214,10 @@ class ExperimentRunner:
                 amostra determinística estratificada por issue_type (smoke
                 tests e runs econômicos). None = todas as issues.
             sample_seed: semente da amostragem (reprodutibilidade).
+            issue_types: se fornecido, restringe a geração às issues desses
+                tipos (ex.: ``["space_unnamed"]`` no dataset mascarado, cuja
+                única tarefa é nomeação — evita regerar as milhares de issues
+                de Pset/sistemas já cobertas pelo dataset principal).
         """
         ground_truth = GroundTruth.from_yaml(ground_truth_path)
         evaluator = Evaluator()
@@ -220,7 +241,18 @@ class ExperimentRunner:
 
                     report = pipeline.diagnose()
                     total_diagnosed = len(report.issues)
-                    if max_issues is not None and total_diagnosed > max_issues:
+                    if issue_types:
+                        allowed = set(issue_types)
+                        report.issues = [
+                            issue for issue in report.issues if issue.issue_type in allowed
+                        ]
+                        logger.info(
+                            "Filtro issue_types {}: {}/{} issues",
+                            sorted(allowed),
+                            len(report.issues),
+                            total_diagnosed,
+                        )
+                    if max_issues is not None and len(report.issues) > max_issues:
                         sampled = stratified_sample(report.issues, max_issues, sample_seed)
                         report.issues = sampled
                         logger.info(
@@ -259,11 +291,12 @@ class ExperimentRunner:
                         "with_ground_truth": evaluation.total_evaluated,
                         "sampled_from": total_diagnosed,
                         "sample_seed": sample_seed if max_issues is not None else None,
+                        "issue_types_filter": sorted(issue_types) if issue_types else None,
                     }
 
                     metadata = RunMetadata(
                         model_name=settings.ollama_model,
-                        ollama_version=None,
+                        ollama_version=_ollama_version(),
                         seed=settings.ollama_seed,
                         temperature=settings.ollama_temperature,
                         top_p=settings.ollama_top_p,
@@ -315,6 +348,7 @@ class ExperimentRunner:
         timestamp: str | None = None,
         max_issues: int | None = None,
         sample_seed: int = 42,
+        issue_types: list[str] | None = None,
     ) -> list[ExperimentResult]:
         """Executa N réplicas e, se ``output_dir`` for dado, exporta um JSON por réplica."""
         results: list[ExperimentResult] = []
@@ -332,6 +366,7 @@ class ExperimentRunner:
                 timestamp=timestamp,
                 max_issues=max_issues,
                 sample_seed=sample_seed,
+                issue_types=issue_types,
             )
             results.append(result)
             if output_dir is not None:
@@ -394,6 +429,11 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         default=42,
         help="Semente da amostragem estratificada (default 42).",
     )
+    parser.add_argument(
+        "--issue-types",
+        default=None,
+        help="Restringe a geração a estes issue_types (separados por vírgula).",
+    )
     return parser
 
 
@@ -418,6 +458,11 @@ def main(argv: list[str] | None = None) -> int:
         output_dir=args.output,
         max_issues=args.max_issues,
         sample_seed=args.sample_seed,
+        issue_types=(
+            [t.strip() for t in args.issue_types.split(",") if t.strip()]
+            if args.issue_types
+            else None
+        ),
     )
     logger.info("Concluído: {} réplicas.", len(results))
     if results:
