@@ -224,8 +224,9 @@ class TestPsetGroundedPromptScenarios:
 
 
 class TestPromptVersion:
-    def test_prompt_version_is_v3(self):
-        assert PROMPT_VERSION == "v3"
+    def test_prompt_version_is_v4(self):
+        """v4: contrato genérico removido do prompt de space_unnamed (benchmark)."""
+        assert PROMPT_VERSION == "v4"
 
     def test_prompt_version_single_source(self):
         """suggestion_cache re-exporta a mesma constante (sem deriva)."""

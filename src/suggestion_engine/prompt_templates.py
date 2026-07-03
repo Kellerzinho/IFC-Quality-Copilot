@@ -12,7 +12,9 @@ from src.models import BSDDContext, IDSContext, Issue, Suggestion
 if TYPE_CHECKING:
     from src.suggestion_engine.grounding import GroundedIssueContext
 
-PROMPT_VERSION = "v3"
+# v4: contrato genérico não é mais anexado ao template de space_unnamed
+# (só o prompt de nomeação muda entre v3 e v4; demais tarefas são idênticas).
+PROMPT_VERSION = "v4"
 
 SYSTEM_PROMPT_COMPACT = (
     "Voce e um engenheiro BIM/IFC criterioso. Analise as evidencias fornecidas, "
@@ -893,12 +895,24 @@ def build_prompt(
     system_prompt = SYSTEM_PROMPT
     if ids_context is not None or bsdd_context is not None:
         system_prompt = f"{SYSTEM_PROMPT} {_GROUNDING_INSTRUCTION}"
-    user_prompt = (
-        f"{user_prompt}\n\nCRITERIO DE ENGENHARIA:\n"
-        "Nao presuma que diferencas de espessura, material, dimensao ou tipo sejam erro de digitacao. "
-        "Use esses dados para diferenciar elementos e ordenar as opcoes por confianca decrescente."
-        f"\n\nCONTRATO DE SAIDA:\n{_LLM_OUTPUT_CONTRACT}"
-    )
+    if issue.issue_type == "space_unnamed":
+        # O template de nomeação carrega contrato próprio ({"opcoes":[{"nome":...}]}).
+        # Anexar o contrato genérico (canonical_term/semantic_hint) por cima
+        # desviava o LLM para pseudo-classes IFC ("IfcKitchen") em vez de nomes
+        # funcionais — detectado no benchmark (nomeação com top-1 = 0%).
+        user_prompt = (
+            f"{user_prompt}\n\nIMPORTANTE: o campo 'nome' deve ser o nome funcional "
+            "do ambiente em portugues (ex.: 'Sala de Estar', 'Banheiro Social'), "
+            "nunca classe IFC, termo tecnico ou identificador."
+        )
+    else:
+        user_prompt = (
+            f"{user_prompt}\n\nCRITERIO DE ENGENHARIA:\n"
+            "Nao presuma que diferencas de espessura, material, dimensao ou tipo "
+            "sejam erro de digitacao. Use esses dados para diferenciar elementos "
+            "e ordenar as opcoes por confianca decrescente."
+            f"\n\nCONTRATO DE SAIDA:\n{_LLM_OUTPUT_CONTRACT}"
+        )
 
     return system_prompt, user_prompt
 
