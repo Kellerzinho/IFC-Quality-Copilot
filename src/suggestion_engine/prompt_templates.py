@@ -89,6 +89,14 @@ def build_compact_prompt(grounded: "GroundedIssueContext") -> tuple[str, str]:
         lines.append(f"valor_atual: {grounded.current_value}")
     if grounded.requirement_summary:
         lines.append(f"requisito: {grounded.requirement_summary}")
+    # A classe oficial resolvida no bSDD e grounding por si so: comunica-la ao LLM
+    # importa mesmo quando nao ha lista de candidatos (caso de space_unnamed, cujos
+    # candidatos viriam de classificacoes que o dicionario pode nao ter).
+    if grounded.official_class:
+        linha_classe = f"classe_bsdd: {grounded.official_class}"
+        if grounded.official_class_uri:
+            linha_classe += f" ({grounded.official_class_uri})"
+        lines.append(linha_classe)
     if grounded.official_candidates:
         cand = ", ".join(grounded.official_candidates[:12])
         lines.append(f"candidatos: {cand}")

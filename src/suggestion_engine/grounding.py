@@ -29,6 +29,8 @@ class GroundedIssueContext(BaseModel):
     current_value: str | None = None
     official_candidates: list[str] = Field(default_factory=list)
     controlled_aliases: list[str] = Field(default_factory=list)
+    official_class: str | None = None
+    official_class_uri: str | None = None
     relevant_constraints: list[str] = Field(default_factory=list)
     requirement_summary: str | None = None
     requirement_id: str | None = None
@@ -146,7 +148,11 @@ def prepare_llm_grounding(
 
     official_candidates: list[str] = []
     controlled_aliases: list[str] = []
+    official_class: str | None = None
+    official_class_uri: str | None = None
     if bsdd_context is not None:
+        official_class = bsdd_context.class_name
+        official_class_uri = bsdd_context.class_uri
         # A classe oficial resolvida ja e grounding: existem propriedades do IFC
         # ausentes do bSDD (IfcSpace.Category), em que a classe resolve com URI
         # canonica e a propriedade nao. Ignorar isso registraria "sem bSDD" num
@@ -216,6 +222,8 @@ def prepare_llm_grounding(
         current_value=current_value_str,
         official_candidates=official_candidates,
         controlled_aliases=controlled_aliases,
+        official_class=official_class,
+        official_class_uri=official_class_uri,
         relevant_constraints=relevant_constraints,
         requirement_summary=_truncate(ids_context.requirement_description) if ids_context else None,
         requirement_id=ids_context.requirement_id if ids_context else None,

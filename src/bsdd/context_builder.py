@@ -428,10 +428,13 @@ class BSDDContextBuilder:
                 if self._is_space_classification(item)
             ]
             if primary_match is not None:
+                # Sem fallback: quando a classe IFC e o unico resultado, oferece-la
+                # como candidato instruiria o LLM a responder "IfcSpace" onde se
+                # espera "Sala de Estar".
                 relevant_results = [
                     item for item in relevant_results
                     if item.get("uri") != primary_match.get("uri")
-                ] or relevant_results
+                ]
         elif primary_match is not None:
             relevant_results = [
                 item for item in class_results

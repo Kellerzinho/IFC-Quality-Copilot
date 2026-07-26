@@ -466,3 +466,23 @@ def test_resolved_class_without_matching_property_is_still_live():
     assert context.class_name == "IfcSpace"
     assert context.related_properties == []
     assert context.source_status == "live"
+
+
+def test_space_naming_never_offers_the_ifc_class_as_a_name_candidate():
+    """A própria classe IFC não é candidata a nome de ambiente.
+
+    Quando o único resultado do bSDD é a classe (IfcSpace), oferecê-la como
+    candidato instrui o LLM a responder "IfcSpace" onde se espera "Sala de
+    Estar" — a mesma falha que zerou a acurácia da nomeação no benchmark.
+    """
+    client = _client_that_only_answers(
+        {"IfcSpace": [{"name": "IfcSpace", "uri": "https://example.org/c/s", "domain": "IFC"}]}
+    )
+
+    builder = BSDDContextBuilder(client)
+    issue = _make_issue("space_unnamed")
+
+    context = builder.build(issue)
+
+    assert context.class_name == "IfcSpace"
+    assert [c.name for c in context.classification_suggestions] == []

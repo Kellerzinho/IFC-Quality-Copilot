@@ -138,3 +138,32 @@ def test_resolved_bsdd_class_counts_as_grounding_source():
 
     assert "bsdd" in grounded.grounding_sources
     assert grounded.is_grounded is True
+
+
+def test_official_class_reaches_the_grounded_context():
+    """A classe oficial resolvida entra no contexto que alimenta o prompt.
+
+    Sem isso, o vocabulário bSDD podia estar resolvido e não ser comunicado ao
+    LLM: em space_unnamed, cuja lista de candidatos vem de classificações, a
+    classe canônica ficava só na proveniência.
+    """
+    issue = Issue(
+        element_guid="S" * 22,
+        element_class="IfcSpace",
+        element_name="Room 101",
+        issue_type="space_unnamed",
+        severity="low",
+        description="Espaço sem nome funcional",
+        context={"current_name": "Room 101"},
+    )
+    bsdd_context = BSDDContext(
+        issue_id=issue.id,
+        element_class="IfcSpace",
+        class_name="IfcSpace",
+        class_uri="https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/class/IfcSpace",
+        source_status="live",
+    )
+
+    grounded = prepare_llm_grounding(issue, bsdd_context=bsdd_context)
+
+    assert grounded.official_class == "IfcSpace"

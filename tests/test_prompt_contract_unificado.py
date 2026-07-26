@@ -91,3 +91,23 @@ def test_pset_missing_mantem_contrato_com_vocabulario_canonico():
     _, compacto = build_compact_prompt(grounded)
 
     assert "canonical_term" in compacto
+
+
+def test_prompt_compacto_menciona_a_classe_oficial_do_bsdd():
+    """O vocabulário oficial resolvido é comunicado ao LLM, não só registrado."""
+    from src.models import BSDDContext
+
+    issue = _space_issue()
+    bsdd_context = BSDDContext(
+        issue_id=issue.id,
+        element_class="IfcSpace",
+        class_name="IfcSpace",
+        class_uri="https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/class/IfcSpace",
+        source_status="live",
+    )
+    grounded = prepare_llm_grounding(issue, bsdd_context=bsdd_context)
+
+    _, user = build_compact_prompt(grounded)
+
+    assert "IfcSpace" in user
+    assert "bsdd" in user.lower()
