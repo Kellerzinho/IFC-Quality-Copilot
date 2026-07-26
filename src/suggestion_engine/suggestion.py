@@ -155,10 +155,23 @@ class SuggestionGenerator:
 
         # ----- Selecionar prompt -----
         use_compact = self._should_use_compact(grounded, profile, rule)
-        if use_compact:
+        if use_compact and has_specialized_pset_template(issue):
+            # O template especializado carrega a norma (NBR 14432, NBR 15575-4
+            # Tab. C.2) e a restricao de formato canonico. O grounding e injetado
+            # nele por build_prompt, em vez de substitui-lo pelo prompt compacto:
+            # com o bSDD resolvendo para todas as classes, trocar o template pelo
+            # compacto descartaria a norma em toda issue especializada.
+            system, user = build_prompt(
+                issue,
+                building_context,
+                profile_id=profile.id if profile is not None else None,
+                bsdd_context=bsdd_context,
+                ids_context=ids_context,
+            )
+        elif use_compact:
             # Fase A.2: pset_missing genérico COM grounding → template grounded
             # dedicado (vocabulário fechado bSDD + contexto rico do elemento).
-            if issue.issue_type == "pset_missing" and not has_specialized_pset_template(issue):
+            if issue.issue_type == "pset_missing":
                 system, user = build_pset_grounded_prompt(grounded)
             else:
                 system, user = build_compact_prompt(grounded)

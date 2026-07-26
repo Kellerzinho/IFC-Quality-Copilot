@@ -522,3 +522,69 @@ def test_generate_propagates_prompt_hash_and_ids_requirement():
 
     assert result.prompt_hash is not None
     assert result.suggestions[0].ids_requirement_id == "req-123"
+
+
+# ---------------------------------------------------------------------------
+# Grounding nao substitui o texto normativo (templates especializados)
+# ---------------------------------------------------------------------------
+
+
+def _fire_rating_issue() -> Issue:
+    return Issue(
+        element_guid="W" * 22,
+        element_class="IfcWall",
+        element_name="Parede Corta-Fogo 01",
+        issue_type="pset_missing",
+        severity="high",
+        description="FireRating ausente",
+        context={
+            "check_property": "FireRating",
+            "pset_name": "Pset_WallCommon",
+            "material_name": "Bloco ceramico",
+        },
+    )
+
+
+def test_grounding_does_not_replace_normative_template():
+    """Com grounding, a norma do template especializado continua no prompt.
+
+    pset_missing_fire carrega ABNT NBR 14432 e a restricao de formato canonico
+    ("REI 60"). Rotear a issue para o prompt compacto por haver grounding
+    descartava a norma — e, com o bSDD resolvendo para todas as classes, isso
+    passaria a valer para todas as issues especializadas.
+    """
+    client = _make_client('{"opcoes": [{"valor": "REI 60", "justificativa": "bloco", "confianca": "alta"}]}')
+    gen = SuggestionGenerator(client)
+    issue = _fire_rating_issue()
+    bsdd_context = BSDDContext(
+        issue_id=issue.id,
+        element_class="IfcWall",
+        search_query="IfcWall",
+        properties=[BSDDProperty(name="Fire Rating", allowed_values=["REI 60", "REI 90"])],
+        source_status="live",
+    )
+
+    gen.generate(issue, _BUILDING_CTX, bsdd_context=bsdd_context)
+
+    prompt = client.generate.call_args.kwargs["prompt"]
+    assert "NBR 14432" in prompt, "norma do template especializado foi descartada"
+    assert "REI" in prompt
+
+
+def test_grounding_reaches_normative_prompt():
+    """O vocabulário bSDD é injetado no prompt normativo, não perdido."""
+    client = _make_client('{"opcoes": [{"valor": "REI 60", "justificativa": "bloco", "confianca": "alta"}]}')
+    gen = SuggestionGenerator(client)
+    issue = _fire_rating_issue()
+    bsdd_context = BSDDContext(
+        issue_id=issue.id,
+        element_class="IfcWall",
+        search_query="IfcWall",
+        properties=[BSDDProperty(name="Fire Rating", allowed_values=["REI 60", "REI 90"])],
+        source_status="live",
+    )
+
+    gen.generate(issue, _BUILDING_CTX, bsdd_context=bsdd_context)
+
+    prompt = client.generate.call_args.kwargs["prompt"]
+    assert "bSDD" in prompt, "grounding bSDD não chegou ao prompt normativo"

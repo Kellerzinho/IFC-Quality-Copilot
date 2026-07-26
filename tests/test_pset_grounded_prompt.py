@@ -294,8 +294,14 @@ class TestGroundedRouting:
         assert "REQUISITO IDS:" in prompt
         assert "VALORES PERMITIDOS" in prompt
 
-    def test_specialized_pset_with_grounding_keeps_compact_path(self):
-        """pset_missing especializado (FireRating) segue no prompt compacto."""
+    def test_specialized_pset_with_grounding_keeps_normative_template(self):
+        """pset_missing especializado (FireRating) mantém a norma e recebe o grounding.
+
+        Antes esta issue era roteada para o prompt compacto por haver grounding,
+        o que descartava ABNT NBR 14432 e a restrição de formato canônico. Com o
+        bSDD resolvendo para todas as classes, isso passaria a valer para toda
+        issue especializada — a norma é a razão de o template existir.
+        """
         client = _make_client(
             '{"opcoes": [{"suggested_value": "REI 60", "label": "REI 60", '
             '"justification": "Usual em vedacao.", "confidence": "alta"}]}'
@@ -306,8 +312,8 @@ class TestGroundedRouting:
         gen.generate(issue, _BUILDING_CTX, ids_context=_ids_context("FireRating"))
 
         prompt = client.generate.call_args.kwargs["prompt"]
-        assert "REQUISITO IDS:" not in prompt
-        assert "issue_id" in prompt  # caminho compacto
+        assert "NBR 14432" in prompt
+        assert "IDS_CONTEXT:" in prompt
 
     def test_generic_pset_without_grounding_uses_hardened_fallback(self):
         """SEM grounding → template genérico endurecido com abstenção."""

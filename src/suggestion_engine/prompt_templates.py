@@ -35,6 +35,31 @@ _COMPACT_OUTPUT_CONTRACT = (
     " Ordene opcoes por confianca decrescente. Nao trate diferenca de espessura, material ou dimensao como erro de digitacao."
 )
 
+# Nomear ambiente nao e escolher termo de vocabulario: pedir canonical_term /
+# semantic_hint desviava o LLM para pseudo-classes IFC ("IfcKitchen") e zerou a
+# acuracia top-1 da tarefa de nomeacao no benchmark. O contrato abaixo vale em
+# TODOS os caminhos de prompt (legacy, compacto, grounded e router).
+_SPACE_NAME_OUTPUT_CONTRACT = (
+    'Retorne JSON: {"opcoes":[{"issue_id":"...","nome":"...",'
+    '"confidence":"alta|media|baixa","justification":"<=120 chars","review_required":true|false}]}.'
+    " Maximo 3 opcoes, ordenadas por confianca decrescente. Nao retorne URI."
+    " IMPORTANTE: o campo 'nome' deve ser o nome funcional do ambiente em portugues"
+    " (ex.: 'Sala de Estar', 'Banheiro Social'), nunca classe IFC, termo tecnico ou identificador."
+    " Se nao houver evidencia suficiente para nomear, use review_required=true."
+)
+
+
+def output_contract_for(issue_type: str) -> str:
+    """Retorna o contrato de saida do issue_type, unico para todos os prompts.
+
+    Centralizar aqui evita que um caminho de prompt peca um contrato e outro
+    peca outro para a mesma tarefa — divergencia que muda o comportamento do
+    LLM sem aparecer em nenhum teste.
+    """
+    if issue_type == "space_unnamed":
+        return _SPACE_NAME_OUTPUT_CONTRACT
+    return _COMPACT_OUTPUT_CONTRACT
+
 
 def build_compact_prompt(grounded: "GroundedIssueContext") -> tuple[str, str]:
     """Monta prompt mínimo a partir de GroundedIssueContext.
@@ -78,7 +103,7 @@ def build_compact_prompt(grounded: "GroundedIssueContext") -> tuple[str, str]:
         "sejam erro de digitacao; use esses dados para diferenciar elementos."
     )
     lines.append("")
-    lines.append(_COMPACT_OUTPUT_CONTRACT)
+    lines.append(output_contract_for(grounded.issue_type))
     return SYSTEM_PROMPT_COMPACT, "\n".join(lines)
 
 
@@ -182,7 +207,7 @@ def build_pset_grounded_prompt(grounded: "GroundedIssueContext") -> tuple[str, s
         "sejam erro de digitacao; use esses dados para diferenciar elementos."
     )
     lines.append("")
-    lines.append(_COMPACT_OUTPUT_CONTRACT)
+    lines.append(output_contract_for(grounded.issue_type))
     return SYSTEM_PROMPT_COMPACT, "\n".join(lines)
 
 _GROUNDING_INSTRUCTION = (
@@ -896,15 +921,10 @@ def build_prompt(
     if ids_context is not None or bsdd_context is not None:
         system_prompt = f"{SYSTEM_PROMPT} {_GROUNDING_INSTRUCTION}"
     if issue.issue_type == "space_unnamed":
-        # O template de nomeação carrega contrato próprio ({"opcoes":[{"nome":...}]}).
-        # Anexar o contrato genérico (canonical_term/semantic_hint) por cima
-        # desviava o LLM para pseudo-classes IFC ("IfcKitchen") em vez de nomes
-        # funcionais — detectado no benchmark (nomeação com top-1 = 0%).
-        user_prompt = (
-            f"{user_prompt}\n\nIMPORTANTE: o campo 'nome' deve ser o nome funcional "
-            "do ambiente em portugues (ex.: 'Sala de Estar', 'Banheiro Social'), "
-            "nunca classe IFC, termo tecnico ou identificador."
-        )
+        # O template de nomeação já carrega o formato ({"opcoes":[{"nome":...}]});
+        # aqui vale a mesma instrução usada nos caminhos compacto e grounded,
+        # vinda de output_contract_for() para não divergirem entre si.
+        user_prompt = f"{user_prompt}\n\n{output_contract_for(issue.issue_type)}"
     else:
         user_prompt = (
             f"{user_prompt}\n\nCRITERIO DE ENGENHARIA:\n"
