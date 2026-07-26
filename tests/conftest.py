@@ -39,7 +39,6 @@ def isolate_bsdd_cache(tmp_path, monkeypatch):
     """
     monkeypatch.setenv("BSDD_CACHE_PATH", str(tmp_path / "bsdd_cache.json"))
     get_settings.cache_clear()
-    yield
 
 
 @pytest.fixture(autouse=True)
@@ -56,7 +55,7 @@ def block_real_http(monkeypatch, request):
 
     import httpx
 
-    def _recusar(self, request_obj, *args, **kwargs):  # noqa: ANN001
+    def _recusar(self, request_obj, *args, **kwargs):
         raise RuntimeError(
             f"Teste tentou acessar a rede: {request_obj.method} {request_obj.url}. "
             "Use mock/fixture, ou marque o teste com @pytest.mark.network."

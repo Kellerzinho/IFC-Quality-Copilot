@@ -411,3 +411,58 @@ def test_build_prefers_exact_property_name_over_description_match():
     context = builder.build(issue)
 
     assert context.related_properties[0].name == "Thermal Transmittance"
+
+
+def test_build_matches_boolean_property_without_is_prefix():
+    """'IsLoadBearing' (IFC) casa 'Load Bearing' (bSDD).
+
+    Os psets do IFC não são consistentes entre si — Pset_WallCommon usa
+    IsLoadBearing e Pset_SlabCommon usa LoadBearing — enquanto o bSDD tem a
+    propriedade genérica "Load Bearing".
+    """
+    client = _client_that_only_answers(
+        {"IfcWall": [{"name": "IfcWall", "uri": "https://example.org/c/w", "domain": "IFC"}]}
+    )
+    client.get_class_properties.return_value = [
+        BSDDProperty(name="Load Bearing", data_type="Boolean"),
+        BSDDProperty(name="Fire Rating", data_type="String"),
+    ]
+
+    builder = BSDDContextBuilder(client)
+    issue = _make_issue("pset_missing", check_property="IsLoadBearing", pset_name="Pset_WallCommon")
+
+    context = builder.build(issue)
+
+    assert [p.name for p in context.related_properties] == ["Load Bearing"]
+
+
+def test_resolved_class_without_matching_property_is_still_live():
+    """Classe resolvida ao vivo é fonte consultada, mesmo sem a propriedade.
+
+    IfcSpace.Category não existe no bSDD: a classe resolve com URI canônica e a
+    propriedade não. Reportar "empty" nesse caso confunde "não consultei" com
+    "consultei e o dicionário não tem a propriedade".
+    """
+    client = _client_that_only_answers(
+        {"IfcSpace": [{"name": "IfcSpace", "uri": "https://example.org/c/s", "domain": "IFC"}]}
+    )
+    client.get_class_properties.return_value = [
+        BSDDProperty(name="Composition Type", data_type="String"),
+    ]
+
+    builder = BSDDContextBuilder(client)
+    issue = Issue(
+        element_guid="S" * 22,
+        element_class="IfcSpace",
+        element_name="Sala 101",
+        issue_type="pset_missing",
+        severity="high",
+        description="Category ausente",
+        context={"check_property": "Category", "pset_name": "Pset_SpaceCommon"},
+    )
+
+    context = builder.build(issue)
+
+    assert context.class_name == "IfcSpace"
+    assert context.related_properties == []
+    assert context.source_status == "live"

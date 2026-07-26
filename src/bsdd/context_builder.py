@@ -175,8 +175,11 @@ class BSDDContextBuilder:
                 properties=context.related_properties,
                 classifications=context.classification_suggestions,
             )
-            if context.related_properties or context.classification_suggestions:
-                context.source_status = "live"
+            # A classe resolveu ao vivo: a fonte oficial foi consultada e sua URI
+            # canonica entra no grounding. Reportar "empty" aqui confundiria
+            # "nao consultei" com "consultei e o dicionario nao tem a propriedade"
+            # — o caso de IfcSpace.Category, por exemplo.
+            context.source_status = "live"
             return context
 
         context.source_uris = self._collect_source_uris(
@@ -357,6 +360,18 @@ class BSDDContextBuilder:
         if exact:
             return exact
 
+        # Os psets do IFC nao sao consistentes entre si (Pset_WallCommon usa
+        # IsLoadBearing, Pset_SlabCommon usa LoadBearing) e o bSDD guarda a forma
+        # sem o prefixo booleano.
+        sem_prefixo = self._strip_boolean_prefix(normalized_target)
+        if sem_prefixo != normalized_target:
+            por_prefixo = [
+                prop for prop in properties
+                if self._strip_boolean_prefix(self._property_match_key(prop.name)) == sem_prefixo
+            ]
+            if por_prefixo:
+                return por_prefixo
+
         # O bSDD tem variantes ("Thermal Transmittance Summer") cuja descricao
         # menciona a propriedade pedida: so valem quando nao ha match exato.
         by_description = [
@@ -378,6 +393,13 @@ class BSDDContextBuilder:
         ignora espacos, separadores e caixa.
         """
         return re.sub(r"[^a-z0-9]+", "", name.casefold())
+
+    @staticmethod
+    def _strip_boolean_prefix(match_key: str) -> str:
+        """Remove o prefixo ``is`` de propriedades booleanas ja normalizadas."""
+        if match_key.startswith("is") and len(match_key) > 4:
+            return match_key[2:]
+        return match_key
 
     def _target_property_name(self, issue: Issue, ids_context: IDSContext | None) -> str | None:
         if ids_context is not None and ids_context.check_property:
