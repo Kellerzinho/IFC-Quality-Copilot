@@ -107,3 +107,34 @@ def test_compact_prompt_marks_review_required_when_no_candidates():
     g = prepare_llm_grounding(_wall_issue(), ids_context=None, bsdd_context=None)
     _, user = build_compact_prompt(g)
     assert "review_required" in user
+
+
+def test_resolved_bsdd_class_counts_as_grounding_source():
+    """A classe oficial resolvida é grounding, mesmo sem propriedades.
+
+    Há propriedades do IFC que não existem no bSDD (IfcSpace.Category, por
+    exemplo): a classe resolve com URI oficial e a propriedade não. Sem contar a
+    classe, a proveniência do run registra "sem bSDD" para um caso em que o
+    vocabulário oficial da classe foi de fato consultado e usado.
+    """
+    issue = Issue(
+        element_guid="S" * 22,
+        element_class="IfcSpace",
+        element_name="Room 101",
+        issue_type="pset_missing",
+        severity="high",
+        description="Category ausente",
+        context={"check_property": "Category", "pset_name": "Pset_SpaceCommon"},
+    )
+    bsdd_context = BSDDContext(
+        issue_id=issue.id,
+        element_class="IfcSpace",
+        class_name="IfcSpace",
+        class_uri="https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/class/IfcSpace",
+        source_status="live",
+    )
+
+    grounded = prepare_llm_grounding(issue, bsdd_context=bsdd_context)
+
+    assert "bsdd" in grounded.grounding_sources
+    assert grounded.is_grounded is True

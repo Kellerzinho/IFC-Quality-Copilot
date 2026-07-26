@@ -147,7 +147,15 @@ def prepare_llm_grounding(
     official_candidates: list[str] = []
     controlled_aliases: list[str] = []
     if bsdd_context is not None:
-        if bsdd_context.classification_suggestions or bsdd_context.related_properties:
+        # A classe oficial resolvida ja e grounding: existem propriedades do IFC
+        # ausentes do bSDD (IfcSpace.Category), em que a classe resolve com URI
+        # canonica e a propriedade nao. Ignorar isso registraria "sem bSDD" num
+        # caso em que o vocabulario oficial foi consultado e usado.
+        if (
+            bsdd_context.classification_suggestions
+            or bsdd_context.related_properties
+            or bsdd_context.class_uri
+        ):
             sources.append("bsdd")
         # Para issue_type=space_unnamed/system_unclassified: candidatos = nomes de classes
         for cls in bsdd_context.classification_suggestions:
