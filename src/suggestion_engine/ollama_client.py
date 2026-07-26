@@ -19,8 +19,16 @@ class OllamaClient:
     _MIN_NUM_CTX = 2048
     """Piso da janela de contexto. Abaixo disso nao ha ganho de velocidade."""
 
-    _CHARS_PER_TOKEN = 3.0
-    """Estimativa conservadora para pt-BR (o real fica entre 3,5 e 4,5)."""
+    _CHARS_PER_TOKEN = 2.5
+    """Medido nos prompts do projeto: 895 chars -> ~370 tokens (2,4 chars/token).
+
+    Portugues tecnico com nomes IFC tokeniza pior que texto comum; superestimar
+    tokens e o lado seguro, porque a janela nunca fica menor que o necessario.
+    """
+
+    _MARGEM = 1.10
+    """Folga sobre a estimativa. Era 1,25 e empurrava o prompt normativo (~1900
+    chars) para 4096 por poucos tokens — o que tira modelos de 9B da GPU."""
 
     @classmethod
     def _fit_num_ctx(cls, prompt: str, system: str | None, num_predict: int, ceiling: int) -> int:
@@ -47,7 +55,7 @@ class OllamaClient:
         """
         chars = len(prompt) + len(system or "")
         estimado = int(chars / cls._CHARS_PER_TOKEN) + num_predict
-        necessario = int(estimado * 1.25)  # margem para erro da estimativa
+        necessario = int(estimado * cls._MARGEM)
 
         janela = cls._MIN_NUM_CTX
         while janela < necessario and janela < ceiling:

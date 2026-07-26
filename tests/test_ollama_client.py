@@ -338,3 +338,25 @@ def test_num_ctx_never_exceeds_configured_ceiling(monkeypatch):
     client.generate(prompt="palavra " * 100_000, system="sys")
 
     assert captured["options"]["num_ctx"] <= get_settings().ollama_num_ctx
+
+
+def test_num_ctx_stays_at_floor_for_the_projects_largest_common_prompt(monkeypatch):
+    """O prompt normativo com grounding (~1900 chars) não deve exigir 4096.
+
+    Medido: com num_predict 1024 e margem de 25%, esse prompt estourava 2048 por
+    ~12 tokens e forçava a janela para 4096 — o que tira o qwen3.5:9b da GPU
+    (6,3 GB, 88%) e o torna ~29% mais lento. O orçamento real (prompt + resposta)
+    cabe folgadamente em 2048.
+    """
+    client = OllamaClient()
+    captured: dict = {}
+
+    def fake_post(url, json=None, **kwargs):
+        captured["options"] = json["options"]
+        return _make_response({"response": '{"opcoes": []}'})
+
+    monkeypatch.setattr(client._client, "post", fake_post)
+
+    client.generate(prompt="x" * 1900, system="y" * 120)
+
+    assert captured["options"]["num_ctx"] == 2048

@@ -24,7 +24,15 @@ class Settings(BaseSettings):
     ollama_model: str = Field(default="qwen3.5:9b", description="Modelo LLM usado no Ollama")
     ollama_temperature: float = Field(default=0.1, description="Temperatura de geracao")
     ollama_num_ctx: int = Field(default=8192, description="Janela de contexto em tokens")
-    ollama_num_predict: int = Field(default=1024, description="Tokens maximos gerados por resposta")
+    ollama_num_predict: int = Field(
+        default=768,
+        description=(
+            "Tokens maximos gerados por resposta. 768 da folga sobre a resposta mais longa "
+            "observada no benchmark (mistral:7b, media de 557 tok/sugestao) e mantem o "
+            "orcamento prompt+resposta dentro de uma janela de 2048, o que evita transbordo "
+            "de VRAM nos modelos de 9B."
+        ),
+    )
     ollama_keep_alive: str = Field(default="15m", description="Tempo para manter o modelo carregado no Ollama")
     ollama_think: bool = Field(default=False, description="Habilita thinking em modelos compativeis")
     ollama_generate_timeout_seconds: float = Field(default=120.0, description="Timeout de geracao no Ollama")
