@@ -28,6 +28,43 @@ def clear_settings_cache():
     get_settings.cache_clear()
 
 
+@pytest.fixture(autouse=True)
+def isolate_bsdd_cache(tmp_path, monkeypatch):
+    """Aponta o cache bSDD para um arquivo temporário em cada teste.
+
+    O caminho padrão é ``data/cache/bsdd_cache.json``, que está versionado e
+    fixa a condição de grounding do benchmark: um teste que instancie
+    ``BSDDClient()`` sem informar ``cache_path`` reescreve esse artefato e
+    torna a condição experimental irrecuperável pelo histórico.
+    """
+    monkeypatch.setenv("BSDD_CACHE_PATH", str(tmp_path / "bsdd_cache.json"))
+    get_settings.cache_clear()
+    yield
+
+
+@pytest.fixture(autouse=True)
+def block_real_http(monkeypatch, request):
+    """Falha o teste que tentar rede real, em vez de deixá-lo sair para a internet.
+
+    O CLAUDE.md exige que os testes nunca dependam de bSDD ou Ollama ao vivo:
+    respostas de rede variam, a suíte fica lenta e um teste pode passar por
+    acidente de ambiente. Testes que precisem de rede devem declarar o marker
+    ``network`` explicitamente.
+    """
+    if request.node.get_closest_marker("network"):
+        return
+
+    import httpx
+
+    def _recusar(self, request_obj, *args, **kwargs):  # noqa: ANN001
+        raise RuntimeError(
+            f"Teste tentou acessar a rede: {request_obj.method} {request_obj.url}. "
+            "Use mock/fixture, ou marque o teste com @pytest.mark.network."
+        )
+
+    monkeypatch.setattr(httpx.HTTPTransport, "handle_request", _recusar)
+
+
 # ---------------------------------------------------------------------------
 # Utilitários internos
 # ---------------------------------------------------------------------------
