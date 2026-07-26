@@ -493,6 +493,79 @@ def test_apply_correction_rejects_invalid_numeric_value(pipeline):
         pipeline.apply_correction(issue.id, "zero", "edited", "eng")
 
 
+def test_write_correction_uses_check_pset_from_ids_issue(pipeline):
+    """Issue de origem IDS escreve no pset exigido pelo IDS, não no fallback.
+
+    apply_rules (rule_generator) grava 'check_pset' no contexto e não grava
+    'pset_name'. Ler apenas 'pset_name' levava toda issue vinda do IDS ao
+    fallback por classe, cujo default final é Pset_WallCommon.
+    """
+    issue = Issue(
+        element_guid="A" * 22,
+        element_class="IfcStair",
+        issue_type="pset_missing",
+        severity="high",
+        description="FireRating ausente",
+        context={
+            "check_pset": "Pset_ProjectSpecific",
+            "check_property": "FireRating",
+        },
+    )
+
+    with patch.object(
+        pipeline.writer, "preencher_pset", return_value=(None, {})
+    ) as mock_fill:
+        pipeline._write_correction(issue, "REI 90")
+
+    mock_fill.assert_called_once_with("A" * 22, "Pset_ProjectSpecific", {"FireRating": "REI 90"})
+
+
+def test_revert_correction_uses_check_pset_from_ids_issue(pipeline):
+    """A reversão devolve o valor ao mesmo pset em que a correção foi escrita."""
+    issue = Issue(
+        element_guid="A" * 22,
+        element_class="IfcStair",
+        issue_type="pset_missing",
+        severity="high",
+        description="FireRating ausente",
+        context={
+            "check_pset": "Pset_ProjectSpecific",
+            "check_property": "FireRating",
+        },
+    )
+
+    with patch.object(
+        pipeline.writer, "preencher_pset", return_value=(None, {})
+    ) as mock_fill:
+        pipeline._revert_correction(issue, "REI 30")
+
+    mock_fill.assert_called_once_with("A" * 22, "Pset_ProjectSpecific", {"FireRating": "REI 30"})
+
+
+def test_write_correction_still_honors_pset_name_from_diagnostics(pipeline):
+    """Issues do diagnóstico programático continuam usando 'pset_name'."""
+    issue = Issue(
+        element_guid="A" * 22,
+        element_class="IfcWall",
+        issue_type="pset_missing",
+        severity="high",
+        description="ThermalTransmittance ausente",
+        context={
+            "check_property": "ThermalTransmittance",
+            "pset_name": "Pset_WallCommon",
+        },
+    )
+
+    with patch.object(
+        pipeline.writer, "preencher_pset", return_value=(None, {})
+    ) as mock_fill:
+        pipeline._write_correction(issue, 2.5)
+
+    mock_fill.assert_called_once_with(
+        "A" * 22, "Pset_WallCommon", {"ThermalTransmittance": 2.5}
+    )
+
+
 def test_apply_correction_writes_quantity_missing_to_qto(pipeline):
     pipeline.diagnose()
     space = pipeline.ifc_file.by_type("IfcSpace")[0]

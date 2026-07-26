@@ -659,6 +659,19 @@ class QualityPipeline:
             return "Sistema Construtivo"
         return "valor"
 
+    def _resolve_target_pset(self, issue: Issue) -> str:
+        """Resolve em qual Pset a correção de pset_missing deve ser escrita.
+
+        Precedência: o pset exigido pelo IDS (``check_pset``, gravado por
+        apply_rules) vem primeiro, depois o pset apontado pelo diagnóstico
+        programático (``pset_name``) e, por último, o pset padrão da classe.
+        """
+        ctx = issue.context or {}
+        pset = ctx.get("check_pset") or ctx.get("pset_name")
+        if isinstance(pset, str) and pset.strip():
+            return pset.strip()
+        return _PSET_FOR_CLASS.get(issue.element_class, "Pset_WallCommon")
+
     def _write_correction(self, issue: Issue, value: Any) -> Any:
         """Executa a escrita no IFC e retorna o valor anterior."""
         if issue.issue_type == "space_unnamed":
@@ -667,10 +680,7 @@ class QualityPipeline:
 
         if issue.issue_type == "pset_missing":
             prop = issue.context.get("check_property", "")
-            pset = issue.context.get(
-                "pset_name",
-                _PSET_FOR_CLASS.get(issue.element_class, "Pset_WallCommon"),
-            )
+            pset = self._resolve_target_pset(issue)
             _, old_props = self.writer.preencher_pset(
                 issue.element_guid, pset, {prop: value}
             )
@@ -868,10 +878,7 @@ class QualityPipeline:
 
         if issue.issue_type == "pset_missing":
             prop = issue.context.get("check_property", "")
-            pset = issue.context.get(
-                "pset_name",
-                _PSET_FOR_CLASS.get(issue.element_class, "Pset_WallCommon"),
-            )
+            pset = self._resolve_target_pset(issue)
             if old_value is not None:
                 self.writer.preencher_pset(issue.element_guid, pset, {prop: old_value})
             return
