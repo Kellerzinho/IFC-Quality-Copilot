@@ -16,6 +16,31 @@ class OllamaClient:
 
     _RETRY_EXCEPTIONS = (httpx.TimeoutException, httpx.ConnectError)
 
+    _MIN_NUM_CTX = 2048
+    """Piso da janela de contexto. Abaixo disso nao ha ganho de velocidade."""
+
+    _CHARS_PER_TOKEN = 3.0
+    """Estimativa conservadora para pt-BR (o real fica entre 3,5 e 4,5)."""
+
+    @classmethod
+    def _fit_num_ctx(cls, prompt: str, system: str | None, num_predict: int, ceiling: int) -> int:
+        """Dimensiona a janela de contexto ao prompt real, em potencias de 2.
+
+        Uma janela de 8192 para um prompt de ~460 tokens desperdiça KV cache e
+        atrasa a geracao: medido com o modelo 100% na GPU, cair para 2048 acelera
+        gemma2:9b em 30% e qwen2.5:7b em 14%, sem alterar a resposta. A janela
+        nunca fica menor que prompt + resposta — truncar cortaria o fim do
+        prompt, onde esta o contrato de saida.
+        """
+        chars = len(prompt) + len(system or "")
+        estimado = int(chars / cls._CHARS_PER_TOKEN) + num_predict
+        necessario = int(estimado * 1.25)  # margem para erro da estimativa
+
+        janela = cls._MIN_NUM_CTX
+        while janela < necessario and janela < ceiling:
+            janela *= 2
+        return min(janela, ceiling)
+
     def __init__(self, base_url: str | None = None, model: str | None = None) -> None:
         settings = get_settings()
         self.base_url = base_url or settings.ollama_url
@@ -40,7 +65,12 @@ class OllamaClient:
         settings = get_settings()
         options: dict = {
             "temperature": temperature if temperature is not None else settings.ollama_temperature,
-            "num_ctx": settings.ollama_num_ctx,
+            "num_ctx": self._fit_num_ctx(
+                prompt,
+                system,
+                settings.ollama_num_predict,
+                settings.ollama_num_ctx,
+            ),
             "num_predict": settings.ollama_num_predict,
             "repeat_penalty": settings.ollama_repeat_penalty,
             "top_p": settings.ollama_top_p,

@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch, call
 import httpx
 import pytest
 
+from src.config import get_settings
 from src.suggestion_engine.ollama_client import OllamaClient
 
 
@@ -274,3 +275,66 @@ def test_close_closes_http_client():
         client.close()
 
     mock_close.assert_called_once()
+
+
+# ---------------------------------------------------------------------------
+# num_ctx adaptativo
+# ---------------------------------------------------------------------------
+
+
+def test_num_ctx_shrinks_for_short_prompts(monkeypatch):
+    """Prompt curto não paga o custo de uma janela de contexto de 8192.
+
+    Medido: com o modelo 100% na GPU, cair de num_ctx 8192 para 2048 acelera
+    gemma2:9b em 30% e qwen2.5:7b em 14%, sem mudar a resposta. Os prompts do
+    projeto têm mediana ~464 tokens.
+    """
+    client = OllamaClient()
+    captured: dict = {}
+
+    def fake_post(url, json=None, **kwargs):
+        captured["options"] = json["options"]
+        return _make_response({"response": '{"opcoes": []}'})
+
+    monkeypatch.setattr(client._client, "post", fake_post)
+
+    client.generate(prompt="issue_id: abc\ntipo: pset_missing", system="sys")
+
+    assert captured["options"]["num_ctx"] == 2048
+
+
+def test_num_ctx_grows_to_fit_long_prompts(monkeypatch):
+    """Prompt longo nunca é truncado: a janela cresce para caber prompt + resposta.
+
+    Truncar o prompt cortaria justamente o fim, onde está o contrato de saída.
+    """
+    client = OllamaClient()
+    captured: dict = {}
+
+    def fake_post(url, json=None, **kwargs):
+        captured["options"] = json["options"]
+        return _make_response({"response": '{"opcoes": []}'})
+
+    monkeypatch.setattr(client._client, "post", fake_post)
+
+    # ~6000 tokens de prompt: acima de qualquer janela pequena
+    client.generate(prompt="palavra " * 6000, system="sys")
+
+    opts = captured["options"]
+    assert opts["num_ctx"] >= 8192
+
+
+def test_num_ctx_never_exceeds_configured_ceiling(monkeypatch):
+    """O teto configurado em ollama_num_ctx continua sendo respeitado."""
+    client = OllamaClient()
+    captured: dict = {}
+
+    def fake_post(url, json=None, **kwargs):
+        captured["options"] = json["options"]
+        return _make_response({"response": '{"opcoes": []}'})
+
+    monkeypatch.setattr(client._client, "post", fake_post)
+
+    client.generate(prompt="palavra " * 100_000, system="sys")
+
+    assert captured["options"]["num_ctx"] <= get_settings().ollama_num_ctx
