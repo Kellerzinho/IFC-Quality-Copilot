@@ -26,10 +26,23 @@ class OllamaClient:
     def _fit_num_ctx(cls, prompt: str, system: str | None, num_predict: int, ceiling: int) -> int:
         """Dimensiona a janela de contexto ao prompt real, em potencias de 2.
 
-        Uma janela de 8192 para um prompt de ~460 tokens desperdiça KV cache e
-        atrasa a geracao: medido com o modelo 100% na GPU, cair para 2048 acelera
-        gemma2:9b em 30% e qwen2.5:7b em 14%, sem alterar a resposta. A janela
-        nunca fica menor que prompt + resposta — truncar cortaria o fim do
+        O que esta em jogo nao e o custo da atencao, e caber na VRAM: o KV cache
+        da janela entra na pegada do modelo, e quando a soma passa da placa o
+        Ollama move parte das camadas para a CPU. Medido nesta maquina (RTX 4060 8 GB,
+        prompt real do projeto, cada janela medida em bloco isolado com o modelo
+        recarregado):
+
+            qwen2.5:7b  ctx 8192 -> 8,27s (4,64 GB, 100% GPU)
+                        ctx 2048 -> 8,31s (4,31 GB, 100% GPU)   sem diferenca
+            gemma2:9b   ctx 8192 -> 11,30s (6,69 GB, 72% GPU)
+                        ctx 2048 -> 8,00s  (5,50 GB, 100% GPU)  29% mais rapido
+
+        Ou seja: para modelos que ja cabiam, encolher a janela nao muda nada; para
+        os que transbordavam, e a diferenca entre rodar na GPU e rodar em parte na
+        CPU. Como a pegada cresce com o modelo, dimensionar a janela ao prompt e o
+        que mantem a matriz inteira na GPU.
+
+        A janela nunca fica menor que prompt + resposta: truncar cortaria o fim do
         prompt, onde esta o contrato de saida.
         """
         chars = len(prompt) + len(system or "")
