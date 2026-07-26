@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 
 import httpx
+from loguru import logger
 
 from src.bsdd.client import BSDDClient
 from src.models import BSDDClassification, BSDDContext, BSDDProperty, IDSContext, Issue
@@ -113,26 +114,37 @@ class BSDDContextBuilder:
 
     def build(self, issue: Issue, ids_context: IDSContext | None = None) -> BSDDContext:
         """Constroi contexto bSDD baseado no element_class e issue_type da issue."""
-        query = self._build_search_query(issue, ids_context)
+        queries = self._build_search_queries(issue, ids_context)
         domain = self._resolve_domain(issue)
         context = BSDDContext(
             issue_id=issue.id,
             element_class=issue.element_class,
-            raw_query=query,
+            raw_query=queries[0],
             domain_name=domain,
             source_status="empty",
         )
 
-        try:
-            class_results = self._client.search_class(query, domain=domain or "IFC")
-        except (httpx.TimeoutException, httpx.ConnectError, OSError):
-            context.source_status = "offline"
-            return context
-        except Exception:
-            context.source_status = "offline"
-            return context
+        class_results: list[dict[str, str]] = []
+        for query in queries:
+            try:
+                class_results = self._client.search_class(query, domain=domain or "IFC")
+            except (httpx.TimeoutException, httpx.ConnectError, OSError):
+                context.source_status = "offline"
+                return context
+            except Exception:
+                context.source_status = "offline"
+                return context
+            if class_results:
+                context.raw_query = query
+                break
 
         if not class_results:
+            logger.debug(
+                "bSDD sem resultado para {} apos {} consulta(s): {}",
+                issue.element_class,
+                len(queries),
+                queries,
+            )
             return context
 
         primary_match = self._select_primary_match(class_results, issue.element_class)
@@ -156,7 +168,8 @@ class BSDDContextBuilder:
         if primary_match is not None and primary_match.get("uri"):
             properties = self._load_properties(primary_match["uri"])
             properties = self._canonicalize_properties(properties, context.domain_name)
-            context.related_properties = self._filter_properties(issue, ids_context, properties)
+            relevant = self._filter_properties(issue, ids_context, properties)
+            context.related_properties = self._enrich_allowed_values(relevant)
             context.source_uris = self._collect_source_uris(
                 class_uri=context.class_uri,
                 properties=context.related_properties,
@@ -179,9 +192,19 @@ class BSDDContextBuilder:
         """Formata BSDDContext como bloco de texto estruturado para injecao no prompt."""
         return format_bsdd_context(context)
 
-    def _build_search_query(self, issue: Issue, ids_context: IDSContext | None = None) -> str:
-        """Monta uma query estavel e enxuta para o bSDD."""
+    def _build_search_queries(
+        self, issue: Issue, ids_context: IDSContext | None = None
+    ) -> list[str]:
+        """Monta as consultas candidatas ao bSDD, da mais especifica a mais ampla.
+
+        O endpoint de busca do bSDD procura **classes**: consultas do tipo
+        ``"IfcWall FireRating"`` nao casam nada. Por isso a classe IFC (com os
+        alias de classes depreciadas ja resolvidos) e sempre a ultima candidata,
+        garantindo que exista grounding mesmo quando as consultas especificas
+        nao retornam nada.
+        """
         candidates: list[str] = []
+        base_class = self._base_ifc_class(issue.element_class)
 
         specific_query = issue.context.get("classification_query")
         if specific_query:
@@ -193,12 +216,12 @@ class BSDDContextBuilder:
         if issue_type == "pset_missing":
             target_property = self._target_property_name(issue, ids_context)
             if target_property:
-                candidates.append(f"{issue.element_class} {target_property}")
+                candidates.append(f"{base_class} {target_property}")
         elif issue_type in {"system_unclassified", "classification_missing"}:
             system_hint = issue.context.get("system_name") or issue.context.get("classification_system")
             if system_hint:
-                candidates.append(f"{issue.element_class} {system_hint}")
-            candidates.append(f"{issue.element_class} classification")
+                candidates.append(f"{base_class} {system_hint}")
+            candidates.append(f"{base_class} classification")
         elif issue_type == "space_unnamed":
             candidates.extend([
                 "IfcSpace OmniClass Table 13",
@@ -207,21 +230,32 @@ class BSDDContextBuilder:
             ])
 
         if ids_context is not None and ids_context.check_property:
-            candidates.append(f"{issue.element_class} {ids_context.check_property}")
+            candidates.append(f"{base_class} {ids_context.check_property}")
 
-        if issue.element_name:
-            normalized_name = self._normalize_search_text(issue.element_name)
-            if normalized_name:
-                candidates.append(normalized_name)
+        # O nome do elemento no modelo (familia Revit, em portugues) NAO entra
+        # aqui: a busca textual do bSDD casa qualquer coisa e devolve classe
+        # oficial errada — "Room" casa IfcCooledBeamPASSIVE e "Sala" casa
+        # IfcEvaporativeCooler..., verificado ao vivo. Grounding falso e pior
+        # que ausencia de grounding.
+        candidates.append(base_class)
 
-        candidates.append(issue.element_class)
-
+        ordered: list[str] = []
         for candidate in candidates:
-            cleaned = self._normalize_search_text(candidate)
-            if cleaned:
-                return cleaned
+            cleaned = self._normalize_search_text(candidate) or candidate.strip()
+            if cleaned and cleaned not in ordered:
+                ordered.append(cleaned)
+        return ordered or [base_class]
 
-        return issue.element_class
+    def _base_ifc_class(self, element_class: str) -> str:
+        """Resolve alias de classes IFC ausentes no dicionario oficial.
+
+        ``IfcWallStandardCase`` e afins foram depreciados no IFC4 e nao existem
+        no dicionario IFC 4.3 do bSDD — buscar por eles retorna vazio.
+        """
+        cleaned = (element_class or "").strip()
+        if cleaned.endswith("StandardCase"):
+            return cleaned[: -len("StandardCase")]
+        return cleaned
 
     def _normalize_search_text(self, text: str) -> str:
         """Remove ruido de nomes de familia/tipo vindos do modelo IFC."""
@@ -248,21 +282,45 @@ class BSDDContextBuilder:
         class_results: list[dict[str, str]],
         element_class: str,
     ) -> dict[str, str] | None:
-        normalized_class = element_class.strip().lower()
+        """Escolhe a classe bSDD que corresponde a classe IFC do elemento.
+
+        A busca do bSDD e textual e devolve candidatos por relevancia, nao por
+        equivalencia: aceitar o primeiro resultado cegamente injeta vocabulario
+        oficial de outra entidade no prompt. So vale como classe primaria quem
+        casa com a classe IFC (com o prefixo ``Ifc`` opcional).
+        """
+        accepted = {
+            self._class_match_key(element_class),
+            self._class_match_key(self._base_ifc_class(element_class)),
+        }
         for item in class_results:
-            name = str(item.get("name") or "").strip().lower()
-            if name == normalized_class:
+            if self._class_match_key(str(item.get("name") or "")) in accepted:
                 return item
-        return class_results[0] if class_results else None
+        return None
+
+    @staticmethod
+    def _class_match_key(name: str) -> str:
+        """Normaliza nome de classe para comparacao: sem prefixo Ifc, sem caixa."""
+        cleaned = name.strip().casefold()
+        if cleaned.startswith("ifc"):
+            cleaned = cleaned[3:]
+        return cleaned
 
     def _load_properties(self, class_uri: str) -> list[BSDDProperty]:
+        """Busca as propriedades da classe, sem enriquecer valores permitidos."""
         try:
-            properties = self._client.get_class_properties(class_uri)
+            return self._client.get_class_properties(class_uri)
         except (httpx.TimeoutException, httpx.ConnectError, OSError):
             return []
         except Exception:
             return []
 
+    def _enrich_allowed_values(self, properties: list[BSDDProperty]) -> list[BSDDProperty]:
+        """Completa os valores permitidos das propriedades que ficam no contexto.
+
+        Roda depois do filtro: enriquecer antes custaria uma chamada HTTP por
+        propriedade da classe (233 no caso de IfcWall) para descartar quase todas.
+        """
         enriched: list[BSDDProperty] = []
         for prop in properties:
             if prop.allowed_values or not prop.uri:
@@ -291,13 +349,35 @@ class BSDDContextBuilder:
         if not target_property:
             return properties
 
-        normalized_target = target_property.lower()
-        filtered = [
+        normalized_target = self._property_match_key(target_property)
+        exact = [
             prop for prop in properties
-            if prop.name.lower() == normalized_target
-            or normalized_target in (prop.description or "").lower()
+            if self._property_match_key(prop.name) == normalized_target
         ]
-        return filtered or properties
+        if exact:
+            return exact
+
+        # O bSDD tem variantes ("Thermal Transmittance Summer") cuja descricao
+        # menciona a propriedade pedida: so valem quando nao ha match exato.
+        by_description = [
+            prop for prop in properties
+            if target_property.lower() in (prop.description or "").lower()
+        ]
+        if by_description:
+            return by_description
+        # Sem correspondencia, devolver a lista inteira encheria o prompt com
+        # centenas de propriedades irrelevantes (IfcWall tem 233 no bSDD).
+        return []
+
+    @staticmethod
+    def _property_match_key(name: str) -> str:
+        """Normaliza nome de propriedade para comparacao entre bSDD e IFC.
+
+        O bSDD nomeia propriedades em forma humana ("Fire Rating", "Global ID"),
+        enquanto o IDS e o IFC usam PascalCase ("FireRating"). A comparacao
+        ignora espacos, separadores e caixa.
+        """
+        return re.sub(r"[^a-z0-9]+", "", name.casefold())
 
     def _target_property_name(self, issue: Issue, ids_context: IDSContext | None) -> str | None:
         if ids_context is not None and ids_context.check_property:
@@ -319,10 +399,12 @@ class BSDDContextBuilder:
 
         relevant_results = class_results
         if issue.issue_type == "space_unnamed":
+            # Sem fallback para class_results: sugerir uma classe qualquer que
+            # nao seja classificacao de espaco injeta termo oficial irrelevante.
             relevant_results = [
                 item for item in class_results
                 if self._is_space_classification(item)
-            ] or class_results
+            ]
             if primary_match is not None:
                 relevant_results = [
                     item for item in relevant_results
