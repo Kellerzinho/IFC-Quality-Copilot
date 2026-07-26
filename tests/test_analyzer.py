@@ -339,6 +339,7 @@ def test_context_always_has_required_keys(ifc_with_spaces):
 
 
 from src.ifc_analyzer.analyzer import IFCAnalyzer
+from src.ifc_analyzer.pset_diagnostics import diagnose_psets
 from src.models import DiagnosticReport, IFCElement, Issue, ReadinessProfile
 
 
@@ -371,7 +372,12 @@ def test_analyzer_analyze_returns_report(complete_test_model, tmp_path):
 
 
 def test_analyzer_deduplicates_issues(complete_test_model, tmp_path):
-    """analyze() não deve retornar issues duplicados com mesmo (guid, issue_type)."""
+    """analyze() não deve retornar issues com Issue.id repetido.
+
+    A identidade de um issue é (guid, issue_type, pset, propriedade) — a mesma
+    do Issue.id determinístico. Deduplicar por (guid, issue_type) descartaria
+    lacunas legítimas de propriedades diferentes no mesmo elemento.
+    """
     ifc_file, _ = complete_test_model
     tmp_ifc = tmp_path / "model.ifc"
     ifc_file.write(str(tmp_ifc))
@@ -379,8 +385,55 @@ def test_analyzer_deduplicates_issues(complete_test_model, tmp_path):
     analyzer = IFCAnalyzer(str(tmp_ifc))
     report = analyzer.analyze()
 
-    keys = [(i.element_guid, i.issue_type) for i in report.issues]
-    assert len(keys) == len(set(keys))
+    ids = [i.id for i in report.issues]
+    assert len(ids) == len(set(ids))
+
+
+def test_analyze_preserves_all_missing_properties_of_same_element(
+    ifc_with_walls, tmp_path
+):
+    """Cada propriedade obrigatória ausente sobrevive ao analyze().
+
+    Wall 3 não tem Pset_WallCommon, então todas as propriedades exigidas para
+    IfcWall estão ausentes e cada uma é um issue distinto. A dedup do analyzer
+    não pode colapsá-las em uma só.
+    """
+    ifc_file, metadata = ifc_with_walls
+    tmp_ifc = tmp_path / "walls.ifc"
+    ifc_file.write(str(tmp_ifc))
+
+    emitted = diagnose_psets(ifc_file)
+    expected_props = {
+        i.context.get("check_property")
+        for i in emitted
+        if i.element_guid == metadata["wall3_guid"] and i.issue_type == "pset_missing"
+    }
+    assert len(expected_props) > 1, "fixture precisa de 2+ propriedades ausentes"
+
+    analyzer = IFCAnalyzer(str(tmp_ifc))
+    report = analyzer.analyze()
+
+    kept_props = {
+        i.context.get("check_property")
+        for i in report.issues
+        if i.element_guid == metadata["wall3_guid"] and i.issue_type == "pset_missing"
+    }
+    assert kept_props == expected_props
+
+
+def test_analyze_still_removes_exact_duplicates(ifc_with_walls, tmp_path):
+    """Issues verdadeiramente idênticos (mesmo Issue.id) continuam deduplicados."""
+    ifc_file, _ = ifc_with_walls
+    tmp_ifc = tmp_path / "walls.ifc"
+    ifc_file.write(str(tmp_ifc))
+
+    analyzer = IFCAnalyzer(str(tmp_ifc))
+    issues = diagnose_psets(analyzer.ifc_file)
+    duplicated = [*issues, *issues]
+
+    deduped = analyzer._deduplicate_issues(duplicated)
+
+    assert len(deduped) == len({i.id for i in issues})
 
 
 def test_analyzer_get_element_returns_data(ifc_with_spaces, tmp_path):

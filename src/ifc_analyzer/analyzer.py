@@ -440,11 +440,20 @@ class IFCAnalyzer:
         return len(self.ifc_file.by_type("IfcProduct"))
 
     def _deduplicate_issues(self, issues: list[Issue]) -> list[Issue]:
-        """Remove duplicatas (mesmo guid + mesmo issue_type)."""
-        seen: set[tuple[str, str]] = set()
+        """Remove duplicatas exatas, preservando lacunas distintas do mesmo elemento.
+
+        A identidade de um issue é (guid, issue_type, pset, propriedade) — a mesma
+        que compõe o Issue.id determinístico. Deduplicar apenas por
+        (guid, issue_type) descartaria, por exemplo, a falta de FireRating numa
+        parede que também não tem ThermalTransmittance.
+        """
+        seen: set[tuple[str, str, str, str]] = set()
         result: list[Issue] = []
         for issue in issues:
-            key = (issue.element_guid, issue.issue_type)
+            ctx = issue.context or {}
+            pset = str(ctx.get("check_pset") or ctx.get("pset_name") or "")
+            prop = str(ctx.get("check_property") or ctx.get("property_name") or "")
+            key = (issue.element_guid, issue.issue_type, pset, prop)
             if key not in seen:
                 seen.add(key)
                 result.append(issue)
