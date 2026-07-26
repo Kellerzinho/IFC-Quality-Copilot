@@ -227,6 +227,7 @@ class ExperimentRunner:
         max_issues: int | None = None,
         sample_seed: int = 42,
         issue_types: list[str] | None = None,
+        reuse_equivalent: bool = False,
     ) -> ExperimentResult:
         """Executa uma réplica e retorna o ExperimentResult agregado.
 
@@ -242,6 +243,12 @@ class ExperimentRunner:
                 tipos (ex.: ``["space_unnamed"]`` no dataset mascarado, cuja
                 única tarefa é nomeação — evita regerar as milhares de issues
                 de Pset/sistemas já cobertas pelo dataset principal).
+            reuse_equivalent: issues estruturalmente equivalentes reaproveitam a
+                sugestão da primária em vez de repetir a chamada ao LLM. No modelo
+                do experimento, 4720 issues correspondem a 1069 estímulos
+                distintos, então o tempo cai ~77%. Registrado no metadata do run:
+                as métricas de qualidade não mudam (o estímulo é idêntico), mas a
+                telemetria de latência passa a medir estímulos, não issues.
         """
         ground_truth = GroundTruth.from_yaml(ground_truth_path)
         evaluator = Evaluator()
@@ -282,7 +289,7 @@ class ExperimentRunner:
                             total_diagnosed,
                             sample_seed,
                         )
-                    pipeline.generate_suggestions()
+                    pipeline.generate_suggestions(reuse_equivalent=reuse_equivalent)
 
                     # 1) Avaliação vs ground truth (antes de qualquer mutação do modelo)
                     evaluation = evaluator.evaluate(
@@ -330,6 +337,8 @@ class ExperimentRunner:
                         prompt_version=PROMPT_VERSION,
                         repo_commit=_repo_commit(),
                         cache_enabled=cache_enabled,
+                        reuse_equivalent=reuse_equivalent,
+                        bsdd_cache_sha256=sha256_of(settings.bsdd_cache_path),
                         replica_index=replica_index,
                         timestamp=timestamp,
                     )

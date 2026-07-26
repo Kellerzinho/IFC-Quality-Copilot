@@ -72,6 +72,10 @@ class RunMetadata(BaseModel):
     prompt_version: str = ""
     repo_commit: str | None = None
     cache_enabled: bool = False
+    reuse_equivalent: bool = False
+    """Issues equivalentes reaproveitaram a sugestão da primária (ver runner)."""
+    bsdd_cache_sha256: str | None = None
+    """Hash do cache bSDD: identifica a condição de grounding do run."""
     replica_index: int = 0
     timestamp: str | None = None
     """ISO-8601; carimbado externamente (Date.now indisponível no harness)."""

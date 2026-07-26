@@ -93,15 +93,49 @@ def _stage_done(output_root: Path, model: str, replica: int) -> bool:
     return (output_root / _sanitize(model) / f"run_{replica}.json").is_file()
 
 
+def _unload_model(model: str) -> None:
+    """Descarrega o modelo da VRAM antes de trocar de estágio.
+
+    A GPU do experimento tem 8 GB e os modelos da matriz ocupam 4–6 GB cada.
+    Com ``keep_alive`` de 15 min, o modelo anterior continua residente quando o
+    proximo carrega: os dois nao cabem juntos e o entrante sofre offload parcial
+    para a CPU, que e ordens de magnitude mais lento. Descarregar e barato — o
+    proximo estagio dura horas.
+    """
+    import httpx
+
+    from src.config import get_settings
+
+    try:
+        httpx.post(
+            f"{get_settings().ollama_url}/api/generate",
+            json={"model": model, "prompt": "", "keep_alive": 0},
+            timeout=60,
+        )
+        logger.info("Modelo {} descarregado da VRAM", model)
+    except Exception as exc:
+        logger.warning("Falha ao descarregar {} (segue adiante): {}", model, exc)
+
+
 def main(argv: list[str] | None = None) -> int:
     """Roda a fila completa do benchmark; retorna 1 se algum estágio falhou."""
     parser = argparse.ArgumentParser(prog="python scripts/run_benchmark.py")
-    parser.add_argument("--replicas", type=int, default=3, help="Réplicas por estágio (default 3)")
+    parser.add_argument("--replicas", type=int, default=1, help="Réplicas por estágio (default 1)")
     parser.add_argument("--only-model", default=None, help="Restringe a fila a um único modelo")
     parser.add_argument(
         "--results-root",
         default=None,
         help="Raiz dos resultados (default: src/experiment/results/<data>-benchmark)",
+    )
+    parser.add_argument(
+        "--reuse-equivalent",
+        action="store_true",
+        help=(
+            "Issues estruturalmente equivalentes reaproveitam a sugestão da primária "
+            "em vez de repetir a chamada ao LLM (no modelo do experimento, 4720 issues "
+            "correspondem a 1069 estímulos distintos: ~77%% menos chamadas). Fica "
+            "registrado em reuse_equivalent no metadata do run."
+        ),
     )
     args = parser.parse_args(argv)
 
@@ -140,8 +174,12 @@ def main(argv: list[str] | None = None) -> int:
             args.replicas,
             results_root,
         )
+        modelo_residente: str | None = None
         for replica in range(args.replicas):
             for model in models:
+                if modelo_residente is not None and modelo_residente != model:
+                    _unload_model(modelo_residente)
+                modelo_residente = model
                 for dataset in DATASETS:
                     stage = f"{dataset['key']}/{model}/run_{replica}"
                     if STOP_FILE.exists():
@@ -177,6 +215,7 @@ def main(argv: list[str] | None = None) -> int:
                             replica_index=replica,
                             timestamp=launch_stamp,
                             issue_types=dataset["issue_types"],
+                            reuse_equivalent=args.reuse_equivalent,
                         )
                         ExperimentRunner._export(result, str(output_root))
                         completed += 1
