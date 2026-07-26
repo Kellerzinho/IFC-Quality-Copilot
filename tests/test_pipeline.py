@@ -1,7 +1,7 @@
 """Testes para QualityPipeline — orquestração principal do sistema."""
 
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import ifcopenshell
 import ifcopenshell.api
@@ -1131,3 +1131,125 @@ def test_backward_compat_generate_suggestions(pipeline):
     assert len(pairs) == len(pipeline.report.issues)
     assert all(hasattr(p[0], "issue_type") for p in pairs)
     assert all(hasattr(p[1], "suggestions") for p in pairs)
+
+
+def test_bsdd_context_is_built_once_per_structural_combination(pipeline):
+    """O contexto bSDD é reaproveitado entre issues equivalentes.
+
+    O contexto depende de (classe, issue_type, propriedade) — não do GUID. Num
+    modelo real são 4720 issues para 22 combinações distintas: construir por
+    issue custava 30x mais que memoizar, além de revalidar o payload no Pydantic
+    a cada vez.
+    """
+    issues = [
+        Issue(
+            element_guid=f"{i:022d}",
+            element_class="IfcWall",
+            issue_type="pset_missing",
+            severity="high",
+            description="FireRating ausente",
+            context={"check_property": "FireRating", "pset_name": "Pset_WallCommon"},
+        )
+        for i in range(5)
+    ]
+
+    fake_builder = MagicMock()
+    fake_builder.build.return_value = BSDDContext(
+        element_class="IfcWall", class_name="IfcWall", source_status="live"
+    )
+    pipeline.bsdd_builder = fake_builder
+
+    for issue in issues:
+        pipeline._issue_bsdd_context(issue)
+
+    assert fake_builder.build.call_count == 1
+    # cada issue continua com sua entrada no mapa, que outros consumidores usam
+    assert all(issue.id in pipeline.bsdd_context_map for issue in issues)
+
+
+def test_bsdd_context_not_shared_across_different_properties(pipeline):
+    """Propriedades diferentes no mesmo elemento têm contextos próprios."""
+    base = {"pset_name": "Pset_WallCommon"}
+    issue_fire = Issue(
+        element_guid="A" * 22,
+        element_class="IfcWall",
+        issue_type="pset_missing",
+        severity="high",
+        description="FireRating ausente",
+        context={**base, "check_property": "FireRating"},
+    )
+    issue_thermal = Issue(
+        element_guid="A" * 22,
+        element_class="IfcWall",
+        issue_type="pset_missing",
+        severity="high",
+        description="ThermalTransmittance ausente",
+        context={**base, "check_property": "ThermalTransmittance"},
+    )
+
+    fake_builder = MagicMock()
+    fake_builder.build.return_value = BSDDContext(
+        element_class="IfcWall", class_name="IfcWall", source_status="live"
+    )
+    pipeline.bsdd_builder = fake_builder
+
+    pipeline._issue_bsdd_context(issue_fire)
+    pipeline._issue_bsdd_context(issue_thermal)
+
+    assert fake_builder.build.call_count == 2
+
+
+def test_generate_suggestions_can_reuse_equivalent_issues(pipeline):
+    """generate_suggestions(reuse_equivalent=True) passa o reuse_map ao gerador.
+
+    O caminho do benchmark não aproveitava o reuso que a interface já usa. No
+    modelo do experimento, 4720 issues colapsam em 1069 assinaturas distintas:
+    sem reuso, 77% das chamadas ao LLM repetem exatamente o mesmo estímulo.
+    """
+    report = pipeline.diagnose()
+    # Três paredes com a mesma lacuna e o mesmo contexto: um único estímulo.
+    equivalentes = [
+        Issue(
+            element_guid=f"{i:022d}",
+            element_class="IfcWall",
+            issue_type="pset_missing",
+            severity="high",
+            description="FireRating ausente",
+            context={
+                "check_property": "FireRating",
+                "pset_name": "Pset_WallCommon",
+                "material_name": "Bloco ceramico",
+                "thickness_m": 0.14,
+            },
+        )
+        for i in range(3)
+    ]
+    report.issues = equivalentes
+    capturado: dict = {}
+
+    def fake_batch(issues, ctx, on_progress=None, reuse_map=None, **kwargs):
+        capturado["reuse_map"] = reuse_map
+        return [SuggestionSet(issue_id=i.id, suggestions=[]) for i in issues]
+
+    pipeline.suggestion_gen.generate_batch = fake_batch
+
+    pipeline.generate_suggestions(reuse_equivalent=True)
+
+    # duas das três reaproveitam a sugestão da primária
+    assert len(capturado["reuse_map"]) == 2
+
+
+def test_generate_suggestions_without_reuse_keeps_one_call_per_issue(pipeline):
+    """Por padrão nada é reaproveitado: cada issue mantém sua própria chamada."""
+    pipeline.diagnose()
+    capturado: dict = {}
+
+    def fake_batch(issues, ctx, on_progress=None, reuse_map=None, **kwargs):
+        capturado["reuse_map"] = reuse_map
+        return [SuggestionSet(issue_id=i.id, suggestions=[]) for i in issues]
+
+    pipeline.suggestion_gen.generate_batch = fake_batch
+
+    pipeline.generate_suggestions()
+
+    assert not capturado["reuse_map"]

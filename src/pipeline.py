@@ -133,6 +133,9 @@ class QualityPipeline:
         self.worker: SuggestionWorker | None = None
         self.ids_context_map: dict[str, IDSContext] = {}
         self.bsdd_context_map: dict[str, BSDDContext] = {}
+        # Memoizacao por (classe, issue_type, propriedade): e disso que a consulta
+        # ao bSDD depende, nao do GUID da issue.
+        self._bsdd_context_by_key: dict[tuple[str, str, str], BSDDContext] = {}
         self._validation_results: dict[str, ValidationResult] = {}
         self.applied_entries: dict[str, AuditEntry] = {}
 
@@ -223,20 +226,42 @@ class QualityPipeline:
     # ------------------------------------------------------------------
 
     def generate_suggestions(
-        self, on_progress: Callable[[int, int], None] | None = None
+        self,
+        on_progress: Callable[[int, int], None] | None = None,
+        reuse_equivalent: bool = False,
     ) -> list[tuple[Issue, SuggestionSet]]:
         """LLM com grounding bSDD/IDS para todas as issues do relatório.
 
         Retorna lista de (Issue, SuggestionSet) na mesma ordem das issues
         do DiagnosticReport.
+
+        Args:
+            on_progress: callback de progresso (processadas, total).
+            reuse_equivalent: quando True, issues estruturalmente equivalentes
+                copiam a sugestão da primária em vez de repetir a chamada ao LLM
+                — o mesmo mecanismo que a interface já usa em lote. Reduz muito o
+                tempo em modelos grandes (num modelo real, 4720 issues colapsam em
+                1069 estímulos distintos), ao custo de o ``n`` de chamadas deixar
+                de coincidir com o ``n`` de issues na telemetria.
         """
         if self.report is None:
             raise RuntimeError("Chame diagnose() antes de generate_suggestions()")
 
         self._prepare_grounding_contexts(self.report.issues)
+        reuse_map: dict[str, str] | None = None
+        if reuse_equivalent:
+            reuse_map = self.deduplicator.build_reuse_map(list(self.report.issues))
+            if reuse_map:
+                logger.info(
+                    "Reuso de equivalentes: {} de {} issues reaproveitam sugestao ({} grupos)",
+                    len(reuse_map),
+                    len(self.report.issues),
+                    len(set(reuse_map.values())),
+                )
         llm_sets = self._generate_batch_with_compat(
             list(self.report.issues),
             on_progress=on_progress,
+            reuse_map=reuse_map,
         )
         combined: list[tuple[Issue, SuggestionSet]] = list(zip(self.report.issues, llm_sets))
         issue_order = {issue.id: idx for idx, issue in enumerate(self.report.issues)}
@@ -741,6 +766,7 @@ class QualityPipeline:
         self,
         issues: list[Issue],
         on_progress: Callable[[int, int], None] | None = None,
+        reuse_map: dict[str, str] | None = None,
     ) -> list[SuggestionSet]:
         """Chama generate_batch aceitando implementações legadas/mocadas."""
         for issue in issues:
@@ -752,6 +778,8 @@ class QualityPipeline:
             kwargs["ids_context_map"] = self.ids_context_map
         if "bsdd_context_map" in params:
             kwargs["bsdd_context_map"] = self.bsdd_context_map
+        if reuse_map and "reuse_map" in params:
+            kwargs["reuse_map"] = reuse_map
         return self.suggestion_gen.generate_batch(issues, self.building_context, **kwargs)
 
     def _generate_with_grounding(
@@ -838,20 +866,48 @@ class QualityPipeline:
             context.issue_id = issue.id
         return context
 
+    @staticmethod
+    def _bsdd_context_key(issue: Issue) -> tuple[str, str, str]:
+        """Chave estrutural do contexto bSDD: o que a consulta de fato depende."""
+        ctx = issue.context or {}
+        prop = str(
+            ctx.get("check_property")
+            or ctx.get("property_name")
+            or ctx.get("classification_query")
+            or ""
+        )
+        return (issue.element_class, issue.issue_type, prop)
+
     def _issue_bsdd_context(
         self,
         issue: Issue,
         ids_context: IDSContext | None = None,
     ) -> BSDDContext | None:
-        """Resolve BSDDContext sob demanda e com cache por issue."""
+        """Resolve BSDDContext sob demanda, memoizando por combinacao estrutural.
+
+        A consulta ao bSDD depende de (classe, issue_type, propriedade) e nao do
+        GUID: num modelo real sao milhares de issues para pouco mais de vinte
+        combinacoes. Cachear apenas por ``issue.id`` reconstruia — e revalidava no
+        Pydantic — o mesmo contexto uma vez por issue.
+        """
         if self.bsdd_builder is None:
             return None
         if issue.id in self.bsdd_context_map:
             return self.bsdd_context_map[issue.id]
 
+        key = self._bsdd_context_key(issue)
+        cached = self._bsdd_context_by_key.get(key)
+        if cached is not None:
+            # issue_id identifica a issue que originou a consulta; a copia mantem
+            # o mapa por issue coerente para os consumidores a jusante.
+            context = cached.model_copy(update={"issue_id": issue.id})
+            self.bsdd_context_map[issue.id] = context
+            return context
+
         context = self.bsdd_builder.build(issue, ids_context)
         if context is not None:
             self.bsdd_context_map[issue.id] = context
+            self._bsdd_context_by_key[key] = context
         return context
 
     def _resolve_grounding_for_issue(
