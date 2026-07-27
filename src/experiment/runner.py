@@ -44,6 +44,7 @@ from src.experiment.metrics import (
     aggregate_timing,
     calculate_metrics,
 )
+from src.experiment.per_issue import build_issue_outcomes, write_outcomes_jsonl
 from src.experiment.reviewer import simulate_review
 from src.models import ReadinessProfile
 from src.pipeline import QualityPipeline
@@ -296,6 +297,12 @@ class ExperimentRunner:
                         pipeline.issues_suggestions, ground_truth, profile=profile
                     )
 
+                    # 1b) Resultado por issue (P1): o agregado sozinho esconde qual
+                    # estrato acerta e impede teste pareado/analise de erro depois.
+                    outcomes = build_issue_outcomes(
+                        pipeline.issues_suggestions, ground_truth, evaluator
+                    )
+
                     # 2) Telemetria de estabilidade/eficiência (F12)
                     metrics_list = [
                         ss.metrics
@@ -351,6 +358,7 @@ class ExperimentRunner:
                         timing=timing,
                         decisions=decisions,
                         issue_counts=issue_counts,
+                        outcomes=outcomes,
                     )
                 finally:
                     pipeline.close()
@@ -405,15 +413,21 @@ class ExperimentRunner:
 
     @staticmethod
     def _export(result: ExperimentResult, output_dir: str) -> str:
-        """Exporta um ExperimentResult como JSON versionável e retorna o caminho."""
+        """Exporta o JSON agregado + o JSONL por issue; retorna o caminho do JSON."""
         model_dir = Path(output_dir) / _sanitize(result.metadata.model_name)
         model_dir.mkdir(parents=True, exist_ok=True)
-        out_path = model_dir / f"run_{result.metadata.replica_index}.json"
+        replica = result.metadata.replica_index
+        out_path = model_dir / f"run_{replica}.json"
         out_path.write_text(
             json.dumps(result.model_dump(), ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
         logger.info("ExperimentResult exportado: {}", out_path)
+
+        # Resultado por issue: base do breakdown por estrato e do teste pareado.
+        jsonl_path = model_dir / f"run_{replica}_issues.jsonl"
+        write_outcomes_jsonl(result.outcomes, jsonl_path)
+        logger.info("Resultados por issue exportados: {} ({} itens)", jsonl_path, len(result.outcomes))
         return str(out_path)
 
 

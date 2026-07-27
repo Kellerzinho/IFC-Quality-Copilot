@@ -160,6 +160,9 @@ class ExperimentResult(BaseModel):
     timing: TimingMetrics
     decisions: dict[str, Any] = Field(default_factory=dict)
     issue_counts: dict[str, Any] = Field(default_factory=dict)
+    outcomes: list[Any] = Field(default_factory=list, exclude=True)
+    """Resultados por issue (``IssueOutcome``); exportados em JSONL à parte, não no JSON
+    agregado — mantê-los fora do ``model_dump`` preserva o formato do run_N.json."""
 
 
 # ---------------------------------------------------------------------------
