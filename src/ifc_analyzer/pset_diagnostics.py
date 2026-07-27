@@ -6,6 +6,7 @@ import ifcopenshell
 import ifcopenshell.util.element
 from loguru import logger
 
+from src.ifc_analyzer.material_reader import read_material_layers
 from src.models import Issue
 from src.ifc_analyzer.space_diagnostics import (
     _extract_contained_elements,
@@ -131,35 +132,24 @@ def _extract_element_material_context(
     element: ifcopenshell.entity_instance,
     ifc_file: ifcopenshell.file,
 ) -> dict[str, Any]:
-    """Extrai material, espessura total e camadas de um elemento IFC."""
-    context: dict[str, Any] = {
-        "material_name": None,
-        "thickness_m": None,
-        "layers": [],
+    """Extrai material, espessura total e camadas de um elemento IFC.
+
+    Delega ao leitor unificado, que entende também ``IfcMaterialConstituentSet``
+    (formato do Revit) e busca a espessura no conjunto de quantidades. Sem isso,
+    as 606 issues de ``ThermalTransmittance`` do prédio chegavam ao LLM com
+    ``thickness_m=None`` — e não há como estimar U sem espessura.
+    """
+    leitura = read_material_layers(element)
+    return {
+        "material_name": leitura.material_name,
+        "thickness_m": leitura.total_thickness_m,
+        # A chave da camada aqui é "material" (não "name"): é o que os templates
+        # de prompt e a assinatura de cache já consomem.
+        "layers": [
+            {"material": camada["name"], "thickness_m": camada["thickness_m"]}
+            for camada in leitura.layers
+        ],
     }
-    try:
-        material = ifcopenshell.util.element.get_material(element)
-        if material is None:
-            return context
-
-        if material.is_a("IfcMaterialLayerSetUsage"):
-            layer_set = material.ForLayerSet
-            _fill_from_layer_set(layer_set, context)
-
-        elif material.is_a("IfcMaterialLayerSet"):
-            _fill_from_layer_set(material, context)
-
-        elif material.is_a("IfcMaterial"):
-            context["material_name"] = material.Name
-
-        else:
-            context["material_name"] = getattr(material, "Name", None)
-
-    except Exception as exc:
-        logger.warning(
-            f"Erro ao extrair material do elemento {element.GlobalId}: {exc}"
-        )
-    return context
 
 
 def _fill_from_layer_set(

@@ -6,6 +6,7 @@ import ifcopenshell
 import ifcopenshell.util.element
 from loguru import logger
 
+from src.ifc_analyzer.material_reader import read_material_layers
 from src.models import Issue
 
 # ---------------------------------------------------------------------------
@@ -47,22 +48,13 @@ _CUSTOM_MATERIAL_KEYWORDS: tuple[str, ...] = (
 def _extract_material_layers(
     element: ifcopenshell.entity_instance,
 ) -> list[dict[str, Any]]:
-    """Retorna lista de {name, thickness_m} para as camadas de material do elemento."""
-    try:
-        material = ifcopenshell.util.element.get_material(element)
-        if material is None:
-            return []
+    """Retorna lista de {name, thickness_m} para as camadas de material do elemento.
 
-        if material.is_a("IfcMaterialLayerSetUsage"):
-            return _layers_from_set(material.ForLayerSet)
-        if material.is_a("IfcMaterialLayerSet"):
-            return _layers_from_set(material)
-        if material.is_a("IfcMaterial"):
-            return [{"name": material.Name, "thickness_m": None}]
-
-    except Exception as exc:
-        logger.warning(f"Erro ao extrair camadas de material de {element.GlobalId}: {exc}")
-    return []
+    Delega ao leitor unificado, que também entende ``IfcMaterialConstituentSet``
+    (formato do Revit): sem isso, 867 das 887 issues de sistema construtivo do
+    prédio chegavam ao LLM sem nenhuma camada.
+    """
+    return read_material_layers(element).layers
 
 
 def _layers_from_set(
@@ -85,7 +77,7 @@ def _total_thickness(layers: list[dict[str, Any]]) -> float | None:
     if not layers:
         return None
     total = sum(
-        (lay["thickness_m"] or 0.0) for lay in layers if lay["thickness_m"] is not None
+        (lay["thickness_m"] or 0.0) for lay in layers if lay.get("thickness_m") is not None
     )
     return total if total > 0.0 else None
 

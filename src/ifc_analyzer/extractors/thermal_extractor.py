@@ -4,6 +4,8 @@ import ifcopenshell
 import ifcopenshell.util.element
 from loguru import logger
 
+from src.ifc_analyzer.material_reader import read_material_layers
+
 
 # Palavras-chave para detectar camadas de isolamento (case-insensitive)
 _INSULATION_KEYWORDS = (
@@ -75,51 +77,27 @@ def _get_qtos(element: ifcopenshell.entity_instance) -> dict:
 def _extract_material_layers(
     element: ifcopenshell.entity_instance,
 ) -> tuple[str | None, list[dict], float | None]:
-    """Extrai camadas de material de um elemento via IfcMaterialLayerSetUsage.
+    """Extrai camadas de material do elemento, em qualquer formato usual.
 
     Retorna:
         material_name: nome do conjunto de camadas ou da camada única
         layers: lista de dicts {name, thickness_m, is_insulation}
         total_thickness_m: soma das espessuras, ou None se sem dados
     """
-    layers: list[dict] = []
-    material_name: str | None = None
-    total_thickness_m: float | None = None
-
-    try:
-        for rel in element.HasAssociations:
-            if rel.is_a("IfcRelAssociatesMaterial"):
-                mat = rel.RelatingMaterial
-                layer_set = None
-
-                if mat.is_a("IfcMaterialLayerSetUsage"):
-                    layer_set = mat.ForLayerSet
-                elif mat.is_a("IfcMaterialLayerSet"):
-                    layer_set = mat
-                elif mat.is_a("IfcMaterial"):
-                    material_name = mat.Name
-                    return material_name, layers, total_thickness_m
-
-                if layer_set is not None:
-                    material_name = layer_set.LayerSetName
-                    for layer in layer_set.MaterialLayers:
-                        layer_mat = layer.Material
-                        name = layer_mat.Name if layer_mat else "Desconhecido"
-                        thickness = layer.LayerThickness
-                        layers.append(
-                            {
-                                "name": name,
-                                "thickness_m": thickness,
-                                "is_insulation": _is_insulation_layer(name),
-                            }
-                        )
-                    if layers:
-                        total_thickness_m = sum(l["thickness_m"] for l in layers)
-                    break
-    except Exception as exc:
-        logger.debug(f"Erro ao extrair camadas de {element.is_a()}: {exc}")
-
-    return material_name, layers, total_thickness_m
+    # Delega ao leitor unificado, que tambem entende IfcMaterialConstituentSet
+    # (formato do Revit) e busca a espessura no conjunto de quantidades: sem
+    # isso, 606 das 606 issues de transmitancia do predio chegavam ao LLM com
+    # thickness_m=None, e nao ha como estimar U sem espessura.
+    leitura = read_material_layers(element)
+    layers = [
+        {
+            "name": camada["name"] or "Desconhecido",
+            "thickness_m": camada["thickness_m"],
+            "is_insulation": _is_insulation_layer(camada["name"] or ""),
+        }
+        for camada in leitura.layers
+    ]
+    return leitura.material_name, layers, leitura.total_thickness_m
 
 
 class ThermalExtractor:
