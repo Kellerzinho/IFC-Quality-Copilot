@@ -72,8 +72,47 @@ def mask_space_names(model: ifcopenshell.file) -> list[GroundTruthItem]:
         space.LongName = None
         if name and not _is_generic_name(name):
             space.Name = None
+        _mask_type_and_reference(model, space, functional)
     logger.info("mask_space_names: {} espaços mascarados", len(items))
     return items
+
+
+def _mask_type_and_reference(
+    model: ifcopenshell.file,
+    space: ifcopenshell.entity_instance,
+    functional: str,
+) -> None:
+    """Remove o nome funcional que sobrevive no tipo e no ``Reference`` do Pset.
+
+    Mascarar só a instância deixava o nome original em dois lugares — medido em
+    ``predio_v1_masked.ifc``: ``IfcSpaceType.Name = 'Lava Pés 61:1373227'`` e
+    ``Pset_SpaceCommon.Reference = 'Lava Pés 61'``. Nenhum dos dois chegava ao
+    prompt na época, mas o vazamento impedia que o extrator passasse a ler o
+    tipo — que é evidência legítima para o produto.
+    """
+    alvo = functional.strip().casefold()
+
+    for rel in model.by_type("IfcRelDefinesByType"):
+        if space not in (rel.RelatedObjects or []):
+            continue
+        tipo = rel.RelatingType
+        if tipo is not None and alvo and alvo in str(getattr(tipo, "Name", "") or "").casefold():
+            # O tipo pode ser compartilhado por varios espacos do mesmo ambiente;
+            # zerar o nome uma vez ja basta e repetir e inofensivo.
+            tipo.Name = None
+
+    for rel in model.by_type("IfcRelDefinesByProperties"):
+        if space not in (rel.RelatedObjects or []):
+            continue
+        definicao = rel.RelatingPropertyDefinition
+        if definicao is None or not definicao.is_a("IfcPropertySet"):
+            continue
+        for prop in definicao.HasProperties or []:
+            if prop.Name != "Reference" or not prop.is_a("IfcPropertySingleValue"):
+                continue
+            valor = getattr(prop.NominalValue, "wrappedValue", None)
+            if valor and alvo and alvo in str(valor).casefold():
+                prop.NominalValue = None
 
 
 def _build_parser() -> argparse.ArgumentParser:

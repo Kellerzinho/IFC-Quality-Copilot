@@ -44,6 +44,7 @@ from src.suggestion_engine.normalization import (
     suggestion_identity_key,
 )
 from src.suggestion_engine.ollama_client import OllamaClient
+from src.suggestion_engine.plausibility import is_physically_plausible
 from src.suggestion_engine.prompt_templates import (
     PROMPT_VERSION,
     build_compact_prompt,
@@ -539,6 +540,17 @@ class SuggestionGenerator:
             normalized = normalize_suggestion(issue, s, bsdd_context=bsdd_context)
             if normalized is None or not normalized.label.strip():
                 continue
+            # Grandeza fora da fisica do elemento (U=10 numa parede): rebaixa em
+            # vez de descartar — lista vazia foi o bug que zerou o mascarado.
+            # Como a ordenacao final e por confianca, a opcao plausivel sobe.
+            if not is_physically_plausible(issue, normalized.value):
+                normalized.confidence = "baixa"
+                normalized.review_required = True
+                marcador = "(fora da faixa plausível para a propriedade)"
+                if marcador not in normalized.justification:
+                    normalized.justification = (
+                        f"{normalized.justification} {marcador}".strip()
+                    )
             dedupe_key = suggestion_identity_key(issue, normalized)
             if dedupe_key in seen:
                 continue

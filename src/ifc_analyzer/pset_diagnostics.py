@@ -189,6 +189,40 @@ def _get_is_external(psets: dict[str, dict[str, Any]]) -> bool | None:
     return None
 
 
+def _get_load_bearing(psets: dict[str, dict[str, Any]]) -> bool | None:
+    """Função estrutural declarada nos Psets do elemento, ou None se ausente.
+
+    Decide ``R`` vs ``EI`` na resistência ao fogo: divisória não portante não
+    tem critério de resistência mecânica. O drywall do prédio traz
+    ``LoadBearing=False`` e o dado nunca chegava ao prompt.
+    """
+    for props in psets.values():
+        for chave in ("LoadBearing", "IsLoadBearing"):
+            valor = props.get(chave)
+            if isinstance(valor, bool):
+                return valor
+    return None
+
+
+def _get_predefined_type(element: ifcopenshell.entity_instance) -> str | None:
+    """PredefinedType do elemento, caindo no tipo quando a instância não define.
+
+    Distingue laje de piso (``FLOOR``) de cobertura (``ROOF``) — sem isso o
+    modelo respondia ``LoadBearing=True`` para telha de fibrocimento.
+    """
+    valor = getattr(element, "PredefinedType", None)
+    if valor and str(valor) != "NOTDEFINED":
+        return str(valor)
+    try:
+        tipo = ifcopenshell.util.element.get_type(element)
+    except Exception:
+        return None
+    valor_tipo = getattr(tipo, "PredefinedType", None) if tipo is not None else None
+    if valor_tipo and str(valor_tipo) != "NOTDEFINED":
+        return str(valor_tipo)
+    return str(valor) if valor else None
+
+
 def _sanitize_psets_for_context(
     psets: dict[str, dict[str, Any]],
 ) -> dict[str, dict[str, Any]]:
@@ -242,6 +276,8 @@ def _check_element(
     existing_summary = _sanitize_psets_for_context(existing_psets)
     mat_context = _extract_element_material_context(element, ifc_file)
     is_external = _get_is_external(existing_psets)
+    load_bearing = _get_load_bearing(existing_psets)
+    predefined_type = _get_predefined_type(element)
 
     element_class = element.is_a()
     short_guid = element.GlobalId[:8]
@@ -265,7 +301,15 @@ def _check_element(
                 "check_property": prop_name,
                 "material_name": mat_context["material_name"],
                 "thickness_m": mat_context["thickness_m"],
+                # As camadas ja eram extraidas e descartadas aqui: sem elas, o
+                # prompt de fogo/termico recebia so o nome do tipo.
+                "layers": mat_context["layers"],
                 "is_external": is_external,
+                # Funcao estrutural decide R vs EI na resistencia ao fogo, e o
+                # PredefinedType distingue laje de piso de cobertura — ambos
+                # existiam no IFC e nunca chegavam ao modelo.
+                "load_bearing": load_bearing,
+                "predefined_type": predefined_type,
                 "existing_psets": existing_summary,
             }
 

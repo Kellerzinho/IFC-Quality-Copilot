@@ -245,7 +245,7 @@ TEMPLATES: dict[str, str] = {
         "DADOS:\n"
         "- Área: {area_m2} m²\n"
         "- Pé-direito: {height_m} m\n"
-        "- Perímetro: {perimeter_m} m\n"
+        "- Dimensões em planta: {dimensoes}\n"
         "- Pavimento: {floor}\n"
         "- Fronteira com exterior: {is_on_exterior}\n"
         "- Elementos presentes: {contained_elements}\n"
@@ -261,12 +261,28 @@ TEMPLATES: dict[str, str] = {
         "  TV/televisão → sala de estar | estante de livros → escritório/quarto\n"
         "  bancada de laboratório/equipamento científico → laboratório\n"
         "  mesa de escritório/computador → escritório\n"
+        "ÁREAS COMUNS DE CONDOMÍNIO (edificação multifamiliar — metade dos espaços):\n"
+        "  caixa/quadro/medidor de luz, relógio de energia → medidores de luz (área técnica)\n"
+        "  hidrômetro, cavalete de água, barrilete → casa de hidrômetros (área técnica)\n"
+        "  botijão/central de GLP, abrigo de gás → central de gás (área técnica)\n"
+        "  contêiner/lixeira/coletor → depósito de lixo\n"
+        "  cisterna, reservatório, bomba, casa de máquinas, elevador → área técnica\n"
+        "  churrasqueira/grelha/bancada gourmet → área de churrasco ou salão de festas\n"
+        "  playground, balanço, escorregador, gangorra → área de recreação infantil\n"
+        "  cesta de basquete, trave, quadra, alambrado → quadra esportiva\n"
+        "  guarita, portaria, catraca → guarita\n"
+        "  escada, degraus, corrimão, porta corta-fogo → escada (de incêndio se enclausurada)\n"
+        "  piscina, ducha, lava-pés, deck molhado → área da piscina\n"
         "ATENÇÃO:\n"
         "  - Laboratório tem bancadas de trabalho e equipamentos específicos, NÃO é quarto\n"
         "  - Sala de estar tem sofá e/ou TV, NÃO é área de circulação\n"
         "  - Sala de jantar tem mesa e cadeiras de jantar, NÃO é circulação\n"
         "  - Quarto tem cama; armazenamento tem prateleiras/caixas\n"
-        "  - Corredor/circulação é estreito (largura tipicamente < 1,5 m) e sem mobiliário\n"
+        "  - Espaço ESTREITO (menor dimensão < 1,5 m) e sem mobiliário é circulação/corredor,\n"
+        "    ou ambiente técnico quando contém medidor, hidrômetro ou central de gás\n"
+        "  - Espaço SEM mobiliário nenhum quase nunca é dormitório ou sala de estar:\n"
+        "    considere circulação, área técnica, depósito ou área externa\n"
+        "  - Área > 80 m² em condomínio sugere salão de festas, quadra ou garagem\n"
         "TAREFA: Identifique o ambiente com base nos elementos presentes e adjacências. "
         "Sugira 3 nomes funcionais ordenados por probabilidade.\n"
         "Formato JSON:\n"
@@ -277,33 +293,76 @@ TEMPLATES: dict[str, str] = {
         "ISSUE: {element_class} #{guid}, propriedade ThermalTransmittance ausente\n"
         "DADOS:\n"
         "- Material: {material_name}\n"
+        "- Camadas de material: {material_layers}\n"
         "- Espessura total: {thickness_m} m\n"
-        "- Com reboco: {has_plaster}\n"
-        "- Elemento estrutural: {is_structural}\n"
-        "NORMA: NBR 15575-4 Tabela C.2 — Transmitância térmica máxima de paredes externas\n"
-        "TAREFA: Sugira 3 valores possíveis para ThermalTransmittance [W/(m²·K)] "
-        "com base no material e espessura, do mais provável ao menos provável. "
-        "Retorne valor numérico puro em JSON, sem unidade no campo valor.\n"
-        "Formato JSON:\n"
-        '{{"opcoes": [{{"valor": 2.48, "justificativa": "...", '
-        '"ref": "NBR 15575-4 Tab. C.2", "confianca": "alta/media/baixa"}}]}}'
+        "- Externo: {is_external}\n"
+        "- Função estrutural (LoadBearing): {load_bearing}\n"
+        "NORMA: NBR 15220-2 — método de cálculo de U a partir das camadas\n"
+        "MÉTODO: U = 1 / R_total, com R_total = Rsi + Σ(espessura/λ) + Rse.\n"
+        "  Rsi = 0,13 e Rse = 0,04 (parede, fluxo horizontal).\n"
+        "  λ [W/(m·K)]: concreto 1,75 | argamassa/reboco 1,15 | bloco cerâmico 0,90\n"
+        "               gesso acartonado 0,35 | madeira 0,15 | vidro 1,00\n"
+        "  Câmara de ar não ventilada (drywall): R ≈ 0,17.\n"
+        "ATENÇÃO: parede de vedação brasileira típica fica entre 1,5 e 3,5 W/(m²·K). "
+        "Valor calculado abaixo de 1,0 exige camada isolante explícita nas camadas acima.\n"
+        "TAREFA: calcule U pelas camadas informadas e sugira 3 valores ordenados por "
+        "probabilidade. Retorne valor numérico puro em JSON, sem unidade no campo valor.\n"
+        "Formato JSON (o valor abaixo é PLACEHOLDER, não uma sugestão):\n"
+        '{{"opcoes": [{{"valor": <numero>, "justificativa": "memória de cálculo resumida", '
+        '"ref": "NBR 15220-2", "confianca": "alta/media/baixa"}}]}}'
+    ),
+    "pset_missing_u_value_window": (
+        _HEADER_BR +
+        "ISSUE: {element_class} #{guid} (\"{element_name}\"), propriedade ThermalTransmittance ausente\n"
+        "DADOS:\n"
+        "- Esquadria: {element_name}\n"
+        "- Material/composição: {material_name}\n"
+        "- Camadas: {material_layers}\n"
+        "- Externo: {is_external}\n"
+        "NORMA: NBR 15575-4 — desempenho de esquadrias; ISO 10077 para U de janelas\n"
+        "IMPORTANTE: esquadria NÃO é parede. O U de um componente envidraçado é dominado "
+        "pelo vidro e pelo caixilho, não pela espessura da folha.\n"
+        "REFERÊNCIAS DE U [W/(m²·K)] PARA ESQUADRIAS:\n"
+        "  Vidro simples 3–6 mm, caixilho de alumínio sem ruptura térmica: 5,5 a 6,0\n"
+        "  Vidro simples, caixilho de madeira ou PVC: 4,5 a 5,0\n"
+        "  Vidro duplo (insulado) comum: 2,7 a 3,2\n"
+        "  Vidro duplo Low-E: 1,8 a 2,4\n"
+        "  Porta opaca de madeira maciça: 2,0 a 3,0\n"
+        "  Porta metálica sem isolamento: 5,0 a 6,0\n"
+        "ATENÇÃO: na ausência de indicação de vidro duplo, insulado ou Low-E no nome/composição, "
+        "trate como VIDRO SIMPLES — é o caso usual em edificação residencial brasileira.\n"
+        "TAREFA: sugira 3 valores de ThermalTransmittance para esta esquadria, ordenados por "
+        "probabilidade. Retorne valor numérico puro, sem unidade no campo valor.\n"
+        "Formato JSON (o valor abaixo é PLACEHOLDER, não uma sugestão):\n"
+        '{{"opcoes": [{{"valor": <numero>, "justificativa": "...", '
+        '"ref": "NBR 15575-4", "confianca": "alta/media/baixa"}}]}}'
     ),
     "pset_missing_fire": (
         _HEADER_BR +
         "ISSUE: {element_class} #{guid} (\"{element_name}\"), propriedade FireRating ausente\n"
         "DADOS:\n"
-        "- Tipo de elemento: {element_class}\n"
+        "- Tipo de elemento: {element_class} (PredefinedType: {predefined_type})\n"
         "- Nome: {element_name}\n"
         "- Material: {material_name}\n"
+        "- Camadas de material: {material_layers}\n"
+        "- Espessura total: {thickness_m} m\n"
+        "- Função estrutural (LoadBearing): {load_bearing}\n"
+        "- Externo: {is_external}\n"
         "NORMA: ABNT NBR 14432 — Exigências de resistência ao fogo de elementos construtivos\n"
-        "TAREFA: Sugira 3 valores de FireRating no formato canônico \"REI 60\", \"REI 90\", \"REI 120\" "
-        "para este elemento, do mais provável ao menos provável.\n"
-        "RESTRICAO: o campo valor/value deve ser gravavel no IFC e conter apenas classe de resistencia "
-        "ao fogo + minutos, como \"REI 30\", \"REI 60\", \"EI 30\" ou \"EI 60\". "
-        "Use duracoes usuais como 30, 60, 90 ou 120 minutos. "
-        "Nao use A1, N/A, NC, R 1, FireRating, nomes de propriedade, descricoes ou texto explicativo como valor.\n"
-        "Formato JSON:\n"
-        '{{"opcoes": [{{"valor": "REI 60", "justificativa": "...", '
+        "CRITÉRIOS (a letra depende da FUNÇÃO do elemento, não do material):\n"
+        "  R  = resistência mecânica — SÓ para elemento com função estrutural (portante)\n"
+        "  E  = estanqueidade a chamas e gases | I = isolamento térmico\n"
+        "  REI = portante + compartimenta (ex.: parede estrutural, laje entre pavimentos)\n"
+        "  EI  = NÃO portante, só compartimenta (ex.: divisória leve, drywall, parede de vedação)\n"
+        "  R   = portante sem função de compartimentação (ex.: pilar, viga isolada)\n"
+        "REGRA: se LoadBearing for False, o valor NÃO pode começar com R — use EI.\n"
+        "TAREFA: determine a classe de resistência ao fogo deste elemento e sugira 3 valores "
+        "ordenados por probabilidade, considerando a função estrutural, as camadas e a espessura.\n"
+        "RESTRICAO: o campo valor deve conter apenas a classe + minutos (letras R/E/I seguidas do "
+        "tempo), com duracoes usuais 30, 60, 90 ou 120 minutos. "
+        "Nao use A1, N/A, NC, FireRating, nomes de propriedade, descricoes ou texto explicativo.\n"
+        "Formato JSON (o valor abaixo é PLACEHOLDER, não uma sugestão):\n"
+        '{{"opcoes": [{{"valor": "<classe> <minutos>", "justificativa": "...", '
         '"ref": "NBR 14432", "confianca": "alta/media/baixa"}}]}}'
     ),
     "pset_missing_generic": (
@@ -333,10 +392,15 @@ TEMPLATES: dict[str, str] = {
         "- Adjacente a: {adjacent_spaces}\n"
         "CATEGORIAS VÁLIDAS (IFC): BEDROOM, LIVING_ROOM, KITCHEN, BATHROOM, WC, CIRCULATION, "
         "SERVICE_AREA, OFFICE, MEETING_ROOM, LOBBY, STORAGE, BALCONY, GARAGE, TECHNICAL_AREA\n"
+        "VOCABULÁRIO FECHADO: o campo valor deve ser EXATAMENTE um dos tokens acima, em "
+        "maiúsculas e em inglês. NÃO traduza para português, não invente token novo e não "
+        "escreva frase — 'BANHEIRO' e 'Quarto' são respostas inválidas.\n"
+        "PISTAS DE ÁREA TÉCNICA: medidor, hidrômetro, quadro elétrico, central de gás/GLP, "
+        "bomba, cisterna, casa de máquinas, barrilete → TECHNICAL_AREA (não CIRCULATION).\n"
         "TAREFA: Identifique a Category IFC mais provável para este espaço com base no nome, "
         "área e elementos contidos. Retorne 3 opções ordenadas por probabilidade.\n"
-        "Formato JSON:\n"
-        '{{"opcoes": [{{"valor": "BEDROOM", "justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
+        "Formato JSON (o token abaixo é PLACEHOLDER, não uma sugestão):\n"
+        '{{"opcoes": [{{"valor": "<TOKEN_DA_LISTA>", "justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
     ),
     "system_unclassified": (
         _HEADER_BR +
@@ -352,8 +416,11 @@ TEMPLATES: dict[str, str] = {
         "Estrutura metálica, Painel de EPS\n"
         "TAREFA: Classifique o sistema construtivo desta parede com 3 opções "
         "ordenadas por probabilidade, considerando o material e espessura informados.\n"
-        "Formato JSON:\n"
-        '{{"opcoes": [{{"sistema": "Alvenaria de vedação em bloco cerâmico", '
+        "VOCABULÁRIO FECHADO: o campo sistema deve reproduzir EXATAMENTE um dos rótulos "
+        "listados acima, com a mesma grafia e acentuação. Não abrevie, não use snake_case, "
+        "não prefixe com 'Ifc' e não invente rótulo novo.\n"
+        "Formato JSON (o rótulo abaixo é PLACEHOLDER, não uma sugestão):\n"
+        '{{"opcoes": [{{"sistema": "<ROTULO_DA_LISTA>", '
         '"justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
     ),
     "system_unclassified_slab": (
@@ -386,10 +453,12 @@ TEMPLATES: dict[str, str] = {
         "  - Se mencionar 'concreto', 'concrete' com espessura > 8cm → laje estrutural\n"
         "  - Se mencionar 'terra', 'soil', 'ground' → radier ou laje sobre solo\n"
         "TAREFA: Identifique o sistema construtivo/revestimento desta laje com 3 opções "
-        "ordenadas por probabilidade. Use rótulos canônicos consistentes e sem variações redundantes "
-        "para o mesmo sistema. Use o nome do objeto e camadas de material como pistas principais.\n"
-        "Formato JSON:\n"
-        '{{"opcoes": [{{"sistema": "...", "justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
+        "ordenadas por probabilidade. Use o nome do objeto e camadas de material como pistas principais.\n"
+        "VOCABULÁRIO FECHADO: o campo sistema deve reproduzir EXATAMENTE um dos rótulos "
+        "listados acima, com a mesma grafia e acentuação. Não abrevie, não use snake_case, "
+        "não prefixe com 'Ifc' e não invente rótulo novo.\n"
+        "Formato JSON (o rótulo abaixo é PLACEHOLDER, não uma sugestão):\n"
+        '{{"opcoes": [{{"sistema": "<ROTULO_DA_LISTA>", "justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
     ),
     "relation_fills_missing": (
         _HEADER_BR +
@@ -448,16 +517,23 @@ TEMPLATES: dict[str, str] = {
         "- Material: {material_name}\n"
         "- Espessura total: {thickness_m} m\n"
         "- É externo/cobertura: {is_external}\n"
-        "NORMA: NBR 15575-5 — Transmitância térmica de lajes e coberturas\n"
-        "LIMITES MÁXIMOS (U em W/m²·K):\n"
-        "  Zona 1-2 (frio): cobertura ≤ 2,30 | piso ≤ 2,00\n"
-        "  Zona 3-6 (ameno): cobertura ≤ 2,30 | piso ≤ 2,00\n"
-        "  Zona 7-8 (quente): cobertura ≤ 1,00 | piso ≤ 2,00\n"
-        "TAREFA: Sugira 3 valores para ThermalTransmittance [W/(m²·K)] "
-        "com base no material e espessura, do mais provável ao menos provável.\n"
-        "Formato JSON:\n"
-        '{{"opcoes": [{{"valor": 1.80, "justificativa": "...", '
-        '"ref": "NBR 15575-5", "confianca": "alta/media/baixa"}}]}}'
+        "- Camadas de material: {material_layers}\n"
+        "NORMA: NBR 15220-2 — método de cálculo de U a partir das camadas\n"
+        "MÉTODO: U = 1 / R_total, com R_total = Rsi + Σ(espessura/λ) + Rse.\n"
+        "  Fluxo descendente (laje de piso): Rsi = 0,17 e Rse = 0,04.\n"
+        "  Fluxo ascendente (cobertura): Rsi = 0,10 e Rse = 0,04.\n"
+        "  λ [W/(m·K)]: concreto 1,75 | argamassa/regularização 1,15 | cerâmica/porcelanato 1,05\n"
+        "               fibrocimento 0,95 | madeira 0,15 | EPS 0,04 | lã de vidro 0,045\n"
+        "ATENÇÃO — LIMITE NORMATIVO NÃO É O VALOR DO ELEMENTO: a NBR 15575-5 exige "
+        "cobertura ≤ 2,30 e piso ≤ 2,00 W/(m²·K), mas isso é o critério de APROVAÇÃO. "
+        "Uma laje maciça de concreto sem isolamento tem U real ENTRE 3,0 E 4,0 e "
+        "REPROVA no limite — é exatamente esse tipo de não-conformidade que precisa "
+        "aparecer. Calcule o valor real do elemento; não devolva o limite da norma.\n"
+        "TAREFA: calcule U pelas camadas informadas e sugira 3 valores ordenados por "
+        "probabilidade. Retorne valor numérico puro, sem unidade no campo valor.\n"
+        "Formato JSON (o valor abaixo é PLACEHOLDER, não uma sugestão):\n"
+        '{{"opcoes": [{{"valor": <numero>, "justificativa": "memória de cálculo resumida", '
+        '"ref": "NBR 15220-2", "confianca": "alta/media/baixa"}}]}}'
     ),
     "pset_missing_solar": (
         _HEADER_BR +
@@ -485,18 +561,27 @@ TEMPLATES: dict[str, str] = {
         _HEADER_BR +
         "ISSUE: {element_class} #{guid} (\"{element_name}\"), propriedade {check_property} ausente\n"
         "DADOS:\n"
-        "- Tipo de elemento: {element_class}\n"
+        "- Tipo de elemento: {element_class} (PredefinedType: {predefined_type})\n"
         "- Nome: {element_name}\n"
         "- Material: {material_name}\n"
+        "- Camadas de material: {material_layers}\n"
         "- Espessura/seção: {thickness_m} m\n"
-        "INTERPRETAÇÃO:\n"
-        "  IfcBeam/IfcColumn em concreto armado → normalmente LoadBearing = True\n"
-        "  IfcWall fina (< 10cm) ou Drywall → geralmente LoadBearing = False\n"
-        "  IfcSlab entre pavimentos → normalmente LoadBearing = True\n"
-        "TAREFA: Sugira 3 valores booleanos (True/False) para {check_property} "
-        "com justificativa baseada no tipo de elemento e material.\n"
-        "Formato JSON:\n"
-        '{{"opcoes": [{{"valor": true, "justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
+        "- Externo: {is_external}\n"
+        "INTERPRETAÇÃO (o PredefinedType manda mais que a classe):\n"
+        "  IfcBeam/IfcColumn em concreto armado → normalmente True\n"
+        "  IfcSlab PredefinedType=FLOOR (laje entre pavimentos) → normalmente True\n"
+        "  IfcSlab PredefinedType=BASESLAB (radier/fundação) → normalmente True\n"
+        "  IfcSlab PredefinedType=ROOF → é COBERTURA: telha de fibrocimento, metálica ou\n"
+        "    cerâmica é APOIADA sobre a estrutura e NÃO é portante → False\n"
+        "  IfcSlab PredefinedType=LANDING (patamar de escada) → normalmente True\n"
+        "  IfcWall fina (< 10 cm), drywall ou divisória de vedação → False\n"
+        "REGRA: telha, forro, revestimento e elemento apoiado não sustentam carga de "
+        "outros elementos — respondem False mesmo quando a classe IFC é IfcSlab.\n"
+        "TAREFA: determine {check_property} para este elemento e sugira 3 valores booleanos "
+        "(true/false) ordenados por probabilidade, com justificativa baseada no "
+        "PredefinedType, no material e na espessura.\n"
+        "Formato JSON (o valor abaixo é PLACEHOLDER, não uma sugestão):\n"
+        '{{"opcoes": [{{"valor": <true|false>, "justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
     ),
     "system_unclassified_structural": (
         _HEADER_BR +
@@ -709,7 +794,12 @@ def _specialized_pset_template_key(issue: Issue) -> str | None:
     """Retorna a chave do template especializado de pset_missing, ou None se genérico."""
     prop = issue.context.get("check_property", "")
     if prop == "ThermalTransmittance":
-        if issue.element_class in ("IfcSlab", "IfcSlabStandardCase", "IfcRoof", "IfcCurtainWall"):
+        # Esquadria nao e parede: o U de componente envidracado e dominado pelo
+        # vidro e pelo caixilho, nao pela espessura da folha. Roteava para o
+        # template de parede e todos os modelos respondiam ~2,48 (GT 5,7).
+        if issue.element_class in ("IfcWindow", "IfcDoor", "IfcCurtainWall", "IfcPlate"):
+            return "pset_missing_u_value_window"
+        if issue.element_class in ("IfcSlab", "IfcSlabStandardCase", "IfcRoof"):
             return "pset_missing_u_value_slab"
         return "pset_missing_thermal"
     if prop == "FireRating":
@@ -788,19 +878,111 @@ def _select_template(issue: Issue) -> str:
     return template
 
 
+_MAX_ELEMENT_LABELS = 12
+"""Rotulos distintos que cabem no prompt antes de virar ruido."""
+
+
+_CODIGO_REVIT = re.compile(r"^[A-Z0-9][A-Z0-9\-\.]*$")
+"""Segmento so de maiusculas/digitos: codigo de familia (F05770PT), nao nome."""
+
+_DIMENSAO_REVIT = re.compile(r"^[\d\s.,x×]+\s*(mm|cm|m)?$", re.IGNORECASE)
+"""Segmento de dimensao do tipo Revit: '26000 x 14000 mm'."""
+
+_PALAVRAS_GENERICAS = {"blocks", "blocos", "generic", "generico", "genérico"}
+
+
+def _clean_element_label(label: str) -> str:
+    """Limpa o rotulo de um elemento contido, guardando so o que identifica.
+
+    O exportador emite ``IfcBuildingElementProxy: Blocks_Caixa de Luz_F05770PT:
+    Unico:1178721``: o id interno nao distingue nada (16 caixas de luz tem 16
+    ids), o codigo de familia e ruido e o prefixo da classe se repete em toda
+    linha. Sobra ``Caixa de Luz``, que e o que responde a pergunta.
+    """
+    texto = str(label).strip()
+    if ": " in texto and texto.split(": ", 1)[0].startswith("Ifc"):
+        texto = texto.split(": ", 1)[1]
+
+    segmentos: list[str] = []
+    for bruto in texto.split(":"):
+        seg = bruto.strip()
+        if not seg or seg.isdigit() or _DIMENSAO_REVIT.match(seg):
+            continue
+        # "Blocks_Caixa de Luz_F05770PT" -> "Caixa de Luz"
+        pedacos = [
+            p.strip()
+            for p in seg.split("_")
+            if p.strip()
+            and not _CODIGO_REVIT.match(p.strip())
+            and p.strip().casefold() not in _PALAVRAS_GENERICAS
+        ]
+        limpo = " ".join(pedacos).strip() if pedacos else seg
+        if limpo:
+            segmentos.append(limpo)
+
+    if not segmentos:
+        return "elemento"
+    # O segmento mais descritivo e o que nomeia o objeto.
+    return max(segmentos, key=len)
+
+
 def _format_elements(elements: list[dict | str] | Any) -> str:
-    """Formata lista de elementos contidos extraindo functional_label legível."""
+    """Formata elementos contidos agrupando repetidos e limpando ruido.
+
+    Um espaco do predio chega a 84 elementos contidos com 43 rotulos distintos;
+    despejar a lista crua soterra o sinal ("central de medidores") em ids do
+    Revit. Agrupa por rotulo, ordena do mais frequente e trunca avisando.
+    """
     if not elements or not isinstance(elements, list):
         return "nenhum"
-    parts: list[str] = []
+
+    contagem: dict[str, int] = {}
     for el in elements:
         if isinstance(el, dict):
-            label = el.get("functional_label") or el.get("name") or el.get("ifc_class", "")
-            if label:
-                parts.append(label)
+            bruto = el.get("functional_label") or el.get("name") or el.get("ifc_class", "")
         else:
-            parts.append(str(el))
-    return ", ".join(p for p in parts if p) or "nenhum"
+            bruto = str(el)
+        if not bruto:
+            continue
+        rotulo = _clean_element_label(bruto)
+        contagem[rotulo] = contagem.get(rotulo, 0) + 1
+
+    if not contagem:
+        return "nenhum"
+
+    ordenado = sorted(contagem.items(), key=lambda kv: (-kv[1], kv[0]))
+    visiveis = ordenado[:_MAX_ELEMENT_LABELS]
+    partes = [f"{n}x {rotulo}" if n > 1 else rotulo for rotulo, n in visiveis]
+    restantes = len(ordenado) - len(visiveis)
+    if restantes > 0:
+        partes.append(f"(+{restantes} outros tipos, mais raros)")
+    return ", ".join(partes)
+
+
+def _format_planta(bounding_box: Any) -> str:
+    """Descreve as dimensoes em planta a partir do bounding box do espaco.
+
+    O template pede largura para separar circulacao de ambiente ("estreito
+    < 1,5 m"), mas ``Perimeter`` vem ``None`` em todos os espacos do predio. O
+    bounding box existe em todos e da a informacao diretamente.
+    """
+    if not isinstance(bounding_box, dict):
+        return "N/D"
+    try:
+        largura = abs(float(bounding_box["max_x"]) - float(bounding_box["min_x"]))
+        comprimento = abs(float(bounding_box["max_y"]) - float(bounding_box["min_y"]))
+    except (KeyError, TypeError, ValueError):
+        return "N/D"
+    if largura <= 0 or comprimento <= 0:
+        return "N/D"
+
+    menor, maior = sorted((largura, comprimento))
+    texto = f"{largura:.1f} x {comprimento:.1f} m (menor dimensão {menor:.1f} m)"
+    if menor < 1.5:
+        texto += " — ESTREITO"
+    elif maior / menor >= 3.0:
+        texto += " — alongado (proporção 1:%.0f)" % (maior / menor)
+    return texto
 
 
 def _format_spaces(spaces: list[dict | str] | Any) -> str:
@@ -937,11 +1119,27 @@ def build_prompt(
     if "nearby_spaces" in fill_ctx:
         fill_ctx["nearby_spaces"] = _format_spaces(fill_ctx["nearby_spaces"])
 
+    # Geometria em planta: o template decide corredor pela largura, mas Perimeter
+    # vem None em 82 de 82 espacos do predio — o bounding_box esta em 82/82.
+    if issue.issue_type in ("space_unnamed", "pset_missing"):
+        fill_ctx["dimensoes"] = _format_planta(fill_ctx.get("bounding_box"))
+
     # system_unclassified: derivar material_layers e thickness_m do contexto do diagnóstico
     if issue.issue_type == "system_unclassified":
         layers = fill_ctx.get("materials") or []
         fill_ctx["material_layers"] = _format_material_layers(layers)
         fill_ctx.setdefault("thickness_m", fill_ctx.get("total_thickness") or "N/D")
+
+    # pset_missing: o diagnostico grava as camadas em "layers" com a chave
+    # "material"; os templates especializados (fogo, termico, estrutural) leem
+    # {material_layers}. Sem esta ponte, a evidencia extraida nao chegava.
+    if issue.issue_type == "pset_missing" and "layers" in fill_ctx:
+        camadas = [
+            {"name": lay.get("material") or lay.get("name"), "thickness_m": lay.get("thickness_m")}
+            for lay in (fill_ctx.get("layers") or [])
+            if isinstance(lay, dict)
+        ]
+        fill_ctx["material_layers"] = _format_material_layers(camadas)
 
     safe_ctx: defaultdict[str, Any] = defaultdict(lambda: "N/D", fill_ctx)
     user_prompt = template.format_map(safe_ctx)

@@ -112,23 +112,29 @@ def test_build_prompt_space_unnamed_current_name_filled():
 # ---------------------------------------------------------------------------
 
 def test_build_prompt_pset_thermal():
-    """build_prompt seleciona template térmico para ThermalTransmittance."""
+    """Template térmico de parede: método de cálculo, não tabela de valores prontos.
+
+    Atualizado em 2026-07-27: a versão anterior trazia a Tab. C.2 da NBR 15575-4 e
+    um exemplo fixo de 2,48, que os três modelos devolviam literalmente.
+    """
     issue = _pset_issue("ThermalTransmittance")
     _, user = build_prompt(issue, _BUILDING_CTX)
 
     assert "ThermalTransmittance" in user
-    assert "NBR 15575-4" in user
-    assert "Bloco cerâmico 14cm" in user
+    assert "NBR 15220-2" in user
+    assert "U = 1 / R_total" in user, "sem o método de cálculo o modelo só chuta"
+    assert "bloco cerâmico 0,90" in user, "sem λ o cálculo não fecha"
 
 
 def test_build_prompt_pset_fire():
-    """build_prompt seleciona template de incêndio para FireRating."""
+    """Template de incêndio: critério R/E/I, sem exemplo numérico que ancore."""
     issue = _pset_issue("FireRating")
     _, user = build_prompt(issue, _BUILDING_CTX)
 
     assert "FireRating" in user
     assert "Nao use A1" in user
-    assert "EI 30" in user
+    assert "EI  = NÃO portante" in user, "sem o critério o modelo responde REI para divisória"
+    assert '"valor": "REI' not in user, "exemplo numérico voltou a ancorar a resposta"
 
 
 def test_build_prompt_pset_generic():
