@@ -945,7 +945,9 @@ def build_prompt(
 
     safe_ctx: defaultdict[str, Any] = defaultdict(lambda: "N/D", fill_ctx)
     user_prompt = template.format_map(safe_ctx)
-    user_prompt = _inject_grounding(user_prompt, bsdd_context, ids_context)
+    user_prompt = _inject_grounding(
+        user_prompt, _scoped_bsdd_context(issue, bsdd_context), ids_context
+    )
     system_prompt = SYSTEM_PROMPT
     if ids_context is not None or bsdd_context is not None:
         system_prompt = f"{SYSTEM_PROMPT} {_GROUNDING_INSTRUCTION}"
@@ -964,6 +966,23 @@ def build_prompt(
         )
 
     return system_prompt, user_prompt
+
+
+def _scoped_bsdd_context(issue: Issue, bsdd_context: BSDDContext | None) -> BSDDContext | None:
+    """Restringe o bloco bSDD ao que a tarefa da issue realmente usa.
+
+    Classificar sistema construtivo nao e preencher propriedade: para
+    ``system_unclassified`` o bSDD contribui com **classes de dominio**, e a
+    lista de propriedades da classe (Warranty Content, Net Volume, Surface
+    Genus, Mean Time Between Failure...) e ruido puro. Medido em 2026-07-27:
+    com essa lista no prompt — logo depois do system prompt mandar "use apenas
+    o vocabulario fornecido" — o modelo respondia ``Thickness``, ``Dimensions``
+    e ``Mean Time Between Failure`` como sistema construtivo, e o estrato ficou
+    em **0,000 de top-1 em 872 issues**.
+    """
+    if bsdd_context is None or issue.issue_type != "system_unclassified":
+        return bsdd_context
+    return bsdd_context.model_copy(update={"related_properties": [], "properties": []})
 
 
 def _inject_grounding(
