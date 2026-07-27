@@ -163,10 +163,17 @@ def prepare_llm_grounding(
             or bsdd_context.class_uri
         ):
             sources.append("bsdd")
-        # Para issue_type=space_unnamed/system_unclassified: candidatos = nomes de classes
+        # Para issue_type=space_unnamed/system_unclassified: candidatos = nomes de
+        # classificacoes de dominio. Nomes de classe IFC (IfcWall, IfcSpace...) sao
+        # a propria entidade, nao valores — oferece-los como candidatos induzia o
+        # LLM a responder "IfcWall" para sistema construtivo (benchmark 2026-07-27).
         for cls in bsdd_context.classification_suggestions:
-            if cls.name and cls.name not in official_candidates:
-                official_candidates.append(cls.name)
+            name = (cls.name or "").strip()
+            if not name or name in official_candidates:
+                continue
+            if name.startswith("Ifc"):
+                continue
+            official_candidates.append(name)
         # Para pset_missing: candidatos = allowed_values da propriedade alvo
         if canonical_property:
             target_norm = canonical_property.strip().casefold()

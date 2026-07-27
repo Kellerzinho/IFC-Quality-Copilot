@@ -49,7 +49,8 @@ from src.suggestion_engine.prompt_templates import (
     build_compact_prompt,
     build_prompt,
     build_pset_grounded_prompt,
-    has_specialized_pset_template,
+    has_rich_template,
+    output_contract_for,
     parse_llm_response,
 )
 from src.suggestion_engine.suggestion_cache import (
@@ -155,17 +156,20 @@ class SuggestionGenerator:
 
         # ----- Selecionar prompt -----
         use_compact = self._should_use_compact(grounded, profile, rule)
-        if use_compact and has_specialized_pset_template(issue):
-            # O template especializado carrega a norma (NBR 14432, NBR 15575-4
-            # Tab. C.2) e a restricao de formato canonico. O grounding e injetado
-            # nele por build_prompt, em vez de substitui-lo pelo prompt compacto:
-            # com o bSDD resolvendo para todas as classes, trocar o template pelo
-            # compacto descartaria a norma em toda issue especializada.
+        if use_compact and has_rich_template(issue):
+            # Templates ricos nao sao substituidos pelo compacto quando ha
+            # grounding: os psets especializados carregam a norma (NBR 14432,
+            # NBR 15575-4 Tab. C.2); space_unnamed carrega mobiliario, area e
+            # adjacencias; system_unclassified carrega camadas de material e o
+            # vocabulario canonico. O grounding IDS/bSDD e injetado neles por
+            # build_prompt. Excecao: space_unnamed nao recebe bloco bSDD —
+            # classes IFC nao ajudam a nomear ambientes e ja induziram
+            # pseudo-classes ("IfcKitchen", top-1 0% no benchmark).
             system, user = build_prompt(
                 issue,
                 building_context,
                 profile_id=profile.id if profile is not None else None,
-                bsdd_context=bsdd_context,
+                bsdd_context=None if issue.issue_type == "space_unnamed" else bsdd_context,
                 ids_context=ids_context,
             )
         elif use_compact:
@@ -442,8 +446,7 @@ class SuggestionGenerator:
 
         return (
             f"{original_prompt}\n\nResposta anterior rejeitada. "
-            'Retorne SOMENTE JSON {"opcoes":[{"suggested_value":...,"label":"...",'
-            '"justification":"...","confidence":"alta"}]}.'
+            f"Siga estritamente o contrato: {output_contract_for(issue.issue_type)}"
             f"{extra}"
         )
 
@@ -580,10 +583,13 @@ class SuggestionGenerator:
                             break
 
             elif issue_type in {"space_unnamed", "system_unclassified"} and bsdd_context.classes:
+                # Classes IFC (IfcWall, IfcSpace...) nao formam vocabulario de
+                # nomes de ambiente nem de sistemas construtivos: compara-las com
+                # a sugestao rebaixava TODA resposta valida para "baixa".
                 allowed_labels = {
                     str(normalize_value_for_issue(issue, cls.name) or cls.name).strip().casefold()
                     for cls in bsdd_context.classes
-                    if cls.name
+                    if cls.name and not cls.name.strip().startswith("Ifc")
                 }
                 if allowed_labels and str(suggestion.value).strip().casefold() not in allowed_labels:
                     self._downgrade_for_bsdd(

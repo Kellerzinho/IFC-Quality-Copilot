@@ -215,7 +215,7 @@ class TestPsetGroundedPromptScenarios:
 
         assert '"opcoes"' in user
         assert "review_required" in user
-        assert "Maximo 3 opcoes" in user
+        assert "3 opcoes distintas" in user
 
 
 # ---------------------------------------------------------------------------
@@ -224,9 +224,9 @@ class TestPsetGroundedPromptScenarios:
 
 
 class TestPromptVersion:
-    def test_prompt_version_is_v4(self):
-        """v4: contrato genérico removido do prompt de space_unnamed (benchmark)."""
-        assert PROMPT_VERSION == "v4"
+    def test_prompt_version_is_v5(self):
+        """v5: templates ricos preservados sob grounding + contratos com 3 opções (P0)."""
+        assert PROMPT_VERSION == "v5"
 
     def test_prompt_version_single_source(self):
         """suggestion_cache re-exporta a mesma constante (sem deriva)."""

@@ -185,12 +185,14 @@ def test_generate_with_grounding():
     assert result.suggestions[0].ids_requirement_id == "req-123"
 
     call_kwargs = client.generate.call_args.kwargs
-    # Prompt compacto: sem cabeÃ§alhos verbosos, mas com identificaÃ§Ã£o estruturada
-    assert "issue_id:" in call_kwargs["prompt"]
+    # Template rico de nomeacao + requisito IDS injetado como bloco estruturado
+    assert "ISSUE: IfcSpace" in call_kwargs["prompt"]
+    assert "IDS_CONTEXT:" in call_kwargs["prompt"]
     assert "Pset_SpaceCommon" in call_kwargs["prompt"]
     assert "Category" in call_kwargs["prompt"]
-    assert "candidatos:" in call_kwargs["prompt"]
-    # LLM nÃ£o deve ser instruÃ­do a retornar URI
+    # Classes IFC nao sao vocabulario de nomeacao: bloco bSDD fica fora do prompt
+    assert "BSDD_CONTEXT" not in call_kwargs["prompt"]
+    # LLM nao deve ser instruido a retornar URI
     assert "Nao retorne URI" in call_kwargs["prompt"]
 
 

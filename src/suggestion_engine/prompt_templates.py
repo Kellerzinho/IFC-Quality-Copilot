@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 # v4: contrato genérico não é mais anexado ao template de space_unnamed
 # (só o prompt de nomeação muda entre v3 e v4; demais tarefas são idênticas).
-PROMPT_VERSION = "v4"
+PROMPT_VERSION = "v5"
 
 SYSTEM_PROMPT_COMPACT = (
     "Voce e um engenheiro BIM/IFC criterioso. Analise as evidencias fornecidas, "
@@ -31,7 +31,9 @@ _COMPACT_OUTPUT_CONTRACT = (
     'Retorne JSON: {"opcoes":[{"issue_id":"...","action":"suggest_value|review_required|abstain",'
     '"suggested_value":...,"canonical_term":"...","semantic_hint":"...",'
     '"confidence":"alta|media|baixa","justification":"<=120 chars","review_required":true|false}]}.'
-    " Maximo 3 opcoes. Nao retorne URI. Se nao houver candidato confiavel, use review_required=true."
+    " Retorne 3 opcoes distintas sempre que houver candidatos plausiveis (minimo 1). Nao retorne URI."
+    " Nunca retorne lista de opcoes vazia nem suggested_value vazio: se nenhum candidato for"
+    " confiavel, proponha o melhor valor disponivel e marque review_required=true."
     " Ordene opcoes por confianca decrescente. Nao trate diferenca de espessura, material ou dimensao como erro de digitacao."
 )
 
@@ -42,10 +44,12 @@ _COMPACT_OUTPUT_CONTRACT = (
 _SPACE_NAME_OUTPUT_CONTRACT = (
     'Retorne JSON: {"opcoes":[{"issue_id":"...","nome":"...",'
     '"confidence":"alta|media|baixa","justification":"<=120 chars","review_required":true|false}]}.'
-    " Maximo 3 opcoes, ordenadas por confianca decrescente. Nao retorne URI."
+    " Retorne exatamente 3 opcoes distintas, ordenadas por confianca decrescente. Nao retorne URI."
     " IMPORTANTE: o campo 'nome' deve ser o nome funcional do ambiente em portugues"
     " (ex.: 'Sala de Estar', 'Banheiro Social'), nunca classe IFC, termo tecnico ou identificador."
-    " Se nao houver evidencia suficiente para nomear, use review_required=true."
+    " Nunca deixe 'nome' vazio e nunca use placeholders como 'Review Required', 'N/A' ou"
+    " 'Desconhecido': mesmo com pouca evidencia, proponha os nomes mais plausiveis e sinalize"
+    " a incerteza com review_required=true e confidence=baixa."
 )
 
 
@@ -730,6 +734,23 @@ def has_specialized_pset_template(issue: Issue) -> bool:
     if issue.issue_type != "pset_missing":
         return False
     return _specialized_pset_template_key(issue) is not None
+
+
+_RICH_TEMPLATE_ISSUE_TYPES = {"space_unnamed", "system_unclassified"}
+
+
+def has_rich_template(issue: Issue) -> bool:
+    """True se a issue tem template rico que o prompt compacto nao deve substituir.
+
+    ``space_unnamed`` e ``system_unclassified`` carregam a evidencia da tarefa
+    (mobiliario, adjacencias, area; camadas de material, espessura) e o
+    vocabulario canonico no proprio template; os psets especializados carregam
+    a norma. Substitui-los pelo prompt compacto foi a regressao do benchmark de
+    2026-07-27 (masked caiu de 34-56% para 0-5% de top-1).
+    """
+    if issue.issue_type in _RICH_TEMPLATE_ISSUE_TYPES:
+        return True
+    return has_specialized_pset_template(issue)
 
 
 def _select_template(issue: Issue) -> str:
