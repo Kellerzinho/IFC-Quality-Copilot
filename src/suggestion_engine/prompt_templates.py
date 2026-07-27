@@ -971,18 +971,41 @@ def build_prompt(
 def _scoped_bsdd_context(issue: Issue, bsdd_context: BSDDContext | None) -> BSDDContext | None:
     """Restringe o bloco bSDD ao que a tarefa da issue realmente usa.
 
-    Classificar sistema construtivo nao e preencher propriedade: para
-    ``system_unclassified`` o bSDD contribui com **classes de dominio**, e a
-    lista de propriedades da classe (Warranty Content, Net Volume, Surface
-    Genus, Mean Time Between Failure...) e ruido puro. Medido em 2026-07-27:
-    com essa lista no prompt — logo depois do system prompt mandar "use apenas
-    o vocabulario fornecido" — o modelo respondia ``Thickness``, ``Dimensions``
-    e ``Mean Time Between Failure`` como sistema construtivo, e o estrato ficou
-    em **0,000 de top-1 em 872 issues**.
+    Classificar sistema construtivo nao e preencher propriedade nem nomear a
+    entidade IFC. Para ``system_unclassified``, duas coisas precisam sair do
+    bloco — e as duas foram medidas em 2026-07-27 custando o estrato inteiro:
+
+    1. **Lista de propriedades da classe** (Warranty Content, Net Volume, Surface
+       Genus, Mean Time Between Failure...). Com ela no prompt, o gemma2:9b
+       respondia ``Thickness``, ``Dimensions`` e ``Mean Time Between Failure``
+       como sistema construtivo: 0,000 de top-1 em 872 issues.
+    2. **Nomes de classe IFC entre as "classes candidatas"**. Com
+       ``- IfcWall`` no bloco, o qwen2.5:7b-instruct respondia literalmente
+       ``IfcWall``/``IfcSlab``: tambem 0,000 — enquanto o gemma2, que ignorou a
+       instrucao, fez 0,977 no mesmo prompt.
+
+    Classificacoes de dominio (nao-IFC) continuam sendo grounding legitimo. Se
+    nada aproveitavel sobrar, devolve None: bloco de grounding vazio so gasta
+    contexto e convida o modelo a inventar.
     """
     if bsdd_context is None or issue.issue_type != "system_unclassified":
         return bsdd_context
-    return bsdd_context.model_copy(update={"related_properties": [], "properties": []})
+
+    classes_dominio = [
+        cls
+        for cls in bsdd_context.classification_suggestions
+        if cls.name and not cls.name.strip().startswith("Ifc")
+    ]
+    if not classes_dominio:
+        return None
+    return bsdd_context.model_copy(
+        update={
+            "related_properties": [],
+            "properties": [],
+            "classification_suggestions": classes_dominio,
+            "classes": classes_dominio,
+        }
+    )
 
 
 def _inject_grounding(

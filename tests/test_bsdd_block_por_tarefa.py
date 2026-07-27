@@ -86,6 +86,43 @@ def test_system_unclassified_preserva_classes_de_dominio_do_bsdd():
     assert "Alvenaria estrutural" in user
 
 
+def test_system_unclassified_nao_recebe_nome_de_classe_ifc_como_candidata():
+    """``IfcWall`` é a entidade, não um sistema construtivo.
+
+    Medido em 2026-07-27: com ``Classes candidatas: - IfcWall`` no bloco bSDD e o
+    system prompt mandando "use apenas o vocabulário fornecido", o
+    qwen2.5:7b-instruct respondeu literalmente ``IfcWall``/``IfcSlab`` e o estrato
+    ficou em 0,000 — enquanto o gemma2:9b, que ignorou a instrução, fez 0,977.
+    """
+    issue = _system_issue()
+
+    _, user = build_prompt(issue, _BUILDING_CTX, bsdd_context=_bsdd_ruidoso(issue))
+
+    assert "IfcWall |" not in user, "classe IFC oferecida como candidata de sistema"
+    assert "- IfcWall" not in user
+
+
+def test_bloco_bsdd_some_quando_so_restam_classes_ifc():
+    """Sem nada aproveitável, não se injeta um bloco de grounding vazio."""
+    from src.models import BSDDClassification, BSDDContext
+
+    issue = _system_issue()
+    bsdd = BSDDContext(
+        issue_id=issue.id,
+        element_class="IfcWall",
+        class_name="IfcWall",
+        classification_suggestions=[
+            BSDDClassification(name="IfcWall", uri="https://example.org/IfcWall")
+        ],
+        related_properties=[BSDDProperty(name="Net Volume", data_type="Real")],
+        source_status="cache",
+    )
+
+    _, user = build_prompt(issue, _BUILDING_CTX, bsdd_context=bsdd)
+
+    assert "BSDD_CONTEXT" not in user
+
+
 def test_pset_missing_continua_recebendo_o_bloco_bsdd_completo():
     """A restrição vale para classificação; preencher propriedade ainda usa o bSDD."""
     issue = Issue(
