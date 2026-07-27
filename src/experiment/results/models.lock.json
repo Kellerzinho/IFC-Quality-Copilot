@@ -1,7 +1,43 @@
 {
-  "locked_at": "2026-07-02T17:09:51",
-  "purpose": "Matriz de modelos do benchmark (Fase B). Digests fixados para reprodutibilidade; nao atualizar os modelos durante o experimento.",
+  "locked_at": "2026-07-27T01:07:45",
+  "purpose": "Matriz de modelos do benchmark (Fase B). Digests fixados para reprodutibilidade; nao atualizar os modelos durante o experimento. Selecao 2026-07-26: 10 melhores entre 17 candidatos medidos (fit VRAM ctx2048 + JSON + smoke estratificado n=60/33GT).",
   "models": [
+    {
+      "name": "lfm2.5:8b",
+      "digest": "9cf756159fc2",
+      "size": "5.2 GB",
+      "architecture": "lfm2moe",
+      "parameters": "8.5B",
+      "context_length": "128000",
+      "quantization": "Q4_K_M"
+    },
+    {
+      "name": "granite4:tiny-h",
+      "digest": "566b725534ea",
+      "size": "4.2 GB",
+      "architecture": "granitehybrid",
+      "parameters": "6.9B",
+      "context_length": "1048576",
+      "quantization": "Q4_K_M"
+    },
+    {
+      "name": "phi4-mini:latest",
+      "digest": "78fad5d182a7",
+      "size": "2.5 GB",
+      "architecture": "phi3",
+      "parameters": "3.8B",
+      "context_length": "131072",
+      "quantization": "Q4_K_M"
+    },
+    {
+      "name": "gemma2:9b",
+      "digest": "ff02c3702f32",
+      "size": "5.4 GB",
+      "architecture": "gemma2",
+      "parameters": "9.2B",
+      "context_length": "8192",
+      "quantization": "Q4_0"
+    },
     {
       "name": "qwen2.5:7b-instruct",
       "digest": "845dbda0ea48",
@@ -21,6 +57,15 @@
       "quantization": "Q4_K_M"
     },
     {
+      "name": "falcon3:7b",
+      "digest": "472ea1c89f64",
+      "size": "4.6 GB",
+      "architecture": "llama",
+      "parameters": "7.5B",
+      "context_length": "32768",
+      "quantization": "Q4_K_M"
+    },
+    {
       "name": "mistral:7b",
       "digest": "6577803aa9a0",
       "size": "4.4 GB",
@@ -30,30 +75,21 @@
       "quantization": "Q4_K_M"
     },
     {
-      "name": "gemma2:9b",
-      "digest": "ff02c3702f32",
-      "size": "5.4 GB",
-      "architecture": "gemma2",
-      "parameters": "9.2B",
-      "context_length": "8192",
-      "quantization": "Q4_0"
+      "name": "qwen3.5:4b",
+      "digest": "2a654d98e6fb",
+      "size": "3.4 GB",
+      "architecture": "qwen35",
+      "parameters": "4.7B",
+      "context_length": "262144",
+      "quantization": "Q4_K_M"
     },
     {
-      "name": "phi3.5:latest",
-      "digest": "61819fb370a3",
-      "size": "2.2 GB",
-      "architecture": "phi3",
-      "parameters": "3.8B",
-      "context_length": "131072",
-      "quantization": "Q4_0"
-    },
-    {
-      "name": "qwen3:14b",
-      "digest": "bdbd181c33f2",
-      "size": "9.3 GB",
-      "architecture": "qwen3",
-      "parameters": "14.8B",
-      "context_length": "40960",
+      "name": "qwen3.5:9b",
+      "digest": "6488c96fa5fa",
+      "size": "6.6 GB",
+      "architecture": "qwen35",
+      "parameters": "9.7B",
+      "context_length": "262144",
       "quantization": "Q4_K_M"
     }
   ]
