@@ -57,12 +57,20 @@ def _tabela_por_modelo(modelo: str, outcomes: list[IssueOutcome]) -> None:
     total = len(outcomes)
     acertos = sum(o.match_top1 for o in outcomes)
     print(f"\n### {modelo} — top-1 global {acertos}/{total} = {acertos / total:.4f}")
-    print(f"{'estrato':<38} {'n':>5} {'estim':>6} {'top1':>7} {'top3':>7} {'abst':>6}")
-    print("-" * 74)
+    print(
+        f"{'estrato':<38} {'n':>5} {'estim':>6} {'top1':>7} {'top3':>7} {'abst':>6} "
+        f"{'MAPE%':>8} {'<=10%':>7} {'<=20%':>7}"
+    )
+    print("-" * 100)
     for row in linhas:
+        # Colunas continuas so existem em estrato com esperado numerico.
+        mape = f"{row['mape']:>8.1f}" if "mape" in row else f"{'—':>8}"
+        d10 = f"{row['dentro_10pct']:>7.3f}" if "dentro_10pct" in row else f"{'—':>7}"
+        d20 = f"{row['dentro_20pct']:>7.3f}" if "dentro_20pct" in row else f"{'—':>7}"
         print(
             f"{row['stratum']:<38} {row['n']:>5} {row['estimulos']:>6} "
-            f"{row['top1']:>7.3f} {row['top3']:>7.3f} {row['abstencao']:>6.3f}"
+            f"{row['top1']:>7.3f} {row['top3']:>7.3f} {row['abstencao']:>6.3f} "
+            f"{mape} {d10} {d20}"
         )
 
 

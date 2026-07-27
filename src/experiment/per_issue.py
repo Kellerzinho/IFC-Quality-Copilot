@@ -22,8 +22,23 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from src.experiment.evaluator import Evaluator, GroundTruth
+from src.experiment.evaluator import Evaluator, GroundTruth, _as_float
 from src.models import Issue, SuggestionSet
+
+
+def _relative_error_pct(candidate: Any, expected: Any) -> float | None:
+    """Erro relativo em % entre candidato e esperado, ou None se não for grandeza numérica.
+
+    O **esperado** precisa ser numérico de fato: ``"REI 60"`` parseia como 60 e
+    entraria como erro de 0% num estrato categórico, contaminando o MAPE. Já o
+    candidato pode vir como texto (``"2.48"``), que é como o LLM costuma devolver.
+    """
+    if isinstance(expected, bool) or not isinstance(expected, (int, float)):
+        return None
+    cand = _as_float(candidate)
+    if cand is None or expected == 0:
+        return None
+    return abs(cand - float(expected)) / abs(float(expected)) * 100.0
 
 
 class IssueOutcome(BaseModel):
@@ -51,6 +66,12 @@ class IssueOutcome(BaseModel):
     """issue_id da primária quando a sugestão foi reaproveitada (não é observação nova)."""
     latency_ms: float = 0.0
     output_tokens: int = 0
+    error_pct: float | None = None
+    """Erro relativo do top-1 (%) quando esperado e sugerido são numéricos.
+
+    Acerto binário não distingue errar 5% de errar 300%; com o erro gravado, o
+    top-1 sob qualquer banda de equivalência pode ser recalculado sem repetir o run.
+    """
 
 
 def stratum_of(issue: Issue) -> str:
@@ -110,6 +131,11 @@ def build_issue_outcomes(
                 reused_from=metrics.reused_from_issue_id if metrics else None,
                 latency_ms=metrics.llm_total_ms if metrics else 0.0,
                 output_tokens=metrics.output_tokens if metrics else 0,
+                error_pct=(
+                    _relative_error_pct(suggestions[0].value, item.expected_value)
+                    if suggestions
+                    else None
+                ),
             )
         )
 
@@ -129,17 +155,25 @@ def aggregate_by_stratum(outcomes: list[IssueOutcome]) -> list[dict[str, Any]]:
     linhas: list[dict[str, Any]] = []
     for stratum, items in por_estrato.items():
         n = len(items)
-        linhas.append(
-            {
-                "stratum": stratum,
-                "n": n,
-                "estimulos": sum(1 for o in items if o.reused_from is None),
-                "top1": sum(o.match_top1 for o in items) / n,
-                "top3": sum(o.match_top3 for o in items) / n,
-                "abstencao": sum(o.abstained for o in items) / n,
-                "acertos_top1": sum(o.match_top1 for o in items),
-            }
-        )
+        linha: dict[str, Any] = {
+            "stratum": stratum,
+            "n": n,
+            "estimulos": sum(1 for o in items if o.reused_from is None),
+            "top1": sum(o.match_top1 for o in items) / n,
+            "top3": sum(o.match_top3 for o in items) / n,
+            "abstencao": sum(o.abstained for o in items) / n,
+            "acertos_top1": sum(o.match_top1 for o in items),
+        }
+
+        # Grandeza continua: reportar so acerto binario esconde a diferenca entre
+        # errar 5% e errar 300%.
+        erros = [o.error_pct for o in items if o.error_pct is not None]
+        if erros:
+            linha["mape"] = sum(erros) / len(erros)
+            linha["dentro_10pct"] = sum(1 for e in erros if e <= 10.0) / n
+            linha["dentro_20pct"] = sum(1 for e in erros if e <= 20.0) / n
+
+        linhas.append(linha)
 
     return sorted(linhas, key=lambda row: -row["n"])
 
