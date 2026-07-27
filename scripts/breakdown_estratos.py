@@ -19,13 +19,17 @@ from __future__ import annotations
 
 import argparse
 import sys
-from math import comb
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.experiment.per_issue import IssueOutcome, aggregate_by_stratum, read_outcomes_jsonl
+from src.experiment.per_issue import (
+    IssueOutcome,
+    aggregate_by_stratum,
+    paired_comparison,
+    read_outcomes_jsonl,
+)
 
 
 def _carregar(results_dir: Path) -> dict[str, list[IssueOutcome]]:
@@ -35,20 +39,6 @@ def _carregar(results_dir: Path) -> dict[str, list[IssueOutcome]]:
         modelo = jsonl.parent.name
         por_modelo.setdefault(modelo, []).extend(read_outcomes_jsonl(jsonl))
     return por_modelo
-
-
-def _mcnemar_exato(b: int, c: int) -> float:
-    """p-valor bilateral do teste de McNemar exato (binomial com p=0,5).
-
-    ``b`` = acertos só do modelo A; ``c`` = acertos só do B. Discordâncias são
-    o único sinal: concordâncias não carregam informação sobre a diferença.
-    """
-    n = b + c
-    if n == 0:
-        return 1.0
-    k = min(b, c)
-    cauda = sum(comb(n, i) for i in range(k + 1)) / (2**n)
-    return min(1.0, 2 * cauda)
 
 
 def _tabela_por_modelo(modelo: str, outcomes: list[IssueOutcome]) -> None:
@@ -105,20 +95,16 @@ def _pareado(por_modelo: dict[str, list[IssueOutcome]], a: str, b: str) -> None:
         print(f"[pareado] disponíveis: {', '.join(por_modelo)}")
         return
 
-    mapa_a = {o.issue_id: o for o in por_modelo[a]}
-    mapa_b = {o.issue_id: o for o in por_modelo[b]}
-    comuns = sorted(set(mapa_a) & set(mapa_b))
-    so_a = sum(1 for i in comuns if mapa_a[i].match_top1 and not mapa_b[i].match_top1)
-    so_b = sum(1 for i in comuns if mapa_b[i].match_top1 and not mapa_a[i].match_top1)
-    ambos = sum(1 for i in comuns if mapa_a[i].match_top1 and mapa_b[i].match_top1)
-    p = _mcnemar_exato(so_a, so_b)
-
-    print(f"\n### McNemar pareado: {a} vs {b} (n={len(comuns)} issues comuns)")
-    print(f"  ambos acertam      : {ambos}")
-    print(f"  só {a[:20]:<20}: {so_a}")
-    print(f"  só {b[:20]:<20}: {so_b}")
-    print(f"  p-valor (exato)    : {p:.4f} {'← significativo' if p < 0.05 else '(não significativo)'}")
-    print("  nota: o n do teste são as issues; se houve reuso, estímulos distintos são menos.")
+    print(f"\n### McNemar pareado: {a} vs {b}")
+    for unit, rotulo in (("stimulus", "ESTIMULO (correto)"), ("issue", "issue (inflado)")):
+        r = paired_comparison(por_modelo[a], por_modelo[b], unit=unit)
+        veredicto = "← significativo" if r["p_value"] < 0.05 else "(nao significativo)"
+        print(f"  [{rotulo}] n={r['n']} | ambos={r['ambos']} | "
+              f"so {a[:16]}={r['so_a']} | so {b[:16]}={r['so_b']} | "
+              f"p={r['p_value']:.4f} {veredicto}")
+    print("  Reportar a linha de ESTIMULO: com reuso, uma resposta do LLM e copiada")
+    print("  para todas as issues equivalentes, e contar as copias trata replicacao")
+    print("  como evidencia independente.")
 
 
 def main(argv: list[str] | None = None) -> int:

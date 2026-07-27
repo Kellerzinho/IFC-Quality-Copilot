@@ -17,8 +17,9 @@ O denominador é o mesmo do ``Evaluator``: issues com entrada no ground truth.
 from __future__ import annotations
 
 import json
+from math import comb
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -176,6 +177,64 @@ def aggregate_by_stratum(outcomes: list[IssueOutcome]) -> list[dict[str, Any]]:
         linhas.append(linha)
 
     return sorted(linhas, key=lambda row: -row["n"])
+
+
+def mcnemar_exact(b: int, c: int) -> float:
+    """p-valor bilateral do teste de McNemar exato (binomial com p=0,5).
+
+    ``b`` = acertos só do modelo A; ``c`` = só do B. Concordâncias não carregam
+    informação sobre a diferença e ficam fora do teste.
+    """
+    n = b + c
+    if n == 0:
+        return 1.0
+    k = min(b, c)
+    cauda = sum(comb(n, i) for i in range(k + 1)) / (2**n)
+    return min(1.0, 2 * cauda)
+
+
+def paired_comparison(
+    outcomes_a: list[IssueOutcome],
+    outcomes_b: list[IssueOutcome],
+    unit: Literal["stimulus", "issue"] = "stimulus",
+) -> dict[str, Any]:
+    """Compara dois modelos nas mesmas observações, com McNemar exato.
+
+    ``unit="stimulus"`` (default) conta **uma observação por chamada real ao
+    LLM**: com ``--reuse-equivalent`` uma resposta é copiada para todas as issues
+    equivalentes, e contar as cópias trata replicação como evidência. No prédio,
+    6 estímulos de ``FireRating`` respondem por 1020 issues — no nível de issue,
+    2 respostas de diferença viram "p < 0,0001".
+
+    ``unit="issue"`` existe para mostrar essa inflação, não para reportar.
+    """
+
+    def indexar(outcomes: list[IssueOutcome]) -> dict[str, IssueOutcome]:
+        if unit == "issue":
+            return {o.issue_id: o for o in outcomes}
+        # Um representante por estimulo: a primaria e suas copias compartilham
+        # a mesma resposta do LLM, entao qualquer uma serve.
+        por_estimulo: dict[str, IssueOutcome] = {}
+        for o in outcomes:
+            por_estimulo.setdefault(o.reused_from or o.issue_id, o)
+        return por_estimulo
+
+    mapa_a = indexar(outcomes_a)
+    mapa_b = indexar(outcomes_b)
+    comuns = sorted(set(mapa_a) & set(mapa_b))
+
+    so_a = sum(1 for k in comuns if mapa_a[k].match_top1 and not mapa_b[k].match_top1)
+    so_b = sum(1 for k in comuns if mapa_b[k].match_top1 and not mapa_a[k].match_top1)
+    ambos = sum(1 for k in comuns if mapa_a[k].match_top1 and mapa_b[k].match_top1)
+
+    return {
+        "unit": unit,
+        "n": len(comuns),
+        "ambos": ambos,
+        "so_a": so_a,
+        "so_b": so_b,
+        "p_value": mcnemar_exact(so_a, so_b),
+    }
 
 
 def write_outcomes_jsonl(outcomes: list[IssueOutcome], path: str | Path) -> str:
