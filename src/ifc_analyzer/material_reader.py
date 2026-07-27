@@ -25,8 +25,19 @@ from loguru import logger
 from pydantic import BaseModel, Field
 
 # Nome da quantidade que carrega a espessura, por classe de elemento.
-_THICKNESS_QUANTITY = {"IfcSlab": ("Depth", "Width"), "IfcRoof": ("Depth", "Width")}
-_THICKNESS_QUANTITY_DEFAULT = ("Width", "Depth")
+#
+# So classes em que Width/Depth SIGNIFICAM espessura de secao entram aqui: numa
+# esquadria (IfcWindow/IfcDoor), Width e a LARGURA do vao — uma janela de 1,5 m
+# entrou no prompt termico como "Espessura total: 1.5 m" quando o fallback era
+# generico (regressao de 2026-07-27). Classe fora da tabela = sem fallback.
+_THICKNESS_QUANTITY: dict[str, tuple[str, ...]] = {
+    "IfcWall": ("Width",),
+    "IfcWallStandardCase": ("Width",),
+    "IfcSlab": ("Depth", "Width"),
+    "IfcRoof": ("Depth", "Width"),
+    "IfcCovering": ("Width",),
+    "IfcPlate": ("Width",),
+}
 
 
 class MaterialReading(BaseModel):
@@ -65,12 +76,14 @@ def _layer_quantities(element: ifcopenshell.entity_instance) -> list[tuple[str, 
 
 def _total_thickness_quantity(element: ifcopenshell.entity_instance) -> float | None:
     """Espessura total do elemento no conjunto de quantidades (Width/Depth)."""
+    nomes = _THICKNESS_QUANTITY.get(element.is_a())
+    if not nomes:
+        return None
     try:
         qtos = ifcopenshell.util.element.get_psets(element, qtos_only=True)
     except Exception:
         return None
 
-    nomes = _THICKNESS_QUANTITY.get(element.is_a(), _THICKNESS_QUANTITY_DEFAULT)
     for nome in nomes:
         for quantities in qtos.values():
             if not isinstance(quantities, dict):

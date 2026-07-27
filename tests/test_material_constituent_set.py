@@ -154,6 +154,49 @@ def test_layer_set_classico_continua_lido(wall_com_layer_set):
     assert leitura.total_thickness_m == pytest.approx(0.20)
 
 
+def test_largura_de_janela_nunca_vira_espessura():
+    """``Width`` de esquadria é a LARGURA do vão, não espessura de camada.
+
+    Regressão de 2026-07-27: o fallback genérico de ``Width`` fez uma janela de
+    1,5 m de largura entrar no prompt térmico como "Espessura total: 1.5 m", e
+    o template tratou a esquadria como parede.
+    """
+    f = ifcopenshell.file(schema="IFC4")
+    window = f.create_entity("IfcWindow", GlobalId=ifcopenshell.guid.new(), Name="Janela 1.5x1.0")
+    vidro = f.create_entity("IfcMaterial", Name="Vidro simples")
+    cset = f.create_entity(
+        "IfcMaterialConstituentSet",
+        Name="Esquadria",
+        MaterialConstituents=[f.create_entity("IfcMaterialConstituent", Material=vidro)],
+    )
+    f.create_entity(
+        "IfcRelAssociatesMaterial",
+        GlobalId=ifcopenshell.guid.new(),
+        RelatedObjects=[window],
+        RelatingMaterial=cset,
+    )
+    qto = f.create_entity(
+        "IfcElementQuantity",
+        GlobalId=ifcopenshell.guid.new(),
+        Name="Qto_WindowBaseQuantities",
+        Quantities=[
+            f.create_entity("IfcQuantityLength", Name="Width", LengthValue=1.5),
+            f.create_entity("IfcQuantityLength", Name="Height", LengthValue=1.0),
+        ],
+    )
+    f.create_entity(
+        "IfcRelDefinesByProperties",
+        GlobalId=ifcopenshell.guid.new(),
+        RelatedObjects=[window],
+        RelatingPropertyDefinition=qto,
+    )
+
+    leitura = read_material_layers(window)
+
+    assert leitura.total_thickness_m is None, "largura do vão contaminou a espessura"
+    assert [c["name"] for c in leitura.layers] == ["Vidro simples"]
+
+
 def test_elemento_sem_material_nao_quebra():
     f = ifcopenshell.file(schema="IFC4")
     wall = f.create_entity("IfcWall", GlobalId=ifcopenshell.guid.new(), Name="sem material")
