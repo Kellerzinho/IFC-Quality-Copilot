@@ -85,6 +85,16 @@ def _repo_commit() -> str | None:
         return None
 
 
+_REPO_COMMIT_AT_IMPORT: str | None = _repo_commit()
+"""Commit do repositorio quando o processo carregou este modulo.
+
+O metadata precisa descrever o codigo EXECUTADO. Lendo o HEAD ao final de um
+estagio de horas, um commit feito no meio da medicao era gravado como se tivesse
+rodado — aconteceu em 2026-07-28, com o run registrando um commit criado ~40 min
+depois de o processo iniciar.
+"""
+
+
 def _ollama_version() -> str | None:
     """Retorna a versão do Ollama instalado (best-effort), ou None."""
     try:
@@ -342,7 +352,7 @@ class ExperimentRunner:
                         ids_sha256=sha256_of(ids_path),
                         ground_truth_sha256=sha256_of(ground_truth_path),
                         prompt_version=PROMPT_VERSION,
-                        repo_commit=_repo_commit(),
+                        repo_commit=_REPO_COMMIT_AT_IMPORT,
                         cache_enabled=cache_enabled,
                         reuse_equivalent=reuse_equivalent,
                         bsdd_cache_sha256=sha256_of(settings.bsdd_cache_path),
