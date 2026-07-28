@@ -96,62 +96,61 @@ nunca casam, então `expected_datatype`/`allowed_values` não fluem para o
 caminho grounded genérico e o downgrade por tipo nunca dispara. Vale corrigir
 quando o caminho `pset_missing` genérico entrar no experimento.
 
-## 4. Perfil de dificuldade por modelo (e o direcionamento aplicado)
+## 4. Perfil de dificuldade por modelo (o achado a dimensionar no artigo)
 
-Mecanismo novo: `src/suggestion_engine/model_hints.py`, bloco "DIRECIONAMENTO
-DE PROCESSO" anexado por (família do modelo × estrato) em
-`SuggestionGenerator.generate` — vale nos 4 caminhos de prompt, entra no
-`prompt_hash`, e o guardrail `tests/test_model_hints_nao_vaza_gabarito.py`
-varre cada texto contra os GTs (pegou 1 vazamento durante o desenvolvimento:
-"pistas de ENTRADA" colidia com a alternativa "Entrada" do GT).
+**Decisão de desenho (2026-07-28): o prompt é UM instrumento uniforme.** Um
+protótipo de direcionamento por família de modelo chegou a ser implementado e
+foi **removido por decisão do autor**: a evidência e o direcionamento genérico
+vão nos templates, iguais para todos, e se um modelo não chega à resposta com o
+direcionamento correto, isso é exatamente o que o experimento mede. Prompt
+calibrado por modelo quebraria a comparabilidade (cada LLM medida por um
+instrumento diferente) e mascararia as diferenças que o artigo quer dimensionar.
+Os perfis abaixo são, portanto, resultado — não defeito a compensar.
+
+Taxonomia dos mecanismos de erro observados (com o prompt idêntico):
+**colapso de moda** (responder o ambiente mais frequente, ignorando a
+evidência), **eco de contexto** (copiar um dado do prompt como resposta),
+**indisciplina de valor** (JSON válido com valor fora do formato/vocabulário),
+**ancoragem no limite normativo** (responder o critério de aprovação em vez de
+calcular) e **hiperespecificidade** (qualificação técnica no lugar do termo de
+planta).
 
 - **gemma2:9b** — melhor geral; único forte nos 2 datasets. Fraquezas: grafia
-  do token de Category (formato), térmico de laje ancorado em ~1,85-2,0 (limite
-  normativo do piso, apesar da ATENÇÃO), fogo com minutos trocados. Hints:
-  leves (token literal, memória de cálculo, TRRF).
-- **qwen3.5:4b** — melhor no fogo (4/6; sem hint lá para não perturbar);
-  térmico bom em parede/janela, ancora em 2,0 nas lajes. No masked despenca
-  (0,23; top3 0,29 — o certo nem está no top-3): nomes hiperespecíficos
-  ("Área Técnica de Esgoto", "Ambiente Técnico (Sifonagem)") no lugar do termo
-  de planta. Hints: nome usual de projeto; evidência específica no Category
-  (viés SERVICE_AREA); memória de cálculo.
+  do token de Category (19/47 erros eram formato: "LIVING ROOM", `_BEDROOM_`),
+  térmico de laje ancorado em ~1,85-2,0 (limite normativo do piso, apesar da
+  ATENÇÃO) e minutos trocados no fogo.
+- **qwen3.5:4b** — melhor no fogo (4/6); térmico bom em parede/janela, ancora
+  em 2,0 nas lajes. No masked despenca (0,23; top3 0,29 — o certo nem está no
+  top-3): nomes hiperespecíficos ("Área Técnica de Esgoto", "Ambiente Técnico
+  (Sifonagem)") no lugar do termo de planta.
 - **qwen3.5:9b** — sistema 1,00; masked com o mesmo vício de nome técnico
   ("Área Técnica …" em 15+ estímulos). Fogo colapsa em escada EI 60/90/120
-  (0,17 aqui, mas 0,007 por issue: erra exatamente os estímulos grandes) e
-  Category ecoa números do contexto. Hints: letra por função + TRRF; token
-  textual; nome de projeto (via família).
+  (0,17 por estímulo, 0,007 por issue: erra exatamente os estímulos grandes) e
+  Category ecoa números do contexto (área, nome numérico).
 - **qwen2.5:7b-instruct** — obediente a vocabulário; fogo em escada EI fixa;
   masked devolve a classe de função da INFERÊNCIA como nome final ("Passagem
-  Vertical") e tem 22 acertos presos no top-3 (ordenação!). Térmico emite
-  1,23456789/1,894… (placeholders e limite normativo). Hints: letra+TRRF; nome
-  de projeto + evidência específica; memória de cálculo.
+  Vertical") e tem 22 acertos presos no top-3 (problema de ordenação). Térmico
+  emite 1,23456789/1,894… (placeholder e limite normativo).
 - **llama3.1:8b** — sólido em sistema (0,82)/LoadBearing; fogo com EI em tudo
   (até E em escada); térmico bimodal (janelas certas, 10 estímulos em
   subestimativa >50%); Category com coringas LIVING_ROOM/TECHNICAL_AREA.
-  Hints: letra+TRRF; memória; evidência específica.
 - **granite4:tiny-h** — surpresa do masked (0,43, 3º) e rápido (p50 3,8 s).
-  Térmico: **0/19 com padrão único** — 10 estímulos entre 10-20% abaixo (soma
-  resistências a mais); fogo em escada R 30/60/90. Hints: soma sem termos
-  extras; letra+TRRF; evidência específica.
+  Térmico: **0/19 com padrão único** — 10 estímulos entre 10-20% abaixo do
+  cálculo (soma resistências a mais); fogo em escada R 30/60/90.
 - **mistral:7b** — masked ok (0,41); resto colapsa: fogo **0/6 com classes de
   uma letra** (E 60, R 30 — não cumprem requisito de compartimentação), sistema
   com classes IFC inventadas, térmico caótico (237, 568 = eco de números).
-  Top-3 do prédio é 0,54 (o conhecimento existe; o top-1 é indisciplina).
-  Hints: E+I juntos quando compartimenta; rótulo literal da lista; ordem de
-  grandeza.
+  Top-3 do prédio é 0,54: o conhecimento existe, o top-1 é indisciplina.
 - **falcon3:7b** — janelas térmicas 8/8, e no masked a patologia mais clara da
   matriz: top-1 fixo "Sala de Estar" (43×) com o acerto no top-3 (26×) —
-  ordenação por prior, não por evidência. Category colapsa em OFFICE/KITCHEN;
-  térmico emite absurdos (1296449). Hints: evidência específica com
-  justificativa citando o elemento; ordem de grandeza; rótulo literal.
+  ordena por prior, não por evidência. Category colapsa em OFFICE/KITCHEN;
+  térmico emite absurdos (1296449).
 - **phi4-mini** — mais rápido (p50 3,5 s), pior qualidade. No masked nomeia o
   ambiente com a linha de CONTEXTO ("Residencial Multifamiliar - Zona
   Bioclimática 3", 48×) — não entende o escopo da tarefa. Fogo R 90 fixo;
-  térmico 0/19 em subestimativa profunda; sistema ecoa nome do objeto. Hints:
-  escopo do recinto; letra+TRRF; memória + ordem de grandeza; rótulo literal.
+  térmico 0/19 em subestimativa profunda; sistema ecoa nome do objeto.
 - **lfm2.5:8b** — colapso de moda extremo: Category → BEDROOM (46/77!),
-  masked → "Sala de Estar" (38×); sistema ecoa nomes do objeto. Hints:
-  evidência específica + token textual; rótulo literal; letra do fogo.
+  masked → "Sala de Estar" (38×); sistema ecoa nomes do objeto.
 
 ## 5. O que NÃO é fraqueza de modelo (decisões de GT/experimento)
 
@@ -181,18 +180,21 @@ varre cada texto contra os GTs (pegou 1 vazamento durante o desenvolvimento:
   térmico de parede e laje; no space: pia decidida pelo conjunto, vaso
   sanitário ≠ vaso de planta, equipamento de combate a incêndio → circulação,
   série homogênea → nomear pelo conteúdo, dezenas de assentos → uso coletivo.
-- `model_hints.py` + hook em `suggestion.py`: direcionamento por família
-  (tabela da seção 4), com precedência de tag exata (qwen3.5:4b ≠ :9b).
-- Guardrails: suíte inteira verde (964); `test_prompt_nao_vaza_gabarito` e o
-  novo `test_model_hints_nao_vaza_gabarito` passam.
+  Tudo **genérico e idêntico para todos os modelos** — o direcionamento por
+  família de modelo foi prototipado e removido (ver seção 4).
+- Guardrail: suíte inteira verde; `test_prompt_nao_vaza_gabarito` passa sobre
+  os templates novos. (Durante o protótipo descartado, a mesma varredura pegou
+  um vazamento acidental — a palavra "Entrada", alternativa aceita no GT — o
+  que confirma o valor de rodá-la sobre qualquer texto novo de prompt.)
 
-**Nota metodológica (importante para o artigo):** tudo aqui foi escrito DEPOIS
-de olhar os erros — exatamente a condição da lição dos 13,6 pp. As defesas:
-(a) conteúdo restrito a processo/formato/procedimento normativo, jamais valor,
-faixa ou nome do GT; (b) guardrail automatizado sobre templates E hints;
-(c) as duas condições (v5 sem hints / v6 com hints) ficam distinguíveis pelo
-`prompt_version` no metadata — reportar como condições separadas, e o ganho de
-v6 deve ser lido como "engenharia de prompt informada por análise de erro",
-não como capacidade nova do modelo. Para validar barato antes de refazer a
-matriz: `scripts/mede_estrato.py` num estrato por vez (~5 min), começando por
-Category (maior efeito esperado: LongName) e térmico de laje.
+**Nota metodológica (importante para o artigo):** os complementos de template
+foram escritos DEPOIS de olhar os erros — exatamente a condição da lição dos
+13,6 pp. As defesas: (a) conteúdo restrito a evidência do arquivo, processo e
+procedimento normativo, jamais valor, faixa ou nome do GT; (b) guardrail
+automatizado sobre os templates; (c) prompt idêntico para todos os modelos;
+(d) v5 e v6 ficam distinguíveis pelo `prompt_version` no metadata — reportar
+como condições separadas, e o ganho de v6 deve ser lido como correção de
+evidência + engenharia de prompt genérica informada por análise de erro, não
+como capacidade nova de modelo. Para validar barato antes de refazer a matriz:
+`scripts/mede_estrato.py` num estrato por vez (~5 min), começando por Category
+(maior efeito esperado: LongName) e térmico de laje.

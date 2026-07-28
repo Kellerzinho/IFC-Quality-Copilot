@@ -38,7 +38,6 @@ from src.suggestion_engine.issue_deduplicator import (
     _rounded_measure,
     is_safe_to_reuse,
 )
-from src.suggestion_engine.model_hints import hints_for
 from src.suggestion_engine.normalization import (
     normalize_suggestion,
     normalize_value_for_issue,
@@ -192,15 +191,11 @@ class SuggestionGenerator:
                 ids_context=ids_context,
             )
 
-        # Direcionamento por família de modelo (v6): processo e formato,
-        # calibrados pela análise de erros de 2026-07-28 — nunca conteúdo do
-        # gabarito (guardrail em tests/test_model_hints_nao_vaza_gabarito.py).
-        # Aplicado aqui para valer nos quatro caminhos de prompt e entrar no
-        # prompt_hash e no prompt de retry.
-        hint_block = hints_for(self._model_version, issue)
-        if hint_block:
-            user = f"{user}\n\n{hint_block}"
-
+        # Decisão de desenho (2026-07-28): NÃO existe direcionamento por modelo.
+        # O prompt é o mesmo instrumento para todas as LLMs — a evidência e o
+        # direcionamento genérico vão nos templates; a diferença de desempenho
+        # entre modelos é o objeto de medição do experimento, não algo a
+        # compensar por prompt calibrado por família.
         prompt_hash = self._hash_prompt(system, user)
 
         # ----- Chamada LLM com retry seletivo (apenas para falha JSON/schema) -----

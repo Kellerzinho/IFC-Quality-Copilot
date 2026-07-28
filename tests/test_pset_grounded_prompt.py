@@ -225,7 +225,7 @@ class TestPsetGroundedPromptScenarios:
 
 class TestPromptVersion:
     def test_prompt_version_is_v6(self):
-        """v6: LongName no Category, TRRF no fogo, memória de cálculo no térmico e hints por modelo."""
+        """v6: LongName no Category, TRRF no fogo e memória de cálculo no térmico — prompt único para todos os modelos."""
         assert PROMPT_VERSION == "v6"
 
     def test_prompt_version_single_source(self):

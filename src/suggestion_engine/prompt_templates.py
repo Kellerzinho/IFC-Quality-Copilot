@@ -15,8 +15,9 @@ if TYPE_CHECKING:
 # v4: contrato genérico não é mais anexado ao template de space_unnamed
 # (só o prompt de nomeação muda entre v3 e v4; demais tarefas são idênticas).
 # v6: evidência de LongName no Category, procedimento TRRF no fogo, memória de
-# cálculo obrigatória no térmico e direcionamento por família de modelo
-# (model_hints.py), calibrados pela análise de erros do run 2026-07-28.
+# cálculo obrigatória no térmico e desambiguação de mobiliário na nomeação —
+# evidência + direcionamento GENÉRICO, idêntico para todos os modelos (a
+# diferença entre LLMs é o objeto de medição; ver análise do run 2026-07-28).
 PROMPT_VERSION = "v6"
 
 SYSTEM_PROMPT_COMPACT = (
