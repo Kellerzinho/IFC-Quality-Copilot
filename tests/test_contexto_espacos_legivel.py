@@ -139,26 +139,32 @@ def test_sem_bounding_box_nao_inventa_dimensao():
 # ---------------------------------------------------------------------------
 
 
-def test_tabela_cobre_ambientes_de_condominio():
-    """O prédio é multifamiliar: metade dos espaços é área comum, não apartamento.
+def test_prompt_ensina_a_inferir_funcao_em_vez_de_listar_ambientes():
+    """A pista tem de ser o raciocínio, não o catálogo de ambientes deste prédio.
 
-    Sem essas linhas o modelo respondeu 'Sala de Estar'/'Dormitório' para
-    medidores, hidrômetros, central de gás, lixo e cisterna.
+    A primeira versão deste bloco listava medidor, hidrômetro, gás, lixo,
+    cisterna, quadra, playground e guarita — vocabulário correto, mas escolhido
+    a partir da lista de erros deste condomínio: num hospital ou galpão não
+    serve, e vários daqueles termos são alternativas aceitas no ground truth.
+    A regra passou a ser função ("para que serve o equipamento"), que vale em
+    qualquer tipologia e não entrega nome nenhum.
     """
     issue = _space_issue()
 
     _, user = build_prompt(issue, _BUILDING_CTX)
 
-    texto = user.lower()
-    for pista in ("medidor", "hidrômetro", "gás", "lixo", "cisterna"):
-        assert pista in texto, f"tabela de interpretação não cobre '{pista}'"
+    assert "INFERÊNCIA DE FUNÇÃO" in user
+    assert "PARA QUE SERVE" in user
+    for funcao in ("ambiente técnico", "armazenagem", "lazer", "passagem vertical"):
+        assert funcao in user.lower(), f"classe de função ausente: '{funcao}'"
 
 
-def test_tabela_cobre_lazer_e_circulacao_vertical():
+def test_prompt_nao_lista_ambientes_especificos_deste_predio():
+    """Guardrail local: os termos retirados não podem voltar pela porta dos fundos."""
     issue = _space_issue()
 
     _, user = build_prompt(issue, _BUILDING_CTX)
 
     texto = user.lower()
-    for pista in ("churrasqueira", "playground", "escada"):
-        assert pista in texto, f"tabela de interpretação não cobre '{pista}'"
+    for termo in ("hidrômetro", "cisterna", "playground", "guarita", "churrasqueira"):
+        assert termo not in texto, f"ambiente específico do prédio voltou ao prompt: '{termo}'"
