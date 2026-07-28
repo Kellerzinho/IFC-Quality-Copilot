@@ -269,6 +269,6 @@ def test_retry_de_fire_rating_mantem_instrucao_de_formato():
 # ---------------------------------------------------------------------------
 
 
-def test_prompt_version_avancou_para_v5():
-    """O redesenho P0 muda o comportamento do LLM; caches v4 não podem ser reusados."""
-    assert PROMPT_VERSION == "v5"
+def test_prompt_version_avancou_para_v6():
+    """Evidência nova (LongName, telhado) + hints por modelo mudam o prompt; caches v5 não podem ser reusados."""
+    assert PROMPT_VERSION == "v6"

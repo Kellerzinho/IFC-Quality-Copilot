@@ -171,6 +171,14 @@ def read_material_layers(element: ifcopenshell.entity_instance) -> MaterialReadi
         return MaterialReading()
 
     if material is None:
+        # Containers agregadores (IfcRoof do Revit, escadas montadas) nao levam
+        # material proprio: ele esta nas partes via IfcRelAggregates. Medido em
+        # 2026-07-28: os 5 IfcRoof do predio chegavam ao prompt termico com
+        # "Material: None / Camadas: nao informado" — sem camadas nao ha como
+        # calcular U, e todos os modelos erraram os telhados.
+        leitura_partes = _read_from_aggregated_parts(element)
+        if leitura_partes is not None:
+            return leitura_partes
         return MaterialReading()
 
     try:
@@ -190,3 +198,29 @@ def read_material_layers(element: ifcopenshell.entity_instance) -> MaterialReadi
         logger.warning("Erro ao interpretar material de {}: {}", element.is_a(), exc)
 
     return MaterialReading(material_name=getattr(material, "Name", None))
+
+
+def _read_from_aggregated_parts(
+    element: ifcopenshell.entity_instance,
+    _depth: int = 0,
+) -> MaterialReading | None:
+    """Herda a leitura de material da primeira parte agregada que tiver uma.
+
+    ``IfcRoof`` (e outros containers) decompõe-se em partes via
+    ``IfcRelAggregates``; o material mora nas partes. Profundidade limitada a 2
+    níveis para não varrer árvores inteiras nem ciclar em modelos malformados.
+    """
+    if _depth >= 2:
+        return None
+    try:
+        for rel in getattr(element, "IsDecomposedBy", None) or []:
+            for parte in getattr(rel, "RelatedObjects", None) or []:
+                leitura = read_material_layers(parte)
+                if leitura.material_name or leitura.layers:
+                    return leitura
+                aninhada = _read_from_aggregated_parts(parte, _depth + 1)
+                if aninhada is not None:
+                    return aninhada
+    except Exception as exc:
+        logger.debug("Erro ao ler material das partes de {}: {}", element.is_a(), exc)
+    return None

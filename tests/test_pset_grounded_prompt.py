@@ -224,9 +224,9 @@ class TestPsetGroundedPromptScenarios:
 
 
 class TestPromptVersion:
-    def test_prompt_version_is_v5(self):
-        """v5: templates ricos preservados sob grounding + contratos com 3 opções (P0)."""
-        assert PROMPT_VERSION == "v5"
+    def test_prompt_version_is_v6(self):
+        """v6: LongName no Category, TRRF no fogo, memória de cálculo no térmico e hints por modelo."""
+        assert PROMPT_VERSION == "v6"
 
     def test_prompt_version_single_source(self):
         """suggestion_cache re-exporta a mesma constante (sem deriva)."""

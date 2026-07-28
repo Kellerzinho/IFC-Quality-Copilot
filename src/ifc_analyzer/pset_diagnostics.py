@@ -316,6 +316,15 @@ def _check_element(
             # Para IfcSpace.Category, enriquecer com elementos contidos e adjacências
             if element_class == "IfcSpace" and prop_name == "Category":
                 try:
+                    # IfcSpace guarda o USO em LongName ("Sacada", "Medidores de
+                    # Luz"); Name e so o numero do recinto. O benchmark de
+                    # 2026-07-28 mediu Category com o prompt mostrando apenas o
+                    # Name numerico — a evidencia mais forte do arquivo nunca
+                    # chegava ao LLM.
+                    long_name = getattr(element, "LongName", None)
+                    issue_context["long_name"] = (
+                        str(long_name).strip() if long_name and str(long_name).strip() else None
+                    )
                     issue_context["contained_elements"] = _extract_contained_elements(
                         element, ifc_file
                     )
