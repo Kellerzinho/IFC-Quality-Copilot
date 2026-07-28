@@ -59,13 +59,22 @@ def test_fogo_nao_ancora_o_modelo_em_rei():
 
 
 def test_fogo_ensina_a_diferenca_entre_R_E_I():
-    """Sem a regra, o modelo responde REI para divisória não portante."""
+    """Explica o critério R/E/I sem transformá-lo em regra rígida.
+
+    Medido em 27/07: a versão com ``REGRA: se LoadBearing for False, o valor NÃO
+    pode começar com R`` empurrou o modelo para EI em TODA parede e derrubou o
+    estrato de 0,775 para 0,352 — inclusive nas paredes de alvenaria de
+    compartimentação, que a prática brasileira especifica como REI. O critério
+    continua no prompt; a decisão volta a ser do modelo, com material e
+    espessura à vista.
+    """
     issue = _issue("IfcWall", "FireRating", material_name="Dry-Wall 10cm", load_bearing=False)
 
     _, user = build_prompt(issue, _BUILDING_CTX)
 
     assert "EI" in user and "REI" in user
     assert "portante" in user.lower(), "prompt não explica quando cabe R (portante)"
+    assert "NÃO pode começar com R" not in user, "regra rígida voltou"
 
 
 def test_termico_de_laje_nao_exemplifica_um_valor_fixo():
@@ -174,12 +183,18 @@ def test_esquadria_nao_recebe_espessura_de_parede():
 
 
 def test_category_exige_token_exato_do_vocabulario():
+    """A restrição é afirmativa: 'copie exatamente', não 'não traduza'.
+
+    A versão com proibição explícita foi medida em 27/07 e teve efeito contrário
+    — mencionar 'não traduza para português' fez o modelo passar a responder
+    ``SALA DE ESTAR``/``BANHEIRO``. Ver ``test_correcoes_prompt_medidas.py``.
+    """
     issue = _issue("IfcSpace", "Category", area_m2=12.0, contained_elements=[])
 
     _, user = build_prompt(issue, _BUILDING_CTX)
 
     assert "EXATAMENTE" in user or "exatamente" in user
-    assert "traduza" in user.lower() or "não traduza" in user.lower()
+    assert "descartado" in user.lower(), "sem consequência declarada a restrição é frouxa"
 
 
 def test_sistema_construtivo_exige_rotulo_da_lista():

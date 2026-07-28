@@ -98,6 +98,30 @@ def _as_float(value: Any) -> float | None:
     return parse_numeric_value(value)
 
 
+def _as_scalar_number(value: Any) -> float | None:
+    """Float de um valor que É um número — não de um texto que apenas contém um.
+
+    ``"REI 60"`` contém 60 mas é uma **classe** de resistência ao fogo. Tratá-lo
+    como número fazia ``EI 60``, ``R 60`` e ``REI 60`` casarem entre si, e o
+    estrato de FireRating (40% do ground truth do prédio) passou a medir só a
+    duração em minutos — ``EI 60`` não cumpre um requisito ``REI 60``.
+
+    Texto integralmente numérico (``"2.48"``, que é como o LLM devolve grandeza)
+    continua sendo número.
+    """
+    if isinstance(value, bool) or value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, str):
+        texto = value.strip().replace(",", ".")
+        try:
+            return float(texto)
+        except ValueError:
+            return None
+    return None
+
+
 def _compare_normalized(
     candidate: Any,
     expected: Any,
@@ -113,8 +137,11 @@ def _compare_normalized(
         if isinstance(candidate, bool) or isinstance(expected, bool):
             return cand_bool == exp_bool
 
-    cand_num = _as_float(candidate)
-    exp_num = _as_float(expected)
+    # Comparacao numerica so quando os DOIS lados sao mesmo numeros: string com
+    # numero embutido ("REI 60") e categoria, e comparar categorias pelo numero
+    # apagava a distincao entre classes de resistencia ao fogo.
+    cand_num = _as_scalar_number(candidate)
+    exp_num = _as_scalar_number(expected)
     if cand_num is not None and exp_num is not None:
         if exp_num == 0.0:
             return abs(cand_num) <= 1e-9
