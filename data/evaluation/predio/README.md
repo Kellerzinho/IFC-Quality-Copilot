@@ -51,11 +51,12 @@ item continua obrigatória — é ela que transforma o rascunho em padrão-ouro.
 
    | Campo | Valor |
    |---|---|
-   | SHA256 | `3924D611219A00A05BF2643EB19D43300DC9EBDF391DB72B0E5AFF3E5F366BA3` |
+   | SHA256 | `D08D2C7466A71C0CDE467A959ED2AEBFD4857D1DA64944E4504F8F97D4EDD6F6` (emenda 2026-08-02, **pendente ratificação**) |
+   | SHA256 da aprovação integral | `3924D611219A00A05BF2643EB19D43300DC9EBDF391DB72B0E5AFF3E5F366BA3` (2026-07-02) |
    | Itens | 2546 (1674 `pset_missing` + 872 `system_unclassified`), 100% verified |
    | Abstenções | 246 (documentadas no próprio YAML, seção `skipped`) |
    | Revisor | Felipe Keller (autor do projeto) |
-   | Data | 2026-07-02 |
+   | Data | 2026-07-02; emenda EI/REI em 2026-08-02 (ver `REVISAO_GT.md`, seção Emendas) |
 
    Qualquer alteração posterior exige nova revisão e novo hash.
    Pendência externa: comunicar a rota norm-derived ao orientador e declarar

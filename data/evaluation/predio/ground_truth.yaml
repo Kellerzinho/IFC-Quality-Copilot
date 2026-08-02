@@ -14,6 +14,12 @@ metadata:
   verified_at: '2026-07-02'
   review_note: Revisao integral pelo autor sobre REVISAO_GT.md (itens agrupados por tipo/valor/justificativa);
     aprovacao integral em 2026-07-02.
+  amended_at: '2026-08-02'
+  amendment_note: 'Emenda 2026-08-02 (regra declarada do experimento): em vedacoes com
+      Pset_WallCommon.LoadBearing=false no modelo, a classe EI de duracao maior ou igual a
+      exigida e aceita como alternativa ao REI da pratica de compartimentacao (grupos parede
+      interna 20cm_growarq e Parede externa 20cm, 429 itens de FireRating). LoadBearing=false
+      verificado no IFC congelado. Pendente ratificacao do autor (ver REVISAO_GT.md, Emendas).'
 items:
 - element_guid: 0gBlY4dZT8wu7sm1v$9tQi
   issue_type: pset_missing
@@ -374,6 +380,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -385,6 +394,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -396,6 +408,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -407,6 +422,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -418,6 +436,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -429,6 +450,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -872,6 +896,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -883,6 +910,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -894,6 +924,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -2969,6 +3002,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -2980,6 +3016,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -2991,6 +3030,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -3002,6 +3044,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -3013,6 +3058,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -3024,6 +3072,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -3035,6 +3086,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -3046,6 +3100,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -3057,6 +3114,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -3068,6 +3128,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -3079,6 +3142,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -3110,6 +3176,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -3229,6 +3298,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -3241,6 +3313,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -3253,6 +3328,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -3286,6 +3364,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -3382,6 +3463,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -3446,6 +3530,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -3458,6 +3545,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -3470,6 +3560,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -3482,6 +3575,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -3494,6 +3590,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -3506,6 +3605,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -3518,6 +3620,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -3590,6 +3695,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -3602,6 +3710,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -3635,6 +3746,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -3674,6 +3788,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -3686,6 +3803,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -3755,6 +3875,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -3842,6 +3965,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -3853,6 +3979,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -3864,6 +3993,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -3875,6 +4007,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -3886,6 +4021,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -3897,6 +4035,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -3908,6 +4049,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -3919,6 +4063,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -3930,6 +4077,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -3941,6 +4091,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -3952,6 +4105,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -3972,6 +4128,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -3983,6 +4142,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -3994,6 +4156,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4005,6 +4170,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4016,6 +4184,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4027,6 +4198,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4038,6 +4212,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4049,6 +4226,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4060,6 +4240,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4071,6 +4254,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4082,6 +4268,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4093,6 +4282,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4149,6 +4341,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4169,6 +4364,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4180,6 +4378,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4191,6 +4392,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4247,6 +4451,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4279,6 +4486,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4290,6 +4500,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4301,6 +4514,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4339,6 +4555,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4350,6 +4569,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4361,6 +4583,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4372,6 +4597,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4383,6 +4611,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4394,6 +4625,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4405,6 +4639,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4416,6 +4653,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4427,6 +4667,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4438,6 +4681,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4449,6 +4695,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4469,6 +4718,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4480,6 +4732,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4491,6 +4746,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4502,6 +4760,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4513,6 +4774,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4524,6 +4788,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4535,6 +4802,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4555,6 +4825,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4566,6 +4839,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4577,6 +4853,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4588,6 +4867,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4617,6 +4899,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4628,6 +4913,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4639,6 +4927,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4650,6 +4941,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4679,6 +4973,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4717,6 +5014,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4728,6 +5028,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4739,6 +5042,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4750,6 +5056,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4761,6 +5070,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4772,6 +5084,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4783,6 +5098,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4811,6 +5129,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4822,6 +5143,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4833,6 +5157,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4844,6 +5171,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4907,6 +5237,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4918,6 +5251,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4957,6 +5293,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4968,6 +5307,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4979,6 +5321,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -4990,6 +5335,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -5108,6 +5456,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -5119,6 +5470,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -5409,6 +5763,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -5420,6 +5777,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -5487,6 +5847,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -5699,6 +6062,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -5719,6 +6085,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -5730,6 +6099,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -6330,6 +6702,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -6350,6 +6725,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -6361,6 +6739,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -6372,6 +6753,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -6460,6 +6844,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -6471,6 +6858,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -6512,6 +6902,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -6524,6 +6917,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -6536,6 +6932,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -6548,6 +6947,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -6559,6 +6961,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -6570,6 +6975,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -6581,6 +6989,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -6602,6 +7013,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -6614,6 +7028,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -6625,6 +7042,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -6636,6 +7056,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -6648,6 +7071,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -6660,6 +7086,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -7141,6 +7570,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -7152,6 +7584,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -7267,6 +7702,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -7278,6 +7716,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -7289,6 +7730,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -7301,6 +7745,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -7313,6 +7760,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -7325,6 +7775,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -7336,6 +7789,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -7347,6 +7803,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -7368,6 +7827,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -7506,6 +7968,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -7518,6 +7983,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -7529,6 +7997,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -7541,6 +8012,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -7553,6 +8027,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -7564,6 +8041,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -7684,6 +8164,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -7696,6 +8179,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -7708,6 +8194,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -7741,6 +8230,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -7753,6 +8245,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -8274,6 +8769,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -8328,6 +8826,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -8340,6 +8841,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -8436,6 +8940,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -8460,6 +8967,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -8472,6 +8982,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -8484,6 +8997,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -8496,6 +9012,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -8550,6 +9069,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -8692,6 +9214,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -8703,6 +9228,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -8749,6 +9277,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -8760,6 +9291,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -8771,6 +9305,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -8782,6 +9319,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -8813,6 +9353,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -8825,6 +9368,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -8837,6 +9383,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -8926,6 +9475,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -8937,6 +9489,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -8948,6 +9503,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -8960,6 +9518,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -8972,6 +9533,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -8984,6 +9548,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -9004,6 +9571,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -9015,6 +9585,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -9026,6 +9599,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -9037,6 +9613,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -9049,6 +9628,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -9061,6 +9643,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -9073,6 +9658,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -9084,6 +9672,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -9095,6 +9686,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -9106,6 +9700,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -9118,6 +9715,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -9172,6 +9772,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -9305,6 +9908,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -9317,6 +9923,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -9329,6 +9938,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -9341,6 +9953,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -9353,6 +9968,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -9365,6 +9983,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -9456,6 +10077,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -9468,6 +10092,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -9522,6 +10149,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -9534,6 +10164,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -9567,6 +10200,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -9818,6 +10454,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -9851,6 +10490,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -9863,6 +10505,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -9875,6 +10520,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -9887,6 +10535,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -9899,6 +10550,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -9911,6 +10565,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -9923,6 +10580,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -9956,6 +10616,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -10137,6 +10800,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -10149,6 +10815,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -10203,6 +10872,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -10215,6 +10887,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -10248,6 +10923,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -10411,6 +11089,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -10444,6 +11125,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -10456,6 +11140,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -10468,6 +11155,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -10480,6 +11170,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -10492,6 +11185,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -10504,6 +11200,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -10516,6 +11215,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -10549,6 +11251,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -10697,6 +11402,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -10730,6 +11438,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -10742,6 +11453,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -10754,6 +11468,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -10766,6 +11483,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -10778,6 +11498,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -10790,6 +11513,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -10802,6 +11528,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -10835,6 +11564,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -10994,6 +11726,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -11006,6 +11741,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -11060,6 +11798,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -11072,6 +11813,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -11105,6 +11849,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -11243,6 +11990,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -11255,6 +12005,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -11288,6 +12041,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -11396,6 +12152,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -11408,6 +12167,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -11441,6 +12203,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -11474,6 +12239,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -11486,6 +12254,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -11498,6 +12269,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -11510,6 +12284,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -11522,6 +12299,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -11534,6 +12314,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -11546,6 +12329,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -11579,6 +12365,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -11787,6 +12576,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -11799,6 +12591,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -11811,6 +12606,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -11823,6 +12621,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -11856,6 +12657,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -11983,6 +12787,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12085,6 +12892,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12097,6 +12907,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12151,6 +12964,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12163,6 +12979,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12196,6 +13015,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12229,6 +13051,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12262,6 +13087,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12274,6 +13102,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12370,6 +13201,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12382,6 +13216,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12436,6 +13273,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12448,6 +13288,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12481,6 +13324,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12520,6 +13366,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -12531,6 +13380,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -12542,6 +13394,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -12553,6 +13408,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -12564,6 +13422,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -12575,6 +13436,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -12586,6 +13450,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -12597,6 +13464,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -12617,6 +13487,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12629,6 +13502,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12683,6 +13559,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12695,6 +13574,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12728,6 +13610,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12815,6 +13700,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12848,6 +13736,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12860,6 +13751,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12872,6 +13766,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12884,6 +13781,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12896,6 +13796,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12908,6 +13811,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12920,6 +13826,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -12953,6 +13862,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -13179,6 +14091,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -13190,6 +14105,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -13201,6 +14119,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -13212,6 +14133,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -13223,6 +14147,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -13234,6 +14161,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -13245,6 +14175,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -13256,6 +14189,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -13310,6 +14246,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -13322,6 +14261,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -13334,6 +14276,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -13346,6 +14291,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -13358,6 +14306,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -13370,6 +14321,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -13382,6 +14336,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -13394,6 +14351,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -13596,6 +14556,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -13629,6 +14592,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -13641,6 +14607,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -13674,6 +14643,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -13686,6 +14658,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -13746,6 +14721,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -13945,6 +14923,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -13999,6 +14980,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14032,6 +15016,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14044,6 +15031,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14056,6 +15046,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14068,6 +15061,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14080,6 +15076,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14092,6 +15091,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14182,6 +15184,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14236,6 +15241,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14248,6 +15256,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14260,6 +15271,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14272,6 +15286,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14284,6 +15301,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14296,6 +15316,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14308,6 +15331,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14320,6 +15346,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14525,6 +15554,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14558,6 +15590,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14570,6 +15605,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14603,6 +15641,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14615,6 +15656,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14756,6 +15800,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14904,6 +15951,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14958,6 +16008,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14970,6 +16023,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14982,6 +16038,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -14994,6 +16053,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15006,6 +16068,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15081,6 +16146,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15114,6 +16182,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15126,6 +16197,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15159,6 +16233,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15171,6 +16248,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15222,6 +16302,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15234,6 +16317,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15255,6 +16341,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15288,6 +16377,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15327,6 +16419,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15366,6 +16461,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15378,6 +16476,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15453,6 +16554,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15486,6 +16590,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15498,6 +16605,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15510,6 +16620,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15522,6 +16635,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15534,6 +16650,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15546,6 +16665,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15558,6 +16680,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15591,6 +16716,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15907,6 +17035,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15919,6 +17050,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15952,6 +17086,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -15964,6 +17101,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16072,6 +17212,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16150,6 +17293,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16183,6 +17329,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16195,6 +17344,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16228,6 +17380,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16240,6 +17395,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16360,6 +17518,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16414,6 +17575,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16426,6 +17590,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16438,6 +17605,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16450,6 +17620,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16462,6 +17635,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16474,6 +17650,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16486,6 +17665,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16498,6 +17680,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16655,6 +17840,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16715,6 +17903,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16754,6 +17945,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16787,6 +17981,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16799,6 +17996,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16832,6 +18032,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16886,6 +18089,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16898,6 +18104,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16910,6 +18119,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16922,6 +18134,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16934,6 +18149,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16946,6 +18164,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16958,6 +18179,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -16970,6 +18194,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -17308,6 +18535,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -17362,6 +18592,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -17374,6 +18607,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -17386,6 +18622,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -17398,6 +18637,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -17410,6 +18652,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -17422,6 +18667,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -17434,6 +18682,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -17446,6 +18697,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -17647,6 +18901,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -17680,6 +18937,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -17692,6 +18952,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -17725,6 +18988,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -17737,6 +19003,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:parede interna 20cm_growarq] Alvenaria 16 cm + revestimentos, compartimentação:
     NBR 14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min. Desempenho provável do sistema ≥ 90 min
@@ -17905,6 +19174,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -17916,6 +19188,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -17927,6 +19202,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -17938,6 +19216,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -17949,6 +19230,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -17960,6 +19244,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -17971,6 +19258,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'
@@ -17982,6 +19272,9 @@ items:
   accepted_alternatives:
   - REI 90
   - REI 120
+  - EI 60
+  - EI 90
+  - EI 120
   verified: true
   notes: '[Parede básica:Parede externa 20cm] Alvenaria de bloco de concreto 15 cm + revestimentos: NBR
     14432:2001 Tab. A.1 (A-2, P3: 12<h≤23 m) → TRRF 60 min.'

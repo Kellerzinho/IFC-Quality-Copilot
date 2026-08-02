@@ -174,3 +174,54 @@ Linhas marcadas com CONFERIR pedem atenção especial.
 - NBR 15575-4/5:2021 — requisitos de desempenho (contexto dos limites)
 - IT-08 (CBPMESP) — resistência ao fogo de elementos construtivos
 - NBR 11742 — portas corta-fogo
+
+## Emendas pós-aprovação
+
+### Emenda 2026-08-02 — EI aceito em vedação não portante (⚠️ pendente ratificação do autor)
+
+**Regra declarada do experimento:** em elementos de vedação cujo modelo declara
+`Pset_WallCommon.LoadBearing = false`, a classe **EI** de duração ≥ à exigida é
+aceita como alternativa ao **REI** da prática de compartimentação. O critério
+estrito da NBR 14432 para elemento sem função estrutural é estanqueidade +
+isolamento (EI); um modelo que responde EI está seguindo a evidência dada pelo
+arquivo e não deve ser penalizado. REI 60 permanece como `expected_value`
+(resposta preferida); EI 60/90/120 entram em `accepted_alternatives`,
+espelhando o padrão já aprovado de aceitar classes superiores (REI 90/120).
+
+**Escopo (429 itens de FireRating, 2 grupos):**
+
+| Grupo | Itens | LoadBearing no IFC (amostra n=8) |
+|---|---|---|
+| Parede básica:parede interna 20cm_growarq | 262 | `False` |
+| Parede básica:Parede externa 20cm | 167 | `False` |
+
+Fora do escopo (inalterados): pilares (`R 60`, critério estrutural), escada
+monolítica (`REI 60`, estrutural + rota de fuga), drywall (`EI 30`, já EI),
+porta corta-fogo (`EI 30`).
+
+**Origem:** análise do benchmark 2026-07-28
+(`docs/analise-benchmark-2026-07-28.md`, §5 — "não é fraqueza de modelo"):
+os 2 estímulos concentravam 429/1020 issues do estrato e eram errados por
+todos os modelos que respondiam conforme a evidência.
+
+**Impacto medido (re-score do run 2026-07-28, mesma coleta, sem GPU):**
+
+| Modelo | Top-1 prédio (antes → depois) | Fogo por estímulo (de 6) |
+|---|---|---|
+| qwen3.5:4b | 0,6705 → **0,8390** | 4 → 6 |
+| gemma2:9b | 0,7361 → **0,8016** | 3 → 4 |
+| llama3.1:8b | 0,5460 → 0,7145 | 2 → 4 |
+| qwen2.5:7b-instruct | 0,4745 → 0,6430 | 2 → 4 |
+| qwen3.5:9b | 0,4183 → 0,5868 | 1 → 3 |
+| falcon3:7b | 0,2989 → 0,4018 | 1 → 2 |
+| demais (granite4, phi4-mini, lfm2.5, mistral) | sem mudança no top-1 | — |
+
+O mistral:7b segue 0,1009: classes de uma letra (`E 60`) continuam não
+cumprindo nem REI nem EI — a emenda não o beneficia, como esperado.
+
+**Nota metodológica para o artigo:** reportar o efeito da emenda como mudança
+de **critério de avaliação** (recalculável de runs gravados), separado do
+efeito do instrumento v6 (que exige nova coleta). Hash do YAML emendado:
+`D08D2C74…` (anterior, da aprovação integral: `3924D611…`).
+
+**Ratificação:** ( ) aprovo a regra declarada — Felipe Keller, data ____.
