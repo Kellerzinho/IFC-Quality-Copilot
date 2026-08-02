@@ -112,14 +112,19 @@ alerta de cobertura abaixo:
 | Campo | Valor |
 |---|---|
 | Arquivo | `predio_v1_masked.ifc` (não versionado; `*.ifc` no `.gitignore`) |
-| SHA256 | `D867AA3D97884815A02953B4CE636D12DA0901E67539BCDDCE28089F531F2277` |
-| Derivação | `predio_v1.ifc` com `LongName` dos 82 IfcSpaces removidos (o `Name` numérico do Revit é preservado e dispara `space_unnamed`) |
-| GT | `ground_truth_spaces.yaml` — 82 itens, nomes originais do autor, **100% verified** |
+| SHA256 | `750315BBFE9379937F3D45B94170C8E45C0A1280FF4237D48839CAA29E6ECEC6` (regenerado em 2026-08-02) |
+| SHA256 anterior | `D867AA3D97884815A02953B4CE636D12DA0901E67539BCDDCE28089F531F2277` (2026-07-02, sem masking de tipo/`Reference`) |
+| Derivação | `predio_v1.ifc` com `LongName` dos 82 IfcSpaces removidos (o `Name` numérico do Revit é preservado e dispara `space_unnamed`); desde 2026-08-02 o masking também remove o nome funcional que sobrevivia em `IfcSpaceType.Name` e em `Pset_SpaceCommon.Reference` (`_mask_type_and_reference`, código do commit `6be134e` — o arquivo congelado só foi regerado agora) |
+| GT | `ground_truth_spaces.yaml` — 82 itens, nomes originais do autor, **100% verified**; **não** foi regerado (a curadoria de sinônimos é preservada) |
 | Curadoria | concluída em 2026-07-02 (delegada pelo autor): sinônimos conservadores em `accepted_alternatives` para todos os 82 itens (ex.: "Lavatório Social" ≈ "Lavabo Social"/"WC Social"; "Quarto N" ≈ "Dormitório N"; "Sacada" ≈ "Varanda") |
 | SHA256 (congelado) | `F1451E983F7A6A869C908051A7C527F394CAE670E07FC3DA2A4432682C065AC8` |
 
-Verificado: `diagnose` no modelo mascarado gera exatamente 82 issues
-`space_unnamed`, casando com o GT pela chave natural.
+Verificação da regeneração (2026-08-02): paridade com o GT curado (82 GUIDs,
+`expected_value` idênticos); invariante de masking nos 82 espaços; varredura da
+identidade de cada espaço (atributos próprios + tipo relacionado + psets da
+instância e do tipo + zonas/grupos) sem nenhum dos 124 nomes/alternativas do
+GT; `diagnose` gera `space_unnamed` exatamente nos 82 GUIDs do GT (o runner
+dedupe por GUID as duas fontes — diagnóstico e regra IDS).
 
 ## ⚠️ Alerta de cobertura: nomeação de espaços
 
