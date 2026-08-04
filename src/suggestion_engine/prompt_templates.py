@@ -30,7 +30,18 @@ if TYPE_CHECKING:
 # instrução de calcular é substituída pelo contrato de memória ESTRUTURADA: o LLM
 # declara camadas e λ, e a aritmética passa a ser executada por
 # src/suggestion_engine/thermal_recompute.py. Ver docs/condicao-v7-2026-08-04.md.
-PROMPT_VERSION = "v7"
+# v7.1 (2026-08-04, tarde): duas correções abertas pelo smoke do v7, ambas do
+# tipo "o prompt estava entregando errado", nenhuma mudança de método.
+#   P0 — contrato único: os 20 templates já declaram o próprio formato JSON e o
+#        bloco anexado no fim declarava um schema DIFERENTE; o modelo seguia o
+#        último e devolvia prosa no lugar do número (11 rejeições × 0 no v6).
+#        Agora o bloco traz REGRAS, que não nomeiam campos.
+#   P1 — montante metálico como evidência: a camada interna de metal chega ao
+#        prompt anotada como câmara de ar (R = 0,17), em vez de depender da
+#        instrução em prosa que o modelo ignorava em favor da tabela de λ.
+# Atribuição no dataset: P1 só toca estímulos de parede com camada metálica
+# interna (1 estímulo, 222 issues); qualquer outro movimento é P0.
+PROMPT_VERSION = "v7.1"
 
 _MEMORIA_ESTRUTURADA_BR = (
     "MEMÓRIA ESTRUTURADA (obrigatória): declare no campo memoria_calculo as camadas "
@@ -293,6 +304,19 @@ _LLM_OUTPUT_CONTRACT = (
     '"justification": "...", "review_required": true|false, '
     '"value": ... | null, "normative_ref": ... | null } ] }. '
     "Nunca retorne URI final como verdade semantica."
+)
+"""Schema completo — só para caminhos cujo prompt NÃO declara formato próprio."""
+
+# Os 20 templates ricos ja declaram o proprio formato JSON. Colar um schema
+# DIFERENTE no fim do prompt fazia o modelo seguir o ultimo que leu: medido no
+# smoke do v7, 11 rejeicoes de parse contra 0 no v6, com a resposta vindo em
+# "label"/"canonical_term" e prosa no lugar do numero. Aqui vao so as REGRAS,
+# que nao nomeiam campos e portanto nao competem com o template.
+_LLM_OUTPUT_RULES = (
+    "Responda APENAS com o JSON no formato ja indicado acima — sem markdown, "
+    "sem texto fora do JSON e sem repetir o enunciado. "
+    'Acrescente "review_required": true quando a evidencia nao sustentar a '
+    "sugestao. Nunca retorne URI como verdade semantica."
 )
 
 _HEADER_BR = "CONTEXTO: {building_type}, zona bioclimática {bioclimatic_zone}.\n"
@@ -1100,21 +1124,47 @@ def _format_spaces(spaces: list[dict | str] | Any) -> str:
     return ", ".join(p for p in parts if p) or "nenhum"
 
 
+_METAL_TOKENS = ("metal", "aco", "aço", "steel", "montante", "perfil")
+
+
+def _is_stud_cavity(layers: list[dict], index: int) -> bool:
+    """True quando a camada é montante metálico entre outras — cavidade, não maciço.
+
+    Numa parede leve, a camada central de "Metal" é o montante, e o que ocupa o
+    vão entre montantes é **ar**. Tratá-la como metal maciço (λ = 55) produz
+    resistência quase nula: medido no smoke do v7, foi exatamente isso que fez o
+    drywall (222 issues) sair 49% do ground truth.
+
+    Só vale para camada **interna** de um pacote com 3+ camadas: chapa metálica
+    de face é metal de verdade.
+    """
+    if len(layers) < 3 or index in (0, len(layers) - 1):
+        return False
+    nome = str(layers[index].get("name") or "").casefold()
+    return any(token in nome for token in _METAL_TOKENS)
+
+
 def _format_material_layers(layers: list[dict] | Any) -> str:
-    """Formata lista de camadas de material para texto legível."""
+    """Formata lista de camadas de material para texto legível.
+
+    Anota o montante metálico como câmara de ar (evidência, não instrução —
+    ver `docs/smoke-v7-2026-08-04.md` §3): a leitura entra ao lado do dado
+    original, que é preservado.
+    """
     if not layers or not isinstance(layers, list):
         return "não informado"
     parts: list[str] = []
-    for lay in layers:
+    todas_dicts = all(isinstance(lay, dict) for lay in layers)
+    for posicao, lay in enumerate(layers):
         if not isinstance(lay, dict):
             parts.append(str(lay))
             continue
         name = lay.get("name") or "?"
         thick = lay.get("thickness_m")
-        if thick is not None:
-            parts.append(f"{name} ({thick * 100:.0f}cm)")
-        else:
-            parts.append(name)
+        texto = f"{name} ({thick * 100:.0f}cm)" if thick is not None else str(name)
+        if todas_dicts and _is_stud_cavity(layers, posicao):
+            texto += " [montante: vão entre perfis = câmara de ar não ventilada, R = 0,17 m²K/W]"
+        parts.append(texto)
     return ", ".join(parts) if parts else "não informado"
 
 
@@ -1261,7 +1311,10 @@ def build_prompt(
             "Nao presuma que diferencas de espessura, material, dimensao ou tipo "
             "sejam erro de digitacao. Use esses dados para diferenciar elementos "
             "e ordenar as opcoes por confianca decrescente."
-            f"\n\nCONTRATO DE SAIDA:\n{_LLM_OUTPUT_CONTRACT}"
+            # REGRAS, nao schema: o template acima ja declarou o formato, e
+            # colar um schema divergente aqui fazia o modelo seguir este
+            # (11 rejeicoes de parse no smoke do v7 contra 0 no v6).
+            f"\n\nREGRAS DE SAIDA:\n{_LLM_OUTPUT_RULES}"
             f"{_MEMORIA_CONTRACT_SUFFIX if uses_layered_thermal_template(issue) else ''}"
         )
 

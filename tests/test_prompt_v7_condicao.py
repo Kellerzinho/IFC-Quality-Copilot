@@ -23,9 +23,9 @@ from __future__ import annotations
 from src.suggestion_engine.prompt_templates import PROMPT_VERSION, TEMPLATES
 
 
-def test_prompt_version_is_v7():
-    """v7: procedimento fora do fogo, memória estruturada no térmico."""
-    assert PROMPT_VERSION == "v7"
+def test_prompt_version_is_v7_1():
+    """v7.1: v7 + contrato único de saída + montante como evidência."""
+    assert PROMPT_VERSION == "v7.1"
 
 
 # ---------------------------------------------------------------------------
@@ -170,4 +170,6 @@ def test_rendered_thermal_prompt_carries_the_memory_contract_to_the_end():
 
     _, user = build_prompt(issue, {"building_type": "Residencial", "bioclimatic_zone": "3"})
 
-    assert "memoria_calculo" in user.split("CONTRATO DE SAIDA")[-1]
+    cauda = user.split("REGRAS DE SAIDA:")
+    assert len(cauda) == 2, "o bloco de regras tem de existir e ser único"
+    assert "memoria_calculo" in cauda[-1]

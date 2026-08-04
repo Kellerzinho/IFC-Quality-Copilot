@@ -616,4 +616,9 @@ def test_build_prompt_with_grounding_appends_ids_and_bsdd_blocks():
     assert "IDS_CONTEXT:" in user
     assert "BSDD_CONTEXT:" in user
     assert "FireRating: 30, 60" in user
-    assert "canonical_term" in user
+    # As regras de saída são anexadas — mas SEM reafirmar um schema que compete
+    # com o formato já declarado pelo template (correção P0 de 2026-08-04:
+    # `canonical_term` aqui era o sintoma, não o requisito).
+    assert "REGRAS DE SAIDA:" in user
+    assert "review_required" in user
+    assert "canonical_term" not in user
