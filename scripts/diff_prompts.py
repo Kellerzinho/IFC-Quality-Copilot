@@ -28,7 +28,7 @@ assert len(base1) == len(pos1), "n de estimulos divergiu — diagnose mudou!"
 
 iguais = 0
 mudados = []
-for b, p in zip(base1, pos1):
+for b, p in zip(base1, pos1, strict=True):
     assert b["issue_id"] == p["issue_id"], f"ordem divergiu em {b['issue_id']}"
     if b["system"] == p["system"] and b["user"] == p["user"]:
         iguais += 1

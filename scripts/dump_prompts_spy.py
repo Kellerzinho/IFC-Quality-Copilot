@@ -13,6 +13,8 @@ Uso:
 Compare dois dumps com scripts/diff_prompts.py.
 """
 
+# ruff: noqa: E402 — o sys.path.insert precisa vir antes dos imports de src/.
+
 import json
 import sys
 from pathlib import Path
@@ -35,7 +37,7 @@ _CURRENT_ISSUE: dict = {"id": None, "type": None, "prop": "", "calls": 0}
 _original_generate_issue = SuggestionGenerator.generate
 
 
-def _tracking_generate(self, issue, *args, **kwargs):  # noqa: ANN001, ANN202
+def _tracking_generate(self, issue, *args, **kwargs):
     """Anota qual issue está sendo processada para o espião de prompts."""
     _CURRENT_ISSUE["id"] = issue.id
     _CURRENT_ISSUE["type"] = issue.issue_type
@@ -44,7 +46,7 @@ def _tracking_generate(self, issue, *args, **kwargs):  # noqa: ANN001, ANN202
     return _original_generate_issue(self, issue, *args, **kwargs)
 
 
-def _spy_generate(self, prompt, system=None, temperature=None):  # noqa: ANN001, ANN202
+def _spy_generate(self, prompt, system=None, temperature=None):
     """Captura o prompt no lugar de chamar o Ollama; devolve JSON vazio."""
     _CURRENT_ISSUE["calls"] += 1
     CAPTURED.append(
