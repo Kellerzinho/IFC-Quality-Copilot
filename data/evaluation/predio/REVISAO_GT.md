@@ -177,7 +177,7 @@ Linhas marcadas com CONFERIR pedem atenção especial.
 
 ## Emendas pós-aprovação
 
-### Emenda 2026-08-02 — EI aceito em vedação não portante (⚠️ pendente ratificação do autor)
+### Emenda 2026-08-02 — EI aceito em vedação não portante (✅ RATIFICADA em 2026-08-04)
 
 **Regra declarada do experimento:** em elementos de vedação cujo modelo declara
 `Pset_WallCommon.LoadBearing = false`, a classe **EI** de duração ≥ à exigida é
@@ -224,4 +224,22 @@ de **critério de avaliação** (recalculável de runs gravados), separado do
 efeito do instrumento v6 (que exige nova coleta). Hash do YAML emendado:
 `D08D2C74…` (anterior, da aprovação integral: `3924D611…`).
 
-**Ratificação:** ( ) aprovo a regra declarada — Felipe Keller, data ____.
+**Ratificação:** (**x**) aprovo a regra declarada — **Felipe Keller, 2026-08-04**.
+
+Conferência da ratificação (verificada no YAML na data, hash `D08D2C74`):
+
+| grupo | itens | `expected_value` | `accepted_alternatives` |
+|---|---|---|---|
+| vedação não portante (escopo da emenda) | **429** | `REI 60` | REI 90/120 · **EI 60/90/120** |
+| pilar | 352 | `R 60` | REI 60 · R 90 |
+| drywall | 222 | `EI 30` | EI 30 · REI 30 |
+| escada monolítica | 10 | `REI 60` | R 60 · REI 90 |
+| porta corta-fogo | 7 | `EI 30` | EI 60 · P-CF 30 |
+| **total do estrato** | **1020** | | |
+
+O escopo aplicado é exatamente o declarado: **só** os 429 itens de vedação não
+portante ganharam a alternativa EI; pilar, escada, drywall e porta permanecem
+com as alternativas da aprovação integral. A regra vale como **critério de
+avaliação declarado do experimento** e é recalculável sobre runs já gravados
+(não exige nova coleta) — é assim que deve ser reportada no artigo, separada do
+efeito de instrumento (v5/v6/v7).

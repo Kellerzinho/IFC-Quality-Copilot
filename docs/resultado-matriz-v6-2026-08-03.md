@@ -113,7 +113,9 @@ feita, tem de ser declarada como tal.
 - n de inferência = 202 estímulos no prédio e 79 no mascarado, não 4720/82 issues.
   Sem poder para ranquear 10 modelos; a matriz compara perfis.
 - Um prédio, um IDS, um autor. Validade externa é a fraqueza conhecida.
-- A emenda EI/REI ainda aguarda ratificação formal do autor (`REVISAO_GT.md`).
+- ~~A emenda EI/REI ainda aguarda ratificação formal do autor~~ — **ratificada em
+  2026-08-04** (`REVISAO_GT.md`, seção Emendas; escopo conferido: 429 itens de
+  vedação não portante, hash `D08D2C74`).
 
 ## Método
 
