@@ -108,11 +108,25 @@ class SuggestionWorker:
             primary_id = self.reuse_map.get(issue_id)
             if primary_id and primary_id != issue_id and primary_id in self._primary_results:
                 primary = self._primary_results[primary_id]
+                primary_metrics = primary.metrics
                 metrics = SuggestionMetrics(
                     issue_id=issue_id,
                     queue_wait_ms=queue_wait_ms,
                     reused_from_issue_id=primary_id,
                     final_status="reused",
+                    # Mesma proveniência de grounding da primária (2026-08-04).
+                    grounding_sources=(
+                        list(primary_metrics.grounding_sources) if primary_metrics else []
+                    ),
+                    bsdd_source_status=(
+                        primary_metrics.bsdd_source_status if primary_metrics else None
+                    ),
+                    bsdd_class_uri=(
+                        primary_metrics.bsdd_class_uri if primary_metrics else None
+                    ),
+                    has_official_candidates=(
+                        primary_metrics.has_official_candidates if primary_metrics else False
+                    ),
                 )
                 reused = SuggestionSet(
                     issue_id=issue_id,

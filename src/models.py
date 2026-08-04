@@ -226,6 +226,16 @@ class SuggestionMetrics(BaseModel):
     """Motivo da falha quando nenhuma sugestão válida foi produzida, senão None."""
     json_repaired: bool = False
     """True se o JSON do LLM precisou de reparo de truncamento para ser parseado."""
+    # Proveniência de grounding (revisão bSDD 2026-08-04) — sem isso o JSONL por
+    # issue não prova o que o bSDD entregou e a ablação de grounding não roda.
+    grounding_sources: list[str] = Field(default_factory=list)
+    """Fontes de grounding usadas no prompt desta issue ("ids", "bsdd")."""
+    bsdd_source_status: str | None = None
+    """source_status do BSDDContext no momento da geração (live/cache/empty/offline)."""
+    bsdd_class_uri: str | None = None
+    """URI canônica da classe bSDD resolvida, se houver."""
+    has_official_candidates: bool = False
+    """True quando o prompt recebeu lista fechada de candidatos oficiais."""
 
 
 class SuggestionSet(BaseModel):

@@ -73,6 +73,16 @@ class IssueOutcome(BaseModel):
     Acerto binário não distingue errar 5% de errar 300%; com o erro gravado, o
     top-1 sob qualquer banda de equivalência pode ser recalculado sem repetir o run.
     """
+    # Proveniência de grounding (revisão bSDD 2026-08-04): sem estes campos o
+    # JSONL não prova o que o bSDD entregou e a ablação de grounding não roda.
+    grounding_sources: list[str] = Field(default_factory=list)
+    """Fontes de grounding do prompt ("ids", "bsdd"); vazio = prompt sem grounding."""
+    bsdd_source_status: str | None = None
+    """source_status do BSDDContext (live/cache/empty/offline) na geração."""
+    bsdd_class_uri: str | None = None
+    """URI canônica da classe bSDD resolvida para a issue, se houver."""
+    has_official_candidates: bool = False
+    """True quando o prompt recebeu lista fechada de candidatos oficiais."""
 
 
 def stratum_of(issue: Issue) -> str:
@@ -132,6 +142,12 @@ def build_issue_outcomes(
                 reused_from=metrics.reused_from_issue_id if metrics else None,
                 latency_ms=metrics.llm_total_ms if metrics else 0.0,
                 output_tokens=metrics.output_tokens if metrics else 0,
+                grounding_sources=list(metrics.grounding_sources) if metrics else [],
+                bsdd_source_status=metrics.bsdd_source_status if metrics else None,
+                bsdd_class_uri=metrics.bsdd_class_uri if metrics else None,
+                has_official_candidates=(
+                    metrics.has_official_candidates if metrics else False
+                ),
                 error_pct=(
                     _relative_error_pct(suggestions[0].value, item.expected_value)
                     if suggestions

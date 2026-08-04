@@ -136,6 +136,13 @@ class SuggestionGenerator:
         t0 = time.perf_counter()
         grounded = prepare_llm_grounding(issue, ids_context=ids_context, bsdd_context=bsdd_context)
         metrics.grounding_ms = (time.perf_counter() - t0) * 1000
+        # Proveniência de grounding no JSONL por issue (revisão bSDD 2026-08-04).
+        metrics.grounding_sources = list(grounded.grounding_sources)
+        metrics.bsdd_source_status = (
+            bsdd_context.source_status if bsdd_context is not None else None
+        )
+        metrics.bsdd_class_uri = grounded.official_class_uri
+        metrics.has_official_candidates = grounded.has_official_candidates
 
         # ----- Cache lookup -----
         signature: str | None = None
@@ -480,11 +487,26 @@ class SuggestionGenerator:
             primary_id = reuse_map.get(issue.id)
             if primary_id and primary_id in primary_results:
                 primary_set = primary_results[primary_id]
+                primary_metrics = primary_set.metrics
                 metrics = SuggestionMetrics(
                     issue_id=issue.id,
                     cache_hit=False,
                     reused_from_issue_id=primary_id,
                     final_status="reused",
+                    # O estímulo é o mesmo da primária: a proveniência de
+                    # grounding vale para as cópias (revisão bSDD 2026-08-04).
+                    grounding_sources=(
+                        list(primary_metrics.grounding_sources) if primary_metrics else []
+                    ),
+                    bsdd_source_status=(
+                        primary_metrics.bsdd_source_status if primary_metrics else None
+                    ),
+                    bsdd_class_uri=(
+                        primary_metrics.bsdd_class_uri if primary_metrics else None
+                    ),
+                    has_official_candidates=(
+                        primary_metrics.has_official_candidates if primary_metrics else False
+                    ),
                 )
                 result = SuggestionSet(
                     issue_id=issue.id,
