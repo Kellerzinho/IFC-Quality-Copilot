@@ -1421,6 +1421,9 @@ def _normalize_option(opt: dict, issue_type: str) -> Suggestion | None:
     normative_ref: str | None = opt.get("ref") or opt.get("normative_ref")
     canonical_term = opt.get("canonical_term")
     semantic_hint = opt.get("semantic_hint")
+    # Memória de cálculo estruturada (contrato v7 do térmico): o LLM declara os
+    # termos, a aritmética é feita por thermal_recompute.py.
+    calc_memory = opt.get("memoria_calculo") or opt.get("calc_memory") or opt.get("memoria")
     source_candidates_raw = opt.get("source_candidates") or []
     review_required = bool(opt.get("review_required", False))
 
@@ -1467,6 +1470,7 @@ def _normalize_option(opt: dict, issue_type: str) -> Suggestion | None:
         canonical_term=str(canonical_term).strip() if canonical_term is not None and str(canonical_term).strip() else None,
         semantic_hint=str(semantic_hint).strip() if semantic_hint is not None and str(semantic_hint).strip() else None,
         source_candidates=source_candidates,
+        calc_memory=calc_memory if isinstance(calc_memory, dict) else None,
         review_required=review_required,
         ids_requirement_id=opt.get("ids_requirement_id"),
     )

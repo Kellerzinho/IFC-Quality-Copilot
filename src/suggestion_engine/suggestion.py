@@ -46,6 +46,7 @@ from src.suggestion_engine.normalization import (
 from src.semantic.property_match import properties_match
 from src.suggestion_engine.ollama_client import OllamaClient
 from src.suggestion_engine.plausibility import is_physically_plausible
+from src.suggestion_engine.thermal_recompute import recompute_thermal_suggestions
 from src.suggestion_engine.prompt_templates import (
     PROMPT_VERSION,
     build_compact_prompt,
@@ -236,6 +237,13 @@ class SuggestionGenerator:
                 metrics.parse_ms += (time.perf_counter() - t_parse) * 1000
 
                 t_val = time.perf_counter()
+                # Aritmética do U é trabalho de código (condição v7): o LLM
+                # declara os termos, este passo refaz a soma. Roda ANTES da
+                # validação para que o valor recomputado passe por normalização
+                # e plausibilidade como qualquer outro.
+                parsed, thermal_telemetry = recompute_thermal_suggestions(parsed, issue)
+                if thermal_telemetry["recomputed"]:
+                    metrics.thermal_recomputed = True
                 suggestions = self._validate_suggestions(
                     parsed,
                     issue,

@@ -83,6 +83,11 @@ class IssueOutcome(BaseModel):
     """URI canônica da classe bSDD resolvida para a issue, se houver."""
     has_official_candidates: bool = False
     """True quando o prompt recebeu lista fechada de candidatos oficiais."""
+    thermal_recomputed: bool = False
+    """True quando a camada determinística refez a soma de U (condição v7).
+
+    Separa "o modelo acertou" de "o modelo montou os termos e o código somou".
+    """
 
 
 def stratum_of(issue: Issue) -> str:
@@ -148,6 +153,7 @@ def build_issue_outcomes(
                 has_official_candidates=(
                     metrics.has_official_candidates if metrics else False
                 ),
+                thermal_recomputed=metrics.thermal_recomputed if metrics else False,
                 error_pct=(
                     _relative_error_pct(suggestions[0].value, item.expected_value)
                     if suggestions

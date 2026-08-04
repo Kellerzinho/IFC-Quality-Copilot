@@ -188,6 +188,12 @@ class Suggestion(BaseModel):
     semantic_source_origin: str | None = None
     bsdd_uri: str | None = None
     ids_requirement_id: str | None = None
+    calc_memory: dict[str, Any] | None = None
+    """Memória de cálculo estruturada declarada pelo LLM (contrato v7 do térmico).
+
+    O LLM declara camadas, λ e resistências superficiais; a aritmética é feita
+    por `src/suggestion_engine/thermal_recompute.py`, não pelo modelo.
+    """
 
     @property
     def confidence_emoji(self) -> str:
@@ -236,6 +242,8 @@ class SuggestionMetrics(BaseModel):
     """URI canônica da classe bSDD resolvida, se houver."""
     has_official_candidates: bool = False
     """True quando o prompt recebeu lista fechada de candidatos oficiais."""
+    thermal_recomputed: bool = False
+    """True quando a camada determinística refez a soma de U (condição v7)."""
 
 
 class SuggestionSet(BaseModel):
