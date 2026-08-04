@@ -145,7 +145,9 @@ def prepare_llm_grounding(
     )
 
     expected_datatype: str | None = None
-    expected_unit: str | None = (ids_context.expected_unit if ids_context else None) or issue.context.get("expected_unit")
+    expected_unit: str | None = (
+        ids_context.expected_unit if ids_context else None
+    ) or issue.context.get("expected_unit")
     expected_value: str | None = None
     if ids_context and ids_context.expected_value is not None:
         expected_value = str(ids_context.expected_value)

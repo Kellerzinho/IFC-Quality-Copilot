@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import re
 
-__all__ = ["property_match_key", "properties_match", "strip_boolean_prefix"]
+__all__ = ["properties_match", "property_match_key", "strip_boolean_prefix"]
 
 
 def property_match_key(name: str) -> str:
