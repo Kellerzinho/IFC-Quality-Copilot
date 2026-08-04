@@ -269,6 +269,27 @@ def test_retry_de_fire_rating_mantem_instrucao_de_formato():
 # ---------------------------------------------------------------------------
 
 
-def test_prompt_version_avancou_para_v6_1():
-    """Matcher bSDD corrigido (2026-08-04) muda prompt e assinatura; caches v6 não podem ser reusados."""
-    assert PROMPT_VERSION == "v6.1"
+def test_prompt_version_entra_na_assinatura_de_cache():
+    """Mudança de condição tem de invalidar cache: a versão entra na assinatura.
+
+    O literal da versão corrente é pinado em `tests/test_prompt_v7_condicao.py`,
+    junto do que a condição significa. Aqui o que importa é o acoplamento: duas
+    versões de prompt nunca podem colidir na mesma assinatura.
+    """
+    from src.suggestion_engine.suggestion_cache import compute_signature
+
+    comum = {
+        "model_version": "m1",
+        "issue_type": "pset_missing",
+        "ifc_class": "IfcWall",
+        "target_pset": "Pset_WallCommon",
+        "target_property": "FireRating",
+        "expected_type": None,
+        "expected_unit": None,
+        "requirement_id": None,
+        "candidates": None,
+    }
+    assinatura_atual = compute_signature(prompt_version=PROMPT_VERSION, **comum)
+    assinatura_outra = compute_signature(prompt_version="v0-inexistente", **comum)
+
+    assert assinatura_atual != assinatura_outra

@@ -8,6 +8,7 @@ from typing import Any, TYPE_CHECKING
 from loguru import logger
 
 from src.models import BSDDContext, IDSContext, Issue, Suggestion
+from src.semantic.property_match import properties_match
 
 if TYPE_CHECKING:
     from src.suggestion_engine.grounding import GroundedIssueContext
@@ -22,9 +23,32 @@ if TYPE_CHECKING:
 # humano do bSDD ("Fire Rating") passou a casar com check_property, então
 # tipo/unidade do dicionário podem alcançar prompt e assinatura de cache, e a
 # validação pós-LLM contra o vocabulário deixou de ser no-op. NÃO altera os
-# blocos de TRRF nem a memória de cálculo (decisões v7 pendentes do autor);
-# condição ainda NÃO medida em benchmark.
-PROMPT_VERSION = "v6.1"
+# blocos de TRRF nem a memória de cálculo; condição não medida em benchmark.
+# v7 (2026-08-04, CONDIÇÃO DECLARADA — escolhida DEPOIS de ver a matriz v6):
+# mantém a evidência que pagou (+31,2 pp no Category) e desfaz os dois blocos de
+# PROCEDIMENTO que custaram (−12,5 pp no fogo, −8,4 pp no térmico). No térmico a
+# instrução de calcular é substituída pelo contrato de memória ESTRUTURADA: o LLM
+# declara camadas e λ, e a aritmética passa a ser executada por
+# src/suggestion_engine/thermal_recompute.py. Ver docs/condicao-v7-2026-08-04.md.
+PROMPT_VERSION = "v7"
+
+_MEMORIA_ESTRUTURADA_BR = (
+    "MEMÓRIA ESTRUTURADA (obrigatória): declare no campo memoria_calculo as camadas "
+    "que você identificou, com espessura_m e λ de cada uma, mais rsi e rse.\n"
+    "  A SOMA e a divisão são feitas pelo sistema: você NÃO precisa fechar a conta, "
+    "e o valor final vem dos termos que você declarar.\n"
+    "  Camada sem espessura definida (câmara de ar não ventilada) entra com "
+    "\"resistencia\" em vez de espessura_m/λ.\n"
+    "  λ é propriedade do material, nunca a resposta.\n"
+)
+
+# Anexado ao contrato genérico SÓ em ThermalTransmittance (condição v7): o
+# contrato é a última coisa que o LLM lê e precisa repetir o pedido da memória.
+_MEMORIA_CONTRACT_SUFFIX = (
+    ' Inclua tambem "memoria_calculo": {"rsi":<numero>,"camadas":'
+    '[{"material":"...","espessura_m":<numero>,"lambda":<numero>}],"rse":<numero>}'
+    " em cada opcao: a soma e feita pelo sistema a partir desses termos."
+)
 
 SYSTEM_PROMPT_COMPACT = (
     "Voce e um engenheiro BIM/IFC criterioso. Analise as evidencias fornecidas, "
@@ -63,16 +87,41 @@ _SPACE_NAME_OUTPUT_CONTRACT = (
 )
 
 
-def output_contract_for(issue_type: str) -> str:
-    """Retorna o contrato de saida do issue_type, unico para todos os prompts.
+def output_contract_for(issue_type: str, *, include_calc_memory: bool = False) -> str:
+    """Retorna o contrato de saida da tarefa, unico para todos os prompts.
 
     Centralizar aqui evita que um caminho de prompt peca um contrato e outro
     peca outro para a mesma tarefa — divergencia que muda o comportamento do
     LLM sem aparecer em nenhum teste.
+
+    ``include_calc_memory`` existe por causa do contrato v7 do termico: o
+    contrato generico e anexado DEPOIS do template e e o que o LLM le por
+    ultimo; se ele nao citar ``memoria_calculo``, o campo tende a nao voltar e a
+    camada deterministica fica sem o que recomputar. Quem decide e o chamador,
+    via ``uses_layered_thermal_template`` — nao basta ser ThermalTransmittance.
     """
     if issue_type == "space_unnamed":
         return _SPACE_NAME_OUTPUT_CONTRACT
+    if include_calc_memory:
+        return _COMPACT_OUTPUT_CONTRACT + _MEMORIA_CONTRACT_SUFFIX
     return _COMPACT_OUTPUT_CONTRACT
+
+
+def uses_layered_thermal_template(issue: Issue) -> bool:
+    """True quando a issue calcula U somando camadas (parede, laje, cobertura).
+
+    Esquadria fica de FORA de proposito: seu U vem de valor de REFERENCIA
+    (vidro + caixilho), nao de soma de camadas — o template de esquadria nunca
+    pediu memoria de calculo, e no run v6 esse estrato ja acertava dentro de
+    3,5%. Pedir memoria ali seria alargar a condicao v7 para uma tarefa que ela
+    nao mira.
+    """
+    if issue.issue_type != "pset_missing":
+        return False
+    return _specialized_pset_template_key(issue) in {
+        "pset_missing_thermal",
+        "pset_missing_u_value_slab",
+    }
 
 
 def build_compact_prompt(grounded: "GroundedIssueContext") -> tuple[str, str]:
@@ -331,17 +380,18 @@ TEMPLATES: dict[str, str] = {
         "  Só há isolamento térmico se as camadas citarem lã (de vidro/rocha), EPS, XPS,\n"
         "  poliuretano ou similar — nomes desses materiais, não 'Metal'.\n"
         "ATENÇÃO: parede de vedação brasileira típica fica entre 1,5 e 3,5 W/(m²·K). "
-        "Valor calculado abaixo de 1,0 exige camada isolante explícita nas camadas acima.\n"
-        "VERIFICAÇÃO OBRIGATÓRIA: a justificativa da 1ª opção traz a memória de cálculo\n"
-        "  numérica no formato R_total = Rsi + (e1/λ1) + ... + Rse com as camadas de DADOS,\n"
-        "  e o campo valor é exatamente 1/R_total. λ é propriedade do material, nunca a\n"
-        "  resposta. Sem camada isolante, U sai na ordem de unidades: conta em décimos indica\n"
-        "  resistência inventada na soma; em dezenas, erro de unidade de espessura.\n"
-        "TAREFA: calcule U pelas camadas informadas e sugira 3 valores ordenados por "
-        "probabilidade. Retorne valor numérico puro em JSON, sem unidade no campo valor.\n"
-        "Formato JSON (o valor abaixo é PLACEHOLDER, não uma sugestão):\n"
-        '{{"opcoes": [{{"valor": <numero>, "justificativa": "memória de cálculo resumida", '
-        '"ref": "NBR 15220-2", "confianca": "alta/media/baixa"}}]}}'
+        "Valor calculado abaixo de 1,0 exige camada isolante explícita nas camadas acima.\n" +
+        # v7: a "VERIFICAÇÃO OBRIGATÓRIA" que cobrava a conta do LLM saiu (−8,4 pp
+        # no estrato térmico). O modelo declara a ESTRUTURA; a aritmética é feita
+        # por src/suggestion_engine/thermal_recompute.py.
+        _MEMORIA_ESTRUTURADA_BR +
+        "TAREFA: identifique as camadas e o λ de cada uma, e sugira 3 hipóteses "
+        "ordenadas por probabilidade, cada uma com sua memória estruturada.\n"
+        "Formato JSON (os números abaixo são PLACEHOLDER, não uma sugestão):\n"
+        '{{"opcoes": [{{"valor": <numero>, "memoria_calculo": {{"rsi": <numero>, '
+        '"camadas": [{{"material": "...", "espessura_m": <numero>, "lambda": <numero>}}], '
+        '"rse": <numero>}}, "justificativa": "...", "ref": "NBR 15220-2", '
+        '"confianca": "alta/media/baixa"}}]}}'
     ),
     "pset_missing_u_value_window": (
         _HEADER_BR +
@@ -389,14 +439,11 @@ TEMPLATES: dict[str, str] = {
         "  R   = portante sem função de compartimentação (ex.: pilar, viga isolada)\n"
         "A flag LoadBearing do modelo é indício, não veredito: pese também o material, a\n"
         "  espessura e a função do elemento no projeto de compartimentação.\n"
-        "PROCEDIMENTO:\n"
-        "  1. Obtenha o TRRF de referência na NBR 14432 (Tab. A.1) a partir do uso e do porte\n"
-        "     da edificação do CONTEXTO; elementos de compartimentação seguem esse tempo, e a\n"
-        "     justificativa deve declarar essa referência.\n"
-        "  2. Monte a letra em duas decisões: o elemento fecha/separa ambientes? então E e I\n"
-        "     aparecem JUNTOS na classe. Sustenta carga além do peso próprio? então R entra.\n"
-        "  3. Cada uma das 3 opções deve declarar na justificativa a hipótese de engenharia\n"
-        "     que a distingue das demais (duração exigida ou leitura da função do elemento).\n"
+        # v7: o bloco PROCEDIMENTO (TRRF → letra → hipóteses) foi REMOVIDO. Medido
+        # em −12,5 pp no estrato de fogo (matriz v6): a instrução fez os modelos
+        # fracos raciocinarem sobre a letra e INVERTEREM a atribuição — falcon3
+        # chegou a responder EI num pilar. Os critérios abaixo ficam; o roteiro
+        # de como raciocinar sai.
         "TAREFA: determine a classe de resistência ao fogo deste elemento e sugira 3 valores "
         "ordenados por probabilidade, considerando a função estrutural, as camadas e a espessura.\n"
         "RESTRICAO: o campo valor deve conter apenas a classe + minutos (letras R/E/I seguidas do "
@@ -578,17 +625,16 @@ TEMPLATES: dict[str, str] = {
         "cobertura ≤ 2,30 e piso ≤ 2,00 W/(m²·K), mas isso é o critério de APROVAÇÃO, "
         "não uma estimativa. Um elemento pode perfeitamente REPROVAR no limite — apontar "
         "essa não-conformidade é a finalidade da análise. Calcule o valor a partir das "
-        "camadas e devolva o resultado do cálculo, seja ele conforme ou não.\n"
-        "VERIFICAÇÃO OBRIGATÓRIA: a justificativa da 1ª opção traz a memória de cálculo\n"
-        "  numérica no formato R_total = Rsi + (e1/λ1) + ... + Rse com as camadas de DADOS,\n"
-        "  e o campo valor é exatamente 1/R_total. λ é propriedade do material, nunca a\n"
-        "  resposta. Sem camada isolante, U sai na ordem de unidades: conta em décimos indica\n"
-        "  resistência inventada na soma; em dezenas, erro de unidade de espessura.\n"
-        "TAREFA: calcule U pelas camadas informadas e sugira 3 valores ordenados por "
-        "probabilidade. Retorne valor numérico puro, sem unidade no campo valor.\n"
-        "Formato JSON (o valor abaixo é PLACEHOLDER, não uma sugestão):\n"
-        '{{"opcoes": [{{"valor": <numero>, "justificativa": "memória de cálculo resumida", '
-        '"ref": "NBR 15220-2", "confianca": "alta/media/baixa"}}]}}'
+        "camadas e devolva o resultado do cálculo, seja ele conforme ou não.\n" +
+        # v7: idem ao template de parede — a estrutura é do LLM, a soma é do código.
+        _MEMORIA_ESTRUTURADA_BR +
+        "TAREFA: identifique as camadas e o λ de cada uma, e sugira 3 hipóteses "
+        "ordenadas por probabilidade, cada uma com sua memória estruturada.\n"
+        "Formato JSON (os números abaixo são PLACEHOLDER, não uma sugestão):\n"
+        '{{"opcoes": [{{"valor": <numero>, "memoria_calculo": {{"rsi": <numero>, '
+        '"camadas": [{{"material": "...", "espessura_m": <numero>, "lambda": <numero>}}], '
+        '"rse": <numero>}}, "justificativa": "...", "ref": "NBR 15220-2", '
+        '"confianca": "alta/media/baixa"}}]}}'
     ),
     "pset_missing_solar": (
         _HEADER_BR +
@@ -1216,6 +1262,7 @@ def build_prompt(
             "sejam erro de digitacao. Use esses dados para diferenciar elementos "
             "e ordenar as opcoes por confianca decrescente."
             f"\n\nCONTRATO DE SAIDA:\n{_LLM_OUTPUT_CONTRACT}"
+            f"{_MEMORIA_CONTRACT_SUFFIX if uses_layered_thermal_template(issue) else ''}"
         )
 
     return system_prompt, user_prompt

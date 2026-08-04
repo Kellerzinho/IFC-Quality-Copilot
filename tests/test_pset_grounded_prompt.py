@@ -224,9 +224,9 @@ class TestPsetGroundedPromptScenarios:
 
 
 class TestPromptVersion:
-    def test_prompt_version_is_v6_1(self):
-        """v6.1: matcher bSDD corrigido — tipo/unidade do dicionário alcançam o prompt; prompt único para todos os modelos."""
-        assert PROMPT_VERSION == "v6.1"
+    # O pin do literal da versão vive em tests/test_prompt_v7_condicao.py, junto
+    # das asserções que dizem o que a condição significa — pinar o literal em
+    # três arquivos só multiplicava a edição a cada mudança de condição.
 
     def test_prompt_version_single_source(self):
         """suggestion_cache re-exporta a mesma constante (sem deriva)."""

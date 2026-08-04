@@ -55,6 +55,7 @@ from src.suggestion_engine.prompt_templates import (
     has_rich_template,
     output_contract_for,
     parse_llm_response,
+    uses_layered_thermal_template,
 )
 from src.suggestion_engine.suggestion_cache import (
     SuggestionCache,
@@ -466,9 +467,13 @@ class SuggestionGenerator:
         elif issue.issue_type == "pset_missing" and check_property == "ThermalTransmittance":
             extra = " Para ThermalTransmittance, suggested_value deve ser numerico, sem unidade."
 
+        contrato = output_contract_for(
+            issue.issue_type,
+            include_calc_memory=uses_layered_thermal_template(issue),
+        )
         return (
             f"{original_prompt}\n\nResposta anterior rejeitada. "
-            f"Siga estritamente o contrato: {output_contract_for(issue.issue_type)}"
+            f"Siga estritamente o contrato: {contrato}"
             f"{extra}"
         )
 

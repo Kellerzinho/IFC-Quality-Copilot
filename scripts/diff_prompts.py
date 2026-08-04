@@ -15,6 +15,11 @@ import sys
 from collections import Counter
 from pathlib import Path
 
+# Os prompts têm λ, ², acentos; o console do Windows é cp1252 por padrão e
+# quebraria a impressão do diff.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 base_path, pos_path = sys.argv[1], sys.argv[2]
 base = json.loads(Path(base_path).read_text(encoding="utf-8"))
 pos = json.loads(Path(pos_path).read_text(encoding="utf-8"))
