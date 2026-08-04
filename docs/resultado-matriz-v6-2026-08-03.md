@@ -107,6 +107,16 @@ custa outra rodada de ~8 h — e escolhê-la *depois* de ver estes números é o
 mesmo movimento que custou os 13,6 pp da lição de ajuste ao gabarito. Se for
 feita, tem de ser declarada como tal.
 
+> **RESOLVIDA em 2026-08-04: as duas.** O v7 foi construído (mantendo a
+> evidência, removendo o PROCEDIMENTO do fogo e trocando a cobrança de
+> aritmética do térmico por memória estruturada + recomputação determinística) e
+> está **declarado como escolhido depois de ver estes números** em
+> `docs/condicao-v7-2026-08-04.md`. O relato passa a ser de **três condições de
+> instrumento** (v5, v6, v7) mais a emenda de critério EI/REI — e a assimetria
+> evidência × procedimento medida aqui continua sendo o achado; o v7 é a
+> consequência de engenharia dela. Delta do v7 medido sem GPU: 59 dos 202
+> estímulos mudam, só nos dois estratos-alvo. A rodada de coleta segue pendente.
+
 ## 6. Limites
 
 - 1 réplica por estágio; a dispersão entre réplicas não foi medida neste run.

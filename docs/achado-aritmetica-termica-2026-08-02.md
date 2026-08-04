@@ -109,6 +109,11 @@ binário jamais mostraria.
   como está. A recomputação determinística deve ser uma **condição declarada
   separada (v7)**, medida depois, para não repetir o ciclo de ajustar o
   instrumento olhando o resultado.
+  → **Implementada em 2026-08-04** como parte da condição v7 declarada
+  (`src/suggestion_engine/thermal_recompute.py`,
+  `docs/condicao-v7-2026-08-04.md`). Validada contra as 25 memórias reais deste
+  log: 22 parseadas, 14 recomputadas, e as 4 linhas da tabela acima reproduzidas
+  exatamente. Coleta sob v7 ainda pendente.
 - O 5,5 das esquadrias (erro 3,5%) passa na banda de 10% mas não é cálculo — é
   valor de referência recuperado; o template de esquadria não pede memória.
 

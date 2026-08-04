@@ -99,6 +99,7 @@ ifc-quality-copilot/
 │   │   ├── issue_store.py       # persistência/estado das issues
 │   │   ├── issue_deduplicator.py
 │   │   ├── suggestion_cache.py  # cache de sugestões (SQLite)
+│   │   ├── thermal_recompute.py # refaz a soma de U (o LLM declara os termos)
 │   │   ├── worker.py            # processamento assíncrono/em lote
 │   │   └── suggestion.py        # classe SuggestionGenerator
 │   ├── validation/
@@ -205,6 +206,13 @@ ifc-quality-copilot/
 
 ### Sugestões (LLM)
 - O LLM **apenas sugere**; a aplicação é sempre mediada por aprovação humana
+- **Aritmética não é tarefa de LLM** (medido em 2026-08-02): onde houver conta,
+  o LLM declara os termos e o código executa — ver `thermal_recompute.py` e
+  `docs/condicao-v7-2026-08-04.md`
+- **Mudança de prompt é mudança de instrumento:** bumpe `PROMPT_VERSION`, meça o
+  delta com `scripts/dump_prompts_spy.py` + `diff_prompts.py` (sem GPU) e declare
+  a condição num doc datado. Evidência do arquivo tende a ajudar; roteiro de como
+  raciocinar tende a atrapalhar (+31,2 pp × −12,5 pp, matriz v6)
 - Sugestões devem ser **estruturadas** (parseáveis) e normalizadas em `normalization.py`
 - Usar `grounding.py` para injetar contexto IDS/bSDD nos prompts
 - Cachear sugestões (`suggestion_cache.py`) para reprodutibilidade e custo
