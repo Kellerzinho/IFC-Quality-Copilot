@@ -199,56 +199,26 @@ class BSDDContextBuilder:
     def _build_search_queries(
         self, issue: Issue, ids_context: IDSContext | None = None
     ) -> list[str]:
-        """Monta as consultas candidatas ao bSDD, da mais especifica a mais ampla.
+        """Monta a consulta ao bSDD: apenas a classe IFC nua.
 
-        O endpoint de busca do bSDD procura **classes**: consultas do tipo
-        ``"IfcWall FireRating"`` nao casam nada. Por isso a classe IFC (com os
-        alias de classes depreciadas ja resolvidos) e sempre a ultima candidata,
-        garantindo que exista grounding mesmo quando as consultas especificas
-        nao retornam nada.
+        O endpoint de busca do bSDD procura **classes**. Censo do cache do
+        experimento (2026-08-04): das 53 consultas emitidas, as 10 de classe
+        nua resolveram TODAS e as 43 compostas retornaram TODAS zero —
+        ``"IfcWall FireRating"`` (propriedade), ``"IfcWall classification"``,
+        ``"IfcSpace OmniClass Table 13"`` (tabelas pedem outro dicionario, nao
+        o IFC 4.3) e nomes de familia Revit (``"Parede basica..."``). Consulta
+        composta era custo HTTP puro; o fallback de classe nua carregava 100%
+        do grounding. Se um dia outro dicionario (OmniClass/Uniclass) entrar,
+        a consulta certa e por ``dictionary_uri`` proprio, nao por texto aqui.
+
+        O nome do elemento no modelo (familia Revit, em portugues) tambem NAO
+        entra: a busca textual casa qualquer coisa e devolve classe oficial
+        errada — "Room" casa IfcCooledBeamPASSIVE e "Sala" casa
+        IfcEvaporativeCooler..., verificado ao vivo. Grounding falso e pior
+        que ausencia de grounding.
         """
-        candidates: list[str] = []
-        base_class = self._base_ifc_class(issue.element_class)
-
-        specific_query = issue.context.get("classification_query")
-        if specific_query:
-            normalized = self._normalize_search_text(str(specific_query))
-            if normalized:
-                candidates.append(normalized)
-
-        issue_type = issue.issue_type
-        if issue_type == "pset_missing":
-            target_property = self._target_property_name(issue, ids_context)
-            if target_property:
-                candidates.append(f"{base_class} {target_property}")
-        elif issue_type in {"system_unclassified", "classification_missing"}:
-            system_hint = issue.context.get("system_name") or issue.context.get("classification_system")
-            if system_hint:
-                candidates.append(f"{base_class} {system_hint}")
-            candidates.append(f"{base_class} classification")
-        elif issue_type == "space_unnamed":
-            candidates.extend([
-                "IfcSpace OmniClass Table 13",
-                "IfcSpace Uniclass Spaces",
-                "IfcSpace room space classification",
-            ])
-
-        if ids_context is not None and ids_context.check_property:
-            candidates.append(f"{base_class} {ids_context.check_property}")
-
-        # O nome do elemento no modelo (familia Revit, em portugues) NAO entra
-        # aqui: a busca textual do bSDD casa qualquer coisa e devolve classe
-        # oficial errada — "Room" casa IfcCooledBeamPASSIVE e "Sala" casa
-        # IfcEvaporativeCooler..., verificado ao vivo. Grounding falso e pior
-        # que ausencia de grounding.
-        candidates.append(base_class)
-
-        ordered: list[str] = []
-        for candidate in candidates:
-            cleaned = self._normalize_search_text(candidate) or candidate.strip()
-            if cleaned and cleaned not in ordered:
-                ordered.append(cleaned)
-        return ordered or [base_class]
+        del ids_context  # assinatura preservada; a consulta nao depende do IDS
+        return [self._base_ifc_class(issue.element_class)]
 
     def _base_ifc_class(self, element_class: str) -> str:
         """Resolve alias de classes IFC ausentes no dicionario oficial.
@@ -260,20 +230,6 @@ class BSDDContextBuilder:
         if cleaned.endswith("StandardCase"):
             return cleaned[: -len("StandardCase")]
         return cleaned
-
-    def _normalize_search_text(self, text: str) -> str:
-        """Remove ruido de nomes de familia/tipo vindos do modelo IFC."""
-        cleaned = text.strip()
-        cleaned = re.sub(r"[_:]+", " ", cleaned)
-        cleaned = re.sub(r"\b\d+\b", " ", cleaned)
-        cleaned = re.sub(r"\bgrowarq\b", " ", cleaned, flags=re.IGNORECASE)
-        cleaned = re.sub(r"\b[A-Z]{2,}\d+\b", " ", cleaned)
-        cleaned = re.sub(r"\s+", " ", cleaned).strip()
-
-        tokens = [token for token in cleaned.split() if len(token) >= 3 and not token.isdigit()]
-        if not tokens:
-            return ""
-        return " ".join(tokens[:8])
 
     def _resolve_domain(self, issue: Issue) -> str | None:
         domain = issue.context.get("bsdd_domain") or issue.context.get("domain")

@@ -190,8 +190,9 @@ def _client_that_only_answers(answers: dict[str, list[dict[str, str]]]) -> Magic
     return client
 
 
-def test_build_falls_back_to_bare_class_when_property_query_is_empty():
-    """pset_missing resolve pela classe quando 'classe propriedade' não casa."""
+def test_build_resolves_pset_missing_by_bare_class():
+    """pset_missing resolve pela classe nua — a única consulta emitida desde a
+    poda de 2026-08-04 (compostas: 43/43 zero no censo do experimento)."""
     client = _client_that_only_answers(
         {"IfcWall": [{"name": "IfcWall", "uri": "https://example.org/c/ifcwall", "domain": "IFC"}]}
     )
@@ -250,13 +251,11 @@ def test_build_normalizes_deprecated_standardcase_classes():
     assert context.source_status == "live"
 
 
-def test_build_stops_at_first_query_that_resolves():
-    """A busca não continua depois de encontrar resultado (economia de chamadas)."""
+def test_build_makes_exactly_one_search_call():
+    """Uma issue custa exatamente UMA chamada de busca ao bSDD (economia medida:
+    as consultas compostas podadas eram 43 chamadas zero no experimento)."""
     client = _client_that_only_answers(
         {
-            "IfcWall FireRating": [
-                {"name": "Fire Rating", "uri": "https://example.org/c/fr", "domain": "IFC"}
-            ],
             "IfcWall": [
                 {"name": "IfcWall", "uri": "https://example.org/c/ifcwall", "domain": "IFC"}
             ],
@@ -486,3 +485,43 @@ def test_space_naming_never_offers_the_ifc_class_as_a_name_candidate():
 
     assert context.class_name == "IfcSpace"
     assert [c.name for c in context.classification_suggestions] == []
+
+
+def test_build_queries_only_the_bare_ifc_class():
+    """Censo do cache do experimento (2026-08-04): 53 consultas, 10 de classe
+    nua (todas resolvem), 43 compostas — "IfcWall FireRating", "IfcSpace
+    OmniClass Table", nomes de família — todas ZERO no dicionário IFC 4.3.
+    A consulta composta é custo HTTP puro; só a classe nua vai ao endpoint.
+    """
+    client = _client_that_only_answers(
+        {"IfcWall": [{"name": "IfcWall", "uri": "https://example.org/c/ifcwall", "domain": "IFC"}]}
+    )
+
+    builder = BSDDContextBuilder(client)
+    issue = _make_issue(
+        "pset_missing",
+        check_property="FireRating",
+        pset_name="Pset_WallCommon",
+        classification_query="Parede básica parede externa 20cm",
+    )
+
+    builder.build(issue)
+
+    consultadas = [call.args[0] for call in client.search_class.call_args_list]
+    assert consultadas == ["IfcWall"]
+
+
+def test_build_space_unnamed_queries_only_the_bare_ifc_class():
+    """As consultas de tabela (OmniClass/Uniclass) pedem outro dicionário, não
+    o IFC 4.3 — no experimento retornaram 0/0/0 e só a classe nua resolve."""
+    client = _client_that_only_answers(
+        {"IfcSpace": [{"name": "IfcSpace", "uri": "https://example.org/c/ifcspace", "domain": "IFC"}]}
+    )
+
+    builder = BSDDContextBuilder(client)
+    issue = _make_issue("space_unnamed")
+
+    builder.build(issue)
+
+    consultadas = [call.args[0] for call in client.search_class.call_args_list]
+    assert consultadas == ["IfcSpace"]
