@@ -25,6 +25,7 @@ from src.models import (
     SuggestionMetrics,
     SuggestionSet,
 )
+from src.semantic.property_match import properties_match
 from src.suggestion_engine.deterministic import generate_deterministic_suggestions
 from src.suggestion_engine.grounding import GroundedIssueContext, prepare_llm_grounding
 from src.suggestion_engine.issue_deduplicator import (
@@ -43,10 +44,8 @@ from src.suggestion_engine.normalization import (
     normalize_value_for_issue,
     suggestion_identity_key,
 )
-from src.semantic.property_match import properties_match
 from src.suggestion_engine.ollama_client import OllamaClient
 from src.suggestion_engine.plausibility import is_physically_plausible
-from src.suggestion_engine.thermal_recompute import recompute_thermal_suggestions
 from src.suggestion_engine.prompt_templates import (
     PROMPT_VERSION,
     build_compact_prompt,
@@ -59,8 +58,11 @@ from src.suggestion_engine.prompt_templates import (
 )
 from src.suggestion_engine.suggestion_cache import (
     SuggestionCache,
+)
+from src.suggestion_engine.suggestion_cache import (
     compute_signature as compute_cache_signature,
 )
+from src.suggestion_engine.thermal_recompute import recompute_thermal_suggestions
 
 if TYPE_CHECKING:
     from src.suggestion_engine.prompt_router import PromptRouter
@@ -519,6 +521,11 @@ class SuggestionGenerator:
                     ),
                     has_official_candidates=(
                         primary_metrics.has_official_candidates if primary_metrics else False
+                    ),
+                    # A copia herda o VALOR recomputado; tem de herdar a marca
+                    # tambem, senao a cobertura da camada e subcontada 50x.
+                    thermal_recomputed=(
+                        primary_metrics.thermal_recomputed if primary_metrics else False
                     ),
                 )
                 result = SuggestionSet(

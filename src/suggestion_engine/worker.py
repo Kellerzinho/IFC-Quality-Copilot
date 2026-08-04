@@ -127,6 +127,11 @@ class SuggestionWorker:
                     has_official_candidates=(
                         primary_metrics.has_official_candidates if primary_metrics else False
                     ),
+                    # A copia herda o VALOR recomputado; tem de herdar a marca
+                    # tambem, senao a cobertura da camada e subcontada 50x.
+                    thermal_recomputed=(
+                        primary_metrics.thermal_recomputed if primary_metrics else False
+                    ),
                 )
                 reused = SuggestionSet(
                     issue_id=issue_id,

@@ -259,3 +259,33 @@ def test_generator_leaves_non_thermal_untouched():
     assert result.suggestions[0].value == "REI 60"
     assert result.metrics is not None
     assert result.metrics.thermal_recomputed is False
+
+
+def test_reused_issues_inherit_the_recomputed_flag():
+    """As cópias herdam o VALOR recomputado — têm de herdar a marca também.
+
+    Medido em 2026-08-04: sem isso o JSONL reportou 8 issues recomputadas onde
+    o correto eram 423 (8 estímulos × suas cópias), subcontando por 50x a
+    cobertura da camada determinística.
+    """
+    from unittest.mock import MagicMock
+
+    from src.suggestion_engine.ollama_client import OllamaClient
+    from src.suggestion_engine.suggestion import SuggestionGenerator
+
+    client = MagicMock(spec=OllamaClient)
+    client.generate.return_value = (
+        '{"opcoes": [{"valor": 2.14, "justificativa": "' + _MEMORIA_LAJE.replace('"', "") + '", '
+        '"confianca": "alta"}]}'
+    )
+    gen = SuggestionGenerator(client)
+    primaria, copia = _thermal_issue(), _thermal_issue()
+
+    resultados = gen.generate_batch(
+        [primaria, copia],
+        {"building_type": "Residencial", "bioclimatic_zone": "3"},
+        reuse_map={copia.id: primaria.id},
+    )
+
+    assert resultados[0].metrics.thermal_recomputed is True
+    assert resultados[1].metrics.thermal_recomputed is True
