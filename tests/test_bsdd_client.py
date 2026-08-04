@@ -111,6 +111,9 @@ def test_get_class_properties_parses_correctly(tmp_path) -> None:
     assert result == [
         BSDDProperty(
             name="FireRating",
+            # code = cauda da URI (aqui minúscula porque a URI do mock é);
+            # nas URIs reais do bSDD a cauda é PascalCase ("FireRating").
+            code="firerating",
             uri="https://example.org/properties/firerating",
             data_type="String",
             unit="min",
@@ -211,3 +214,33 @@ def test_resolve_class_marks_unresolved_when_no_safe_match() -> None:
     assert result.canonical_uri is None
     assert result.status == "unresolved"
     assert result.review_required is True
+
+
+def test_get_class_properties_preserves_pascalcase_code(tmp_path) -> None:
+    """Regressão (2026-08-04): o wrapper legado descartava o ``code`` PascalCase.
+
+    O bSDD responde ``name`` humano ("Fire Rating"); o único identificador que
+    casa com IDS/IFC é o code extraído da URI ("FireRating"). Sem ele, todo
+    consumidor a jusante que compara com check_property falha silenciosamente.
+    """
+    client = BSDDClient(cache_path=str(tmp_path / "bsdd_cache.json"))
+    client._client.get = MagicMock(
+        return_value=_mock_response(
+            {
+                "classProperties": [
+                    {
+                        "name": "Fire Rating",
+                        "propertyUri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/FireRating",
+                        "dataType": "String",
+                    }
+                ]
+            }
+        )
+    )
+
+    result = client.get_class_properties(
+        "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/class/IfcWall"
+    )
+
+    assert result[0].name == "Fire Rating"
+    assert result[0].code == "FireRating"

@@ -167,3 +167,51 @@ def test_official_class_reaches_the_grounded_context():
     grounded = prepare_llm_grounding(issue, bsdd_context=bsdd_context)
 
     assert grounded.official_class == "IfcSpace"
+
+
+def test_bsdd_display_named_property_fills_datatype_and_unit():
+    """Regressão (2026-08-04): o client real entrega name="Thermal Transmittance".
+
+    A comparação literal com check_property="ThermalTransmittance" nunca casava
+    e tipo/unidade do bSDD jamais chegavam ao GroundedIssueContext — logo, nunca
+    chegavam ao prompt nem à assinatura de cache.
+    """
+    ctx = BSDDContext(
+        class_name="IfcWall",
+        class_uri="https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/class/IfcWall",
+        properties=[
+            BSDDProperty(name="Thermal Transmittance", data_type="Real", unit="W/m²K")
+        ],
+    )
+
+    g = prepare_llm_grounding(_wall_issue(), ids_context=None, bsdd_context=ctx)
+
+    assert g.expected_datatype == "Real"
+    assert g.expected_unit == "W/m²K"
+
+
+def test_bsdd_display_named_property_fills_official_candidates():
+    """allowed_values de propriedade com nome humano viram candidatos oficiais."""
+    issue = Issue(
+        element_guid="W" * 22,
+        element_class="IfcWall",
+        element_name="Parede",
+        issue_type="pset_missing",
+        severity="high",
+        description="FireRating ausente",
+        context={"check_pset": "Pset_WallCommon", "check_property": "FireRating"},
+    )
+    ctx = BSDDContext(
+        class_name="IfcWall",
+        properties=[
+            BSDDProperty(
+                name="Fire Rating",
+                data_type="String",
+                allowed_values=["REI 30", "REI 60"],
+            )
+        ],
+    )
+
+    g = prepare_llm_grounding(issue, ids_context=None, bsdd_context=ctx)
+
+    assert g.official_candidates == ["REI 30", "REI 60"]

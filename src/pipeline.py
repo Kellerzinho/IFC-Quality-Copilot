@@ -35,6 +35,7 @@ from src.models import (
     SuggestionSet,
     ValidationResult,
 )
+from src.semantic.property_match import properties_match
 from src.suggestion_engine.issue_deduplicator import IssueDeduplicator
 from src.suggestion_engine.issue_store import IssueStore
 from src.suggestion_engine.normalization import normalize_value_for_issue
@@ -967,9 +968,15 @@ class QualityPipeline:
         issue = pair[0] if pair is not None else None
         if context and issue is not None:
             if issue.issue_type == "pset_missing":
-                target_property = str(issue.context.get("check_property") or "").strip().casefold()
+                target_property = str(issue.context.get("check_property") or "").strip()
                 for prop in context.properties:
-                    if prop.name.strip().casefold() == target_property and prop.uri:
+                    # name humano ("Fire Rating") ou code PascalCase do bSDD vs
+                    # check_property do IFC — matcher compartilhado (fix 2026-08-04).
+                    matches = bool(
+                        (prop.code and properties_match(target_property, prop.code))
+                        or properties_match(target_property, prop.name)
+                    )
+                    if matches and prop.uri:
                         return prop.uri
             if context.source_uris:
                 return context.source_uris[0]

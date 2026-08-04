@@ -205,6 +205,7 @@ class BSDDClient:
         return [
             BSDDProperty(
                 name=item.display_name,
+                code=item.code,
                 uri=item.canonical_uri or item.property_uri,
                 data_type=item.data_type,
                 unit=item.unit,

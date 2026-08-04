@@ -1253,3 +1253,37 @@ def test_generate_suggestions_without_reuse_keeps_one_call_per_issue(pipeline):
     pipeline.generate_suggestions()
 
     assert not capturado["reuse_map"]
+
+
+def test_default_bsdd_uri_prefers_property_uri_with_display_name():
+    """Regressão (2026-08-04): _default_bsdd_uri comparava check_property com o
+    nome humano do bSDD e caía sempre na URI da classe — a trilha de auditoria
+    apontava para IfcWall em vez da propriedade exata."""
+    issue = Issue(
+        element_guid="W" * 22,
+        element_class="IfcWall",
+        element_name="Parede 01",
+        issue_type="pset_missing",
+        severity="high",
+        description="FireRating ausente",
+        context={"check_property": "FireRating"},
+    )
+    prop_uri = "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/FireRating"
+    class_uri = "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/class/IfcWall"
+    from src.models import BSDDProperty
+
+    context = BSDDContext(
+        element_class="IfcWall",
+        class_uri=class_uri,
+        properties=[BSDDProperty(name="Fire Rating", uri=prop_uri)],
+        source_uris=[class_uri],
+    )
+
+    pipeline = object.__new__(QualityPipeline)
+    pipeline.bsdd_context_map = {issue.id: context}
+    pipeline.issues_suggestions = [
+        (issue, SuggestionSet(issue_id=issue.id, suggestions=[]))
+    ]
+    pipeline.issue_store = None
+
+    assert pipeline._default_bsdd_uri(issue.id) == prop_uri

@@ -43,6 +43,7 @@ from src.suggestion_engine.normalization import (
     normalize_value_for_issue,
     suggestion_identity_key,
 )
+from src.semantic.property_match import properties_match
 from src.suggestion_engine.ollama_client import OllamaClient
 from src.suggestion_engine.plausibility import is_physically_plausible
 from src.suggestion_engine.prompt_templates import (
@@ -574,11 +575,17 @@ class SuggestionGenerator:
     ) -> list[Suggestion]:
         """Rebaixa confiança de sugestões inconsistentes com o vocabulário bSDD."""
         issue_type = issue.issue_type
-        target_property = str(issue.context.get("check_property") or "").strip().casefold()
+        target_property = str(issue.context.get("check_property") or "").strip()
         for suggestion in suggestions:
             if issue_type == "pset_missing":
                 for prop in bsdd_context.properties:
-                    if target_property and prop.name.strip().casefold() != target_property:
+                    # O bSDD entrega name humano ("Fire Rating") e code PascalCase;
+                    # a comparacao literal com check_property nunca casava (no-op
+                    # silencioso ate 2026-08-04).
+                    if target_property and not (
+                        (prop.code and properties_match(target_property, prop.code))
+                        or properties_match(target_property, prop.name)
+                    ):
                         continue
                     if prop.data_type and not self._matches_bsdd_data_type(suggestion.value, prop.data_type):
                         self._downgrade_for_bsdd(

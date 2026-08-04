@@ -340,3 +340,27 @@ def test_material_unmapped_rejects_llm_text_as_writable_value() -> None:
     )
 
     assert normalize_value_for_issue(issue, "Material nao mapeado para IfcWallStandardCase") is None
+
+
+def test_resolve_bsdd_uri_matches_display_named_property() -> None:
+    """Regressão (2026-08-04): resolve_bsdd_uri comparava "FireRating" com o nome
+    humano do bSDD ("Fire Rating") e devolvia None para todo pset_missing —
+    a sugestão aplicada ficava sem a URI canônica da propriedade."""
+    from src.suggestion_engine.normalization import resolve_bsdd_uri
+
+    issue = Issue(
+        element_guid="W" * 22,
+        element_class="IfcWall",
+        element_name="Parede 01",
+        issue_type="pset_missing",
+        severity="high",
+        description="FireRating ausente",
+        context={"check_property": "FireRating"},
+    )
+    prop_uri = "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/FireRating"
+    ctx = BSDDContext(
+        element_class="IfcWall",
+        properties=[BSDDProperty(name="Fire Rating", uri=prop_uri)],
+    )
+
+    assert resolve_bsdd_uri(issue, "REI 60", ctx) == prop_uri

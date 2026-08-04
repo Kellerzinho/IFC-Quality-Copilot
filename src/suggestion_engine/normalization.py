@@ -8,6 +8,7 @@ import unicodedata
 from typing import Any
 
 from src.models import BSDDContext, Issue, Suggestion
+from src.semantic.property_match import properties_match
 from src.semantic_registry.registry import DEFAULT_SOURCE_POLICY
 
 _FLOAT_RE = re.compile(r"[-+]?\d+(?:[.,]\d+)?")
@@ -278,9 +279,15 @@ def resolve_bsdd_uri(
         return None
 
     if issue.issue_type == "pset_missing":
-        target_property = str(issue.context.get("check_property") or "").strip().casefold()
+        target_property = str(issue.context.get("check_property") or "").strip()
         for prop in bsdd_context.properties:
-            if prop.name.strip().casefold() == target_property and is_valid_bsdd_uri(prop.uri):
+            # name humano ("Fire Rating") ou code PascalCase do bSDD vs
+            # check_property do IFC — matcher compartilhado (fix 2026-08-04).
+            matches = bool(
+                (prop.code and properties_match(target_property, prop.code))
+                or properties_match(target_property, prop.name)
+            )
+            if matches and is_valid_bsdd_uri(prop.uri):
                 return prop.uri
         return None
 

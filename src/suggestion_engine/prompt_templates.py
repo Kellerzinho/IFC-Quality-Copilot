@@ -18,7 +18,13 @@ if TYPE_CHECKING:
 # cálculo obrigatória no térmico e desambiguação de mobiliário na nomeação —
 # evidência + direcionamento GENÉRICO, idêntico para todos os modelos (a
 # diferença entre LLMs é o objeto de medição; ver análise do run 2026-07-28).
-PROMPT_VERSION = "v6"
+# v6.1: correção do matcher de propriedades bSDD (revisão 2026-08-04) — o nome
+# humano do bSDD ("Fire Rating") passou a casar com check_property, então
+# tipo/unidade do dicionário podem alcançar prompt e assinatura de cache, e a
+# validação pós-LLM contra o vocabulário deixou de ser no-op. NÃO altera os
+# blocos de TRRF nem a memória de cálculo (decisões v7 pendentes do autor);
+# condição ainda NÃO medida em benchmark.
+PROMPT_VERSION = "v6.1"
 
 SYSTEM_PROMPT_COMPACT = (
     "Voce e um engenheiro BIM/IFC criterioso. Analise as evidencias fornecidas, "

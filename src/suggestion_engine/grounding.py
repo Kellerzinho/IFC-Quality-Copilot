@@ -10,7 +10,19 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
-from src.models import BSDDContext, IDSContext, Issue
+from src.models import BSDDContext, BSDDProperty, IDSContext, Issue
+from src.semantic.property_match import properties_match
+
+
+def _property_matches_target(prop: BSDDProperty, target: str) -> bool:
+    """True quando a propriedade bSDD corresponde à propriedade IFC alvo.
+
+    O bSDD entrega ``name`` humano ("Fire Rating") e ``code`` PascalCase;
+    a comparação literal com check_property nunca casava (no-op até 2026-08-04).
+    """
+    if prop.code and properties_match(target, prop.code):
+        return True
+    return properties_match(target, prop.name)
 
 
 class GroundedIssueContext(BaseModel):
@@ -176,9 +188,8 @@ def prepare_llm_grounding(
             official_candidates.append(name)
         # Para pset_missing: candidatos = allowed_values da propriedade alvo
         if canonical_property:
-            target_norm = canonical_property.strip().casefold()
             for prop in bsdd_context.related_properties:
-                if prop.name.strip().casefold() != target_norm:
+                if not _property_matches_target(prop, canonical_property):
                     continue
                 if prop.data_type and not expected_datatype:
                     expected_datatype = prop.data_type

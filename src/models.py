@@ -261,6 +261,9 @@ class BSDDProperty(BaseModel):
     """Representa uma propriedade relevante recuperada do bSDD."""
 
     name: str
+    code: str | None = None
+    """Código PascalCase ("FireRating") — o único identificador que casa com
+    IDS/IFC; ``name`` é a forma humana do bSDD ("Fire Rating")."""
     uri: str | None = None
     data_type: str | None = None
     unit: str | None = None

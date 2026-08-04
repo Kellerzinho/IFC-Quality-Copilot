@@ -269,6 +269,6 @@ def test_retry_de_fire_rating_mantem_instrucao_de_formato():
 # ---------------------------------------------------------------------------
 
 
-def test_prompt_version_avancou_para_v6():
-    """Evidência nova (LongName, telhado) e templates v6 mudam o prompt; caches v5 não podem ser reusados."""
-    assert PROMPT_VERSION == "v6"
+def test_prompt_version_avancou_para_v6_1():
+    """Matcher bSDD corrigido (2026-08-04) muda prompt e assinatura; caches v6 não podem ser reusados."""
+    assert PROMPT_VERSION == "v6.1"

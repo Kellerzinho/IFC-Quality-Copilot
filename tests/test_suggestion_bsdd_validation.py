@@ -107,6 +107,63 @@ def test_numeric_type_mismatch_gets_downgraded():
     assert result.error is not None
 
 
+def test_display_named_property_out_of_vocabulary_gets_downgraded():
+    """Regressão (2026-08-04): o client real entrega name="Fire Rating" (humano).
+
+    A comparação literal com check_property="FireRating" nunca casava e a
+    validação contra o vocabulário bSDD era um no-op silencioso — os testes
+    antigos usavam PascalCase dos dois lados e não pegavam isso.
+    """
+    client = _make_client(
+        '{"opcoes": [{"value": "REI 90", "justification": "Chute fora da lista.", "confidence": "alta"}]}'
+    )
+    gen = SuggestionGenerator(client)
+    issue = _make_pset_issue("FireRating")
+    bsdd_context = BSDDContext(
+        issue_id=issue.id,
+        element_class="IfcWall",
+        search_query="Wall",
+        properties=[
+            BSDDProperty(
+                name="Fire Rating",
+                data_type="String",
+                allowed_values=["REI 30", "REI 60"],
+            )
+        ],
+    )
+
+    result = gen.generate(issue, _BUILDING_CTX, bsdd_context=bsdd_context)
+
+    assert result.suggestions[0].confidence == "baixa"
+    assert "fora do vocabulário bSDD" in result.suggestions[0].justification
+
+
+def test_display_named_property_within_vocabulary_keeps_confidence():
+    """Contraparte: valor dentro do vocabulário não é rebaixado, mesmo com nome humano."""
+    client = _make_client(
+        '{"opcoes": [{"value": "REI 60", "justification": "Alvenaria comum.", "confidence": "alta"}]}'
+    )
+    gen = SuggestionGenerator(client)
+    issue = _make_pset_issue("FireRating")
+    bsdd_context = BSDDContext(
+        issue_id=issue.id,
+        element_class="IfcWall",
+        search_query="Wall",
+        properties=[
+            BSDDProperty(
+                name="Fire Rating",
+                data_type="String",
+                allowed_values=["REI 30", "REI 60"],
+            )
+        ],
+    )
+
+    result = gen.generate(issue, _BUILDING_CTX, bsdd_context=bsdd_context)
+
+    assert result.suggestions[0].confidence == "alta"
+    assert "fora do vocabulário bSDD" not in result.suggestions[0].justification
+
+
 def test_no_bsdd_context_skips_validation():
     client = _make_client(
         '{"opcoes": [{"label": "Quarto", "value": "Quarto", "justification": "Adjacente ao corredor.", "confidence": "alta"}]}'

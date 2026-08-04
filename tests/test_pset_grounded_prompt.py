@@ -224,9 +224,9 @@ class TestPsetGroundedPromptScenarios:
 
 
 class TestPromptVersion:
-    def test_prompt_version_is_v6(self):
-        """v6: LongName no Category, TRRF no fogo e memória de cálculo no térmico — prompt único para todos os modelos."""
-        assert PROMPT_VERSION == "v6"
+    def test_prompt_version_is_v6_1(self):
+        """v6.1: matcher bSDD corrigido — tipo/unidade do dicionário alcançam o prompt; prompt único para todos os modelos."""
+        assert PROMPT_VERSION == "v6.1"
 
     def test_prompt_version_single_source(self):
         """suggestion_cache re-exporta a mesma constante (sem deriva)."""

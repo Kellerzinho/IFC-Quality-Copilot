@@ -9,6 +9,7 @@ from loguru import logger
 
 from src.bsdd.client import BSDDClient
 from src.models import BSDDClassification, BSDDContext, BSDDProperty, IDSContext, Issue
+from src.semantic.property_match import property_match_key, strip_boolean_prefix
 from src.semantic_registry.registry import DEFAULT_SEMANTIC_REGISTRY
 
 
@@ -384,22 +385,10 @@ class BSDDContextBuilder:
         # centenas de propriedades irrelevantes (IfcWall tem 233 no bSDD).
         return []
 
-    @staticmethod
-    def _property_match_key(name: str) -> str:
-        """Normaliza nome de propriedade para comparacao entre bSDD e IFC.
-
-        O bSDD nomeia propriedades em forma humana ("Fire Rating", "Global ID"),
-        enquanto o IDS e o IFC usam PascalCase ("FireRating"). A comparacao
-        ignora espacos, separadores e caixa.
-        """
-        return re.sub(r"[^a-z0-9]+", "", name.casefold())
-
-    @staticmethod
-    def _strip_boolean_prefix(match_key: str) -> str:
-        """Remove o prefixo ``is`` de propriedades booleanas ja normalizadas."""
-        if match_key.startswith("is") and len(match_key) > 4:
-            return match_key[2:]
-        return match_key
+    # A regra de casamento IFC × bSDD vive em src/semantic/property_match.py
+    # (fonte única desde 2026-08-04); estes wrappers preservam a API interna.
+    _property_match_key = staticmethod(property_match_key)
+    _strip_boolean_prefix = staticmethod(strip_boolean_prefix)
 
     def _target_property_name(self, issue: Issue, ids_context: IDSContext | None) -> str | None:
         if ids_context is not None and ids_context.check_property:
