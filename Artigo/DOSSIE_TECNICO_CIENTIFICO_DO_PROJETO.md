@@ -62,6 +62,8 @@ O projeto se conecta a temas maiores da área: qualidade de dados BIM, interoper
 
 **Possíveis contribuições científicas:** arquitetura de pipeline verificável para enriquecimento semântico IFC; metodologia de avaliação de sugestões LLM em openBIM; conjunto de métricas de readiness por perfil; análise de efeito de IDS/bSDD como grounding; e protocolo de auditoria human-in-the-loop para correções IFC.
 
+> **Contribuição acrescentada em 2026-08-04 — onde fica a fronteira LLM × código.** O estrato térmico deu um caso medido e limpo: o LLM acerta a parte **semântica** (identificar camadas, recuperar λ, escolher o método normativo da NBR 15220-2) e erra a **aritmética** — monta os termos certos e erra a soma, devolvendo fielmente `1/(a soma que ele próprio escreveu)`. O efeito no agregado foi uma queda de 40 pp no top-1 **com top-3 e MAPE praticamente inalterados**: o conhecimento não mudou, mudou qual candidato foi ao 1º lugar. A resposta de engenharia não é prompt melhor, é **tirar a conta do LLM**: ele declara a estrutura, o código executa (`src/suggestion_engine/thermal_recompute.py`). Isso rende (a) um critério objetivo de inconsistência interna — `valor ≠ 1/R_total` pelos próprios termos do modelo, detectável **sem ground truth**; (b) erro diagnosticável em vez de opaco; e (c) um limite declarado — a recomputação conserta a soma, **não** a atribuição de λ. Detalhamento em `docs/condicao-v7-2026-08-04.md` §6.1 e `docs/pontos-de-calculo.md`.
+
 ## 5. Objetivos do projeto
 
 ### 5.1 Objetivo geral
