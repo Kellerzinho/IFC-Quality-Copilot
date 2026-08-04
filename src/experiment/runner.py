@@ -48,6 +48,7 @@ from src.experiment.per_issue import build_issue_outcomes, write_outcomes_jsonl
 from src.experiment.reviewer import simulate_review
 from src.models import ReadinessProfile
 from src.pipeline import QualityPipeline
+from src.semantic.property_match import properties_match
 from src.suggestion_engine.suggestion_cache import PROMPT_VERSION
 
 # Tipo do injetor de geração (para mockar o LLM em testes)
@@ -162,6 +163,29 @@ def filter_issues_by_type(issues: list, issue_types: list[str]) -> list:
     return filtered
 
 
+def filter_issues_by_property(issues: list, check_properties: list[str]) -> list:
+    """Restringe as issues às propriedades alvo pedidas.
+
+    O recorte por ``issue_type`` ainda é caro quando um tipo concentra muitos
+    estímulos distintos: ``pset_missing`` no prédio custa ~54 min porque
+    ``Category`` sozinho tem 77. Para atribuir o efeito de uma correção que mira
+    dois estratos, medir só esses dois sai em minutos — com o mesmo ground
+    truth e o mesmo avaliador.
+
+    Lista vazia é no-op (não filtrar), e não "filtrar tudo fora".
+    """
+    if not check_properties:
+        return issues
+    return [
+        issue
+        for issue in issues
+        if any(
+            properties_match(str(issue.context.get("check_property") or ""), alvo)
+            for alvo in check_properties
+        )
+    ]
+
+
 def stratified_sample(issues: list, max_issues: int, seed: int = 42) -> list:
     """Amostra determinística de issues, estratificada por ``issue_type``.
 
@@ -238,6 +262,7 @@ class ExperimentRunner:
         max_issues: int | None = None,
         sample_seed: int = 42,
         issue_types: list[str] | None = None,
+        check_properties: list[str] | None = None,
         reuse_equivalent: bool = False,
     ) -> ExperimentResult:
         """Executa uma réplica e retorna o ExperimentResult agregado.
@@ -285,6 +310,17 @@ class ExperimentRunner:
                     total_diagnosed = len(report.issues)
                     if issue_types:
                         report.issues = filter_issues_by_type(report.issues, issue_types)
+                    if check_properties:
+                        antes = len(report.issues)
+                        report.issues = filter_issues_by_property(
+                            report.issues, check_properties
+                        )
+                        logger.info(
+                            "Filtro check_properties {}: {}/{} issues",
+                            sorted(check_properties),
+                            len(report.issues),
+                            antes,
+                        )
                         logger.info(
                             "Filtro issue_types {} (dedup por guid): {}/{} issues",
                             sorted(issue_types),

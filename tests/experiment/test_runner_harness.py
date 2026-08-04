@@ -410,3 +410,67 @@ class TestAgregadores:
         assert timing.latency_ms_p50 == pytest.approx(20.0)
         assert timing.output_tokens_total == 20
         assert timing.output_tokens_per_sample == pytest.approx(10.0)
+
+
+class TestFilterIssuesByProperty:
+    """Recorte por propriedade alvo — medir UM estrato sem pagar pelos outros.
+
+    O recorte por issue_type ainda é caro quando um tipo concentra muitos
+    estímulos: `pset_missing` no prédio custa 54 min porque `Category` sozinho
+    tem 77 estímulos distintos. Para atribuir o efeito de uma correção que mira
+    FireRating e ThermalTransmittance, 24 estímulos bastam (~10 min).
+    """
+
+    def _issue(self, check_property: str, guid: str = "W" * 22) -> Issue:
+        return Issue(
+            element_guid=guid,
+            element_class="IfcWall",
+            issue_type="pset_missing",
+            severity="high",
+            description=f"{check_property} ausente",
+            context={"check_property": check_property},
+        )
+
+    def test_keeps_only_requested_properties(self):
+        from src.experiment.runner import filter_issues_by_property
+
+        fogo = self._issue("FireRating", "A" * 22)
+        termico = self._issue("ThermalTransmittance", "B" * 22)
+        categoria = self._issue("Category", "C" * 22)
+
+        result = filter_issues_by_property(
+            [fogo, termico, categoria], ["FireRating", "ThermalTransmittance"]
+        )
+
+        assert result == [fogo, termico]
+
+    def test_matches_property_names_case_and_separator_insensitively(self):
+        """Mesma regra de casamento do resto do sistema (nome humano × PascalCase)."""
+        from src.experiment.runner import filter_issues_by_property
+
+        termico = self._issue("ThermalTransmittance")
+
+        assert filter_issues_by_property([termico], ["thermal transmittance"]) == [termico]
+
+    def test_empty_property_list_is_a_no_op(self):
+        """Sem propriedades pedidas, o recorte não filtra nada."""
+        from src.experiment.runner import filter_issues_by_property
+
+        issues = [self._issue("FireRating"), self._issue("Category", "C" * 22)]
+
+        assert filter_issues_by_property(issues, []) == issues
+
+    def test_drops_issues_without_target_property(self):
+        """Issue sem check_property (ex.: space_unnamed) sai quando há filtro."""
+        from src.experiment.runner import filter_issues_by_property
+
+        sem_propriedade = Issue(
+            element_guid="S" * 22,
+            element_class="IfcSpace",
+            issue_type="space_unnamed",
+            severity="low",
+            description="sem nome",
+            context={},
+        )
+
+        assert filter_issues_by_property([sem_propriedade], ["FireRating"]) == []

@@ -57,6 +57,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--tag", required=True, help="Rótulo do diretório de saída.")
     parser.add_argument(
+        "--check-properties",
+        default="",
+        help="Restringe às propriedades alvo (separadas por vírgula). Vazio = todas.",
+    )
+    parser.add_argument(
         "--dataset",
         choices=("predio", "masked"),
         default="predio",
@@ -65,6 +70,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     issue_types = [t.strip() for t in args.issue_types.split(",") if t.strip()]
+    check_properties = [p.strip() for p in args.check_properties.split(",") if p.strip()]
     if args.dataset == "masked":
         ifc, gt = EVAL / "predio_v1_masked.ifc", EVAL / "ground_truth_spaces.yaml"
     else:
@@ -72,7 +78,13 @@ def main(argv: list[str] | None = None) -> int:
 
     out_dir = RESULTS / f"estrato-{args.tag}"
     _unload(args.model)
-    logger.info("Medindo {} | estratos={} | modelo={}", args.dataset, issue_types, args.model)
+    logger.info(
+        "Medindo {} | estratos={} | propriedades={} | modelo={}",
+        args.dataset,
+        issue_types,
+        check_properties or "todas",
+        args.model,
+    )
     t0 = time.perf_counter()
     result = ExperimentRunner().run_single(
         ifc_path=str(ifc),
@@ -82,6 +94,7 @@ def main(argv: list[str] | None = None) -> int:
         model_name=args.model,
         cache_enabled=False,
         issue_types=issue_types,
+        check_properties=check_properties or None,
         reuse_equivalent=True,
     )
     ExperimentRunner._export(result, str(out_dir))
