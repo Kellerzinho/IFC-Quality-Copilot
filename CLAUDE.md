@@ -84,7 +84,8 @@ ifc-quality-copilot/
 │   │   ├── context_builder.py   # contexto técnico (grounding) para o LLM
 │   │   └── models.py
 │   ├── semantic/               # URIs canônicas e semântica compartilhada
-│   │   └── canonical_uris.py
+│   │   ├── canonical_uris.py
+│   │   └── property_match.py    # matcher único de nomes IFC × bSDD
 │   ├── semantic_registry/      # resolução e política de fontes
 │   │   ├── registry.py
 │   │   ├── resolver.py
@@ -191,6 +192,12 @@ ifc-quality-copilot/
 ### bSDD
 - bSDD fornece **termos e definições oficiais** para grounding do LLM (nunca confiar no
   LLM para terminologia sem contexto)
+- Escopo medido (2026-08-04): no dicionário IFC 4.3, o grounding efetivo é **classe
+  oficial + URI canônica** (+ tipo de dado quando a propriedade existe no dicionário);
+  `allowed_values` é nulo nas propriedades do experimento — o vocabulário fechado vem
+  dos **templates** (ver `docs/revisao-bsdd-2026-08-04.md`)
+- Nomes de propriedade: o bSDD usa forma humana ("Fire Rating"), IFC/IDS usam PascalCase —
+  **sempre** comparar via `src/semantic/property_match.py`, nunca literalmente
 - Acesso via `src/bsdd/client.py`, sempre com cache (`src/bsdd/cache.py`)
 - O contexto técnico é montado em `src/bsdd/context_builder.py`
 - Em testes, **nunca** depender da API bSDD ao vivo (usar mocks/fixtures);
