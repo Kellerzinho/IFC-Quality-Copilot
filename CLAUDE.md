@@ -262,6 +262,11 @@ reprodutibilidade dos resultados do artigo.
 
 ## Referências Rápidas
 
+### Pontos de cálculo
+Onde há aritmética, quem executa e com que constantes (λ, Rsi/Rse, câmara de ar,
+bandas de equivalência, guardas de plausibilidade): **`docs/pontos-de-calculo.md`**.
+Consultar antes de mexer em qualquer número normativo ou tolerância.
+
 ### Psets Mais Comuns (NBR 15575)
 - `Pset_WallCommon`: ThermalTransmittance, IsExternal, FireRating, IsLoadBearing
 - `Pset_DoorCommon`: FireRating, IsExternal
