@@ -23,9 +23,9 @@ from __future__ import annotations
 from src.suggestion_engine.prompt_templates import PROMPT_VERSION, TEMPLATES
 
 
-def test_prompt_version_is_v7_1():
-    """v7.1: v7 + contrato único de saída + montante como evidência."""
-    assert PROMPT_VERSION == "v7.1"
+def test_prompt_version_is_v7_2():
+    """v7.2: v7.1 + restrição de fogo desambiguada."""
+    assert PROMPT_VERSION == "v7.2"
 
 
 # ---------------------------------------------------------------------------
@@ -173,3 +173,37 @@ def test_rendered_thermal_prompt_carries_the_memory_contract_to_the_end():
     cauda = user.split("REGRAS DE SAIDA:")
     assert len(cauda) == 2, "o bloco de regras tem de existir e ser único"
     assert "memoria_calculo" in cauda[-1]
+
+
+# ---------------------------------------------------------------------------
+# Fogo: a restrição de formato não pode induzir classe de uma letra
+# ---------------------------------------------------------------------------
+
+
+def test_fire_restriction_enumerates_valid_class_combinations():
+    """Medido no smoke do v7.1: "letras R/E/I seguidas do tempo" foi lido como
+    "escolha UMA destas" e o gemma2 colapsou em `E 30`/`E 60` — classe de uma
+    letra, que nunca é aceita. A ambiguidade sempre existiu; estava mascarada
+    pelo ruído do schema duplicado, e o P0 a destapou.
+
+    Correção de FORMATO (não de raciocínio): enunciar as combinações válidas.
+    """
+    fire = TEMPLATES["pset_missing_fire"]
+
+    assert "R/E/I" not in fire, "listar com barras convida a escolher uma letra"
+    for classe in ("REI", "EI", "RE"):
+        assert classe in fire, classe
+    assert "JUNTAS" in fire
+
+
+def test_fire_template_does_not_gain_reasoning_guidance():
+    """A correção é de formato: o raciocínio continua só no bloco CRITÉRIOS.
+
+    Sem esta trava, "desambiguar o formato" vira porta de entrada para
+    procedimento — exatamente o que o v7 removeu por custar −12,5 pp.
+    """
+    fire = TEMPLATES["pset_missing_fire"]
+
+    assert "PROCEDIMENTO" not in fire
+    assert "TRRF" not in fire
+    assert "Tab. A.1" not in fire

@@ -41,7 +41,10 @@ if TYPE_CHECKING:
 #        instrução em prosa que o modelo ignorava em favor da tabela de λ.
 # Atribuição no dataset: P1 só toca estímulos de parede com camada metálica
 # interna (1 estímulo, 222 issues); qualquer outro movimento é P0.
-PROMPT_VERSION = "v7.1"
+# v7.2 (2026-08-04): desambigua a RESTRICAO do template de fogo. Correcao de
+# FORMATO, nao de raciocinio — o defeito sempre existiu e so ficou visivel
+# quando o P0 tirou o ruido do schema duplicado.
+PROMPT_VERSION = "v7.2"
 
 _MEMORIA_ESTRUTURADA_BR = (
     "MEMÓRIA ESTRUTURADA (obrigatória): declare no campo memoria_calculo as camadas "
@@ -470,8 +473,14 @@ TEMPLATES: dict[str, str] = {
         # de como raciocinar sai.
         "TAREFA: determine a classe de resistência ao fogo deste elemento e sugira 3 valores "
         "ordenados por probabilidade, considerando a função estrutural, as camadas e a espessura.\n"
-        "RESTRICAO: o campo valor deve conter apenas a classe + minutos (letras R/E/I seguidas do "
-        "tempo), com duracoes usuais 30, 60, 90 ou 120 minutos. "
+        # v7.2: a redacao anterior — "letras R/E/I seguidas do tempo" — foi lida
+        # como "escolha UMA destas" e produziu classe de uma letra (E 30, E 60)
+        # no smoke do v7.1. Enumerar as COMBINACOES resolve a ambiguidade sem
+        # dizer qual delas se aplica: essa decisao continua no bloco CRITERIOS.
+        "RESTRICAO: o campo valor e uma classe seguida do tempo em minutos. As classes "
+        "validas sao as combinacoes R, RE, REI, EI e E — as letras aparecem JUNTAS na "
+        "mesma classe quando o elemento cumpre mais de uma funcao. "
+        "Duracoes usuais: 30, 60, 90 ou 120 minutos. "
         "Nao use A1, N/A, NC, FireRating, nomes de propriedade, descricoes ou texto explicativo.\n"
         "Formato JSON (o valor abaixo é PLACEHOLDER, não uma sugestão):\n"
         '{{"opcoes": [{{"valor": "<classe> <minutos>", "justificativa": "...", '
