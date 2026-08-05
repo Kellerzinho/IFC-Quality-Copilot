@@ -155,8 +155,29 @@ class OllamaClient:
                 if backoff > 0:
                     time.sleep(backoff)
             except httpx.HTTPStatusError as exc:
-                logger.error("Erro HTTP do Ollama (sem retry): {}", exc)
-                raise RuntimeError(f"Ollama HTTP error: {exc}") from exc
+                # 4xx e erro nosso (payload, modelo inexistente): repetir nao muda nada.
+                # 5xx e falha transitoria do servidor — no benchmark de 2026-08-04, um
+                # unico 500 abortou a primaria de um estimulo e as 262 copias herdaram a
+                # abstencao, derrubando o agregado do estrato inteiro. Com reuso, cada
+                # primaria perdida custa todas as suas copias: repetir e obrigatorio.
+                if exc.response.status_code < 500:
+                    logger.error("Erro HTTP do Ollama (4xx, sem retry): {}", exc)
+                    raise RuntimeError(f"Ollama HTTP error: {exc}") from exc
+
+                last_exc = exc
+                logger.warning(
+                    "Tentativa {}/{} no Ollama falhou (HTTP {}, model={}): {}",
+                    attempt + 1,
+                    self._max_retries + 1,
+                    exc.response.status_code,
+                    self.model,
+                    exc,
+                )
+                if attempt >= self._max_retries:
+                    break
+                backoff = self._retry_backoff_seconds * (2 ** attempt)
+                if backoff > 0:
+                    time.sleep(backoff)
 
         raise RuntimeError(
             f"Ollama indisponivel apos {self._max_retries + 1} tentativas: {last_exc}"

@@ -195,6 +195,65 @@ def test_generate_raises_on_connect_error_after_retries():
             client.generate(prompt="sem conexão")
 
 
+def _make_error_response(status_code: int) -> MagicMock:
+    """Mock de resposta cujo raise_for_status levanta HTTPStatusError."""
+    resp = MagicMock(spec=httpx.Response)
+    resp.status_code = status_code
+    resp.raise_for_status.side_effect = httpx.HTTPStatusError(
+        f"HTTP {status_code}", request=MagicMock(), response=resp
+    )
+    return resp
+
+
+def test_generate_retries_on_server_error():
+    """5xx e falha transitoria: generate tenta de novo e retorna na segunda tentativa.
+
+    Regressao do benchmark de 2026-08-04: um unico 500 do Ollama abortou a
+    primaria de um estimulo e, com reuso, as 262 copias herdaram a abstencao.
+    """
+    client = OllamaClient()
+    mock_resp = _make_response({"response": "sucesso apos 500"})
+
+    with (
+        patch.object(
+            client._client, "post", side_effect=[_make_error_response(500), mock_resp]
+        ) as mock_post,
+        patch("src.suggestion_engine.ollama_client.time.sleep"),
+    ):
+        text, _ = client.generate(prompt="teste 500")
+
+    assert text == "sucesso apos 500"
+    assert mock_post.call_count == 2
+
+
+def test_generate_raises_on_server_error_after_retries():
+    """5xx persistente esgota as tentativas e vira RuntimeError."""
+    client = OllamaClient()
+
+    with (
+        patch.object(client._client, "post", side_effect=lambda *a, **k: _make_error_response(503)),
+        patch("src.suggestion_engine.ollama_client.time.sleep"),
+        pytest.raises(RuntimeError, match="Ollama indisponivel"),
+    ):
+        client.generate(prompt="503 permanente")
+
+
+@pytest.mark.parametrize("status_code", [400, 404, 422])
+def test_generate_does_not_retry_on_client_error(status_code: int):
+    """4xx e erro nosso (payload, modelo inexistente): repetir nao muda nada."""
+    client = OllamaClient()
+
+    with (
+        patch.object(
+            client._client, "post", side_effect=lambda *a, **k: _make_error_response(status_code)
+        ) as mock_post,
+        pytest.raises(RuntimeError, match="Ollama HTTP error"),
+    ):
+        client.generate(prompt=f"erro {status_code}")
+
+    assert mock_post.call_count == 1
+
+
 # ---------------------------------------------------------------------------
 # is_available
 # ---------------------------------------------------------------------------
