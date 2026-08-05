@@ -76,6 +76,18 @@ class RunMetadata(BaseModel):
     """Issues equivalentes reaproveitaram a sugestão da primária (ver runner)."""
     bsdd_cache_sha256: str | None = None
     """Hash do cache bSDD: identifica a condição de grounding do run."""
+    hardware: dict[str, Any] | None = None
+    """Retrato da máquina (GPU/VRAM/driver, CPU, RAM, OS, hostname).
+
+    Enquanto houve uma máquina só, ela era implícita. Com duas, sem este campo
+    dois JSONs do mesmo benchmark ficam indistinguíveis.
+    """
+    gpu_residency: dict[str, Any] | None = None
+    """Fração do modelo residente na GPU ao fim da geração (``/api/ps``).
+
+    Separa "modelo mais lento" de "modelo transbordando para a CPU" — a
+    distinção sem a qual latência não é comparável entre máquinas.
+    """
     replica_index: int = 0
     timestamp: str | None = None
     """ISO-8601; carimbado externamente (Date.now indisponível no harness)."""

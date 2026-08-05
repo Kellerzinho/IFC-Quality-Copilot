@@ -36,6 +36,11 @@ from typing import Any
 from loguru import logger
 
 from src.config import get_settings
+from src.experiment.environment import (
+    gpu_residency,
+    hardware_snapshot,
+    ollama_model_digest,
+)
 from src.experiment.evaluator import Evaluator, GroundTruth
 from src.experiment.metrics import (
     ExperimentResult,
@@ -338,6 +343,11 @@ class ExperimentRunner:
                         )
                     pipeline.generate_suggestions(reuse_equivalent=reuse_equivalent)
 
+                    # Residencia na GPU: medida AQUI, com o modelo ainda carregado.
+                    # Depois da avaliacao o Ollama ja pode ter descarregado, e o
+                    # campo viraria None num run perfeitamente valido.
+                    residency = gpu_residency(settings.ollama_model, settings.ollama_url)
+
                     # 1) Avaliação vs ground truth (antes de qualquer mutação do modelo)
                     evaluation = evaluator.evaluate(
                         pipeline.issues_suggestions, ground_truth, profile=profile
@@ -377,6 +387,9 @@ class ExperimentRunner:
 
                     metadata = RunMetadata(
                         model_name=settings.ollama_model,
+                        model_digest=ollama_model_digest(
+                            settings.ollama_model, settings.ollama_url
+                        ),
                         ollama_version=_ollama_version(),
                         seed=settings.ollama_seed,
                         temperature=settings.ollama_temperature,
@@ -392,6 +405,8 @@ class ExperimentRunner:
                         cache_enabled=cache_enabled,
                         reuse_equivalent=reuse_equivalent,
                         bsdd_cache_sha256=sha256_of(settings.bsdd_cache_path),
+                        hardware=hardware_snapshot(),
+                        gpu_residency=residency,
                         replica_index=replica_index,
                         timestamp=timestamp,
                     )

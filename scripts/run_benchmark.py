@@ -74,6 +74,30 @@ def _locked_models() -> list[str]:
     return [m["name"] for m in lock["models"]]
 
 
+def _locked_digests() -> dict[str, str]:
+    """Mapeia ``modelo -> digest curto`` do models.lock.json."""
+    lock = json.loads(LOCK_FILE.read_text(encoding="utf-8"))
+    return {m["name"]: m.get("digest", "") for m in lock["models"] if m.get("digest")}
+
+
+def _check_digest(model: str, locked: dict[str, str]) -> None:
+    """Avisa (alto) se o modelo instalado divergir do congelado no lock.
+
+    Avisa em vez de abortar: um lock desatualizado não deve derrubar uma fila de
+    horas, e o digest real fica gravado no metadata de cada run — a divergência
+    é auditável depois. O que não pode acontecer é passar despercebida.
+    """
+    from src.config import get_settings
+    from src.experiment.environment import lock_digest_mismatch, ollama_model_digest
+
+    real = ollama_model_digest(model, get_settings().ollama_url)
+    aviso = lock_digest_mismatch(model, real, locked.get(model))
+    if aviso:
+        logger.warning("DIGEST DIVERGENTE — {}", aviso)
+    elif real:
+        logger.info("Digest conferido: {} = {}", model, real[:12])
+
+
 def _probe_model(model: str) -> bool:
     """Sondagem mínima: o modelo carrega e responde? (gate do 14B)."""
     logger.info("Gate: sondando {} (pode levar minutos no primeiro load)…", model)
@@ -160,6 +184,8 @@ def main(argv: list[str] | None = None) -> int:
             return 1
 
     runner = ExperimentRunner()
+    locked_digests = _locked_digests()
+    digest_checked: set[str] = set()
     gate_results: dict[str, bool] = {}
     failures: list[str] = []
     completed = 0
@@ -193,6 +219,10 @@ def main(argv: list[str] | None = None) -> int:
                         skipped += 1
                         logger.info("SKIP (já existe): {}", stage)
                         continue
+
+                    if model not in digest_checked:
+                        digest_checked.add(model)
+                        _check_digest(model, locked_digests)
 
                     if model in GATED_MODELS:
                         if model not in gate_results:
