@@ -35,7 +35,7 @@ _UNCERTAINTY_MARKERS = (
     "verificar",
 )
 _PENDING_EI_ALTERNATIVES = frozenset({"EI 60", "EI 90", "EI 120"})
-_RATIFIED_LEGACY_SHA256 = "d08d2c7466a71c0cde467a959ed2aebfd4857d1da64944e4504f8f97d4edd6f6"
+_RATIFIED_LEGACY_SHA256 = "7d1b1dc8b4756e5a48cd28925d3dceb53a83ab401c31ae0fcf80914ddf85bccb"
 _MATERIAL_NEGATION_PATTERN = re.compile(
     r"\b(?:sem|nao|nunca|jamais|ausente|ausencia|inexistente|desprovido|"
     r"falta|faltante|without|not|none|absent|missing|lacks|lacking|non)\b"

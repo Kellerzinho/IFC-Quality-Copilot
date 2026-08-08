@@ -10,7 +10,8 @@ import os
 import sys
 import tempfile
 from collections import defaultdict
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterator, Mapping, Sequence
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -22,6 +23,7 @@ if str(PROJECT_ROOT) not in sys.path:
 import ifcopenshell.util.element as ue
 import yaml
 
+from src.config import get_settings
 from src.experiment.evaluator import GroundTruth, GroundTruthItem
 from src.experiment.ground_truth_audit import (
     AuditDecision,
@@ -39,7 +41,7 @@ from src.models import Issue
 from src.pipeline import QualityPipeline
 
 IDS_PATH = PROJECT_ROOT / "data" / "ids_templates" / "residencial_nbr15575.ids"
-RATIFIED_LEGACY_SHA256 = "d08d2c7466a71c0cde467a959ed2aebfd4857d1da64944e4504f8f97d4edd6f6"
+RATIFIED_LEGACY_SHA256 = "7d1b1dc8b4756e5a48cd28925d3dceb53a83ab401c31ae0fcf80914ddf85bccb"
 IDS_SHA256 = "f698f2c020d79140bb314f077f8de680f492fd7ba42867e4000a4cead5d20905"
 THERMAL_UNIT = (
     "W/(m²·K) (unidade semântica de IfcThermalTransmittanceMeasure; Unit IFC não declarada)"
@@ -99,25 +101,26 @@ def build_dataset(
         source_path = Path(legacy_gt_path or spec.ground_truth_path)
         predio_source = _read_predio_source(source_path, spec)
 
-    pipeline: QualityPipeline | None = None
-    try:
-        pipeline = QualityPipeline(
-            str(spec.ifc_path),
-            spec.building_context,
-            ids_path=str(IDS_PATH),
-        )
-        report = pipeline.diagnose()
-        issues = list(report.issues)
-        if spec.key == "predio":
-            assert predio_source is not None
-            result = _build_predio(issues, *predio_source)
-        elif spec.key == "casa":
-            result = _build_casa(issues, pipeline.ifc_file)
-        else:
-            raise ValueError(f"dataset desconhecido: {spec.key}")
-    finally:
-        if pipeline is not None:
-            pipeline.close()
+    with _persistent_suggestion_cache_disabled():
+        pipeline: QualityPipeline | None = None
+        try:
+            pipeline = QualityPipeline(
+                str(spec.ifc_path),
+                spec.building_context,
+                ids_path=str(IDS_PATH),
+            )
+            report = pipeline.diagnose()
+            issues = list(report.issues)
+            if spec.key == "predio":
+                assert predio_source is not None
+                result = _build_predio(issues, *predio_source)
+            elif spec.key == "casa":
+                result = _build_casa(issues, pipeline.ifc_file)
+            else:
+                raise ValueError(f"dataset desconhecido: {spec.key}")
+        finally:
+            if pipeline is not None:
+                pipeline.close()
 
     _require_exact_partition(result, issues)
     result.ground_truth.metadata = _metadata(spec, issues, result)
@@ -238,7 +241,9 @@ def _read_predio_source(path: Path, spec: DatasetSpec) -> tuple[dict[str, Any], 
         if metadata.get("previous_gt_sha256") != RATIFIED_LEGACY_SHA256:
             raise ValueError("previous_gt_sha256 canonico diverge da base ratificada")
         expected = EXPECTED_GROUND_TRUTH_SHA256.get(spec.key)
-        if expected is not None and digest.lower() != expected.lower():
+        if expected is None:
+            raise ValueError(f"hash canonico de {spec.key} nao congelado")
+        if digest.lower() != expected.lower():
             raise ValueError(
                 f"hash canonico de {spec.key} diverge: esperado {expected}, obtido {digest}"
             )
@@ -552,6 +557,23 @@ def _skip_sort_key(item: SkippedIssue) -> tuple[str, str, str, str]:
 def _require_input(path: Path, label: str) -> None:
     if not path.is_file():
         raise FileNotFoundError(f"{label} ausente: {path}")
+
+
+@contextmanager
+def _persistent_suggestion_cache_disabled() -> Iterator[None]:
+    """Impede que o diagnostico abra ou invalide o SQLite da aplicacao."""
+    variable = "SUGGESTION_CACHE_ENABLED"
+    previous = os.environ.get(variable)
+    try:
+        os.environ[variable] = "false"
+        get_settings.cache_clear()
+        yield
+    finally:
+        if previous is None:
+            os.environ.pop(variable, None)
+        else:
+            os.environ[variable] = previous
+        get_settings.cache_clear()
 
 
 def _sha256_bytes(content: bytes) -> str:

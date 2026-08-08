@@ -3,19 +3,26 @@
 from __future__ import annotations
 
 import hashlib
+import sqlite3
+import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
+import ifcopenshell
 import pytest
 import yaml
 
 from scripts import build_ground_truths as builder
+from src.config import get_settings
 from src.experiment.evaluator import GroundTruth, GroundTruthItem
 from src.experiment.ground_truth_validation import GroundTruthValidationError
-from src.experiment.gt_extractor import GTExtractionResult
+from src.experiment.gt_extractor import GTExtractionResult, SkippedIssue
 from src.ifc_analyzer.material_reader import MaterialReading
-from src.models import Issue
+from src.models import Issue, Suggestion
+from src.suggestion_engine.suggestion_cache import SuggestionCache
+
+RATIFIED_LF_SHA256 = "7d1b1dc8b4756e5a48cd28925d3dceb53a83ab401c31ae0fcf80914ddf85bccb"
 
 
 def _issue(
@@ -108,6 +115,23 @@ def _install_ids(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     return ids_path
 
 
+def _cache_canary_snapshot(path: Path) -> tuple[int, dict[str, tuple[str, int, int]]]:
+    with sqlite3.connect(
+        f"file:{path.as_posix()}?mode=ro&immutable=1", uri=True
+    ) as connection:
+        row_count = int(connection.execute("SELECT COUNT(*) FROM suggestion_cache").fetchone()[0])
+    files: dict[str, tuple[str, int, int]] = {}
+    for candidate in (path, Path(f"{path}-wal"), Path(f"{path}-shm")):
+        if candidate.exists():
+            content = candidate.read_bytes()
+            files[candidate.name] = (
+                hashlib.sha256(content).hexdigest(),
+                len(content),
+                candidate.stat().st_mtime_ns,
+            )
+    return row_count, files
+
+
 def test_dataset_registry_has_predio_and_casa_only():
     """Adicionar ou omitir dataset do contrato deve quebrar este teste."""
     assert set(builder.DATASETS) == {"predio", "casa"}
@@ -119,6 +143,37 @@ def test_dataset_registry_has_predio_and_casa_only():
         "building_type": "Residencial unifamiliar",
         "bioclimatic_zone": "4A",
     }
+
+
+def test_ratified_legacy_snapshot_is_lf_and_matches_frozen_hash():
+    """CRLF local nao pode mudar a identidade da base autoral versionada em LF."""
+    path = builder.DATASETS["predio"].ground_truth_path
+    content = path.read_bytes()
+
+    assert b"\r\n" not in content
+    assert hashlib.sha256(content).hexdigest() == RATIFIED_LF_SHA256
+    assert builder.RATIFIED_LEGACY_SHA256 == RATIFIED_LF_SHA256
+
+
+def test_ground_truth_yaml_has_lf_git_attribute():
+    """Checkout futuro nao pode voltar a materializar os GTs canonicos em CRLF."""
+    completed = subprocess.run(
+        [
+            "git",
+            "check-attr",
+            "text",
+            "eol",
+            "--",
+            "data/evaluation/predio/ground_truth.yaml",
+        ],
+        cwd=builder.PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+
+    assert ": text: set" in completed.stdout
+    assert ": eol: lf" in completed.stdout
 
 
 def test_build_preserves_literal_check_property(tmp_path, monkeypatch):
@@ -265,6 +320,77 @@ def test_check_mode_returns_nonzero_on_drift(tmp_path, monkeypatch):
     assert spec.ground_truth_path.read_bytes() == b"semantic drift"
 
 
+def test_check_mode_never_touches_persistent_suggestion_cache(tmp_path, monkeypatch):
+    """Abrir o SQLite da aplicacao durante --check deve quebrar este teste."""
+    issue = _issue()
+    ids_path = _install_ids(tmp_path, monkeypatch)
+    spec = _spec(tmp_path)
+    ifc_file = ifcopenshell.file(schema="IFC4")
+    ifc_file.write(str(spec.ifc_path))
+
+    expected = GTExtractionResult(
+        ground_truth=GroundTruth(items=[]),
+        skipped=[
+            SkippedIssue(
+                issue_id=issue.id,
+                element_guid=issue.element_guid,
+                issue_type=issue.issue_type,
+                check_property="Category",
+                reason="GlobalId ausente no IFC canonico",
+            )
+        ],
+    )
+    spec.ground_truth_path.write_bytes(
+        builder.canonical_ground_truth_bytes(expected, [issue], spec)
+    )
+    output_before = (
+        spec.ground_truth_path.read_bytes(),
+        spec.ground_truth_path.stat().st_mtime_ns,
+    )
+
+    cache_path = tmp_path / "suggestion_cache.db"
+    cache = SuggestionCache(cache_path)
+    try:
+        cache.set(
+            "canary-signature",
+            [
+                Suggestion(
+                    label="canary",
+                    value="canary",
+                    justification="linha sentinela",
+                    confidence="alta",
+                )
+            ],
+            model_version="canary-model",
+            prompt_version="obsolete-prompt",
+        )
+    finally:
+        cache.close()
+    cache_before = _cache_canary_snapshot(cache_path)
+
+    monkeypatch.setenv("SUGGESTION_CACHE_ENABLED", "true")
+    monkeypatch.setenv("SUGGESTION_CACHE_PATH", str(cache_path))
+    get_settings.cache_clear()
+    monkeypatch.setattr(builder, "DATASETS", {"casa": spec})
+    monkeypatch.setattr(
+        builder.QualityPipeline,
+        "diagnose",
+        lambda _self: SimpleNamespace(issues=[issue]),
+    )
+
+    exit_code = builder.main(["--dataset", "casa", "--check"])
+
+    assert exit_code == 0
+    assert _cache_canary_snapshot(cache_path) == cache_before
+    assert (
+        spec.ground_truth_path.read_bytes(),
+        spec.ground_truth_path.stat().st_mtime_ns,
+    ) == output_before
+    assert get_settings().suggestion_cache_enabled is True
+    assert get_settings().suggestion_cache_path == str(cache_path)
+    assert ids_path.read_bytes() == b"synthetic ids"
+
+
 def test_build_hashes_legacy_file_bytes_and_rejects_tampering(tmp_path, monkeypatch):
     """Repassar constante sem hashear os bytes adulterados deve quebrar este teste."""
     issue = _issue()
@@ -344,6 +470,41 @@ def test_frozen_canonical_hash_prevents_reuse_laundering(tmp_path, monkeypatch):
     monkeypatch.setitem(builder.EXPECTED_GROUND_TRUTH_SHA256, "predio", "0" * 64)
 
     with pytest.raises(ValueError, match="hash canonico"):
+        builder.build_dataset(spec, legacy_gt_path=spec.ground_truth_path)
+
+
+def test_canonical_reuse_requires_frozen_hash_pin(tmp_path, monkeypatch):
+    """Ausencia do pin canonical nao pode transformar o proprio YAML em autoridade."""
+    issue = _issue()
+    _install_ids(tmp_path, monkeypatch)
+    _install_fake_pipeline(monkeypatch, [issue])
+    spec = _spec(tmp_path, "predio")
+    spec.ground_truth_path.write_text(
+        yaml.safe_dump(
+            {
+                "metadata": {
+                    "protocol": "evidence-audited-v1",
+                    "previous_gt_sha256": builder.RATIFIED_LEGACY_SHA256,
+                },
+                "items": [],
+                "skipped": [
+                    {
+                        "issue_id": issue.id,
+                        "element_guid": issue.element_guid,
+                        "issue_type": issue.issue_type,
+                        "check_property": "Category",
+                        "reason": "abstencao",
+                    }
+                ],
+            },
+            allow_unicode=True,
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.delitem(builder.EXPECTED_GROUND_TRUTH_SHA256, "predio", raising=False)
+
+    with pytest.raises(ValueError, match=r"hash canonico.*nao congelado"):
         builder.build_dataset(spec, legacy_gt_path=spec.ground_truth_path)
 
 
@@ -485,6 +646,11 @@ def test_predio_reuses_canonical_item_without_reauditing_or_repeating_note(tmp_p
             sort_keys=False,
         ),
         encoding="utf-8",
+    )
+    monkeypatch.setitem(
+        builder.EXPECTED_GROUND_TRUTH_SHA256,
+        "predio",
+        hashlib.sha256(spec.ground_truth_path.read_bytes()).hexdigest(),
     )
     monkeypatch.setattr(
         builder,
