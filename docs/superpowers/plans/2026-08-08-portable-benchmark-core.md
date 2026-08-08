@@ -15,12 +15,16 @@
 - O launcher oficial sempre usa uma réplica, cache de sugestões desligado e `reuse_equivalent=True`.
 - O lock usa Ollama `0.32.5` para `windows-amd64` e digest de modelo com 64 caracteres hexadecimais.
 - Divergência de digest é erro impeditivo, nunca warning nem atualização silenciosa.
-- Um estágio existente só é retomável quando seu JSON é íntegro e todos os metadados esperados coincidem.
+- Um estágio existente só é retomável quando o par indivisível `run_N.json` +
+  `run_N_issues.jsonl` é íntegro: o JSON tem todos os metadados esperados e o
+  JSONL é UTF-8 estrito, não vazio, termina em newline, contém JSON válido em
+  cada linha e tem exatamente `issue_counts.total_issues` linhas.
 - A identidade canônica da execução é imutável e inclui `release_id`, SHA-256 do
   `project.zip` e do `models.lock.json`, ordem e hashes IFC/GT/IDS dos datasets,
   quantidade de réplicas, estado do cache, versão e SHA-256 dos prompts e modo de reuso.
-- A matriz oficial só termina como `complete` depois de revalidar os 20 estágios
-  esperados: 10 modelos × 2 datasets × 1 réplica.
+- A matriz oficial só termina como `complete` depois de revalidar 20 pares de
+  estágio íntegros: 10 modelos × 2 datasets × 1 réplica; vinte JSONs agregados
+  sem seus vinte JSONLs válidos nunca constituem uma matriz completa.
 - `BENCHMARK_STOP` criado ou regravado depois do início e `Ctrl+C` encerram com código
   130 e estado `interrupted`; um STOP preexistente permanece inerte.
 - Evidências não podem conter usuário, hostname, IP, MAC, seriais, tokens, chaves Ollama ou conteúdo de `.env`.
@@ -508,7 +512,11 @@ git commit -m "feat: registrar contexto do dataset no benchmark"
 - Consumes: `load_model_lock`, `ExecutionIdentity`, hashes reais de IFC/GT/IDS/prompt,
   `RunMetadata` e `ExperimentRunner.run_single`.
 - Produces: `DATASETS` com dois itens, `StageExpectation`, `StopBaseline`,
-  `_load_and_validate_execution_identity(path)`, `_stage_done(path, expectation)`,
+  `_load_and_validate_execution_identity(path)`,
+  `_stage_path(results_root, dataset_key, model, replica) -> Path`,
+  `_stage_artifact_paths(json_path) -> tuple[Path, Path]`,
+  `_stage_done(json_path, expectation)`,
+  `_quarantine_invalid_stage_pair(json_path, results_root)`,
   `_invalid_matrix_stages(results_root, identity, models)`,
   `_pid_record_is_live(record)`, `_acquire_pidfile(path)` com lease `O_EXCL`,
   `_capture_stop_baseline(path)`, `_stop_requested(path, baseline)`,
@@ -523,6 +531,7 @@ import scripts.run_benchmark as module
 
 def install_fake_runner(monkeypatch, tmp_path):
     calls: list[dict[str, object]] = []
+    valid_export_paths: set[Path] = set()
     datasets = []
     for key, building_type in (("predio", "Residencial multifamiliar"),
                                ("casa", "Residencial unifamiliar")):
@@ -539,13 +548,22 @@ def install_fake_runner(monkeypatch, tmp_path):
         def run_single(self, **kwargs):
             calls.append(kwargs)
             return SimpleNamespace(
+                metadata=SimpleNamespace(
+                    model_name=kwargs["model_name"],
+                    replica_index=kwargs["replica_index"],
+                ),
                 evaluation=SimpleNamespace(accuracy_top1=1.0, accuracy_top3=1.0),
                 stability=SimpleNamespace(failed_count=0),
             )
 
         @staticmethod
         def _export(result, output_root):
-            return None
+            path = (
+                Path(output_root) / module._sanitize(result.metadata.model_name)
+                / f"run_{result.metadata.replica_index}.json"
+            )
+            valid_export_paths.add(path)
+            return str(path)
 
     monkeypatch.setattr(module, "DATASETS", datasets)
     monkeypatch.setattr(module, "PID_FILE", tmp_path / "RUNNING")
@@ -557,6 +575,9 @@ def install_fake_runner(monkeypatch, tmp_path):
     monkeypatch.setattr(module, "_unload_model", lambda model: None)
     monkeypatch.setattr(
         module, "_load_and_validate_execution_identity", lambda path: official_identity()
+    )
+    monkeypatch.setattr(
+        module, "_stage_done", lambda path, expectation: path in valid_export_paths
     )
     monkeypatch.setattr(module, "_invalid_matrix_stages", lambda *args, **kwargs: [])
     return calls
@@ -578,6 +599,17 @@ def test_main_forwards_context_and_reuse(monkeypatch, tmp_path):
         module.DATASETS[0]["building_context"], module.DATASETS[1]["building_context"]
     ]
     assert all(call["reuse_equivalent"] is True for call in calls)
+
+
+def test_main_revalidates_pair_immediately_after_export(monkeypatch, tmp_path):
+    calls = install_fake_runner(monkeypatch, tmp_path)
+    monkeypatch.setattr(module.ExperimentRunner, "_export", lambda *args: None)
+    assert module.main([
+        "--only-model", "m:test", "--no-cache", "--reuse-equivalent",
+        "--execution-identity", str(tmp_path / "identity.json"),
+        "--results-root", str(tmp_path / "results"),
+    ]) == 1
+    assert calls
 ```
 
 Redirecionar `PID_FILE`, `STOP_FILE`, `LOCK_FILE`, IFCs e GTs para `tmp_path`; não
@@ -600,15 +632,63 @@ def _expectation() -> module.StageExpectation:
     )
 
 
-def _write_stage(path: Path, metadata: dict[str, object]) -> None:
-    path.parent.mkdir(parents=True)
-    path.write_text(json.dumps({"metadata": metadata}), encoding="utf-8")
+def _write_stage_pair(
+    path: Path,
+    metadata: dict[str, object],
+    outcomes: list[dict[str, object]] | None = None,
+) -> None:
+    rows = outcomes or [{"issue_id": "issue-1"}]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps({
+            "metadata": metadata,
+            "issue_counts": {"total_issues": len(rows)},
+        }) + "\n",
+        encoding="utf-8",
+    )
+    _, issues_path = module._stage_artifact_paths(path)
+    issues_path.write_text(
+        "".join(json.dumps(row) + "\n" for row in rows),
+        encoding="utf-8",
+    )
 
 
 def test_stage_done_rejects_corrupt_json(tmp_path):
     path = tmp_path / "run_0.json"
+    _write_stage_pair(path, asdict(_expectation()))
     path.write_text("{", encoding="utf-8")
     assert not module._stage_done(path, _expectation())
+
+
+@pytest.mark.parametrize(
+    "damage",
+    ["missing", "empty", "invalid_utf8", "truncated", "invalid_json", "blank_line",
+     "missing_final_newline", "count_mismatch"],
+)
+def test_stage_done_rejects_invalid_issues_jsonl(tmp_path, damage):
+    expectation = _expectation()
+    path = tmp_path / "run_0.json"
+    _write_stage_pair(path, asdict(expectation))
+    _, issues_path = module._stage_artifact_paths(path)
+    if damage == "missing":
+        issues_path.unlink()
+    elif damage == "empty":
+        issues_path.write_bytes(b"")
+    elif damage == "invalid_utf8":
+        issues_path.write_bytes(b"\xff\n")
+    elif damage == "truncated":
+        issues_path.write_text('{"issue_id":"issue-1"}\n{"issue_id":', encoding="utf-8")
+    elif damage == "invalid_json":
+        issues_path.write_text("not-json\n", encoding="utf-8")
+    elif damage == "blank_line":
+        issues_path.write_text('{"issue_id":"issue-1"}\n\n', encoding="utf-8")
+    elif damage == "missing_final_newline":
+        issues_path.write_text('{"issue_id":"issue-1"}', encoding="utf-8")
+    else:
+        issues_path.write_text(
+            '{"issue_id":"issue-1"}\n{"issue_id":"extra"}\n', encoding="utf-8"
+        )
+    assert not module._stage_done(path, expectation)
 
 
 @pytest.mark.parametrize(
@@ -626,14 +706,14 @@ def test_stage_done_rejects_any_metadata_mismatch(tmp_path, field, wrong):
     metadata = asdict(expectation)
     metadata[field] = wrong
     path = tmp_path / "run_0.json"
-    _write_stage(path, metadata)
+    _write_stage_pair(path, metadata)
     assert not module._stage_done(path, expectation)
 
 
 def test_stage_done_accepts_exact_metadata(tmp_path):
     expectation = _expectation()
     path = tmp_path / "run_0.json"
-    _write_stage(path, asdict(expectation))
+    _write_stage_pair(path, asdict(expectation))
     assert module._stage_done(path, expectation)
 
 
@@ -642,8 +722,121 @@ def test_stage_done_rejects_nested_execution_identity_change(tmp_path):
     metadata = asdict(expectation)
     metadata["execution_identity"]["project_sha256"] = "9" * 64
     path = tmp_path / "run_0.json"
-    _write_stage(path, metadata)
+    _write_stage_pair(path, metadata)
     assert not module._stage_done(path, expectation)
+
+
+def test_invalid_stage_pair_is_quarantined_as_a_unit_before_rerun(tmp_path):
+    expectation = _expectation()
+    results_root = tmp_path / "results"
+    path = results_root / "casa" / "m_test" / "run_0.json"
+    _write_stage_pair(path, asdict(expectation))
+    _, issues_path = module._stage_artifact_paths(path)
+    issues_path.write_text('{"issue_id":', encoding="utf-8")
+
+    quarantine = module._quarantine_invalid_stage_pair(path, results_root)
+
+    assert quarantine is not None
+    assert not path.exists() and not issues_path.exists()
+    assert (quarantine / path.name).is_file()
+    assert (quarantine / issues_path.name).is_file()
+
+
+@pytest.mark.parametrize("missing_member", ["json", "jsonl"])
+def test_partial_stage_quarantines_whichever_member_exists(tmp_path, missing_member):
+    expectation = _expectation()
+    results_root = tmp_path / "results"
+    path = results_root / "casa" / "m_test" / "run_0.json"
+    _write_stage_pair(path, asdict(expectation))
+    _, issues_path = module._stage_artifact_paths(path)
+    missing_path = path if missing_member == "json" else issues_path
+    existing_path = issues_path if missing_member == "json" else path
+    missing_path.unlink()
+
+    quarantine = module._quarantine_invalid_stage_pair(path, results_root)
+
+    assert quarantine is not None
+    assert not path.exists() and not issues_path.exists()
+    assert (quarantine / existing_path.name).is_file()
+    assert not (quarantine / missing_path.name).exists()
+
+
+@pytest.mark.parametrize("fail_on_call", [1, 2])
+def test_quarantine_move_error_preserves_artifacts_and_aborts(
+        monkeypatch, tmp_path, fail_on_call):
+    expectation = _expectation()
+    results_root = tmp_path / "results"
+    path = results_root / "casa" / "m_test" / "run_0.json"
+    _write_stage_pair(path, asdict(expectation))
+    _, issues_path = module._stage_artifact_paths(path)
+    before = (path.read_bytes(), issues_path.read_bytes())
+    real_replace = os.replace
+    calls = 0
+
+    def fail_selected_move(source, destination):
+        nonlocal calls
+        calls += 1
+        if calls == fail_on_call:
+            raise OSError("busy")
+        return real_replace(source, destination)
+
+    monkeypatch.setattr(os, "replace", fail_selected_move)
+
+    with pytest.raises(RuntimeError, match="quarentena"):
+        module._quarantine_invalid_stage_pair(path, results_root)
+
+    json_copies = list(tmp_path.rglob(path.name))
+    jsonl_copies = list(tmp_path.rglob(issues_path.name))
+    assert len(json_copies) == len(jsonl_copies) == 1
+    assert json_copies[0].read_bytes() == before[0]
+    assert jsonl_copies[0].read_bytes() == before[1]
+
+
+def test_main_quarantines_both_old_members_before_rerun(monkeypatch, tmp_path):
+    calls = install_fake_runner(monkeypatch, tmp_path)
+    results_root = tmp_path / "results"
+    path = module._stage_path(results_root, "casa", "m:test", 0)
+    _write_stage_pair(path, asdict(_expectation()))
+    _, issues_path = module._stage_artifact_paths(path)
+    issues_path.write_text('{"issue_id":', encoding="utf-8")
+    original_run_single = module.ExperimentRunner.run_single
+
+    def assert_isolated_before_rerun(self, **kwargs):
+        if kwargs["dataset_key"] == "casa":
+            assert not path.exists() and not issues_path.exists()
+        return original_run_single(self, **kwargs)
+
+    monkeypatch.setattr(module.ExperimentRunner, "run_single", assert_isolated_before_rerun)
+    assert module.main([
+        "--only-model", "m:test", "--no-cache", "--reuse-equivalent",
+        "--execution-identity", str(tmp_path / "identity.json"),
+        "--results-root", str(results_root),
+    ]) == 0
+    quarantine_root = results_root.parent / ".invalid-stage-artifacts"
+    assert len(list(quarantine_root.rglob(path.name))) == 1
+    assert len(list(quarantine_root.rglob(issues_path.name))) == 1
+    assert {call["dataset_key"] for call in calls} == {"predio", "casa"}
+
+
+def test_main_never_reruns_stage_when_quarantine_fails(monkeypatch, tmp_path):
+    calls = install_fake_runner(monkeypatch, tmp_path)
+    results_root = tmp_path / "results"
+    path = module._stage_path(results_root, "casa", "m:test", 0)
+    _write_stage_pair(path, asdict(_expectation()))
+    real_quarantine = module._quarantine_invalid_stage_pair
+
+    def fail_target_stage(json_path, root):
+        if json_path == path:
+            raise RuntimeError("quarentena indisponível")
+        return real_quarantine(json_path, root)
+
+    monkeypatch.setattr(module, "_quarantine_invalid_stage_pair", fail_target_stage)
+    assert module.main([
+        "--only-model", "m:test", "--no-cache", "--reuse-equivalent",
+        "--execution-identity", str(tmp_path / "identity.json"),
+        "--results-root", str(results_root),
+    ]) == 1
+    assert all(call["dataset_key"] != "casa" for call in calls)
 
 
 def test_pid_lease_uses_exclusive_create(monkeypatch, tmp_path):
@@ -703,31 +896,58 @@ def test_model_digest_mismatch_aborts():
         module._assert_model_digest("m:test", expected="a" * 64, actual="b" * 64)
 
 
-def test_complete_requires_exact_twenty_valid_stages(tmp_path):
+@pytest.mark.parametrize("missing_member", ["json", "jsonl"])
+def test_complete_requires_exact_twenty_valid_stage_pairs(tmp_path, missing_member):
     identity = official_identity()
     models = [(f"model:{index}", f"{index:064x}") for index in range(10)]
     write_valid_matrix(tmp_path, identity, models)
     assert module._invalid_matrix_stages(tmp_path, identity, models) == []
     stage = module._stage_path(tmp_path, "casa", "model:9", 0)
-    stage.unlink()
+    _, issues_path = module._stage_artifact_paths(stage)
+    (stage if missing_member == "json" else issues_path).unlink()
     assert module._invalid_matrix_stages(tmp_path, identity, models) == [
         "casa/model:9/run_0"
+    ]
+
+
+@pytest.mark.parametrize("extra_shape", ["pair", "json_only", "jsonl_only"])
+def test_complete_rejects_unexpected_stage_pair_or_orphan(tmp_path, extra_shape):
+    identity = official_identity()
+    models = [(f"model:{index}", f"{index:064x}") for index in range(10)]
+    write_valid_matrix(tmp_path, identity, models)
+    extra = module._stage_path(tmp_path, "casa", "model:9", 1)
+    _write_stage_pair(extra, asdict(_expectation()))
+    _, extra_jsonl = module._stage_artifact_paths(extra)
+    if extra_shape == "json_only":
+        extra_jsonl.unlink()
+    elif extra_shape == "jsonl_only":
+        extra.unlink()
+    relative_stem = extra.relative_to(tmp_path).as_posix().removesuffix(".json")
+
+    assert module._invalid_matrix_stages(tmp_path, identity, models) == [
+        f"unexpected:{relative_stem}"
     ]
 ```
 
 `official_identity()` e `write_valid_matrix()` são helpers completos do próprio
 arquivo de teste: o primeiro constrói os dois `DatasetIdentity` com hashes fixos;
 o segundo percorre `identity.datasets`, os dez pares `(nome, digest)` e a réplica
-zero, gravando com `_write_stage` exatamente o metadata de cada
-`StageExpectation`. Assim o teste materializa 20 JSONs, remove um e espera o nome
-exato do único estágio inválido.
+zero, gravando com `_write_stage_pair` exatamente o metadata de cada
+`StageExpectation`, `issue_counts.total_issues` e pelo menos uma linha JSON de
+outcome. Assim o teste materializa 20 pares, remove alternadamente o JSON ou o
+JSONL de um deles e espera o nome exato do único estágio inválido. O helper nunca
+cria um JSON sem o JSONL correspondente, para que os testes de matriz não possam
+aprovar por presença isolada do agregado. O segundo teste acrescenta um 21º stem como par completo ou
+órfão em cada direção e exige um único diagnóstico `unexpected:<stem>`.
 
 - [ ] **Step 3: Confirmar RED**
 
 Run: `uv run --frozen --group dev python -m pytest tests/test_run_benchmark.py -q`
 
 Expected: FAIL porque o runner ainda usa prédio+masked, contexto único, PID por
-existência e retomada por simples presença de arquivo.
+existência e retomada por simples presença do JSON agregado; os testes de JSONL
+ausente, vazio, truncado, não UTF-8, inválido e com contagem divergente também
+permanecem RED.
 
 - [ ] **Step 4: Implementar registro e expectativa de estágio**
 
@@ -769,11 +989,36 @@ de `src/suggestion_engine/prompt_templates.py` e divergência ao recalcular
 `models.lock.json`, IFC, GT ou IDS. `release_id` e hash do `project.zip` são
 conferidos pelo manifesto no instalador e permanecem no snapshot de cada estágio.
 
-`_stage_done` abre e valida o JSON; qualquer ausência, erro de parse ou diferença
-em qualquer campo literal acima retorna `False` com log da causa. `_check_digest`
-levanta `RuntimeError` em drift. Ao final da fila,
-`_invalid_matrix_stages` recompõe os 20 `StageExpectation` e o processo só retorna
-0 se a lista for vazia; retorno 0 do subprocesso sem os 20 JSONs válidos é falha.
+`_stage_artifact_paths` recebe o caminho canônico `run_N.json` e deriva exatamente
+o par `(run_N.json, run_N_issues.jsonl)`. `_stage_done` abre e valida ambos. O JSON
+agregado deve ter metadata literal idêntico ao esperado e
+`issue_counts.total_issues` inteiro maior que zero. O JSONL deve ser decodificável
+como UTF-8 estrito, ter tamanho maior que zero, terminar com `\n`, não ter linhas
+vazias, conter `json.loads` válido em cada linha e ter exatamente a quantidade de
+linhas declarada no agregado. Ausência ou erro em qualquer membro, metadata
+divergente, truncamento, conteúdo não UTF-8, linha inválida ou contagem diferente
+retorna `False` com log da causa.
+
+Se `_stage_done` retornar `False` e qualquer membro antigo existir, antes de chamar
+`run_single` o loop chama `_quarantine_invalid_stage_pair`. O helper cria com UUID
+um diretório fora de `results_root`, sob
+`results_root.parent / ".invalid-stage-artifacts"`, e move com `os.replace` cada
+membro existente para esse diretório, preservando os nomes. Falha ao criar a
+quarentena ou mover qualquer membro aborta o estágio sem exportar por cima; o loop
+confirma que nenhum dos dois caminhos ativos ainda existe antes da reexecução.
+Isso vale também para pares parciais deixados por interrupção. Depois de
+`ExperimentRunner._export`, o loop chama `_stage_done` novamente e trata o estágio
+como falho se o novo par não passar integralmente; só então incrementa `completed`.
+
+`_check_digest` levanta `RuntimeError` em drift. Ao final da fila,
+`_invalid_matrix_stages` recompõe os 20 `StageExpectation`, usa `_stage_done` para
+cada par e também percorre recursivamente somente nomes que casem exatamente
+`run_\d+\.json` ou `run_\d+_issues\.jsonl`. Normaliza ambos os sufixos para um
+stem relativo POSIX, compara o conjunto encontrado ao conjunto esperado e emite
+uma única entrada ordenada `unexpected:<stem>` para cada par extra ou órfão; JSONs
+de relatório com outros nomes são ignorados. O processo só retorna 0 quando há os
+20 stems esperados, cada qual com os dois membros válidos, e nenhum stem de estágio
+inesperado; retorno 0 do subprocesso sem essa cardinalidade exata é falha.
 
 - [ ] **Step 5: Implementar PID/STOP robustos**
 
@@ -1287,14 +1532,21 @@ git commit -m "feat: preparar pacote de evidencias privado"
 
 - [ ] **Step 1: Escrever smoke integrado**
 
-O teste cria IFC/GT/IDS mínimos ou usa doubles, executa um estágio por dataset com
-`reuse_equivalent=True`, exporta resultados, passa-os pelo empacotador e afirma:
+O teste cria IFC/GT/IDS mínimos ou usa doubles, executa a matriz com
+`reuse_equivalent=True`, exporta resultados, retém o caminho agregado e o
+`StageExpectation` de cada estágio em `expectations_by_path` e os dez pares
+`(nome, digest)` em `locked_model_pairs`, passa os artefatos pelo empacotador e
+afirma:
 
 ```python
 assert set(dataset_keys) == {"predio", "casa"}
 assert all(run["metadata"]["reuse_equivalent"] is True for run in runs)
 assert all(run["metadata"]["building_context"]["bioclimatic_zone"] == "4A" for run in runs)
 assert len(runs) == 20
+assert len(expectations_by_path) == 20
+assert all(_stage_done(path, expectation)
+           for path, expectation in expectations_by_path.items())
+assert _invalid_matrix_stages(results_root, identity, locked_model_pairs) == []
 assert len({run["metadata"]["execution_identity_sha256"] for run in runs}) == 1
 assert not scan_sensitive_text(evidence_root, forbidden_values={username, hostname})
 assert validate_manifest(evidence_root / "manifest.json", evidence_root) == []

@@ -17,6 +17,10 @@
 - Downloads de ferramenta usam URL/versão/SHA-256 fixos, `.partial`, retry e extração segura.
 - Modelos ficam em store próprio identificado pelo SHA-256 de `models.lock.json`; tags divergentes abortam.
 - Benchmark oficial: uma réplica, `predio` e `casa`, cache desligado e `--reuse-equivalent`.
+- Cada estágio concluído é o par indivisível `run_N.json` +
+  `run_N_issues.jsonl`; o JSONL deve ser UTF-8 estrito, não vazio, terminar em
+  newline, ter JSON válido em todas as linhas e a mesma contagem declarada em
+  `issue_counts.total_issues`. `complete` exige exatamente 20 pares válidos.
 - A identidade de retomada é o digest canônico de release, `project.zip`, model
   lock, ordem/hashes IFC/GT/IDS, réplica, cache, prompt e reuso; qualquer mudança
   cria outro run em vez de misturar resultados.
@@ -1059,6 +1063,9 @@ Escrita sempre temporária+replace.
 - [ ] **Step 2: Escrever teste feliz inteiramente simulado**
 
 ```python
+import re
+
+
 def test_happy_path_runs_reuse_and_creates_private_zip(orchestrator_fixture):
     exit_code = run_benchmark_release(orchestrator_fixture.args,
                                       services=orchestrator_fixture.services)
@@ -1083,11 +1090,24 @@ def test_happy_path_runs_reuse_and_creates_private_zip(orchestrator_fixture):
             "llmfit/doctor.txt", "benchmark/runner.log",
         }
         assert fixed <= names
-        stage_json = {name for name in names if name.startswith("benchmark/results/")
-                      and name.endswith(".json")}
-        stage_jsonl = {name for name in names if name.startswith("benchmark/results/")
-                       and name.endswith("_issues.jsonl")}
-        assert len(stage_json) == 20 and len(stage_jsonl) == 20
+        stage_json = {name[:-len(".json")]: name for name in names
+                      if name.startswith("benchmark/results/")
+                      and re.search(r"/run_\d+\.json$", name)}
+        stage_jsonl = {name[:-len("_issues.jsonl")]: name for name in names
+                       if name.startswith("benchmark/results/")
+                       and re.search(r"/run_\d+_issues\.jsonl$", name)}
+        assert len(stage_json) == 20
+        assert stage_json.keys() == stage_jsonl.keys()
+        for stem in stage_json:
+            summary = json.loads(archive.read(stage_json[stem]))
+            raw_jsonl = archive.read(stage_jsonl[stem])
+            text_jsonl = raw_jsonl.decode("utf-8", errors="strict")
+            assert raw_jsonl and raw_jsonl.endswith(b"\n")
+            lines = text_jsonl.splitlines()
+            assert lines and all(line.strip() for line in lines)
+            parsed_rows = [json.loads(line) for line in lines]
+            assert len(parsed_rows) == len(lines)
+            assert len(lines) == summary["issue_counts"]["total_issues"]
 
         manifest = json.loads(archive.read("manifest.json"))
         assert {row["path"] for row in manifest["files"]} == names - {"manifest.json"}
@@ -1097,9 +1117,10 @@ def test_happy_path_runs_reuse_and_creates_private_zip(orchestrator_fixture):
             assert row["sha256"] == hashlib.sha256(payload).hexdigest()
 ```
 
-O fixture feliz materializa dez modelos, dois datasets, uma réplica e os dois
-arquivos exportados por estágio; não cria vinte nomes artificiais sem relação com
-a identidade. Manter o `ZipFile` aberto durante leitura do manifesto no teste.
+O fixture feliz materializa dez modelos, dois datasets, uma réplica e vinte pares
+exportados por estágio; cada agregado declara a contagem real do JSONL. Não cria
+quarenta nomes artificiais sem relação entre si ou com a identidade. Manter o
+`ZipFile` aberto durante leitura do manifesto no teste.
 
 - [ ] **Step 3: Escrever testes de falha com evidência**
 
@@ -1125,12 +1146,42 @@ def test_keyboard_interrupt_creates_interrupted_resumable_bundle(orchestrator_fi
 
 def test_runner_zero_without_twenty_valid_stages_is_failed(orchestrator_fixture):
     orchestrator_fixture.runner.returncode = 0
-    orchestrator_fixture.runner.omit_stage = ("casa", "qwen3.5:9b", 0)
+    orchestrator_fixture.runner.omit_stage_pair = ("casa", "qwen3.5:9b", 0)
     assert run_benchmark_release(orchestrator_fixture.args,
                                  services=orchestrator_fixture.services) == 1
     status = read_json_from_zip(orchestrator_fixture.zip_path, "status.json")
     assert status["status"] == "failed"
     assert status["invalid_stages"] == ["casa/qwen3.5:9b/run_0"]
+
+
+@pytest.mark.parametrize(
+    "damage",
+    ["missing", "empty", "truncated", "invalid_utf8", "invalid_json", "blank_line",
+     "missing_final_newline", "count_mismatch"],
+)
+def test_runner_zero_with_invalid_jsonl_is_failed(orchestrator_fixture, damage):
+    orchestrator_fixture.runner.returncode = 0
+    orchestrator_fixture.runner.damage_stage_jsonl = (
+        "casa", "qwen3.5:9b", 0, damage
+    )
+    assert run_benchmark_release(orchestrator_fixture.args,
+                                 services=orchestrator_fixture.services) == 1
+    status = read_json_from_zip(orchestrator_fixture.zip_path, "status.json")
+    assert status["status"] == "failed"
+    assert status["invalid_stages"] == ["casa/qwen3.5:9b/run_0"]
+
+
+def test_runner_zero_with_twenty_valid_pairs_plus_extra_pair_is_failed(
+        orchestrator_fixture):
+    orchestrator_fixture.runner.returncode = 0
+    orchestrator_fixture.runner.extra_stage_pair = ("casa", "qwen3.5:9b", 1)
+    assert run_benchmark_release(orchestrator_fixture.args,
+                                 services=orchestrator_fixture.services) == 1
+    status = read_json_from_zip(orchestrator_fixture.zip_path, "status.json")
+    assert status["status"] == "failed"
+    assert len(status["invalid_stages"]) == 1
+    assert status["invalid_stages"][0].startswith("unexpected:casa/")
+    assert status["invalid_stages"][0].endswith("/run_1")
 
 
 def test_runner_130_from_new_stop_is_interrupted(orchestrator_fixture):
@@ -1232,7 +1283,14 @@ resposta injetada do volume do store; `model_required_bytes` captura o argumento
 calculado pelo orquestrador. Os estados `empty`, `partial` e `complete` simulam,
 respectivamente, zero, cinco e dez digests corretos retornados por `/api/tags`.
 O fake registra cada POST de pull como `ollama:pull:<tag>` e nunca o antecipa por
-efeito colateral de consulta.
+efeito colateral de consulta. O runner fake cria cada estágio com um helper único
+que sempre grava o par agregado+issues, incluindo `issue_counts.total_issues`.
+`omit_stage_pair` omite ambos os membros; `damage_stage_jsonl` preserva o agregado
+e aplica literalmente: ausência, zero bytes, última linha cortada, bytes não
+UTF-8, linha que não é JSON, linha vazia, ausência do newline final ou quantidade
+de linhas diferente da declarada. `extra_stage_pair` acrescenta o 21º stem com os
+dois membros válidos. Portanto todos os casos negativos chegam ao gate real de
+`_invalid_matrix_stages`, em vez de serem simulados por uma lista pré-fabricada.
 
 - [ ] **Step 4: Confirmar RED**
 
@@ -1386,8 +1444,12 @@ with OllamaServer(
 
 Retorno 130 do runner ou `KeyboardInterrupt` define `interrupted` e retorno 130.
 Retorno zero ainda chama `_invalid_matrix_stages` do núcleo sobre os dez modelos,
-dois datasets e réplica zero; somente lista vazia permite `complete`. Qualquer
-JSON ausente/corrupto ou metadata divergente define `failed`.
+dois datasets e réplica zero; somente lista vazia permite `complete`. O gate usa
+`_stage_done` para reabrir cada par: qualquer agregado ou JSONL ausente, vazio,
+truncado, não UTF-8, com linha JSON inválida, contagem divergente ou metadata
+divergente define `failed`. Assim o estado final exige exatamente 20 pares
+válidos e nenhum stem extra/órfão, nunca apenas vinte agregados ou duas contagens
+independentes de nomes.
 
 No `finally`, atualizar status, copiar/organizar resultados, versões, hashes e
 logs sob evidence root; chamar `redact_sensitive` para JSON e
@@ -1398,7 +1460,9 @@ removidos no relatório.
 
 Materializar sempre a árvore fixa listada no teste: fonte indisponível recebe JSON
 `{"status":"unavailable","error_type":"ParseError"}` ou linha equivalente, nunca
-arquivo omitido. Copiar `results_root` inteiro sob `benchmark/results`. O
+arquivo omitido. Em runs `complete`, copiar sob `benchmark/results` somente depois
+de o núcleo revalidar os vinte pares; os dois membros de cada estágio são
+preservados com seus nomes relativos. O
 `manifest.json` lista caminho POSIX, tamanho e SHA-256 de cada outro membro do
 ZIP; ele não lista a si mesmo porque auto-hash seria recursivo. Antes de aceitar o
 ZIP, reabrir e recalcular cada entrada contra o manifesto.
@@ -1468,7 +1532,7 @@ def test_manual_checklist_requires_both_windows_versions_and_resume_cases():
     )
     required = [
         "Windows 10 22H2 build 19045 x64", "Windows 11 x64", "Ctrl+C",
-        "BENCHMARK_STOP", "20 JSONs", "20 JSONLs", "/api/pull", "SHA-256",
+        "BENCHMARK_STOP", "20 pares válidos (JSON + JSONL)", "/api/pull", "SHA-256",
     ]
     assert all(value in text for value in required)
 ```
@@ -1564,7 +1628,7 @@ Texto direto em português:
 2. Confirme Windows 10 22H2/Windows 11 x64, internet estável e pelo menos 55 GiB livres.
 3. Dê duplo clique em EXECUTAR_BENCHMARK.cmd. Não instale Python, Git, Ollama ou modelos manualmente.
 4. Não feche a janela. A primeira preparação transfere cerca de 48 GB e o benchmark pode durar muitas horas.
-5. Se interromper, execute o mesmo CMD novamente: etapas válidas serão retomadas.
+5. Se interromper, execute o mesmo CMD novamente: etapas com JSON + JSONL válidos serão retomadas.
 6. Ao final, envie o arquivo RESULTADO_IFCQC_*.zip exibido na tela.
 ```
 
@@ -1596,7 +1660,9 @@ x64. Em cada linha registrar operador, build, CPU/RAM/GPU/driver e marcar:
 - queda/reconexão de rede durante `/api/pull` sem apagar blobs;
 - `Ctrl+C` retorna 130, produz ZIP `interrupted` e relançamento retoma;
 - `BENCHMARK_STOP` preexistente é ignorado e um novo retorna 130;
-- run só fica `complete` com 20 JSONs e 20 JSONLs revalidados;
+- run só fica `complete` com `20 pares válidos (JSON + JSONL)`: os stems casam e
+  cada JSONL é UTF-8, não vazio, termina em newline, tem toda linha parseável e
+  contagem igual a `issue_counts.total_issues` do agregado;
 - ZIP abre, tem a árvore fixa, todos os membros exceto o manifesto conferem
   tamanho/SHA e o scanner de privacidade retorna zero achados.
 
