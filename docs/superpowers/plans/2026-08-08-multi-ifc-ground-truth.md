@@ -15,7 +15,8 @@
 - Incerteza nunca vira rótulo negativo; vira entrada em `skipped` com motivo.
 - `check_property` é copiado literalmente da issue, inclusive a diferença entre `LoadBearing` e `IsLoadBearing`.
 - A LLM avaliada não participa da construção do GT.
-- O GT atual do prédio é a base autoral. Itens com alerta explícito de conferência são abstidos; os demais permanecem como intenção de projeto ratificada, não como laudo de desempenho.
+- O GT atual do prédio é uma referência autoral previamente revisada de forma integral em 2026-07-02; a instrução explícita do autor em 2026-08-08 foi manter essa base. Valores preservados representam rótulos de benchmark/intencionalidade autoral, nunca laudo de desempenho ou prova de conformidade.
+- A preservação do prédio é decidida por propriedade e grupo de evidência, não somente por busca textual. Valores genéricos de janela `U=5.7` e cobertura `U=4.6`, além de qualquer grupo marcado `CONFERIR`, `ATENÇÃO`, `PROVÁVEL`, `USUAL` ou `SEM ESPECIFICAÇÃO`, são abstidos.
 - `AcousticRating`, `SolarHeatGainCoefficient`, relações quebradas e propriedades fora do escopo inicial ficam em `skipped`.
 - Não incluir cópias não autorizadas de normas ABNT. Registrar versão, URL oficial e limitação de uso no metadata/documentação.
 - O hash final do próprio YAML não entra no arquivo para evitar referência circular; ele é registrado no Git e, depois, nos resultados.
@@ -85,7 +86,10 @@ git commit -m "feat: validar ground truth canonico"
 Usar issues sintéticas e arquivos temporários nos testes
 `test_rejects_item_without_matching_diagnostic_issue`,
 `test_rejects_ifc_hash_mismatch`, `test_rejects_ids_hash_mismatch` e
-`test_accepts_matching_issues_and_hashes`. O caso válido calcula os hashes dos
+`test_accepts_matching_issues_and_hashes`. Acrescentar
+`test_rejects_missing_diagnostic_issue`, `test_rejects_stale_issue_id`,
+`test_rejects_blank_notes` e testes parametrizados dos tipos/valores semânticos
+descritos abaixo. O caso válido calcula os hashes dos
 arquivos temporários com `hashlib.sha256(path.read_bytes()).hexdigest()` e os
 grava no metadata antes da validação.
 
@@ -102,7 +106,19 @@ Adicionar as assinaturas `sha256_file(path: str | Path) -> str` e
 *, ifc_path: str | Path, ids_path: str | Path) ->
 GroundTruthValidationReport`.
 
-A função primeiro chama a validação estrutural, depois compara `input_ifc_sha256` e `ids_sha256` em minúsculas e exige que cada entrada de `items` e `skipped` case com `(element_guid, issue_type, check_property)` do diagnóstico.
+A função primeiro chama a validação estrutural, depois compara `input_ifc_sha256` e `ids_sha256` em minúsculas e exige que cada entrada de `items` e `skipped` case com `(element_guid, issue_type, check_property)` do diagnóstico. Deve também exigir `entry.issue_id == issue.id`, `item_keys ∪ skipped_keys == diagnostic_keys`, `total_diagnostic_issues == len(issues)` e `total_items + total_skipped == len(issues)`.
+
+Validar semanticamente `items` e todas as alternativas:
+
+- `notes` é texto não vazio e identifica a evidência/decisão;
+- `ThermalTransmittance` é número finito maior que zero, com `W/(m²·K)` e origem na nota;
+- `LoadBearing` e `IsLoadBearing` são estritamente booleanos;
+- `Category` pertence ao conjunto `BEDROOM`, `LIVING_ROOM`, `KITCHEN`, `BATHROOM`, `WC`, `CIRCULATION`, `SERVICE_AREA`, `OFFICE`, `MEETING_ROOM`, `LOBBY`, `STORAGE`, `BALCONY`, `GARAGE`, `TECHNICAL_AREA`;
+- `FireRating` casa com `^(R|E|I|RE|EI|REI|P-CF) [0-9]{2,3}$`;
+- `system_unclassified` usa propriedade vazia e rótulo pertencente ao vocabulário da classe da issue;
+- nenhuma outra propriedade é permitida em `items` neste protocolo.
+
+Definir `WALL_SYSTEM_VALUES` com os oito rótulos `Alvenaria de vedação em bloco cerâmico`, `Alvenaria estrutural em bloco cerâmico`, `Concreto armado moldado in loco`, `Concreto pré-moldado`, `Drywall / Steel frame`, `Alvenaria em bloco de concreto`, `Estrutura metálica`, `Painel de EPS`. Definir `SLAB_SYSTEM_VALUES` com `Laje maciça de concreto armado`, `Laje nervurada (vigotas + EPS/cerâmica)`, `Laje pré-moldada treliçada`, `Laje alveolar pré-moldada`, `Laje de madeira (estrutura em madeira)`, `Laje steel frame`, `Piso cerâmico / porcelanato`, `Piso de madeira (parquet / taco / deck)`, `Piso de pedra (mármore / granito / ardósia)`, `Piso de concreto polido`, `Grama natural ou artificial`, `Piso de cimento queimado`, `Deck de madeira externo`, `Carpete`, `Piso vinílico / laminado`. `IfcSlab` usa o segundo conjunto; demais issues de sistema cobertas pelo protocolo usam o primeiro. Cada entrada de `skipped` exige `reason` não vazio.
 
 - [ ] **Step 4: Rodar todos os testes focados**
 
@@ -129,12 +145,16 @@ git commit -m "feat: conferir hashes e issues do ground truth"
 Cobrir as regras sem abrir IFC real com os testes
 `test_predio_preserves_verified_legacy_item`,
 `test_predio_skips_legacy_item_marked_conferir`,
-`test_predio_clears_legacy_alternatives`,
+`test_predio_removes_unratified_ei_alternatives`,
 `test_casa_propagates_authored_thermal_value_by_exact_type`,
 `test_casa_does_not_infer_fire_rating_from_minimum_requirement`,
 `test_casa_does_not_infer_load_bearing_from_ifc_class`,
 `test_casa_maps_only_closed_space_categories`,
-`test_casa_classifies_only_unambiguous_material_system` e
+`test_casa_classifies_only_unambiguous_material_system`,
+`test_casa_maps_garagem_to_garage`,
+`test_generic_concrete_does_not_imply_reinforced_cast_in_place`,
+`test_slab_uses_slab_vocabulary`,
+`test_conflicting_thermal_donors_are_skipped` e
 `test_out_of_scope_property_is_skipped`.
 
 - [ ] **Step 2: Confirmar falha inicial**
@@ -149,17 +169,19 @@ Implementar o modelo `AuditDecision` com `expected_value: Any | None = None`,
 `accepted_alternatives: list[Any] = Field(default_factory=list)`, `notes: str |
 None = None` e `skip_reason: str | None = None`. Implementar as assinaturas
 `audit_legacy_item(issue: Issue, legacy: GroundTruthItem) -> AuditDecision` e
-`derive_casa_decision(issue: Issue, *, element_type_name: str,
-element_long_name: str | None, authored_thermal_by_type: Mapping[str, float],
-material_names: Sequence[str]) -> AuditDecision`.
+`derive_casa_decision(issue: Issue, *, element_type_key: tuple[str, str],
+element_type_name: str, element_long_name: str | None,
+authored_thermal_by_type: Mapping[tuple[str, str], ThermalEvidence],
+material_reading: MaterialReading) -> AuditDecision`. `ThermalEvidence` guarda
+`value: float`, `donor_guids: tuple[str, ...]`, `unit: str` e `conflicted: bool`.
 
 Regras exatas:
 
-- prédio: preservar o valor esperado verificado e ratificado; mover para `skipped` se `notes` contiver, sem diferenciar caixa/acentos, `CONFERIR`, `SEM ESPECIFICAÇÃO`, `PROVÁVEL` ou `USUAL`; limpar todas as `accepted_alternatives`, pois a nova referência tem um único valor esperado por issue; anexar uma única vez a nota de que o valor mantido representa intenção autoral e não laudo;
-- casa/ThermalTransmittance: aceitar somente valor positivo já declarado em outra instância do mesmo tipo exato; nenhuma constante genérica de vidro/telha;
+- prédio: preservar valor esperado e alternativas do item legado verificado apenas quando pertencem ao conjunto ratificado em 2026-07-02; nos itens `FireRating` com esperado `REI 60`, remover especificamente `EI 60`, `EI 90` e `EI 120`, alternativas introduzidas pela emenda de 2026-08-02 ainda marcada como pendente, mantendo as alternativas presentes no commit ratificado `51e5f25`. Além dos marcadores textuais de incerteza, abster explicitamente janela `U=5.7` e cobertura `U=4.6`. FireRating, LoadBearing e sistemas preservados recebem, uma única vez, nota de que são referência/intencionalidade autoral previamente revisada, não desempenho medido;
+- casa/ThermalTransmittance: aceitar somente valor positivo já declarado em outra instância com a mesma chave de tipo `(classe IFC, GlobalId do IfcType)`; usar `(classe IFC, nome exato do tipo)` apenas se o tipo não tiver GUID. Doadores múltiplos precisam concordar dentro de 1%; conflito gera `skipped`. A nota lista unidade e GUIDs doadores. Nenhuma constante genérica de vidro/telha;
 - casa/FireRating e `LoadBearing`/`IsLoadBearing`: `skipped` por falta de declaração de desempenho/intencionalidade;
-- casa/Category: vocabulário fechado `BATHROOM`, `BEDROOM`, `WC`, `CIRCULATION`, `LIVING_ROOM`, `KITCHEN`, `TECHNICAL_AREA`, `BALCONY`, `SERVICE_AREA`, `STORAGE`, mapeado somente por nome inequívoco;
-- casa/system_unclassified: normalizar nomes sem caixa/acentos e aceitar somente uma família inequívoca: `concreto` → `Concreto armado moldado in loco`; `bloco cerâmico` → `Alvenaria de vedação em bloco cerâmico`; `bloco de concreto` → `Alvenaria em bloco de concreto`; `drywall` ou `gesso acartonado` → `Drywall / Steel frame`; `madeira` → `Sistema em madeira`; `vidro` → `Sistema envidraçado`. Mais de uma família, ausência de família ou nomes genéricos ficam em `skipped`;
+- casa/Category: usar o vocabulário completo do projeto (`BEDROOM`, `LIVING_ROOM`, `KITCHEN`, `BATHROOM`, `WC`, `CIRCULATION`, `SERVICE_AREA`, `OFFICE`, `MEETING_ROOM`, `LOBBY`, `STORAGE`, `BALCONY`, `GARAGE`, `TECHNICAL_AREA`) e mapear somente `LongName` inequívoco; em particular, `Garagem` → `GARAGE`;
+- casa/system_unclassified: ler materiais/camadas exclusivamente por `read_material_layers`. Separar parede e laje e retornar somente rótulos presentes, respectivamente, nos vocabulários `system_unclassified` e `system_unclassified_slab` de `prompt_templates.py`. Material genérico `concreto` não prova `armado` nem `moldado in loco`; madeira/vidro não recebem rótulos inventados. Se nome, camadas, espessura e classe não identificarem um único rótulo literal, usar `skipped`;
 - demais propriedades/tipos: `skipped` com razão `fora do escopo evidence-audited-v1`.
 
 - [ ] **Step 4: Rodar os testes**
@@ -189,7 +211,8 @@ Testar com dublês pequenos em `test_dataset_registry_has_predio_and_casa_only`,
 `test_build_preserves_literal_check_property`,
 `test_build_partitions_every_issue_into_item_or_skip`,
 `test_build_orders_output_deterministically` e
-`test_build_refuses_to_overwrite_without_valid_output`.
+`test_build_refuses_to_overwrite_without_valid_output`. Acrescentar
+`test_check_mode_never_writes` e `test_check_mode_returns_nonzero_on_drift`.
 
 - [ ] **Step 2: Confirmar falha inicial**
 
@@ -215,7 +238,7 @@ None) -> tuple[GTExtractionResult, list[Issue]]`,
 `write_canonical_ground_truth(result: GTExtractionResult, issues: Sequence[Issue],
 spec: DatasetSpec) -> Path` e `main(argv: list[str] | None = None) -> int`.
 
-CLI: `python scripts/build_ground_truths.py --dataset predio|casa|all`. O default é `all`. Para o prédio, carregar o YAML atual em memória antes de gerar. Se ele já tiver protocolo `evidence-audited-v1`, reutilizar seus itens sem repetir o sufixo de auditoria; `previous_gt_sha256` permanece o hash congelado da base de 2026-07-02. Escrever primeiro em arquivo temporário no mesmo diretório, validar documento/hashes/issues, e somente então usar `Path.replace()` no caminho canônico. Se validar falhar, preservar o YAML anterior.
+CLI: `python scripts/build_ground_truths.py --dataset predio|casa|all [--check]`. O default é `all`. Para o prédio, carregar o YAML atual em memória antes de gerar. Se ele já tiver protocolo `evidence-audited-v1`, reutilizar seus itens sem repetir o sufixo de auditoria; `previous_gt_sha256` permanece o hash congelado da base de 2026-07-02. Escrever primeiro em arquivo temporário no mesmo diretório, validar documento/hashes/issues, e somente então usar `Path.replace()` no caminho canônico. Se validar falhar, preservar o YAML anterior. Com `--check`, gerar em memória, validar e comparar bytes com o YAML canônico sem criar, substituir ou tocar em nenhum arquivo; retornar `0` se idêntico e `1` se ausente, inválido ou com drift.
 
 Metadata obrigatório:
 
@@ -229,8 +252,9 @@ bioclimatic_context_status: public technical source; not a formal conformity dec
 input_ifc_sha256: hash SHA-256 calculado do IFC canônico
 ids_sha256: f698f2c020d79140bb314f077f8de680f492fd7ba42867e4000a4cead5d20905
 previous_gt_sha256: d08d2c7466a71c0cde467a959ed2aebfd4857d1da64944e4504f8f97d4edd6f6 # só prédio
-verified_by: Felipe Keller (autor do projeto)
+verified_by: Felipe Keller (protocolo e base autoral aprovados; derivação determinística auditável)
 verified_at: '2026-08-08'
+verification_scope: expert-annotated benchmark reference; not a performance certificate
 total_diagnostic_issues: inteiro igual a len(report.issues)
 total_items: inteiro igual a len(items)
 total_skipped: inteiro igual a len(skipped)
@@ -276,6 +300,11 @@ Teste parametrizado `predio/casa` deve:
 6. afirmar que nenhum item da casa tem `AcousticRating` ou `SolarHeatGainCoefficient`;
 7. afirmar que o prédio registra `previous_gt_sha256` igual a `d08d2c7466a71c0cde467a959ed2aebfd4857d1da64944e4504f8f97d4edd6f6`.
 
+O teste de integração usa `pytest.skip` com mensagem clara quando qualquer IFC
+grande não estiver instalado, para que clones/CI sem artefatos ignorados continuem
+verdes. O CLI real, por outro lado, deve falhar com caminho e hash esperados quando
+uma entrada estiver ausente.
+
 - [ ] **Step 3: Confirmar que o teste falha pela ausência do GT da casa**
 
 Run: `python -m pytest tests/experiment/test_ground_truth_datasets.py -q`
@@ -290,7 +319,7 @@ Expected: saída informa, para cada dataset, total de issues, itens, skips, SHA-
 
 - [ ] **Step 5: Provar determinismo**
 
-Calcular SHA-256 dos dois YAMLs, executar novamente o mesmo comando e confirmar hashes idênticos.
+Calcular SHA-256 dos dois YAMLs, executar novamente o mesmo comando e confirmar hashes idênticos. Além da idempotência, executar `diagnose()` duas vezes de forma independente para cada IFC e comparar literalmente o conjunto ordenado `(issue.id, element_guid, issue_type, check_property)` das duas execuções.
 
 - [ ] **Step 6: Rodar testes reais**
 
@@ -351,14 +380,24 @@ git commit -m "docs: registrar proveniencia dos ground truths"
 
 **Files:**
 
-- Verify only; no expected source changes.
+- Create: `tests/experiment/test_ground_truth_runner_smoke.py`
+- Verify: no expected production source changes.
+
+- [ ] **Step 0: Escrever e rodar smoke test do runner**
+
+Criar teste parametrizado para `predio` e `casa` que usa
+`ExperimentRunner(suggestion_batch_fn=<double determinístico>)` e `run_single` com
+`max_issues=1`, o contexto correto e `reuse_equivalent=True`. Afirmar que o run
+carrega o GT, preserva o IFC original e registra `metadata.reuse_equivalent is
+True`. Usar `pytest.skip` se o IFC grande não estiver instalado. Não chamar
+Ollama real.
 
 - [ ] **Step 1: Executar testes focados**
 
 Run:
 
 ```powershell
-python -m pytest tests/experiment/test_ground_truth_validation.py tests/experiment/test_ground_truth_audit.py tests/experiment/test_build_ground_truths.py tests/experiment/test_ground_truth_datasets.py tests/test_gt_extractor.py tests/evaluation/test_evaluator_v2.py -q
+python -m pytest tests/experiment/test_ground_truth_validation.py tests/experiment/test_ground_truth_audit.py tests/experiment/test_build_ground_truths.py tests/experiment/test_ground_truth_datasets.py tests/experiment/test_ground_truth_runner_smoke.py tests/test_gt_extractor.py tests/evaluation/test_evaluator_v2.py tests/experiment/test_runner_harness.py tests/test_pipeline.py::test_generate_suggestions_can_reuse_equivalent_issues -q
 ```
 
 Expected: PASS.
