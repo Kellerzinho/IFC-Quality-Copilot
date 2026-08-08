@@ -47,8 +47,11 @@ THERMAL_UNIT = (
     "W/(m²·K) (unidade semântica de IfcThermalTransmittanceMeasure; Unit IFC não declarada)"
 )
 
-# Preenchido somente depois de os dois artefatos serem gerados e revisados na Task 5.
-EXPECTED_GROUND_TRUTH_SHA256: dict[str, str] = {}
+# SHA-256 dos artefatos canônicos revisados na Task 5; necessário para reuso fechado.
+EXPECTED_GROUND_TRUTH_SHA256: dict[str, str] = {
+    "predio": "f4eab8dd3ed0ec1f447d934895ccddc117cf48a4dc279cde153594b469601d7a",
+    "casa": "5903db9a3e3904f16a82df38b10d09f13769e7d88f3b61f52730a27dc8627c59",
+}
 
 
 @dataclass(frozen=True)
@@ -79,7 +82,6 @@ DATASETS: dict[str, DatasetSpec] = {
         },
     ),
 }
-
 
 def build_dataset(
     spec: DatasetSpec,
@@ -534,6 +536,8 @@ def _issue_key(issue: Issue) -> tuple[str, str, str]:
 
 def _literal_check_property(issue: Issue) -> str:
     if "check_property" not in issue.context:
+        if issue.issue_type == "relation_broken":
+            return ""
         raise ValueError(f"issue {issue.id} sem check_property literal")
     value = issue.context["check_property"]
     if not isinstance(value, str):

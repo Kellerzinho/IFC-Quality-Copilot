@@ -1,0 +1,1368 @@
+metadata:
+  protocol: evidence-audited-v1
+  source_dataset: casa
+  locality: Deodoro, Rio de Janeiro/RJ
+  building_type: Residencial unifamiliar
+  bioclimatic_context: ZB 4A
+  bioclimatic_context_status: public technical source; not a formal conformity declaration
+  input_ifc_sha256: 3b84789c7396449f2c8a3d2f4a66468d81e59f8351ebd4b71fad161fa06112f2
+  ids_sha256: f698f2c020d79140bb314f077f8de680f492fd7ba42867e4000a4cead5d20905
+  verified_by: auditoria determinística por evidência (protocolo aprovado por Felipe Keller em 2026-08-08)
+  verified_at: '2026-08-08'
+  verification_scope: expert-annotated benchmark reference; not a performance certificate
+  total_diagnostic_issues: 263
+  total_items: 12
+  total_skipped: 251
+items:
+- element_guid: 2lyKyDpyH2RfV3sGdJ3N5X
+  issue_type: pset_missing
+  check_property: Category
+  issue_id: 218faf9112ee
+  expected_value: KITCHEN
+  accepted_alternatives: []
+  verified: true
+  notes: Category derivada exclusivamente do LongName.
+- element_guid: 2lyKyDpyH2RfV3sGdJ3N5c
+  issue_type: pset_missing
+  check_property: Category
+  issue_id: fc0c402b6b7b
+  expected_value: LIVING_ROOM
+  accepted_alternatives: []
+  verified: true
+  notes: Category derivada exclusivamente do LongName.
+- element_guid: 2lyKyDpyH2RfV3sGdJ3N5e
+  issue_type: pset_missing
+  check_property: Category
+  issue_id: b895e423fa6c
+  expected_value: BATHROOM
+  accepted_alternatives: []
+  verified: true
+  notes: Category derivada exclusivamente do LongName.
+- element_guid: 2lyKyDpyH2RfV3sGdJ3N5j
+  issue_type: pset_missing
+  check_property: Category
+  issue_id: a8e77531ed6e
+  expected_value: CIRCULATION
+  accepted_alternatives: []
+  verified: true
+  notes: Category derivada exclusivamente do LongName.
+- element_guid: 2lyKyDpyH2RfV3sGdJ3NEb
+  issue_type: pset_missing
+  check_property: Category
+  issue_id: ae822ecb030b
+  expected_value: SERVICE_AREA
+  accepted_alternatives: []
+  verified: true
+  notes: Category derivada exclusivamente do LongName.
+- element_guid: 3SnvZdUqz4cvTlbZnpF1KQ
+  issue_type: pset_missing
+  check_property: Category
+  issue_id: bd3ae3c3efd2
+  expected_value: GARAGE
+  accepted_alternatives: []
+  verified: true
+  notes: Category derivada exclusivamente do LongName.
+- element_guid: 08FMwR_FjC4P8xhz1M4XVG
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: bab34f0eb8c3
+  expected_value: Drywall / Steel frame
+  accepted_alternatives: []
+  verified: true
+  notes: Sistema derivado de nome, classe IFC e leitura unificada de materiais/camadas.
+- element_guid: 1G2LqRwDrFDuGY$271DOcy
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: 49cead40f3d2
+  expected_value: Piso cerâmico / porcelanato
+  accepted_alternatives: []
+  verified: true
+  notes: Sistema derivado de nome, classe IFC e leitura unificada de materiais/camadas.
+- element_guid: 1G2LqRwDrFDuGY$271DOfw
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: 471fff224a86
+  expected_value: Piso cerâmico / porcelanato
+  accepted_alternatives: []
+  verified: true
+  notes: Sistema derivado de nome, classe IFC e leitura unificada de materiais/camadas.
+- element_guid: 1G2LqRwDrFDuGY$271DPjJ
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: 5a30df1ba46a
+  expected_value: Piso cerâmico / porcelanato
+  accepted_alternatives: []
+  verified: true
+  notes: Sistema derivado de nome, classe IFC e leitura unificada de materiais/camadas.
+- element_guid: 1G2LqRwDrFDuGY$271DPpc
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: 57ede6f49480
+  expected_value: Piso cerâmico / porcelanato
+  accepted_alternatives: []
+  verified: true
+  notes: Sistema derivado de nome, classe IFC e leitura unificada de materiais/camadas.
+- element_guid: 2fAI9i_QH93AveG7CTawaN
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: 12e670e36b7d
+  expected_value: Piso cerâmico / porcelanato
+  accepted_alternatives: []
+  verified: true
+  notes: Sistema derivado de nome, classe IFC e leitura unificada de materiais/camadas.
+skipped:
+- issue_id: ea37b4dd972e
+  element_guid: 02cRNOEBFs_rUpDJ1rdfFv
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: cd03d4661f32
+  element_guid: 02cRNOEBFs_rUpDJ1rdfFv
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: 1c981dcad3ad
+  element_guid: 08FMwR_FjC4P8xhz1M4XJj
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 902ad787ba18
+  element_guid: 08FMwR_FjC4P8xhz1M4XJj
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 683d020f1ec0
+  element_guid: 08FMwR_FjC4P8xhz1M4XVG
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: d64e52813df1
+  element_guid: 08FMwR_FjC4P8xhz1M4XVG
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: c36297310208
+  element_guid: 08FMwR_FjC4P8xhz1M4XVG
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: bfd0466e62f6
+  element_guid: 08FMwR_FjC4P8xhz1M4XVG
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: e0b4e6c97c62
+  element_guid: 08dlqIFzX2fQfWGI0ctyTz
+  issue_type: pset_missing
+  check_property: SolarHeatGainCoefficient
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 96ed682804ed
+  element_guid: 08dlqIFzX2fQfWGI0ctyTz
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: 03a8a7758129
+  element_guid: 0DquSHV5X5iAT1Rv0KmXCt
+  issue_type: pset_missing
+  check_property: Category
+  reason: LongName ausente ou não inequívoco para Category
+- issue_id: 3874e26f27af
+  element_guid: 0EeCfMGen2QPcdKjonawGz
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 6dd6ed414781
+  element_guid: 0EeCfMGen2QPcdKjonawGz
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: 1187f275bdbc
+  element_guid: 0HJkTz8PfBHRoP4lUkVnpX
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 84cc3f84af3d
+  element_guid: 0HJkTz8PfBHRoP4lUkVnpX
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 9f558895d3e5
+  element_guid: 0HJkTz8PfBHRoP4lUkVnpX
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: a9b06412c193
+  element_guid: 0KDyN9gT18mewR6io7EK0$
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: b404fb3aeee3
+  element_guid: 0KDyN9gT18mewR6io7EK0$
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: eedd8ff7bdf5
+  element_guid: 0KDyN9gT18mewR6io7EK5U
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 2a6d09367c18
+  element_guid: 0KDyN9gT18mewR6io7EK5U
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: 8dafd88def30
+  element_guid: 0KDyN9gT18mewR6io7EKB8
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: cd35aff102f5
+  element_guid: 0KDyN9gT18mewR6io7EKB8
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: cb83f02b34d6
+  element_guid: 0bF6V1Ein6wfZBo5c6V0nE
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: de0bb2bbd8ad
+  element_guid: 0bF6V1Ein6wfZBo5c6V0nE
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: 7bcbce13da2d
+  element_guid: 0bF6V1Ein6wfZBo5c6V1$n
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: bd6d1c9add46
+  element_guid: 0bF6V1Ein6wfZBo5c6V1$n
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: 2cacebaf613e
+  element_guid: 0bF6V1Ein6wfZBo5c6V1km
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 9a65bf4e816c
+  element_guid: 0bF6V1Ein6wfZBo5c6V1km
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: e72dd88e5ea0
+  element_guid: 0dah8JnFwmvs5E2wJ5slGX
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 9dd410b50ff7
+  element_guid: 0dah8JnFwmvs5E2wJ5slGX
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: 3ad51bcba20a
+  element_guid: 0jF_4eAhH6beBAVZTm6o39
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 473f58b8160c
+  element_guid: 0jF_4eAhH6beBAVZTm6o39
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: c159bf0e7df0
+  element_guid: 0jF_4eAhH6beBAVZTm6o39
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: 1f4c0cbf94c1
+  element_guid: 0jF_4eAhH6beBAVZTm6o45
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 7f0dc60a6b63
+  element_guid: 0jF_4eAhH6beBAVZTm6o45
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: e43a33ba6ff1
+  element_guid: 0jF_4eAhH6beBAVZTm6o45
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: 47a5f88118c4
+  element_guid: 0jF_4eAhH6beBAVZTm6o67
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: d9801e6438f0
+  element_guid: 0jF_4eAhH6beBAVZTm6o67
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 27bac8c0eea1
+  element_guid: 0jF_4eAhH6beBAVZTm6o67
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: ec1f56446ef6
+  element_guid: 0jF_4eAhH6beBAVZTm6oMf
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 0336de2c4d5b
+  element_guid: 0jF_4eAhH6beBAVZTm6oMf
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: c6c7f846b6a4
+  element_guid: 0jF_4eAhH6beBAVZTm6oMf
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: 66db54378322
+  element_guid: 0jF_4eAhH6beBAVZTm6oQd
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 98bca37a921f
+  element_guid: 0jF_4eAhH6beBAVZTm6oQd
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: fc61d5781632
+  element_guid: 0jF_4eAhH6beBAVZTm6oQd
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: 903631968d51
+  element_guid: 0st0aD40PCvPxXJgFLhs6D
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: ef25f0d492ec
+  element_guid: 0st0aD40PCvPxXJgFLhs6D
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: bafc33a55d77
+  element_guid: 0st0aD40PCvPxXJgFLhs6D
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: f02892c06a76
+  element_guid: 0tSLW28TTFXeROu_bygIcu
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: e936ef56afbe
+  element_guid: 0tSLW28TTFXeROu_bygIcu
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 9844f10a3e0d
+  element_guid: 0vINo141j3DeXo8nPSqBb3
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 185c3a2908ff
+  element_guid: 0vINo141j3DeXo8nPSqBb3
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 6b28a8234994
+  element_guid: 0vINo141j3DeXo8nPSqBb3
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: a1c502997afb
+  element_guid: 1G2LqRwDrFDuGY$271DOcy
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 94909825def5
+  element_guid: 1G2LqRwDrFDuGY$271DOcy
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: 7a0dd2194ecc
+  element_guid: 1G2LqRwDrFDuGY$271DOfw
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 9e281259c674
+  element_guid: 1G2LqRwDrFDuGY$271DOfw
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: 277154c1aa4a
+  element_guid: 1G2LqRwDrFDuGY$271DPjJ
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: c02b944ebcd9
+  element_guid: 1G2LqRwDrFDuGY$271DPjJ
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: aefa12019092
+  element_guid: 1G2LqRwDrFDuGY$271DPpc
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: d370cb20477a
+  element_guid: 1G2LqRwDrFDuGY$271DPpc
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: 660759098f96
+  element_guid: 1MMpYRkhr9COts6E8DtYiC
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 2b3056e1bbe9
+  element_guid: 1MMpYRkhr9COts6E8DtYiC
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: 91f0d43dd121
+  element_guid: 1N0wKml$r77A7dpRGpOJgZ
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 362651c6d26b
+  element_guid: 1N0wKml$r77A7dpRGpOJgZ
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: b3e290870638
+  element_guid: 1msekdwzrChwsmTanTVCDJ
+  issue_type: pset_missing
+  check_property: SolarHeatGainCoefficient
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 743c62a3446c
+  element_guid: 1msekdwzrChwsmTanTVCDJ
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: cec3ee72c94e
+  element_guid: 2$tmlycAL58OvCiJvd1$HE
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 5375f6c2f842
+  element_guid: 2$tmlycAL58OvCiJvd1$HE
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: d863bdec4a5e
+  element_guid: 2$tmlycAL58OvCiJvd1$HE
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: 2ae9aba6251c
+  element_guid: 2$tmlycAL58OvCiJvd1_oI
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 44ad141ced7c
+  element_guid: 2$tmlycAL58OvCiJvd1_oI
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: f8df9e93dcf9
+  element_guid: 2$tmlycAL58OvCiJvd1s4y
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 4975cb2e07e1
+  element_guid: 2$tmlycAL58OvCiJvd1s4y
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 6d50bd0c6567
+  element_guid: 2$tmlycAL58OvCiJvd1tHl
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 477990e1fc80
+  element_guid: 2$tmlycAL58OvCiJvd1tHl
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: e59df534aa66
+  element_guid: 2$tmlycAL58OvCiJvd1tHl
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: 472314ec33bd
+  element_guid: 2$tmlycAL58OvCiJvd1tMy
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 17f036fd36ef
+  element_guid: 2$tmlycAL58OvCiJvd1tMy
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: fea539269490
+  element_guid: 2$tmlycAL58OvCiJvd1wv_
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 969bdca4cdc8
+  element_guid: 2$tmlycAL58OvCiJvd1wv_
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 8bfc72e7a877
+  element_guid: 2$tmlycAL58OvCiJvd1wv_
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: 62d007905898
+  element_guid: 2$tmlycAL58OvCiJvd1wv_
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: 08f0ce245b82
+  element_guid: 2$tmlycAL58OvCiJvd1xd7
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: fba388bfdf0b
+  element_guid: 2$tmlycAL58OvCiJvd1xd7
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 8b4fbf1f6adf
+  element_guid: 2525hlGuHMIAZ8BqQUmhMK
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 0d5ec36f8bb6
+  element_guid: 2525hlGuHMIAZ8BqQUmhMK
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: 14e3de203cde
+  element_guid: 263mmTFO98CvhLXZL4tYrP
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: ee56edc4e7ed
+  element_guid: 263mmTFO98CvhLXZL4tYrP
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: becb65b0ce3b
+  element_guid: 263mmTFO98CvhLXZL4tYrP
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: f2b31914c664
+  element_guid: 263mmTFO98CvhLXZL4tYtG
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: d0b0109f8660
+  element_guid: 263mmTFO98CvhLXZL4tYtG
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 97eebd9f70a7
+  element_guid: 263mmTFO98CvhLXZL4tYtG
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: c9fdd32c026a
+  element_guid: 263mmTFO98CvhLXZL4tZEM
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 40d256040614
+  element_guid: 263mmTFO98CvhLXZL4tZEM
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 06f6e3414fe7
+  element_guid: 263mmTFO98CvhLXZL4tZEM
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: 08ded9f35158
+  element_guid: 263mmTFO98CvhLXZL4tZKH
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 4512d356fd8a
+  element_guid: 263mmTFO98CvhLXZL4tZKH
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: cc2ed8c05393
+  element_guid: 263mmTFO98CvhLXZL4tZKH
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: 885b11aa91a7
+  element_guid: 263mmTFO98CvhLXZL4tZOM
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 072b0f39ca5a
+  element_guid: 263mmTFO98CvhLXZL4tZOM
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: dec037e0844c
+  element_guid: 263mmTFO98CvhLXZL4tZOM
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: c9cbb3402c2f
+  element_guid: 263mmTFO98CvhLXZL4tZOM
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: 7d5b45eaa899
+  element_guid: 263mmTFO98CvhLXZL4tZUs
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 43a7f355fb7f
+  element_guid: 263mmTFO98CvhLXZL4tZUs
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: '270494859532'
+  element_guid: 263mmTFO98CvhLXZL4tZUs
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: 5ddcf7180c9b
+  element_guid: 263mmTFO98CvhLXZL4tZUs
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: 97016c1ece8e
+  element_guid: 2IwmxyHBvFS9zSXZCe$LAY
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 1fb16aa144b4
+  element_guid: 2IwmxyHBvFS9zSXZCe$LAY
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: df3625894dfd
+  element_guid: 2IwmxyHBvFS9zSXZCe$LAY
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: e9fb345ffa32
+  element_guid: 2IwmxyHBvFS9zSXZCe$LAY
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: 2face7fc3078
+  element_guid: 2IwmxyHBvFS9zSXZCe$ghQ
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: cfa4bccf9729
+  element_guid: 2IwmxyHBvFS9zSXZCe$ghQ
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: bfe4edecb797
+  element_guid: 2IwmxyHBvFS9zSXZCe$ghQ
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: 77c2c54411d2
+  element_guid: 2Kl7rnh3D9zO6g7elaK$60
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 83fec58f3fc4
+  element_guid: 2Kl7rnh3D9zO6g7elaK$60
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: b9d451a35200
+  element_guid: 2Kl7rnh3D9zO6g7elaK$pE
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 581371bf6aeb
+  element_guid: 2Kl7rnh3D9zO6g7elaK$pE
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: 0d35f64ca999
+  element_guid: 2Kl7rnh3D9zO6g7elaKw8O
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 5221c804a96e
+  element_guid: 2Kl7rnh3D9zO6g7elaKw8O
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: c6432f16f5f6
+  element_guid: 2Kl7rnh3D9zO6g7elaKw9N
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 9709a5abe1ef
+  element_guid: 2Kl7rnh3D9zO6g7elaKw9N
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 9f96d3a53119
+  element_guid: 2Kl7rnh3D9zO6g7elaKwDS
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: fe20bbd4e776
+  element_guid: 2Kl7rnh3D9zO6g7elaKwDS
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 133e7b2a0c54
+  element_guid: 2Kl7rnh3D9zO6g7elaKwXp
+  issue_type: pset_missing
+  check_property: SolarHeatGainCoefficient
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 24de2c254d3d
+  element_guid: 2Kl7rnh3D9zO6g7elaKwXp
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: 57c650f11e1c
+  element_guid: 2Kl7rnh3D9zO6g7elaKwYD
+  issue_type: pset_missing
+  check_property: SolarHeatGainCoefficient
+  reason: fora do escopo evidence-audited-v1
+- issue_id: f945e1e8897d
+  element_guid: 2Kl7rnh3D9zO6g7elaKwYD
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: 1ef48ad130f3
+  element_guid: 2QPUwptF59iOuAeH$YWG2j
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: c615bc9cdadf
+  element_guid: 2QPUwptF59iOuAeH$YWG2j
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: e222f947f8d4
+  element_guid: 2fAI9i_QH93AveG7CTacNQ
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 6c5246c263b8
+  element_guid: 2fAI9i_QH93AveG7CTacNQ
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: c037e64c6265
+  element_guid: 2fAI9i_QH93AveG7CTacNQ
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: 008b74e0c174
+  element_guid: 2fAI9i_QH93AveG7CTawaN
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 60923e8eb913
+  element_guid: 2fAI9i_QH93AveG7CTawaN
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: b81e53775d0d
+  element_guid: 2lyKyDpyH2RfV3sGdJ3N5h
+  issue_type: pset_missing
+  check_property: Category
+  reason: LongName ausente ou não inequívoco para Category
+- issue_id: 0724e41a6147
+  element_guid: 2lyKyDpyH2RfV3sGdJ3NAI
+  issue_type: pset_missing
+  check_property: Category
+  reason: LongName ausente ou não inequívoco para Category
+- issue_id: 731b3f83135b
+  element_guid: 2lyKyDpyH2RfV3sGdJ3Nro
+  issue_type: pset_missing
+  check_property: Category
+  reason: LongName ausente ou não inequívoco para Category
+- issue_id: f76cf7b7d091
+  element_guid: 2lyKyDpyH2RfV3sGdJ3Nrt
+  issue_type: pset_missing
+  check_property: Category
+  reason: LongName ausente ou não inequívoco para Category
+- issue_id: 7f56c150b721
+  element_guid: 2lyKyDpyH2RfV3sGdJ3NwJ
+  issue_type: pset_missing
+  check_property: Category
+  reason: LongName ausente ou não inequívoco para Category
+- issue_id: a1c2aae0db9d
+  element_guid: 3M_GIB2Ij47f7a$yCvFxxP
+  issue_type: pset_missing
+  check_property: Category
+  reason: LongName ausente ou não inequívoco para Category
+- issue_id: f6aee2ddc907
+  element_guid: 3SMUUbRRj1o8sClzCYOY2w
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: f1cbf84f96eb
+  element_guid: 3SMUUbRRj1o8sClzCYOY2w
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: fa57ca3b1506
+  element_guid: 3SMUUbRRj1o8sClzCYOYxv
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: ffeb6fcdb389
+  element_guid: 3SMUUbRRj1o8sClzCYOYxv
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: 86b093ec64bd
+  element_guid: 3SMUUbRRj1o8sClzCYOzDn
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: e0adc6fcff79
+  element_guid: 3SMUUbRRj1o8sClzCYOzDn
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: faa1805c2fe5
+  element_guid: 3SMUUbRRj1o8sClzCYOzDn
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: 79ac5c8842ab
+  element_guid: 3SMUUbRRj1o8sClzCYOzKq
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 8f0126fb9536
+  element_guid: 3SMUUbRRj1o8sClzCYOzKq
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 02a6906ed94e
+  element_guid: 3SMUUbRRj1o8sClzCYOzKq
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: 13d9cbb2344a
+  element_guid: 3SMUUbRRj1o8sClzCYOzLe
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: dbdeef1b15fc
+  element_guid: 3SMUUbRRj1o8sClzCYOzLe
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 68bbcd8cfff5
+  element_guid: 3SMUUbRRj1o8sClzCYOzLe
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: 397e6cbe93fa
+  element_guid: 3SMUUbRRj1o8sClzCYOzNd
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: beff0183c9c8
+  element_guid: 3SMUUbRRj1o8sClzCYOzNd
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 3d735deeb0cd
+  element_guid: 3SMUUbRRj1o8sClzCYOzNd
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: 2945941ee99e
+  element_guid: 3SMUUbRRj1o8sClzCYOzTg
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 9197fd26b282
+  element_guid: 3SMUUbRRj1o8sClzCYOzTg
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: d912cf6b8839
+  element_guid: 3SMUUbRRj1o8sClzCYOzTg
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: 7f2396eaf69f
+  element_guid: 3SMUUbRRj1o8sClzCYOzVp
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 6be73ce4d5a4
+  element_guid: 3SMUUbRRj1o8sClzCYOzVp
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 93ee25f3e324
+  element_guid: 3SMUUbRRj1o8sClzCYOzVp
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: 834fe62043ce
+  element_guid: 3SMUUbRRj1o8sClzCYOztj
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 99f861d1386d
+  element_guid: 3SMUUbRRj1o8sClzCYOztj
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: 48a00b150e5d
+  element_guid: 3SnvZdUqz4cvTlbZnpF1GS
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 2f357f069b60
+  element_guid: 3SnvZdUqz4cvTlbZnpF1GS
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: 6dab115293a4
+  element_guid: 3SnvZdUqz4cvTlbZnpF1HI
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 4bdfb525a81d
+  element_guid: 3SnvZdUqz4cvTlbZnpF1HI
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: 4f66bbc42c9a
+  element_guid: 3YK4YDwtv9JQuHnWAgsgeG
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: fde129285efa
+  element_guid: 3YK4YDwtv9JQuHnWAgsgeG
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: cc54d4f8dfd0
+  element_guid: 3aH1YSjLbFFOXbaVe1cqrW
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 4db4701963ef
+  element_guid: 3aH1YSjLbFFOXbaVe1cqrW
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 746b10924a49
+  element_guid: 3aH1YSjLbFFOXbaVe1cqrW
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: e4ac5c0a5e82
+  element_guid: 3aH1YSjLbFFOXbaVe1cqsk
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 166c976834f2
+  element_guid: 3aH1YSjLbFFOXbaVe1cqsk
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 6fdf127af16e
+  element_guid: 3aH1YSjLbFFOXbaVe1cqsk
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: 99e8c77ede83
+  element_guid: 3aH1YSjLbFFOXbaVe1cqzG
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 32c03323f51c
+  element_guid: 3aH1YSjLbFFOXbaVe1cqzG
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 05b8f1fd7920
+  element_guid: 3aH1YSjLbFFOXbaVe1cqzG
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: 885d9a9e21a3
+  element_guid: 3bzWotDL93mufPfIaOU_Yx
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 6e1364373fee
+  element_guid: 3bzWotDL93mufPfIaOU_Yx
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: fcf92d16d1fa
+  element_guid: 3bzWotDL93mufPfIaOU_dP
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 0b845407fde6
+  element_guid: 3bzWotDL93mufPfIaOU_dP
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: 68280d56b978
+  element_guid: 3bzWotDL93mufPfIaOUhnj
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: c8c8fa46f2aa
+  element_guid: 3bzWotDL93mufPfIaOUhnj
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: f3f210631c4c
+  element_guid: 3bzWotDL93mufPfIaOUhnj
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: 298966f64807
+  element_guid: 3bzWotDL93mufPfIaOUhnj
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  reason: sem valor térmico autoral em instância do mesmo tipo
+- issue_id: b88b43a9a123
+  element_guid: 3bzWotDL93mufPfIaOUuv_
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 69e521630e9e
+  element_guid: 3bzWotDL93mufPfIaOUuv_
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: e7db592c3eab
+  element_guid: 3bzWotDL93mufPfIaOUvax
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 441d9b8e3385
+  element_guid: 3bzWotDL93mufPfIaOUvax
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 324c910f7610
+  element_guid: 3bzWotDL93mufPfIaOUvax
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: 6e324784471e
+  element_guid: 3bzWotDL93mufPfIaOUvc4
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: f7b0180b07b9
+  element_guid: 3bzWotDL93mufPfIaOUvc4
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 7b77c0318f92
+  element_guid: 3bzWotDL93mufPfIaOUvc4
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: df0047d35a1d
+  element_guid: 3bzWotDL93mufPfIaOUvnP
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: b5295670b961
+  element_guid: 3bzWotDL93mufPfIaOUvnP
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 387fe79f7210
+  element_guid: 3bzWotDL93mufPfIaOUvry
+  issue_type: pset_missing
+  check_property: AcousticRating
+  reason: fora do escopo evidence-audited-v1
+- issue_id: fc093be9ac44
+  element_guid: 3bzWotDL93mufPfIaOUvry
+  issue_type: pset_missing
+  check_property: FireRating
+  reason: sem declaração autoral de desempenho ao fogo
+- issue_id: 71839c11f6e1
+  element_guid: 3bzWotDL93mufPfIaOUvry
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  reason: sem declaração autoral de intencionalidade portante
+- issue_id: 3251890afaa7
+  element_guid: 0s9SKb6yL3Hw45Qf5sUEQp
+  issue_type: relation_broken
+  check_property: ''
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 602a14f4f1ec
+  element_guid: 2$tmlycAL58OvCiJvd1s4y
+  issue_type: relation_broken
+  check_property: ''
+  reason: fora do escopo evidence-audited-v1
+- issue_id: a6c6baecfb2e
+  element_guid: 3bzWotDL93mufPfIaOU_Yx
+  issue_type: relation_broken
+  check_property: ''
+  reason: fora do escopo evidence-audited-v1
+- issue_id: 9d3646d2c77b
+  element_guid: 02cRNOEBFs_rUpDJ1rdfFv
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 3229c0fcb655
+  element_guid: 0HJkTz8PfBHRoP4lUkVnpX
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 99d3d1540e01
+  element_guid: 0KDyN9gT18mewR6io7EK5U
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: c4c843940540
+  element_guid: 0KDyN9gT18mewR6io7EKB8
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: d0d8b73ae426
+  element_guid: 0bF6V1Ein6wfZBo5c6V0nE
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 9c0a70af9f39
+  element_guid: 0bF6V1Ein6wfZBo5c6V1$n
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 514547cfc8f5
+  element_guid: 0bF6V1Ein6wfZBo5c6V1km
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 1e3f08be5b97
+  element_guid: 0dah8JnFwmvs5E2wJ5slGX
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 2a05ae285c96
+  element_guid: 0jF_4eAhH6beBAVZTm6o39
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: ae90462e5dee
+  element_guid: 0jF_4eAhH6beBAVZTm6o45
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 06509585b006
+  element_guid: 0jF_4eAhH6beBAVZTm6o67
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: b90eb31e46df
+  element_guid: 0jF_4eAhH6beBAVZTm6oMf
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: e5d234d98d38
+  element_guid: 0jF_4eAhH6beBAVZTm6oQd
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 00af0767f437
+  element_guid: 0st0aD40PCvPxXJgFLhs6D
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 5fbd82934c13
+  element_guid: 0vINo141j3DeXo8nPSqBb3
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: c43bff94f202
+  element_guid: 2$tmlycAL58OvCiJvd1$HE
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 07b8250762ee
+  element_guid: 2$tmlycAL58OvCiJvd1_oI
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 6702cce8df7e
+  element_guid: 2$tmlycAL58OvCiJvd1tHl
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 67d142067cff
+  element_guid: 2$tmlycAL58OvCiJvd1wv_
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 5fc1ed33eca6
+  element_guid: 2525hlGuHMIAZ8BqQUmhMK
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 00b1529dc1a1
+  element_guid: 263mmTFO98CvhLXZL4tYrP
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: b73cac0c26ce
+  element_guid: 263mmTFO98CvhLXZL4tYtG
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: fa9b93418032
+  element_guid: 263mmTFO98CvhLXZL4tZEM
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: d010912887ac
+  element_guid: 263mmTFO98CvhLXZL4tZKH
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 3f9f0303a48d
+  element_guid: 263mmTFO98CvhLXZL4tZOM
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: ba434938fdc4
+  element_guid: 263mmTFO98CvhLXZL4tZUs
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 82b89a5dad63
+  element_guid: 2IwmxyHBvFS9zSXZCe$LAY
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: fa8b7f89493c
+  element_guid: 2IwmxyHBvFS9zSXZCe$ghQ
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 31d1fc43f767
+  element_guid: 2Kl7rnh3D9zO6g7elaK$60
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 4e501963b979
+  element_guid: 2Kl7rnh3D9zO6g7elaK$pE
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: adcb2fa24161
+  element_guid: 2fAI9i_QH93AveG7CTacNQ
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: e96e98eaddb2
+  element_guid: 3SMUUbRRj1o8sClzCYOzDn
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 020974ee8359
+  element_guid: 3SMUUbRRj1o8sClzCYOzKq
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: b8cdd183d85f
+  element_guid: 3SMUUbRRj1o8sClzCYOzLe
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: da1d1a1139a5
+  element_guid: 3SMUUbRRj1o8sClzCYOzNd
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 020faa45af4f
+  element_guid: 3SMUUbRRj1o8sClzCYOzTg
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 5ed53da5086c
+  element_guid: 3SMUUbRRj1o8sClzCYOzVp
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 38f62f36e0c4
+  element_guid: 3SMUUbRRj1o8sClzCYOztj
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: a38e231cc8cc
+  element_guid: 3SnvZdUqz4cvTlbZnpF1GS
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: edcf5b94a7b0
+  element_guid: 3SnvZdUqz4cvTlbZnpF1HI
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: a04c315ecda6
+  element_guid: 3aH1YSjLbFFOXbaVe1cqrW
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: f49ef2cce017
+  element_guid: 3aH1YSjLbFFOXbaVe1cqsk
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 0ea36ed91eb5
+  element_guid: 3aH1YSjLbFFOXbaVe1cqzG
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 923aee82d9cb
+  element_guid: 3bzWotDL93mufPfIaOUhnj
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 835d45c18082
+  element_guid: 3bzWotDL93mufPfIaOUvax
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 019e9ff2e97b
+  element_guid: 3bzWotDL93mufPfIaOUvc4
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal
+- issue_id: 8d365e7c7b9b
+  element_guid: 3bzWotDL93mufPfIaOUvry
+  issue_type: system_unclassified
+  check_property: ''
+  reason: evidência material não identifica um único rótulo literal

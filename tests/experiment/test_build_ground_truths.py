@@ -146,12 +146,14 @@ def test_dataset_registry_has_predio_and_casa_only():
 
 
 def test_ratified_legacy_snapshot_is_lf_and_matches_frozen_hash():
-    """CRLF local nao pode mudar a identidade da base autoral versionada em LF."""
+    """O GT canônico preserva a proveniência da base autoral ratificada em LF."""
     path = builder.DATASETS["predio"].ground_truth_path
     content = path.read_bytes()
+    document = yaml.safe_load(content.decode("utf-8"))
 
     assert b"\r\n" not in content
-    assert hashlib.sha256(content).hexdigest() == RATIFIED_LF_SHA256
+    assert document["metadata"]["protocol"] == "evidence-audited-v1"
+    assert document["metadata"]["previous_gt_sha256"] == RATIFIED_LF_SHA256
     assert builder.RATIFIED_LEGACY_SHA256 == RATIFIED_LF_SHA256
 
 
@@ -297,6 +299,7 @@ def test_check_mode_never_writes(tmp_path, monkeypatch):
         path.name: (path.read_bytes(), path.stat().st_mtime_ns) for path in tmp_path.iterdir()
     }
     monkeypatch.setattr(builder, "DATASETS", {"casa": spec})
+    monkeypatch.setattr(builder, "EXPECTED_GROUND_TRUTH_SHA256", {})
     monkeypatch.setattr(builder, "build_dataset", lambda _spec: (result, [issue]))
     monkeypatch.setattr(builder, "validate_ground_truth_against_issues", lambda *a, **k: None)
 
@@ -372,6 +375,7 @@ def test_check_mode_never_touches_persistent_suggestion_cache(tmp_path, monkeypa
     monkeypatch.setenv("SUGGESTION_CACHE_PATH", str(cache_path))
     get_settings.cache_clear()
     monkeypatch.setattr(builder, "DATASETS", {"casa": spec})
+    monkeypatch.setattr(builder, "EXPECTED_GROUND_TRUTH_SHA256", {})
     monkeypatch.setattr(
         builder.QualityPipeline,
         "diagnose",
