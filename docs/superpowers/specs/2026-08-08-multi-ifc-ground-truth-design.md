@@ -65,10 +65,11 @@ históricos/experimentais, mas não fazem parte da execução padrão de dois IF
 
 ### 3.2 Continuidade do prédio
 
-O arquivo atual `data/evaluation/predio/ground_truth.yaml`, cujo SHA-256 antes da
-auditoria é
-`D08D2C7466A71C0CDE467A959ED2AEBFD4857D1DA64944E4504F8F97D4EDD6F6`, será
-editado a partir de sua base atual. O metadata novo registrará esse hash em
+O arquivo atual `data/evaluation/predio/ground_truth.yaml` será normalizado
+mecanicamente para LF, sem alteração do documento YAML. O SHA-256 portátil do
+blob LF anterior à auditoria é
+`7D1B1DC8B4756E5A48CD28925D3DCEB53A83AB401C31AE0FCF80914DDF85BCCB`.
+`.gitattributes` fixará `text eol=lf`, e o metadata novo registrará esse hash em
 `previous_gt_sha256` e explicará as mudanças de escopo ou valor.
 
 Não haverá um segundo GT selecionável em runtime. Comparações históricas usarão
