@@ -420,6 +420,7 @@ class TestHarnessEndToEnd:
             output_dir=str(out_dir),
             dataset_key="predio",
             execution_identity=execution_identity,
+            reuse_equivalent=True,
         )
 
         assert len(results) == 2
@@ -428,10 +429,13 @@ class TestHarnessEndToEnd:
         assert {result.metadata.dataset_key for result in results} == {"predio"}
         assert all(result.metadata.execution_identity for result in results)
         assert all(result.metadata.execution_identity_sha256 for result in results)
+        assert all(result.metadata.reuse_equivalent is True for result in results)
         for path in exported:
             metadata = json.loads(path.read_text(encoding="utf-8"))["metadata"]
             assert metadata["dataset_key"] == "predio"
             assert metadata["execution_identity"]["release_id"] == "ifcqc-r1"
+            assert metadata["execution_identity"]["reuse_equivalent"] is True
+            assert metadata["reuse_equivalent"] is True
             assert metadata["execution_identity_sha256"]
 
 

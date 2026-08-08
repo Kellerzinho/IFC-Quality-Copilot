@@ -469,6 +469,7 @@ class ExperimentRunner:
         issue_types: list[str] | None = None,
         dataset_key: str = "",
         execution_identity: ExecutionIdentity | None = None,
+        reuse_equivalent: bool = False,
     ) -> list[ExperimentResult]:
         """Executa N réplicas e, se ``output_dir`` for dado, exporta um JSON por réplica."""
         results: list[ExperimentResult] = []
@@ -489,6 +490,7 @@ class ExperimentRunner:
                 issue_types=issue_types,
                 dataset_key=dataset_key,
                 execution_identity=execution_identity,
+                reuse_equivalent=reuse_equivalent,
             )
             results.append(result)
             if output_dir is not None:
