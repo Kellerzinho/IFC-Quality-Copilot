@@ -161,6 +161,17 @@ def test_all_missing_requires_partial_and_reserve_space():
     assert required_free_bytes(lock, {}) == 57_032_733_355
 
 
+def test_partial_and_complete_store_have_exact_space_budgets():
+    lock = load_model_lock(LOCK_PATH)
+    partial = {model.name: model.digest for model in lock.models[:-1]}
+    only_missing = lock.models[-1].size_bytes
+    assert required_free_bytes(lock, partial) == (
+        only_missing + only_missing + max(only_missing // 10, 4 * 1024**3)
+    )
+    complete = {model.name: model.digest for model in lock.models}
+    assert required_free_bytes(lock, complete) == 0
+
+
 def test_digest_drift_is_reported_with_full_expected_and_actual():
     lock = load_model_lock(LOCK_PATH)
     installed = {lock.models[0].name: "0" * 64}

@@ -554,9 +554,12 @@ git commit -m "feat: adicionar bootstrap Windows sem administrador"
 **Interfaces:**
 
 - Consumes: manifesto, `ModelMatrixLock`, diretórios app-owned e callable de subprocess/HTTP injetável.
-- Produces: `DownloadSpec`, `PullProgress`, `download_verified`,
-  `safe_extract_zip`, `pull_model_streaming`, `OllamaServer`,
-  `installed_model_digests`, `ensure_model_matrix` e `select_runtime_assets`.
+- Produces: `DownloadSpec`, `RuntimeAssetPlan`, `PullProgress`, `download_verified`,
+  `safe_extract_zip`, `OLLAMA_RUNTIME_RELATIVE`, `ollama_executable`,
+  `pull_model_streaming`, `OllamaServer`,
+  `installed_model_digests`, `ensure_model_matrix` e
+  `select_runtime_assets(gpu_names) -> RuntimeAssetPlan`, com assets Ollama e
+  llmfit separados.
 
 - [ ] **Step 1: Escrever testes de download e extração**
 
@@ -611,6 +614,18 @@ def test_app_owned_boundary_does_not_accept_prefix_sibling(tmp_path):
     sibling.parent.mkdir()
     with pytest.raises(RuntimeIntegrityError, match="app-owned"):
         assert_app_owned(sibling, app_root)
+
+
+def test_ollama_post_extract_executable_uses_canonical_windows_amd64_path(tmp_path):
+    release_root = tmp_path / "release"
+    archive = zip_with_files(tmp_path, {"ollama.exe": b"MZ-test"})
+    destination = release_root / OLLAMA_RUNTIME_RELATIVE
+    safe_extract_zip(archive, destination)
+    executable = ollama_executable(release_root)
+    assert executable == (
+        release_root / "tools/ollama/0.32.5/windows-amd64/ollama.exe"
+    )
+    assert executable.read_bytes() == b"MZ-test"
 ```
 
 Adicionar hash errado, resposta sem suporte a Range (reinicia do zero), retry
@@ -672,8 +687,13 @@ def test_existing_or_post_pull_digest_drift_is_fatal(lock, fake_ollama):
 
 
 def test_ollama_server_terminates_only_owned_process(fake_process, tmp_path):
-    with OllamaServer(fake_process.exe, tmp_path / "models", process_factory=fake_process) as server:
+    release_root = tmp_path / "release"
+    executable = ollama_executable(release_root)
+    executable.parent.mkdir(parents=True)
+    executable.write_bytes(b"MZ-test")
+    with OllamaServer(executable, tmp_path / "models", process_factory=fake_process) as server:
         assert server.base_url.startswith("http://127.0.0.1:")
+    assert fake_process.started_exe == executable
     assert fake_process.terminated_pid == fake_process.started_pid
 ```
 
@@ -693,6 +713,12 @@ class DownloadSpec(BaseModel):
 
 
 @dataclass(frozen=True)
+class RuntimeAssetPlan:
+    ollama: Sequence[DownloadSpec]
+    llmfit: DownloadSpec
+
+
+@dataclass(frozen=True)
 class PullProgress:
     status: str
     digest: str | None = None
@@ -705,6 +731,12 @@ PINNED_TOOL_SHA256 = {
     "ollama_rocm": "f2284e7008ffd64eadb7a05ac4ca1a0de843d1e8d0c861aa0923ef855ca94615",
     "llmfit": "bf8a509d68bc02f4cafc7040501938a30841eeb8c496eda51ae886a2f43a88e2",
 }
+
+OLLAMA_RUNTIME_RELATIVE = Path("tools/ollama/0.32.5/windows-amd64")
+
+
+def ollama_executable(release_root: Path) -> Path:
+    return release_root / OLLAMA_RUNTIME_RELATIVE / "ollama.exe"
 ```
 
 `validate_tool_pins(manifest)` exige igualdade com URL, versão, tamanho e hash do
@@ -722,10 +754,15 @@ contenção.
 
 - [ ] **Step 5: Implementar Ollama isolado**
 
-`select_runtime_assets(gpu_names)` retorna base sempre e ROCm apenas se algum nome
-contiver `AMD` ou `Radeon`. Extrair base para
+`select_runtime_assets(gpu_names)` retorna `RuntimeAssetPlan`: `ollama` contém o
+asset base sempre e ROCm apenas se algum nome contiver `AMD` ou `Radeon`;
+`llmfit` contém somente o asset 1.1.8. Isso permite disponibilizar apenas Ollama
+antes de medir o store, sem antecipar o download auxiliar. Extrair a base para
+`release_root / OLLAMA_RUNTIME_RELATIVE`, isto é,
 `tools/ollama/0.32.5/windows-amd64`; extrair ROCm na mesma raiz somente após ambos
-os hashes passarem.
+os hashes passarem. Nenhum consumidor monta esse caminho manualmente:
+instalação, teste e orquestrador chamam `ollama_executable(release_root)`, que
+deve resolver para `tools/ollama/0.32.5/windows-amd64/ollama.exe`.
 
 `OllamaServer` escolhe porta loopback livre, inicia com `CREATE_NO_WINDOW`,
 `OLLAMA_HOST=127.0.0.1:<porta>` e `OLLAMA_MODELS=<store>/<models-lock-sha>`, espera
@@ -959,9 +996,10 @@ git commit -m "feat: coletar hardware e modelos adicionais"
 
 - Consumes: manifesto, `ExecutionIdentity`, runtime/model lock, inventário,
   evidence bundle e runner por subprocesso injetável.
-- Produces: `RunState`, `Phase2Result`, `select_or_create_run`,
-  `run_preflight_phase2`, `build_child_env`, `run_benchmark_release(args) -> int`
-  e ZIP final/partial com receipt atômico para o bootstrap.
+- Produces: `RunState`, `Phase2Result`, `RemainingBudget`,
+  `select_or_create_run`, `run_preflight_phase2`, `remaining_auxiliary_bytes`,
+  `build_child_env`, `run_benchmark_release(args) -> int` e ZIP final/partial
+  com receipt atômico para o bootstrap.
 
 - [ ] **Step 1: Escrever testes de estado e retomada**
 
@@ -1112,6 +1150,71 @@ def test_phase2_failure_precedes_heavy_download(orchestrator_fixture):
     assert orchestrator_fixture.services.downloads == []
 
 
+@pytest.mark.parametrize("store_state", ["empty", "partial", "complete"])
+def test_model_budget_uses_tags_after_ollama_and_before_any_pull(
+        orchestrator_fixture, model_lock, store_state):
+    if store_state == "empty":
+        installed = {}
+    elif store_state == "partial":
+        installed = {
+            model.name: model.digest for model in model_lock.models[:5]
+        }
+    else:
+        installed = {
+            model.name: model.digest for model in model_lock.models
+        }
+    orchestrator_fixture.services.installed_digests = installed
+
+    assert run_benchmark_release(
+        orchestrator_fixture.args, services=orchestrator_fixture.services
+    ) == 0
+    expected = required_free_bytes(model_lock, installed)
+    assert orchestrator_fixture.services.model_required_bytes == expected
+    if store_state == "complete":
+        assert expected == 0
+
+    trace = orchestrator_fixture.services.trace
+    ordered = [
+        "phase2:bootstrap-space-checked",
+        "runtime:ollama-downloaded",
+        "runtime:ollama-extracted:windows-amd64",
+        "ollama:started",
+        "ollama:tags",
+        "budget:required-free-bytes",
+        "budget:disk-checked",
+    ]
+    assert [trace.index(event) for event in ordered] == sorted(
+        trace.index(event) for event in ordered
+    )
+    assert orchestrator_fixture.services.started_executable == (
+        orchestrator_fixture.release_root
+        / "tools/ollama/0.32.5/windows-amd64/ollama.exe"
+    )
+    pull_positions = [index for index, event in enumerate(trace)
+                      if event.startswith("ollama:pull:")]
+    if pull_positions:
+        assert trace.index("budget:disk-checked") < min(pull_positions)
+    else:
+        assert store_state == "complete"
+
+
+def test_insufficient_exact_budget_aborts_before_pull(
+        orchestrator_fixture, model_lock):
+    installed = {model.name: model.digest for model in model_lock.models[:5]}
+    orchestrator_fixture.services.installed_digests = installed
+    orchestrator_fixture.services.free_bytes = (
+        orchestrator_fixture.services.non_model_required_bytes
+        + required_free_bytes(model_lock, installed)
+        - 1
+    )
+    assert run_benchmark_release(
+        orchestrator_fixture.args, services=orchestrator_fixture.services
+    ) == 1
+    assert "budget:disk-checked" in orchestrator_fixture.services.trace
+    assert not any(event.startswith("ollama:pull:")
+                   for event in orchestrator_fixture.services.trace)
+
+
 def test_primary_bundle_failure_falls_back_to_safe_partial(orchestrator_fixture):
     orchestrator_fixture.services.bundle_error = EvidencePrivacyError("scanner")
     assert run_benchmark_release(orchestrator_fixture.args,
@@ -1122,6 +1225,14 @@ def test_primary_bundle_failure_falls_back_to_safe_partial(orchestrator_fixture)
         }
         assert json.loads(archive.read("status.json"))["partial"] is True
 ```
+
+Para esses testes, `orchestrator_fixture.services.non_model_required_bytes` é a
+soma determinística de `remaining_auxiliary_bytes` e 2 GiB; `free_bytes` é a
+resposta injetada do volume do store; `model_required_bytes` captura o argumento
+calculado pelo orquestrador. Os estados `empty`, `partial` e `complete` simulam,
+respectivamente, zero, cinco e dez digests corretos retornados por `/api/tags`.
+O fake registra cada POST de pull como `ollama:pull:<tag>` e nunca o antecipa por
+efeito colateral de consulta.
 
 - [ ] **Step 4: Confirmar RED**
 
@@ -1140,6 +1251,28 @@ class AppPaths:
     model_store: Path
     state_root: Path
     run_root: Path
+
+
+@dataclass(frozen=True)
+class Phase2Result:
+    inventory: dict[str, object]
+    assets: RuntimeAssetPlan
+    ollama_bootstrap_bytes: int
+
+
+@dataclass(frozen=True)
+class RemainingBudget:
+    model_required_bytes: int
+    auxiliary_required_bytes: int
+    result_reserve_bytes: int = 2 * 1024**3
+
+    @property
+    def total_required_bytes(self) -> int:
+        return (
+            self.model_required_bytes
+            + self.auxiliary_required_bytes
+            + self.result_reserve_bytes
+        )
 
 
 class RunState(BaseModel):
@@ -1161,15 +1294,37 @@ bytes extraídos; persistir seu dump canônico também em
 o digest canônico do snapshot antes de compará-lo ao campo digest; state
 adulterado/corrupto é preservado para diagnóstico, mas nunca retomado.
 
-`run_preflight_phase2` acontece antes de `download_and_extract_tools` e registra
-no trace, nesta ordem: manifesto/pins novamente; identidade e hashes reais de
-model lock/prompt/IFC/GT/IDS; subprocesso real
+`run_preflight_phase2` é deliberadamente leve e acontece antes de qualquer
+download. Registra no trace, nesta ordem: manifesto/pins novamente; identidade e
+hashes reais de model lock/prompt/IFC/GT/IDS; subprocesso real
 `[python, "scripts/build_ground_truths.py", "--check", "--dataset", "all"]` com
-`cwd=project`; lock uv congelado; inventário/driver; espaço e porta loopback. GT
-check diferente de zero é impeditivo e inclui stdout/stderr somente no log que
-será sanitizado. Validar NVIDIA driver >= 452.39 quando houver NVIDIA. O orçamento é
-`required_free_bytes(models) + soma(runtime assets ausentes) + 2 GiB`; se faltar,
-falhar antes de iniciar download, mostrando necessário/disponível em GiB.
+`cwd=project`; lock uv congelado; inventário/driver; escrita, porta loopback e
+espaço apenas para disponibilizar Ollama. GT check diferente de zero é impeditivo
+e inclui stdout/stderr somente no log que será sanitizado. Validar NVIDIA driver
+>= 452.39 quando houver NVIDIA. Para esse bootstrap, calcular
+`ollama_bootstrap_bytes = 3 * sum(size_bytes dos archives Ollama ausentes) + 2 GiB`;
+isso cobre archive, extração e temporários, mas não é apresentado como orçamento
+dos modelos. Esta fase não chama `/api/tags`, `required_free_bytes` nem `/api/pull`.
+
+O orçamento exato dos modelos só pode ser calculado depois que o runtime Ollama
+fixado estiver extraído, o servidor estiver ativo com o store privado e
+`installed_model_digests` tiver consultado `/api/tags`. Depois de rejeitar
+qualquer digest divergente, construir:
+
+```python
+model_required = required_free_bytes(model_lock, installed)
+budget = RemainingBudget(
+    model_required_bytes=model_required,
+    auxiliary_required_bytes=remaining_auxiliary_bytes(assets.llmfit, paths),
+)
+assert_free_bytes(paths.model_store, budget.total_required_bytes)
+```
+
+`remaining_auxiliary_bytes` retorna zero quando llmfit 1.1.8 já está extraído e
+verificado; caso contrário retorna `2 * assets.llmfit.size_bytes`. Store completo
+produz literalmente `model_required_bytes == 0`; a reserva de resultados e o
+auxiliar permanecem discriminados, sem serem atribuídos aos modelos. A checagem
+de disco ocorre antes da primeira chamada `/api/pull`.
 
 `build_child_env(base, ollama_url, model_store)` começa com cópia de `os.environ`
 recebido, preservando `PATH`, `SYSTEMROOT`, `TEMP`, locale e demais variáveis de
@@ -1185,16 +1340,36 @@ usar um `env` contendo apenas duas chaves.
 Ordem literal:
 
 ```python
-inventory = collect_windows_inventory(services.commands)
-assets = select_runtime_assets(gpu_names(inventory))
-download_and_extract_tools(assets)
+phase2 = run_preflight_phase2(args, paths, services)
+assets = phase2.assets
+download_and_extract_tools(
+    assets.ollama,
+    destination=paths.release_root / OLLAMA_RUNTIME_RELATIVE,
+)
+ollama_path = ollama_executable(paths.release_root)
+if not ollama_path.is_file():
+    raise RuntimeIntegrityError(f"executável Ollama ausente: {OLLAMA_RUNTIME_RELATIVE}")
 with OllamaServer(
-    ollama_exe=paths.release_root / "tools/ollama/0.32.5/ollama.exe",
+    ollama_exe=ollama_path,
     model_store=paths.model_store,
     process_factory=services.process_factory,
     http=services.http,
 ) as ollama:
+    installed = installed_model_digests(ollama)
+    mismatches = model_digest_mismatches(model_lock, installed)
+    if mismatches:
+        raise RuntimeIntegrityError("; ".join(mismatches))
+    model_required = required_free_bytes(model_lock, installed)
+    budget = RemainingBudget(
+        model_required_bytes=model_required,
+        auxiliary_required_bytes=remaining_auxiliary_bytes(assets.llmfit, paths),
+    )
+    assert_free_bytes(paths.model_store, budget.total_required_bytes)
     ensure_model_matrix(model_lock, ollama)
+    download_and_extract_tools(
+        (assets.llmfit,),
+        destination=paths.release_root / "tools/llmfit/1.1.8",
+    )
     llmfit = run_llmfit_inventory(
         paths.release_root / "tools/llmfit/1.1.8/llmfit.exe",
         evidence_root / "llmfit",
