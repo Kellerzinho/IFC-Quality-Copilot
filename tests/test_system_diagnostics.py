@@ -172,11 +172,12 @@ def test_diagnose_systems_context_has_required_keys(ifc_with_walls):
     required_keys = {
         "materials", "total_thickness", "has_classification",
         "classification_current", "has_standard_material_pset",
-        "has_custom_pset_material",
+        "has_custom_pset_material", "check_property",
     }
     for issue in issues:
         missing = required_keys - issue.context.keys()
         assert not missing, f"Chaves ausentes: {missing}"
+        assert issue.context["check_property"] == ""
 
 
 def test_diagnose_systems_has_classification_false_for_unclassified(ifc_with_walls):

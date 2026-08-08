@@ -184,6 +184,7 @@ def _build_context(
 ) -> dict[str, Any]:
     """Monta o dicionário de contexto para o issue."""
     ctx: dict[str, Any] = {
+        "check_property": "",
         "materials": layers,
         "total_thickness": _total_thickness(layers),
         "has_classification": has_classification,
