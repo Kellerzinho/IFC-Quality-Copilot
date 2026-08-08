@@ -287,6 +287,7 @@ git commit -m "feat: construir ground truth de predio e casa"
 - Create locally (large input, distribution artifact): `data/evaluation/casa/casa_v1.ifc`
 - Create: `data/evaluation/casa/ground_truth.yaml`
 - Modify: `data/evaluation/predio/ground_truth.yaml`
+- Modify: `scripts/build_ground_truths.py`
 - Create: `tests/experiment/test_ground_truth_datasets.py`
 
 - [ ] **Step 1: Preparar o IFC canônico da casa sem alterar o original**
@@ -326,6 +327,13 @@ Expected: saída informa, para cada dataset, total de issues, itens, skips, SHA-
 
 Calcular SHA-256 dos dois YAMLs, executar novamente o mesmo comando e confirmar hashes idênticos. Além da idempotência, executar `diagnose()` duas vezes de forma independente para cada IFC e comparar literalmente o conjunto ordenado `(issue.id, element_guid, issue_type, check_property)` das duas execuções.
 
+Depois de confirmar os hashes, preencher `EXPECTED_GROUND_TRUTH_SHA256` em
+`scripts/build_ground_truths.py` com os dois digests finais e acrescentar ao teste
+real uma mutação temporária de valor semanticamente válido que faça `--check`
+retornar `1`. Assim a rota de reuso do prédio não usa o próprio YAML alterado como
+autoridade. Regenerar uma última vez e confirmar que os hashes finais continuam
+iguais aos valores congelados no script.
+
 - [ ] **Step 6: Rodar testes reais**
 
 Run: `python -m pytest tests/experiment/test_ground_truth_datasets.py -q`
@@ -335,7 +343,7 @@ Expected: PASS.
 - [ ] **Step 7: Commit dos artefatos versionáveis**
 
 ```powershell
-git add -- data/evaluation/predio/ground_truth.yaml data/evaluation/casa/ground_truth.yaml tests/experiment/test_ground_truth_datasets.py
+git add -- data/evaluation/predio/ground_truth.yaml data/evaluation/casa/ground_truth.yaml scripts/build_ground_truths.py tests/experiment/test_ground_truth_datasets.py
 git commit -m "data: congelar ground truth de predio e casa"
 ```
 
