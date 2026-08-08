@@ -74,9 +74,13 @@ def _audit_legacy(
     issue: Issue,
     legacy: GroundTruthItem,
     *,
-    source_sha256: str | None = _RATIFIED_LEGACY_SHA256,
+    legacy_source_sha256: str,
 ) -> AuditDecision:
-    return audit_legacy_item(issue, legacy, source_sha256=source_sha256)
+    return audit_legacy_item(
+        issue,
+        legacy,
+        legacy_source_sha256=legacy_source_sha256,
+    )
 
 
 def _assert_item(decision: AuditDecision, expected: Any) -> None:
@@ -110,7 +114,11 @@ def test_predio_preserves_verified_legacy_item():
         notes="Intencionalidade registrada e revisada pelo autor.",
     )
 
-    decision = _audit_legacy(issue, legacy)
+    decision = _audit_legacy(
+        issue,
+        legacy,
+        legacy_source_sha256=_RATIFIED_LEGACY_SHA256,
+    )
 
     _assert_item(decision, False)
     assert decision.accepted_alternatives == [True]
@@ -136,7 +144,11 @@ def test_predio_skips_legacy_item_marked_conferir(element_class, expected_value,
         notes=notes,
     )
 
-    decision = _audit_legacy(issue, legacy)
+    decision = _audit_legacy(
+        issue,
+        legacy,
+        legacy_source_sha256=_RATIFIED_LEGACY_SHA256,
+    )
 
     _assert_skipped(decision)
     assert any(word in decision.skip_reason.lower() for word in ("incerteza", "não ratificada"))
@@ -153,7 +165,11 @@ def test_predio_removes_unratified_ei_alternatives():
         notes="Referência de projeto revisada pelo autor.",
     )
 
-    decision = _audit_legacy(issue, legacy)
+    decision = _audit_legacy(
+        issue,
+        legacy,
+        legacy_source_sha256=_RATIFIED_LEGACY_SHA256,
+    )
 
     _assert_item(decision, "REI 60")
     assert decision.accepted_alternatives == ["REI 90", "REI 120"]
@@ -161,13 +177,12 @@ def test_predio_removes_unratified_ei_alternatives():
     assert decision.notes.count("não representa desempenho físico medido") == 1
 
 
-@pytest.mark.parametrize("source_sha256", ["0" * 64, None])
-def test_predio_rejects_legacy_item_without_ratified_snapshot_proof(source_sha256):
+def test_predio_rejects_legacy_item_without_ratified_snapshot_proof():
     """A mutação que aceite valor sem prova do snapshot congelado deve quebrar este teste."""
     issue = _issue(property_name="Category", element_class="IfcSpace")
     legacy = _legacy_item(issue, expected_value="BEDROOM", verified=True, notes="Revisado.")
 
-    decision = _audit_legacy(issue, legacy, source_sha256=source_sha256)
+    decision = _audit_legacy(issue, legacy, legacy_source_sha256="0" * 64)
 
     _assert_skipped(decision)
     assert "snapshot" in decision.skip_reason.lower()
@@ -195,7 +210,11 @@ def test_predio_rejects_legacy_identity_mismatch(overrides, reason_fragment):
     values.update(overrides)
     legacy = GroundTruthItem(**values)
 
-    decision = _audit_legacy(issue, legacy)
+    decision = _audit_legacy(
+        issue,
+        legacy,
+        legacy_source_sha256=_RATIFIED_LEGACY_SHA256,
+    )
 
     _assert_skipped(decision)
     assert reason_fragment in decision.skip_reason.lower()
@@ -215,7 +234,11 @@ def test_predio_rejects_missing_check_property_for_system_item():
         notes="Revisado.",
     )
 
-    decision = _audit_legacy(issue, legacy)
+    decision = _audit_legacy(
+        issue,
+        legacy,
+        legacy_source_sha256=_RATIFIED_LEGACY_SHA256,
+    )
 
     _assert_skipped(decision)
     assert "check_property" in decision.skip_reason
@@ -398,19 +421,27 @@ def test_casa_classifies_only_unambiguous_material_system():
 
 
 @pytest.mark.parametrize(
-    ("element_type_name", "material_name"),
+    ("element_class", "element_type_name", "material_name"),
     [
-        ("Parede sem drywall", "Sistema Drywall"),
-        ("Bloco cerâmico não estrutural", "Bloco cerâmico"),
-        ("Concreto armado não moldado in loco", "Concreto armado"),
+        ("IfcWall", "Parede sem drywall", "Sistema Drywall"),
+        ("IfcWall", "Bloco cerâmico não estrutural", "Bloco cerâmico"),
+        ("IfcWall", "Concreto armado não moldado in loco", "Concreto armado"),
+        ("IfcWall", "Concreto não pré-moldado", "Concreto pré-moldado"),
+        ("IfcWall", "Parede sem painel de EPS", "Painel de EPS"),
+        ("IfcSlab", "Laje não possui porcelanato", "Porcelanato"),
     ],
 )
 def test_casa_skips_negated_or_contradictory_material_system(
+    element_class,
     element_type_name,
     material_name,
 ):
     """A mutação que trate negação como evidência positiva deve quebrar este teste."""
-    issue = _issue(property_name="", issue_type="system_unclassified", element_class="IfcWall")
+    issue = _issue(
+        property_name="",
+        issue_type="system_unclassified",
+        element_class=element_class,
+    )
 
     decision = _derive(
         issue,
@@ -474,7 +505,11 @@ def test_predio_slab_standard_case_uses_legacy_slab_vocabulary():
         notes="Sistema revisado pelo autor.",
     )
 
-    decision = _audit_legacy(issue, legacy)
+    decision = _audit_legacy(
+        issue,
+        legacy,
+        legacy_source_sha256=_RATIFIED_LEGACY_SHA256,
+    )
 
     _assert_item(decision, "Laje maciça de concreto armado")
 
@@ -493,7 +528,11 @@ def test_predio_rejects_legacy_system_vocabulary_for_unhandled_class():
         notes="Revisado.",
     )
 
-    decision = _audit_legacy(issue, legacy)
+    decision = _audit_legacy(
+        issue,
+        legacy,
+        legacy_source_sha256=_RATIFIED_LEGACY_SHA256,
+    )
 
     _assert_skipped(decision)
 

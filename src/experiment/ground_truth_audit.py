@@ -36,6 +36,10 @@ _UNCERTAINTY_MARKERS = (
 )
 _PENDING_EI_ALTERNATIVES = frozenset({"EI 60", "EI 90", "EI 120"})
 _RATIFIED_LEGACY_SHA256 = "d08d2c7466a71c0cde467a959ed2aebfd4857d1da64944e4504f8f97d4edd6f6"
+_MATERIAL_NEGATION_PATTERN = re.compile(
+    r"\b(?:sem|nao|nunca|jamais|ausente|ausencia|inexistente|desprovido|"
+    r"falta|faltante|without|not|none|absent|missing|lacks|lacking|non)\b"
+)
 
 
 class AuditDecision(BaseModel):
@@ -83,10 +87,10 @@ def audit_legacy_item(
     issue: Issue,
     legacy: GroundTruthItem,
     *,
-    source_sha256: str | None,
+    legacy_source_sha256: str,
 ) -> AuditDecision:
     """Preserva apenas a parte ratificada e semanticamente válida do GT do prédio."""
-    if source_sha256 != _RATIFIED_LEGACY_SHA256:
+    if legacy_source_sha256 != _RATIFIED_LEGACY_SHA256:
         return _skip("item sem prova do snapshot legado congelado")
 
     property_name = _read_check_property(issue)
@@ -390,11 +394,7 @@ def _system_vocabulary(element_class: str) -> frozenset[str] | None:
 
 
 def _has_material_negation(evidence: str) -> bool:
-    return re.search(
-        r"\b(?:sem|nao)\s+(?:sistema\s+)?"
-        r"(?:drywall|steel frame|estrutural|moldado (?:in loco|no local))\b",
-        evidence,
-    ) is not None
+    return _MATERIAL_NEGATION_PATTERN.search(evidence) is not None
 
 
 def _category_aliases(category: str, *aliases: str) -> dict[str, str]:
