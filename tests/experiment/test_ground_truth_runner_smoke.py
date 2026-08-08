@@ -12,6 +12,7 @@ from src.models import SuggestionMetrics, SuggestionSet
 
 ROOT = Path(__file__).resolve().parents[2]
 IDS_PATH = ROOT / "data" / "ids_templates" / "residencial_nbr15575.ids"
+SMOKE_HARDWARE = {"source": "ground-truth-runner-smoke"}
 
 
 def _deterministic_batch(issues, _context, on_progress=None, **_kwargs):
@@ -69,6 +70,7 @@ def test_runner_smoke_loads_frozen_ground_truth_without_mutating_ifc(
     monkeypatch.setattr(runner_module, "gpu_residency", lambda *_args: None)
     monkeypatch.setattr(runner_module, "ollama_model_digest", lambda *_args: None)
     monkeypatch.setattr(runner_module, "_ollama_version", lambda: None)
+    monkeypatch.setattr(runner_module, "hardware_snapshot", lambda: SMOKE_HARDWARE)
 
     before = hashlib.sha256(ifc_path.read_bytes()).hexdigest()
     result = ExperimentRunner(suggestion_batch_fn=_deterministic_batch).run_single(
@@ -87,4 +89,5 @@ def test_runner_smoke_loads_frozen_ground_truth_without_mutating_ifc(
         ground_truth_path.read_bytes()
     ).hexdigest()
     assert result.metadata.reuse_equivalent is True
+    assert result.metadata.hardware == SMOKE_HARDWARE
     assert hashlib.sha256(ifc_path.read_bytes()).hexdigest() == before
