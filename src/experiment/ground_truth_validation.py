@@ -76,7 +76,7 @@ def validate_ground_truth_document(path: str | Path) -> GroundTruthValidationRep
     _validate_declared_counts(metadata, len(items), len(skipped), problems)
 
     if problems:
-        ordered = "\n".join(f"- {problem}" for problem in sorted(set(problems)))
+        ordered = "\n".join(f"- {problem}" for problem in sorted(problems))
         raise GroundTruthValidationError(f"ground_truth_validation_failed:\n{ordered}")
 
     return GroundTruthValidationReport(
@@ -104,7 +104,7 @@ def _validate_items(entries: list[Any], problems: list[str]) -> tuple[set[Natura
         key, issue_id = _validate_common_entry(entry, location, problems)
         if key is not None:
             if key in keys:
-                problems.append(f"duplicate_natural_key: {key!r}")
+                problems.append(f"duplicate_natural_key: {location}: {key!r}")
             keys.add(key)
         if issue_id is not None:
             issue_ids.append(issue_id)
@@ -121,10 +121,11 @@ def _validate_skipped(entries: list[Any], problems: list[str]) -> tuple[set[Natu
     keys: set[NaturalKey] = set()
     issue_ids: list[str] = []
     for index, entry in enumerate(entries):
-        key, issue_id = _validate_common_entry(entry, f"skipped[{index}]", problems)
+        location = f"skipped[{index}]"
+        key, issue_id = _validate_common_entry(entry, location, problems)
         if key is not None:
             if key in keys:
-                problems.append(f"duplicate_natural_key: {key!r}")
+                problems.append(f"duplicate_natural_key: {location}: {key!r}")
             keys.add(key)
         if issue_id is not None:
             issue_ids.append(issue_id)

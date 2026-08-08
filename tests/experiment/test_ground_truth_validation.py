@@ -93,6 +93,23 @@ def test_rejects_duplicate_natural_key(tmp_path):
     _assert_invariant(_write_document(tmp_path, document), "duplicate_natural_key")
 
 
+def test_reports_each_duplicate_natural_key_with_its_entry_index(tmp_path):
+    """Mantém cada colisão de chave natural localizável no erro agregado."""
+    document = _valid_document()
+    document["metadata"]["total_items"] = 3
+    document["items"][1]["element_guid"] = "GUID_WALL_01"
+    third_item = deepcopy(document["items"][0])
+    third_item["issue_id"] = "issue-wall-03"
+    document["items"].append(third_item)
+
+    with pytest.raises(GroundTruthValidationError) as error:
+        validate_ground_truth_document(_write_document(tmp_path, document))
+
+    message = str(error.value)
+    assert "duplicate_natural_key: items[1]" in message
+    assert "duplicate_natural_key: items[2]" in message
+
+
 def test_rejects_duplicate_issue_id(tmp_path):
     """Impede que o fallback por issue_id fique ambíguo."""
     document = _valid_document()
@@ -115,6 +132,17 @@ def test_rejects_declared_count_mismatch(tmp_path):
     document["metadata"]["total_items"] = 3
 
     _assert_invariant(_write_document(tmp_path, document), "declared_count_mismatch")
+
+
+def test_accepts_empty_check_property_for_system_unclassified(tmp_path):
+    """Permite a chave sem propriedade para classificações sem Pset."""
+    document = _valid_document()
+    document["items"][1]["issue_type"] = "system_unclassified"
+    document["items"][1]["check_property"] = ""
+
+    report = validate_ground_truth_document(_write_document(tmp_path, document))
+
+    assert ("GUID_SPACE_01", "system_unclassified", "") in report.item_keys
 
 
 def test_accepts_valid_document(tmp_path):
