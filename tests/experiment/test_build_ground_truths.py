@@ -1,0 +1,497 @@
+"""Contrato do construtor deterministico dos ground truths canonicos."""
+
+from __future__ import annotations
+
+import hashlib
+from pathlib import Path
+from types import SimpleNamespace
+from typing import Any
+
+import pytest
+import yaml
+
+from scripts import build_ground_truths as builder
+from src.experiment.evaluator import GroundTruth, GroundTruthItem
+from src.experiment.ground_truth_validation import GroundTruthValidationError
+from src.experiment.gt_extractor import GTExtractionResult
+from src.ifc_analyzer.material_reader import MaterialReading
+from src.models import Issue
+
+
+def _issue(
+    guid: str = "GUID-A",
+    *,
+    property_name: str = "Category",
+    issue_type: str = "pset_missing",
+    element_class: str = "IfcSpace",
+) -> Issue:
+    return Issue(
+        element_guid=guid,
+        element_class=element_class,
+        element_name="Elemento",
+        issue_type=issue_type,
+        severity="medium",
+        description="Ausente",
+        context={"check_property": property_name},
+    )
+
+
+def _result(issue: Issue, *, value: Any = "BEDROOM") -> GTExtractionResult:
+    return GTExtractionResult(
+        ground_truth=GroundTruth(
+            items=[
+                GroundTruthItem(
+                    element_guid=issue.element_guid,
+                    issue_type=issue.issue_type,
+                    check_property=issue.context["check_property"],
+                    issue_id=issue.id,
+                    expected_value=value,
+                    verified=True,
+                    notes="Category derivada exclusivamente do LongName.",
+                )
+            ],
+            metadata={},
+        )
+    )
+
+
+def _spec(tmp_path: Path, key: str = "casa") -> builder.DatasetSpec:
+    ifc_path = tmp_path / f"{key}.ifc"
+    ifc_path.write_bytes(b"synthetic ifc")
+    return builder.DatasetSpec(
+        key=key,
+        ifc_path=ifc_path,
+        ground_truth_path=tmp_path / "ground_truth.yaml",
+        building_context={
+            "building_type": (
+                "Residencial multifamiliar" if key == "predio" else "Residencial unifamiliar"
+            ),
+            "bioclimatic_zone": "4A",
+        },
+    )
+
+
+def _install_fake_pipeline(monkeypatch: pytest.MonkeyPatch, issues: list[Issue]) -> None:
+    class FakeModel:
+        def by_guid(self, guid: str):
+            return SimpleNamespace(
+                GlobalId=guid,
+                Name="Tipo",
+                ObjectType="Tipo",
+                LongName="Quarto",
+                is_a=lambda: next(i.element_class for i in issues if i.element_guid == guid),
+            )
+
+        def by_type(self, _ifc_class: str):
+            return []
+
+    class FakePipeline:
+        closed = False
+
+        def __init__(self, ifc_path: str, context: dict[str, str], *, ids_path: str):
+            self.ifc_file = FakeModel()
+
+        def diagnose(self):
+            return SimpleNamespace(issues=issues)
+
+        def close(self):
+            type(self).closed = True
+
+    monkeypatch.setattr(builder, "QualityPipeline", FakePipeline)
+
+
+def _install_ids(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    ids_path = tmp_path / "requirements.ids"
+    ids_path.write_bytes(b"synthetic ids")
+    monkeypatch.setattr(builder, "IDS_PATH", ids_path)
+    monkeypatch.setattr(builder, "IDS_SHA256", hashlib.sha256(b"synthetic ids").hexdigest())
+    return ids_path
+
+
+def test_dataset_registry_has_predio_and_casa_only():
+    """Adicionar ou omitir dataset do contrato deve quebrar este teste."""
+    assert set(builder.DATASETS) == {"predio", "casa"}
+    assert builder.DATASETS["predio"].building_context == {
+        "building_type": "Residencial multifamiliar",
+        "bioclimatic_zone": "4A",
+    }
+    assert builder.DATASETS["casa"].building_context == {
+        "building_type": "Residencial unifamiliar",
+        "bioclimatic_zone": "4A",
+    }
+
+
+def test_build_preserves_literal_check_property(tmp_path, monkeypatch):
+    """Coagir o campo literal da issue deve quebrar este teste."""
+    issue = _issue(property_name="LoadBearing", element_class="IfcWall")
+    _install_ids(tmp_path, monkeypatch)
+    _install_fake_pipeline(monkeypatch, [issue])
+    monkeypatch.setattr(
+        builder,
+        "derive_casa_decision",
+        lambda *args, **kwargs: builder.AuditDecision(
+            expected_value=False,
+            notes="Intencionalidade declarada no modelo.",
+        ),
+    )
+
+    result, returned_issues = builder.build_dataset(_spec(tmp_path))
+
+    assert returned_issues == [issue]
+    assert result.ground_truth.items[0].check_property == "LoadBearing"
+
+
+def test_build_rejects_ids_that_does_not_match_frozen_profile(tmp_path, monkeypatch):
+    """Gerar metadata para outro IDS em vez de falhar deve quebrar este teste."""
+    issue = _issue()
+    ids_path = _install_ids(tmp_path, monkeypatch)
+    _install_fake_pipeline(monkeypatch, [issue])
+    monkeypatch.setattr(builder, "IDS_SHA256", "0" * 64)
+
+    with pytest.raises(ValueError, match="hash do IDS"):
+        builder.build_dataset(_spec(tmp_path))
+
+    assert ids_path.read_bytes() == b"synthetic ids"
+
+
+def test_build_partitions_every_issue_into_item_or_skip(tmp_path, monkeypatch):
+    """Perder ou duplicar issue entre item/skip deve quebrar este teste."""
+    accepted = _issue("GUID-A")
+    skipped = _issue("GUID-B")
+    _install_ids(tmp_path, monkeypatch)
+    _install_fake_pipeline(monkeypatch, [accepted, skipped])
+
+    def decide(issue, **_kwargs):
+        if issue.element_guid == "GUID-A":
+            return builder.AuditDecision(
+                expected_value="BEDROOM",
+                notes="Category derivada exclusivamente do LongName.",
+            )
+        return builder.AuditDecision(skip_reason="evidencia insuficiente")
+
+    monkeypatch.setattr(builder, "derive_casa_decision", decide)
+
+    result, issues = builder.build_dataset(_spec(tmp_path))
+
+    assert len(result.ground_truth.items) == 1
+    assert len(result.skipped) == 1
+    assert len(result.ground_truth.items) + len(result.skipped) == len(issues) == 2
+    assert {result.ground_truth.items[0].issue_id, result.skipped[0].issue_id} == {
+        accepted.id,
+        skipped.id,
+    }
+
+
+def test_build_orders_output_deterministically(tmp_path, monkeypatch):
+    """Depender da ordem do diagnostico deve quebrar este teste."""
+    first = _issue("GUID-Z")
+    second = _issue("GUID-A")
+    _install_ids(tmp_path, monkeypatch)
+    _install_fake_pipeline(monkeypatch, [first, second])
+    monkeypatch.setattr(
+        builder,
+        "derive_casa_decision",
+        lambda *args, **kwargs: builder.AuditDecision(
+            expected_value="BEDROOM",
+            notes="Category derivada exclusivamente do LongName.",
+        ),
+    )
+    spec = _spec(tmp_path)
+
+    result, issues = builder.build_dataset(spec)
+    first_path = builder.write_canonical_ground_truth(result, issues, spec)
+    first_bytes = first_path.read_bytes()
+    result_again, issues_again = builder.build_dataset(spec)
+    second_path = builder.write_canonical_ground_truth(result_again, issues_again, spec)
+
+    document = yaml.safe_load(second_path.read_text(encoding="utf-8"))
+    assert [item["element_guid"] for item in document["items"]] == ["GUID-A", "GUID-Z"]
+    assert second_path.read_bytes() == first_bytes
+
+
+def test_build_refuses_to_overwrite_without_valid_output(tmp_path, monkeypatch):
+    """Substituir o YAML antes da validacao deve quebrar este teste."""
+    issue = _issue()
+    _install_ids(tmp_path, monkeypatch)
+    spec = _spec(tmp_path)
+    spec.ground_truth_path.write_bytes(b"original ground truth")
+    monkeypatch.setattr(
+        builder,
+        "validate_ground_truth_against_issues",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            GroundTruthValidationError("invalid candidate")
+        ),
+    )
+
+    with pytest.raises(GroundTruthValidationError, match="invalid candidate"):
+        builder.write_canonical_ground_truth(_result(issue), [issue], spec)
+
+    assert spec.ground_truth_path.read_bytes() == b"original ground truth"
+    assert not list(tmp_path.glob("*.tmp"))
+
+
+def test_check_mode_never_writes(tmp_path, monkeypatch):
+    """Criar temporario ou alterar destino no modo check deve quebrar este teste."""
+    issue = _issue()
+    _install_ids(tmp_path, monkeypatch)
+    spec = _spec(tmp_path)
+    result = _result(issue)
+    expected = builder.canonical_ground_truth_bytes(result, [issue], spec)
+    spec.ground_truth_path.write_bytes(expected)
+    before = {
+        path.name: (path.read_bytes(), path.stat().st_mtime_ns) for path in tmp_path.iterdir()
+    }
+    monkeypatch.setattr(builder, "DATASETS", {"casa": spec})
+    monkeypatch.setattr(builder, "build_dataset", lambda _spec: (result, [issue]))
+    monkeypatch.setattr(builder, "validate_ground_truth_against_issues", lambda *a, **k: None)
+
+    exit_code = builder.main(["--dataset", "casa", "--check"])
+
+    after = {path.name: (path.read_bytes(), path.stat().st_mtime_ns) for path in tmp_path.iterdir()}
+    assert exit_code == 0
+    assert after == before
+
+
+def test_check_mode_returns_nonzero_on_drift(tmp_path, monkeypatch):
+    """Aceitar bytes divergentes no modo check deve quebrar este teste."""
+    issue = _issue()
+    _install_ids(tmp_path, monkeypatch)
+    spec = _spec(tmp_path)
+    spec.ground_truth_path.write_bytes(b"semantic drift")
+    monkeypatch.setattr(builder, "DATASETS", {"casa": spec})
+    monkeypatch.setattr(builder, "build_dataset", lambda _spec: (_result(issue), [issue]))
+
+    assert builder.main(["--dataset", "casa", "--check"]) == 1
+    assert spec.ground_truth_path.read_bytes() == b"semantic drift"
+
+
+def test_build_hashes_legacy_file_bytes_and_rejects_tampering(tmp_path, monkeypatch):
+    """Repassar constante sem hashear os bytes adulterados deve quebrar este teste."""
+    issue = _issue()
+    _install_ids(tmp_path, monkeypatch)
+    _install_fake_pipeline(monkeypatch, [issue])
+    legacy_path = tmp_path / "legacy.yaml"
+    legacy_path.write_text(
+        yaml.safe_dump(
+            {
+                "metadata": {"protocol": "norm-derived-draft"},
+                "items": [
+                    {
+                        "element_guid": issue.element_guid,
+                        "issue_type": issue.issue_type,
+                        "check_property": "Category",
+                        "issue_id": issue.id,
+                        "expected_value": "BEDROOM",
+                        "verified": True,
+                        "notes": "Revisado pelo autor.",
+                    }
+                ],
+                "skipped": [],
+            },
+            allow_unicode=True,
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    initial_digest = hashlib.sha256(legacy_path.read_bytes()).hexdigest()
+    monkeypatch.setattr(builder, "RATIFIED_LEGACY_SHA256", initial_digest)
+    observed_digests: list[str] = []
+
+    def audit_with_observed_digest(issue, _legacy, *, legacy_source_sha256):
+        observed_digests.append(legacy_source_sha256)
+        return builder.AuditDecision(
+            expected_value="BEDROOM",
+            notes="Revisado pelo autor.",
+        )
+
+    monkeypatch.setattr(builder, "audit_legacy_item", audit_with_observed_digest)
+    spec = _spec(tmp_path, "predio")
+
+    result, _ = builder.build_dataset(spec, legacy_gt_path=legacy_path)
+    assert result.ground_truth.items[0].expected_value == "BEDROOM"
+    assert observed_digests == [initial_digest]
+
+    legacy_path.write_bytes(legacy_path.read_bytes() + b"\n# adulterado")
+    with pytest.raises(ValueError, match=r"hash.*legado"):
+        builder.build_dataset(spec, legacy_gt_path=legacy_path)
+
+
+def test_frozen_canonical_hash_prevents_reuse_laundering(tmp_path, monkeypatch):
+    """Reutilizar YAML canonical adulterado apesar do hash congelado deve quebrar este teste."""
+    issue = _issue()
+    _install_ids(tmp_path, monkeypatch)
+    _install_fake_pipeline(monkeypatch, [issue])
+    spec = _spec(tmp_path, "predio")
+    canonical = {
+        "metadata": {
+            "protocol": "evidence-audited-v1",
+            "previous_gt_sha256": builder.RATIFIED_LEGACY_SHA256,
+        },
+        "items": [],
+        "skipped": [
+            {
+                "issue_id": issue.id,
+                "element_guid": issue.element_guid,
+                "issue_type": issue.issue_type,
+                "check_property": "Category",
+                "reason": "abstencao",
+            }
+        ],
+    }
+    spec.ground_truth_path.write_text(
+        yaml.safe_dump(canonical, allow_unicode=True, sort_keys=False), encoding="utf-8"
+    )
+    monkeypatch.setitem(builder.EXPECTED_GROUND_TRUTH_SHA256, "predio", "0" * 64)
+
+    with pytest.raises(ValueError, match="hash canonico"):
+        builder.build_dataset(spec, legacy_gt_path=spec.ground_truth_path)
+
+
+def test_casa_thermal_group_preserves_smallest_donor_value_and_honest_unit(tmp_path, monkeypatch):
+    """Calcular media ou ocultar a unidade IFC ausente deve quebrar este teste."""
+    issue = _issue(
+        "TARGET",
+        property_name="ThermalTransmittance",
+        element_class="IfcWall",
+    )
+
+    class Element:
+        def __init__(self, guid, value=None):
+            self.GlobalId = guid
+            self.LongName = None
+            self.psets = (
+                {"Pset_WallCommon": {"ThermalTransmittance": value}} if value is not None else {}
+            )
+            self.type = SimpleNamespace(GlobalId="TYPE-1", Name="Parede exata")
+
+        def is_a(self):
+            return "IfcWall"
+
+    target = Element("TARGET")
+    donors = [Element("DONOR-B", 1.69), Element("DONOR-A", 1.6875)]
+
+    class Model:
+        def by_guid(self, _guid):
+            return target
+
+        def by_type(self, ifc_class):
+            return donors if ifc_class == "IfcWall" else []
+
+    class Pipeline:
+        def __init__(self, *_args, **_kwargs):
+            self.ifc_file = Model()
+
+        def diagnose(self):
+            return SimpleNamespace(issues=[issue])
+
+        def close(self):
+            pass
+
+    _install_ids(tmp_path, monkeypatch)
+    monkeypatch.setattr(builder, "QualityPipeline", Pipeline)
+    monkeypatch.setattr(builder.ue, "get_type", lambda element: element.type)
+    monkeypatch.setattr(builder.ue, "get_psets", lambda element: element.psets)
+    monkeypatch.setattr(builder, "read_material_layers", lambda _element: MaterialReading())
+
+    result, _ = builder.build_dataset(_spec(tmp_path))
+
+    item = result.ground_truth.items[0]
+    assert item.expected_value == 1.6875
+    assert "DONOR-A, DONOR-B" in item.notes
+    assert builder.THERMAL_UNIT in item.notes
+
+
+def test_casa_thermal_group_marks_values_over_one_percent_as_conflicted(tmp_path, monkeypatch):
+    """Propagar doadores que divergem mais de 1% deve quebrar este teste."""
+    issue = _issue(
+        "TARGET",
+        property_name="ThermalTransmittance",
+        element_class="IfcWall",
+    )
+
+    class Element:
+        def __init__(self, guid, value=None):
+            self.GlobalId = guid
+            self.LongName = None
+            self.psets = (
+                {"Pset_WallCommon": {"ThermalTransmittance": value}} if value is not None else {}
+            )
+            self.type = SimpleNamespace(GlobalId="TYPE-1", Name="Parede exata")
+
+        def is_a(self):
+            return "IfcWall"
+
+    target = Element("TARGET")
+    donors = [Element("DONOR-A", 1.0), Element("DONOR-B", 1.02)]
+
+    class Model:
+        def by_guid(self, _guid):
+            return target
+
+        def by_type(self, ifc_class):
+            return donors if ifc_class == "IfcWall" else []
+
+    class Pipeline:
+        def __init__(self, *_args, **_kwargs):
+            self.ifc_file = Model()
+
+        def diagnose(self):
+            return SimpleNamespace(issues=[issue])
+
+        def close(self):
+            pass
+
+    _install_ids(tmp_path, monkeypatch)
+    monkeypatch.setattr(builder, "QualityPipeline", Pipeline)
+    monkeypatch.setattr(builder.ue, "get_type", lambda element: element.type)
+    monkeypatch.setattr(builder.ue, "get_psets", lambda element: element.psets)
+    monkeypatch.setattr(builder, "read_material_layers", lambda _element: MaterialReading())
+
+    result, _ = builder.build_dataset(_spec(tmp_path))
+
+    assert result.ground_truth.items == []
+    assert "conflito" in result.skipped[0].reason
+
+
+def test_predio_reuses_canonical_item_without_reauditing_or_repeating_note(tmp_path, monkeypatch):
+    """Reauditar o canonical e duplicar a nota autoral deve quebrar este teste."""
+    issue = _issue()
+    _install_ids(tmp_path, monkeypatch)
+    _install_fake_pipeline(monkeypatch, [issue])
+    spec = _spec(tmp_path, "predio")
+    note = "Category derivada exclusivamente do LongName."
+    spec.ground_truth_path.write_text(
+        yaml.safe_dump(
+            {
+                "metadata": {
+                    "protocol": "evidence-audited-v1",
+                    "previous_gt_sha256": builder.RATIFIED_LEGACY_SHA256,
+                },
+                "items": [
+                    {
+                        "element_guid": issue.element_guid,
+                        "issue_type": issue.issue_type,
+                        "check_property": "Category",
+                        "issue_id": issue.id,
+                        "expected_value": "BEDROOM",
+                        "accepted_alternatives": [],
+                        "verified": True,
+                        "notes": note,
+                    }
+                ],
+                "skipped": [],
+            },
+            allow_unicode=True,
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        builder,
+        "audit_legacy_item",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("reauditou")),
+    )
+
+    result, _ = builder.build_dataset(spec)
+
+    assert result.ground_truth.items[0].notes == note
