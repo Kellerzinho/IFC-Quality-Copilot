@@ -128,7 +128,7 @@ metadata:
   input_ifc_sha256: "..."
   ids_sha256: "..."
   previous_gt_sha256: "..."  # somente prédio
-  verified_by: "Felipe Keller"
+  verified_by: "valor específico do dataset; distingue revisão autoral do prédio de derivação determinística da casa"
   verified_at: "AAAA-MM-DD"
   locality: "Deodoro, Rio de Janeiro/RJ"
   total_items: 0

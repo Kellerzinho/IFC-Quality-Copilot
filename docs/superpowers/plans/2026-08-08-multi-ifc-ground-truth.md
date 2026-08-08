@@ -118,7 +118,7 @@ Validar semanticamente `items` e todas as alternativas:
 - `system_unclassified` usa propriedade vazia e rótulo pertencente ao vocabulário da classe da issue;
 - nenhuma outra propriedade é permitida em `items` neste protocolo.
 
-Definir `WALL_SYSTEM_VALUES` com os oito rótulos `Alvenaria de vedação em bloco cerâmico`, `Alvenaria estrutural em bloco cerâmico`, `Concreto armado moldado in loco`, `Concreto pré-moldado`, `Drywall / Steel frame`, `Alvenaria em bloco de concreto`, `Estrutura metálica`, `Painel de EPS`. Definir `SLAB_SYSTEM_VALUES` com `Laje maciça de concreto armado`, `Laje nervurada (vigotas + EPS/cerâmica)`, `Laje pré-moldada treliçada`, `Laje alveolar pré-moldada`, `Laje de madeira (estrutura em madeira)`, `Laje steel frame`, `Piso cerâmico / porcelanato`, `Piso de madeira (parquet / taco / deck)`, `Piso de pedra (mármore / granito / ardósia)`, `Piso de concreto polido`, `Grama natural ou artificial`, `Piso de cimento queimado`, `Deck de madeira externo`, `Carpete`, `Piso vinílico / laminado`. `IfcSlab` usa o segundo conjunto; demais issues de sistema cobertas pelo protocolo usam o primeiro. Cada entrada de `skipped` exige `reason` não vazio.
+Definir `WALL_SYSTEM_VALUES` com os oito rótulos `Alvenaria de vedação em bloco cerâmico`, `Alvenaria estrutural em bloco cerâmico`, `Concreto armado moldado in loco`, `Concreto pré-moldado`, `Drywall / Steel frame`, `Alvenaria em bloco de concreto`, `Estrutura metálica`, `Painel de EPS`. Definir `SLAB_SYSTEM_VALUES` com `Laje maciça de concreto armado`, `Laje nervurada (vigotas + EPS/cerâmica)`, `Laje pré-moldada treliçada`, `Laje alveolar pré-moldada`, `Laje de madeira (estrutura em madeira)`, `Laje steel frame`, `Piso cerâmico / porcelanato`, `Piso de madeira (parquet / taco / deck)`, `Piso de pedra (mármore / granito / ardósia)`, `Piso de concreto polido`, `Grama natural ou artificial`, `Piso de cimento queimado`, `Deck de madeira externo`, `Carpete`, `Piso vinílico / laminado`. `IfcSlab` e `IfcSlabStandardCase` usam o segundo conjunto; demais issues de sistema cobertas pelo protocolo usam o primeiro. Cada entrada de `skipped` exige `reason` não vazio.
 
 - [ ] **Step 4: Rodar todos os testes focados**
 
@@ -168,7 +168,8 @@ Expected: FAIL por ausência do módulo.
 Implementar o modelo `AuditDecision` com `expected_value: Any | None = None`,
 `accepted_alternatives: list[Any] = Field(default_factory=list)`, `notes: str |
 None = None` e `skip_reason: str | None = None`. Implementar as assinaturas
-`audit_legacy_item(issue: Issue, legacy: GroundTruthItem) -> AuditDecision` e
+`audit_legacy_item(issue: Issue, legacy: GroundTruthItem, *,
+legacy_source_sha256: str) -> AuditDecision` e
 `derive_casa_decision(issue: Issue, *, element_type_key: tuple[str, str],
 element_type_name: str, element_long_name: str | None,
 authored_thermal_by_type: Mapping[tuple[str, str], ThermalEvidence],
@@ -177,7 +178,7 @@ material_reading: MaterialReading) -> AuditDecision`. `ThermalEvidence` guarda
 
 Regras exatas:
 
-- prédio: preservar valor esperado e alternativas do item legado verificado apenas quando pertencem ao conjunto ratificado em 2026-07-02; nos itens `FireRating` com esperado `REI 60`, remover especificamente `EI 60`, `EI 90` e `EI 120`, alternativas introduzidas pela emenda de 2026-08-02 ainda marcada como pendente, mantendo as alternativas presentes no commit ratificado `51e5f25`. Além dos marcadores textuais de incerteza, abster explicitamente janela `U=5.7` e cobertura `U=4.6`. FireRating, LoadBearing e sistemas preservados recebem, uma única vez, nota de que são referência/intencionalidade autoral previamente revisada, não desempenho medido;
+- prédio: aceitar a entrada somente quando `legacy_source_sha256` for exatamente o snapshot congelado `d08d2c7466a71c0cde467a959ed2aebfd4857d1da64944e4504f8f97d4edd6f6`, a chave natural do item legado casar literalmente com a issue e o `issue_id` legado, quando presente, casar com o ID diagnóstico. Preservar valor esperado e alternativas do item legado verificado apenas nessa base autoral; nos itens `FireRating` com esperado `REI 60`, remover especificamente `EI 60`, `EI 90` e `EI 120`, alternativas introduzidas pela emenda de 2026-08-02 ainda marcada como pendente, mantendo as alternativas presentes no commit ratificado `51e5f25`. Além dos marcadores textuais de incerteza, abster explicitamente janela `U=5.7` e cobertura `U=4.6`. FireRating, LoadBearing e sistemas preservados recebem, uma única vez, nota de que são referência/intencionalidade autoral previamente revisada, não desempenho medido;
 - casa/ThermalTransmittance: aceitar somente valor positivo já declarado em outra instância com a mesma chave de tipo `(classe IFC, GlobalId do IfcType)`; usar `(classe IFC, nome exato do tipo)` apenas se o tipo não tiver GUID. Doadores múltiplos precisam concordar dentro de 1%; conflito gera `skipped`. A nota lista unidade e GUIDs doadores. Nenhuma constante genérica de vidro/telha;
 - casa/FireRating e `LoadBearing`/`IsLoadBearing`: `skipped` por falta de declaração de desempenho/intencionalidade;
 - casa/Category: usar o vocabulário completo do projeto (`BEDROOM`, `LIVING_ROOM`, `KITCHEN`, `BATHROOM`, `WC`, `CIRCULATION`, `SERVICE_AREA`, `OFFICE`, `MEETING_ROOM`, `LOBBY`, `STORAGE`, `BALCONY`, `GARAGE`, `TECHNICAL_AREA`) e mapear somente `LongName` inequívoco; em particular, `Garagem` → `GARAGE`;
@@ -238,7 +239,7 @@ None) -> tuple[GTExtractionResult, list[Issue]]`,
 `write_canonical_ground_truth(result: GTExtractionResult, issues: Sequence[Issue],
 spec: DatasetSpec) -> Path` e `main(argv: list[str] | None = None) -> int`.
 
-CLI: `python scripts/build_ground_truths.py --dataset predio|casa|all [--check]`. O default é `all`. Para o prédio, carregar o YAML atual em memória antes de gerar. Se ele já tiver protocolo `evidence-audited-v1`, reutilizar seus itens sem repetir o sufixo de auditoria; `previous_gt_sha256` permanece o hash congelado da base de 2026-07-02. Escrever primeiro em arquivo temporário no mesmo diretório, validar documento/hashes/issues, e somente então usar `Path.replace()` no caminho canônico. Se validar falhar, preservar o YAML anterior. Com `--check`, gerar em memória, validar e comparar bytes com o YAML canônico sem criar, substituir ou tocar em nenhum arquivo; retornar `0` se idêntico e `1` se ausente, inválido ou com drift.
+CLI: `python scripts/build_ground_truths.py --dataset predio|casa|all [--check]`. O default é `all`. Para o prédio, carregar o YAML atual em memória antes de gerar e exigir o SHA-256 congelado acima antes de aceitar qualquer item legado. Se ele já tiver protocolo `evidence-audited-v1`, reutilizar seus itens sem repetir o sufixo de auditoria; `previous_gt_sha256` permanece o hash congelado da base de 2026-07-02. Escrever primeiro em arquivo temporário no mesmo diretório, validar documento/hashes/issues, e somente então usar `Path.replace()` no caminho canônico. Se validar falhar, preservar o YAML anterior. Com `--check`, gerar em memória, validar e comparar bytes com o YAML canônico sem criar, substituir ou tocar em nenhum arquivo; retornar `0` se idêntico e `1` se ausente, inválido ou com drift.
 
 Metadata obrigatório:
 
@@ -252,7 +253,7 @@ bioclimatic_context_status: public technical source; not a formal conformity dec
 input_ifc_sha256: hash SHA-256 calculado do IFC canônico
 ids_sha256: f698f2c020d79140bb314f077f8de680f492fd7ba42867e4000a4cead5d20905
 previous_gt_sha256: d08d2c7466a71c0cde467a959ed2aebfd4857d1da64944e4504f8f97d4edd6f6 # só prédio
-verified_by: Felipe Keller (protocolo e base autoral aprovados; derivação determinística auditável)
+verified_by: por dataset; prédio = Felipe Keller (revisão autoral de 2026-07-02; base mantida em 2026-08-08); casa = auditoria determinística por evidência (protocolo aprovado por Felipe Keller em 2026-08-08)
 verified_at: '2026-08-08'
 verification_scope: expert-annotated benchmark reference; not a performance certificate
 total_diagnostic_issues: inteiro igual a len(report.issues)
