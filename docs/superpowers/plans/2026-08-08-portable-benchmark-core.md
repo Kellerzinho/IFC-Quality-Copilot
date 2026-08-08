@@ -19,6 +19,10 @@
   `run_N_issues.jsonl` é íntegro: o JSON tem todos os metadados esperados e o
   JSONL é UTF-8 estrito, não vazio, termina em newline, contém JSON válido em
   cada linha e tem exatamente `issue_counts.total_issues` linhas.
+- Isolar um par inválido é uma transação recuperável: todo erro normal termina
+  com os membros juntos nos paths ativos ou numa quarentena finalizada. Se o OS
+  impedir essa co-localização, somente journal `recovery_required` é permitido e
+  ele bloqueia todo `run_single` até reconciliação comprovada.
 - A identidade canônica da execução é imutável e inclui `release_id`, SHA-256 do
   `project.zip` e do `models.lock.json`, ordem e hashes IFC/GT/IDS dos datasets,
   quantidade de réplicas, estado do cache, versão e SHA-256 dos prompts e modo de reuso.
@@ -512,11 +516,13 @@ git commit -m "feat: registrar contexto do dataset no benchmark"
 - Consumes: `load_model_lock`, `ExecutionIdentity`, hashes reais de IFC/GT/IDS/prompt,
   `RunMetadata` e `ExperimentRunner.run_single`.
 - Produces: `DATASETS` com dois itens, `StageExpectation`, `StopBaseline`,
+  `QuarantineMember`, `QuarantineJournal`, `QuarantineRecoveryError`,
   `_load_and_validate_execution_identity(path)`,
   `_stage_path(results_root, dataset_key, model, replica) -> Path`,
   `_stage_artifact_paths(json_path) -> tuple[Path, Path]`,
   `_stage_done(json_path, expectation)`,
-  `_quarantine_invalid_stage_pair(json_path, results_root)`,
+  `_quarantine_invalid_stage_pair(json_path, results_root) -> Path | None`,
+  `_reconcile_quarantine_transactions(results_root) -> None`,
   `_invalid_matrix_stages(results_root, identity, models)`,
   `_pid_record_is_live(record)`, `_acquire_pidfile(path)` com lease `O_EXCL`,
   `_capture_stop_baseline(path)`, `_stop_requested(path, baseline)`,
@@ -761,9 +767,32 @@ def test_partial_stage_quarantines_whichever_member_exists(tmp_path, missing_mem
     assert not (quarantine / missing_path.name).exists()
 
 
-@pytest.mark.parametrize("fail_on_call", [1, 2])
-def test_quarantine_move_error_preserves_artifacts_and_aborts(
-        monkeypatch, tmp_path, fail_on_call):
+def test_first_move_failure_keeps_pair_co_located_active(monkeypatch, tmp_path):
+    results_root = tmp_path / "results"
+    path = results_root / "casa" / "m_test" / "run_0.json"
+    _write_stage_pair(path, asdict(_expectation()))
+    _, issues_path = module._stage_artifact_paths(path)
+    before = (path.read_bytes(), issues_path.read_bytes())
+    real_replace = os.replace
+    failed = False
+
+    def fail_first_active_move_once(source, destination):
+        nonlocal failed
+        if Path(source) == path and not failed:
+            failed = True
+            raise OSError("busy")
+        return real_replace(source, destination)
+
+    monkeypatch.setattr(os, "replace", fail_first_active_move_once)
+    with pytest.raises(RuntimeError, match="quarentena"):
+        module._quarantine_invalid_stage_pair(path, results_root)
+
+    assert (path.read_bytes(), issues_path.read_bytes()) == before
+    quarantine_root = results_root.parent / ".invalid-stage-artifacts"
+    assert not list(quarantine_root.rglob("*.journal.json"))
+
+
+def test_second_move_failure_rolls_back_pair_to_active_paths(monkeypatch, tmp_path):
     expectation = _expectation()
     results_root = tmp_path / "results"
     path = results_root / "casa" / "m_test" / "run_0.json"
@@ -771,25 +800,137 @@ def test_quarantine_move_error_preserves_artifacts_and_aborts(
     _, issues_path = module._stage_artifact_paths(path)
     before = (path.read_bytes(), issues_path.read_bytes())
     real_replace = os.replace
-    calls = 0
+    failed_second_move = False
 
-    def fail_selected_move(source, destination):
-        nonlocal calls
-        calls += 1
-        if calls == fail_on_call:
+    def fail_second_active_move_once(source, destination):
+        nonlocal failed_second_move
+        if Path(source) == issues_path and not failed_second_move:
+            failed_second_move = True
             raise OSError("busy")
         return real_replace(source, destination)
 
-    monkeypatch.setattr(os, "replace", fail_selected_move)
+    monkeypatch.setattr(os, "replace", fail_second_active_move_once)
 
     with pytest.raises(RuntimeError, match="quarentena"):
         module._quarantine_invalid_stage_pair(path, results_root)
 
-    json_copies = list(tmp_path.rglob(path.name))
-    jsonl_copies = list(tmp_path.rglob(issues_path.name))
+    assert (path.read_bytes(), issues_path.read_bytes()) == before
+    quarantine_root = results_root.parent / ".invalid-stage-artifacts"
+    assert not list(quarantine_root.rglob(path.name))
+    assert not list(quarantine_root.rglob(issues_path.name))
+    assert not list(quarantine_root.rglob("*.journal.json"))
+
+
+def test_rollback_failure_finishes_quarantine_before_raising(monkeypatch, tmp_path):
+    results_root = tmp_path / "results"
+    path = results_root / "casa" / "m_test" / "run_0.json"
+    _write_stage_pair(path, asdict(_expectation()))
+    _, issues_path = module._stage_artifact_paths(path)
+    real_replace = os.replace
+    failed = {"second_move": False, "rollback": False}
+
+    def fail_once_then_allow_forward_recovery(source, destination):
+        source = Path(source)
+        destination = Path(destination)
+        if source == issues_path and not failed["second_move"]:
+            failed["second_move"] = True
+            raise OSError("second move")
+        if destination == path and not failed["rollback"]:
+            failed["rollback"] = True
+            raise OSError("rollback")
+        return real_replace(source, destination)
+
+    monkeypatch.setattr(os, "replace", fail_once_then_allow_forward_recovery)
+    with pytest.raises(RuntimeError, match="quarentena"):
+        module._quarantine_invalid_stage_pair(path, results_root)
+
+    quarantine_root = results_root.parent / ".invalid-stage-artifacts"
+    json_copies = list(quarantine_root.rglob(path.name))
+    jsonl_copies = list(quarantine_root.rglob(issues_path.name))
     assert len(json_copies) == len(jsonl_copies) == 1
-    assert json_copies[0].read_bytes() == before[0]
-    assert jsonl_copies[0].read_bytes() == before[1]
+    assert json_copies[0].parent == jsonl_copies[0].parent
+    assert not json_copies[0].parent.name.endswith(".partial")
+    assert not path.exists() and not issues_path.exists()
+    assert not list(quarantine_root.rglob("*.journal.json"))
+
+
+def _leave_unresolved_split_transaction(monkeypatch, path, results_root):
+    _, issues_path = module._stage_artifact_paths(path)
+    real_replace = os.replace
+
+    def fail_second_move_and_rollback(source, destination):
+        source = Path(source)
+        destination = Path(destination)
+        if source == issues_path or destination == path:
+            raise OSError("locked")
+        return real_replace(source, destination)
+
+    monkeypatch.setattr(os, "replace", fail_second_move_and_rollback)
+    with pytest.raises(module.QuarantineRecoveryError, match="recovery_required"):
+        module._quarantine_invalid_stage_pair(path, results_root)
+    return issues_path
+
+
+def test_rollback_failure_persists_recovery_journal_and_blocks_runner(
+        monkeypatch, tmp_path):
+    calls = install_fake_runner(monkeypatch, tmp_path)
+    results_root = tmp_path / "results"
+    path = module._stage_path(results_root, "casa", "m:test", 0)
+    _write_stage_pair(path, asdict(_expectation()))
+    issues_path = _leave_unresolved_split_transaction(monkeypatch, path, results_root)
+    quarantine_root = results_root.parent / ".invalid-stage-artifacts"
+    journals = list(quarantine_root.rglob("*.journal.json"))
+    assert len(journals) == 1
+    assert json.loads(journals[0].read_text(encoding="utf-8"))["state"] == (
+        "recovery_required"
+    )
+    assert not path.exists() and issues_path.exists()
+
+    assert module.main([
+        "--only-model", "m:test", "--no-cache", "--reuse-equivalent",
+        "--execution-identity", str(tmp_path / "identity.json"),
+        "--results-root", str(results_root),
+    ]) == 1
+    assert calls == []
+    journals_after = list(quarantine_root.rglob("*.journal.json"))
+    assert journals_after == journals
+    assert json.loads(journals_after[0].read_text(encoding="utf-8"))["state"] == (
+        "recovery_required"
+    )
+
+
+def test_next_invocation_reconciles_split_before_any_run_single(monkeypatch, tmp_path):
+    results_root = tmp_path / "results"
+    path = module._stage_path(results_root, "casa", "m:test", 0)
+    _write_stage_pair(path, asdict(_expectation()))
+    with monkeypatch.context() as transaction_fault:
+        issues_path = _leave_unresolved_split_transaction(
+            transaction_fault, path, results_root
+        )
+
+    calls = install_fake_runner(monkeypatch, tmp_path)
+    original_run_single = module.ExperimentRunner.run_single
+    quarantine_root = results_root.parent / ".invalid-stage-artifacts"
+
+    def assert_reconciled_before_runner(self, **kwargs):
+        json_copies = list(quarantine_root.rglob(path.name))
+        jsonl_copies = list(quarantine_root.rglob(issues_path.name))
+        assert len(json_copies) == len(jsonl_copies) == 1
+        assert json_copies[0].parent == jsonl_copies[0].parent
+        assert not json_copies[0].parent.name.endswith(".partial")
+        assert not path.exists() and not issues_path.exists()
+        assert not list(quarantine_root.rglob("*.journal.json"))
+        return original_run_single(self, **kwargs)
+
+    monkeypatch.setattr(
+        module.ExperimentRunner, "run_single", assert_reconciled_before_runner
+    )
+    assert module.main([
+        "--only-model", "m:test", "--no-cache", "--reuse-equivalent",
+        "--execution-identity", str(tmp_path / "identity.json"),
+        "--results-root", str(results_root),
+    ]) == 0
+    assert {call["dataset_key"] for call in calls} == {"predio", "casa"}
 
 
 def test_main_quarantines_both_old_members_before_rerun(monkeypatch, tmp_path):
@@ -947,7 +1088,8 @@ Run: `uv run --frozen --group dev python -m pytest tests/test_run_benchmark.py -
 Expected: FAIL porque o runner ainda usa prédio+masked, contexto único, PID por
 existência e retomada por simples presença do JSON agregado; os testes de JSONL
 ausente, vazio, truncado, não UTF-8, inválido e com contagem divergente também
-permanecem RED.
+permanecem RED. Os testes de segundo move, rollback, journal
+`recovery_required` e reconciliação antes de `run_single` também ficam RED.
 
 - [ ] **Step 4: Implementar registro e expectativa de estágio**
 
@@ -967,6 +1109,29 @@ class StageExpectation:
     prompt_version: str
     cache_enabled: bool
     building_context: dict[str, str]
+
+
+class QuarantineMember(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    kind: Literal["aggregate", "issues"]
+    source_relative: str
+    size_bytes: int
+    sha256: str
+
+
+class QuarantineJournal(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    schema_version: Literal[1] = 1
+    transaction_id: UUID
+    state: Literal["prepared", "moving", "recovery_required", "finalized"]
+    results_root_relative: str
+    staging_relative: str
+    final_relative: str
+    members: tuple[QuarantineMember, ...]
+
+
+class QuarantineRecoveryError(RuntimeError):
+    """A fila não pode executar enquanto a transação não for reconciliada."""
 ```
 
 `DATASETS` deve apontar para:
@@ -999,16 +1164,60 @@ linhas declarada no agregado. Ausência ou erro em qualquer membro, metadata
 divergente, truncamento, conteúdo não UTF-8, linha inválida ou contagem diferente
 retorna `False` com log da causa.
 
-Se `_stage_done` retornar `False` e qualquer membro antigo existir, antes de chamar
-`run_single` o loop chama `_quarantine_invalid_stage_pair`. O helper cria com UUID
-um diretório fora de `results_root`, sob
-`results_root.parent / ".invalid-stage-artifacts"`, e move com `os.replace` cada
-membro existente para esse diretório, preservando os nomes. Falha ao criar a
-quarentena ou mover qualquer membro aborta o estágio sem exportar por cima; o loop
-confirma que nenhum dos dois caminhos ativos ainda existe antes da reexecução.
-Isso vale também para pares parciais deixados por interrupção. Depois de
-`ExperimentRunner._export`, o loop chama `_stage_done` novamente e trata o estágio
-como falho se o novo par não passar integralmente; só então incrementa `completed`.
+Antes de examinar qualquer estágio, depois de adquirir o PID lease e antes da
+primeira chamada de digest, `run_single` ou exportação, `main` chama
+`_reconcile_quarantine_transactions(results_root)`. Journal inválido, path escape,
+hash/tamanho divergente, membro duplicado/ausente ou falha que impeça co-localizar
+o conjunto originalmente presente levanta `QuarantineRecoveryError`; `main`
+registra o marcador literal `QUARANTINE_RECOVERY_REQUIRED` sem paths absolutos,
+retorna 1, conserva o journal e não chama nenhum `run_single` nessa invocação.
+
+Se `_stage_done` retornar `False` e qualquer membro antigo existir, o loop chama
+`_quarantine_invalid_stage_pair` antes de `run_single`. A raiz transacional é
+`results_root.parent / ".invalid-stage-artifacts"`, portanto fica no mesmo volume
+e fora da matriz viva. Para cada UUID, criar:
+
+- `.transactions/<uuid>.journal.json`, escrito por temporário, `flush`, `os.fsync`
+  e `os.replace` antes do primeiro movimento;
+- `.transactions/<uuid>.partial/`, staging dos membros;
+- `quarantine/<uuid>/`, único destino final.
+
+O journal guarda somente paths relativos a `results_root.parent`, os membros que
+realmente existiam, tamanho e SHA-256 pré-movimento. Rejeitar campos
+extras, paths absolutos, `..`, symlinks e qualquer source/destination fora das
+raízes esperadas. Mover cada membro ativo para o staging com `os.replace`, sem
+sobrescrever destino existente, após persistir estado `moving` e verificando
+tamanho/hash depois de cada passo.
+Quando todos os membros originalmente presentes estiverem no mesmo staging e
+nenhum permanecer ativo, renomear o diretório staging inteiro para o destino final
+com um único `os.replace`, verificar novamente, persistir `finalized` e só então
+remover o journal.
+
+Se um movimento falhar, tentar rollback compensatório de todo membro já movido.
+Rollback comprovado significa todos os membros nos sources originais, nenhum no
+staging/final e hashes idênticos; remover journal/staging e levantar `RuntimeError`
+para impedir a reexecução nesta invocação. Se o rollback falhar, tentar completar
+para frente: mover os membros ainda ativos ao mesmo staging e finalizar o diretório
+como acima. Recuperação forward comprovada também remove o journal, mas ainda
+levanta `RuntimeError` e não executa o estágio nesta invocação. Somente se nenhuma
+direção conseguir co-localizar/provar o conjunto, persistir atomicamente estado
+`recovery_required`, levantar `QuarantineRecoveryError` e deixar a fila bloqueada.
+Nunca apagar bytes nem aceitar um membro ativo e outro em staging como resultado
+normal de erro.
+
+`_reconcile_quarantine_transactions` processa journals em ordem lexical. Para
+cada membro, localiza exatamente uma cópia válida entre source, staging e final.
+Se todos estiverem ativos, conclui o rollback e limpa a transação; se todos já
+estiverem no final, apenas valida e limpa o journal; se houver split source/staging,
+prefere completar para frente e renomear o staging inteiro. Se forward falhar,
+tenta rollback integral. Qualquer estado ambíguo ou ainda dividido após essas
+tentativas mantém `recovery_required` e bloqueia a fila. Isso também torna seguro
+um crash entre a renomeação final e a remoção do journal. Pares parciais usam o
+mesmo protocolo, considerando somente os membros registrados como presentes.
+
+Depois de `ExperimentRunner._export`, o loop chama `_stage_done` novamente e trata
+o estágio como falho se o novo par não passar integralmente; só então incrementa
+`completed`.
 
 `_check_digest` levanta `RuntimeError` em drift. Ao final da fila,
 `_invalid_matrix_stages` recompõe os 20 `StageExpectation`, usa `_stage_done` para

@@ -21,6 +21,9 @@
   `run_N_issues.jsonl`; o JSONL deve ser UTF-8 estrito, não vazio, terminar em
   newline, ter JSON válido em todas as linhas e a mesma contagem declarada em
   `issue_counts.total_issues`. `complete` exige exatamente 20 pares válidos.
+- Journal de quarentena pendente impede qualquer estágio e impede `complete`; ao
+  relançar, o runner reconcilia o par para os dois sources ativos ou para uma
+  única quarentena final antes da primeira inferência.
 - A identidade de retomada é o digest canônico de release, `project.zip`, model
   lock, ordem/hashes IFC/GT/IDS, réplica, cache, prompt e reuso; qualquer mudança
   cria outro run em vez de misturar resultados.
@@ -1144,6 +1147,19 @@ def test_keyboard_interrupt_creates_interrupted_resumable_bundle(orchestrator_fi
     assert load_state(orchestrator_fixture.state_path).status == "interrupted"
 
 
+def test_unreconciled_quarantine_from_runner_is_failed_never_complete(
+        orchestrator_fixture):
+    orchestrator_fixture.runner.returncode = 1
+    orchestrator_fixture.runner.stderr = "QUARANTINE_RECOVERY_REQUIRED"
+    assert run_benchmark_release(orchestrator_fixture.args,
+                                 services=orchestrator_fixture.services) == 1
+    assert load_state(orchestrator_fixture.state_path).status == "failed"
+    status = read_json_from_zip(orchestrator_fixture.zip_path, "status.json")
+    assert status["status"] == "failed"
+    with zipfile.ZipFile(orchestrator_fixture.zip_path) as archive:
+        assert b"QUARANTINE_RECOVERY_REQUIRED" in archive.read("benchmark/runner.log")
+
+
 def test_runner_zero_without_twenty_valid_stages_is_failed(orchestrator_fixture):
     orchestrator_fixture.runner.returncode = 0
     orchestrator_fixture.runner.omit_stage_pair = ("casa", "qwen3.5:9b", 0)
@@ -1289,8 +1305,10 @@ que sempre grava o par agregado+issues, incluindo `issue_counts.total_issues`.
 e aplica literalmente: ausência, zero bytes, última linha cortada, bytes não
 UTF-8, linha que não é JSON, linha vazia, ausência do newline final ou quantidade
 de linhas diferente da declarada. `extra_stage_pair` acrescenta o 21º stem com os
-dois membros válidos. Portanto todos os casos negativos chegam ao gate real de
-`_invalid_matrix_stages`, em vez de serem simulados por uma lista pré-fabricada.
+dois membros válidos. `stderr` permite simular o bloqueio
+`QUARANTINE_RECOVERY_REQUIRED` emitido pelo núcleo e é copiado somente para o log
+que passa pela sanitização. Portanto todos os casos negativos chegam ao gate real
+de `_invalid_matrix_stages`, em vez de serem simulados por uma lista pré-fabricada.
 
 - [ ] **Step 4: Confirmar RED**
 
@@ -1442,6 +1460,11 @@ with OllamaServer(
     ], env=build_child_env(os.environ, ollama.base_url, model_store))
 ```
 
+O runner do núcleo reconcilia seus journals de quarentena antes do primeiro
+`run_single`. `QuarantineRecoveryError` produz retorno 1 e marcador
+`QUARANTINE_RECOVERY_REQUIRED` no log; o orquestrador conserva o cache/resultados,
+gera evidência `failed` e nunca promove esse run a `complete`.
+
 Retorno 130 do runner ou `KeyboardInterrupt` define `interrupted` e retorno 130.
 Retorno zero ainda chama `_invalid_matrix_stages` do núcleo sobre os dez modelos,
 dois datasets e réplica zero; somente lista vazia permite `complete`. O gate usa
@@ -1532,7 +1555,8 @@ def test_manual_checklist_requires_both_windows_versions_and_resume_cases():
     )
     required = [
         "Windows 10 22H2 build 19045 x64", "Windows 11 x64", "Ctrl+C",
-        "BENCHMARK_STOP", "20 pares válidos (JSON + JSONL)", "/api/pull", "SHA-256",
+        "BENCHMARK_STOP", "20 pares válidos (JSON + JSONL)",
+        "quarentena reconciliada", "/api/pull", "SHA-256",
     ]
     assert all(value in text for value in required)
 ```
@@ -1636,6 +1660,10 @@ Acrescentar solução para proxy HTTPS, driver NVIDIA abaixo de 452.39, espaço
 insuficiente e digest movido; sempre apontar o log e proibir editar o lock para
 “fazer passar”.
 
+Para `QUARANTINE_RECOVERY_REQUIRED`, instruir executar novamente o mesmo CMD sem
+apagar/mover resultados ou `.invalid-stage-artifacts`; se repetir, enviar o ZIP
+`failed` para análise e não tentar juntar os dois arquivos manualmente.
+
 Acrescentar a limitação literal: “SHA-256 não é assinatura digital: ele detecta
 divergência em relação a este manifesto, mas não prova quem publicou a pasta.
 Receba a pasta por canal confiável e não a execute se a origem for desconhecida.”
@@ -1660,6 +1688,9 @@ x64. Em cada linha registrar operador, build, CPU/RAM/GPU/driver e marcar:
 - queda/reconexão de rede durante `/api/pull` sem apagar blobs;
 - `Ctrl+C` retorna 130, produz ZIP `interrupted` e relançamento retoma;
 - `BENCHMARK_STOP` preexistente é ignorado e um novo retorna 130;
+- após fault injection no segundo move/rollback, relançamento não inicia estágio
+  até registrar “quarentena reconciliada” com os dois membros juntos nos sources
+  ativos ou no mesmo diretório final;
 - run só fica `complete` com `20 pares válidos (JSON + JSONL)`: os stems casam e
   cada JSONL é UTF-8, não vazio, termina em newline, tem toda linha parseável e
   contagem igual a `issue_counts.total_issues` do agregado;
