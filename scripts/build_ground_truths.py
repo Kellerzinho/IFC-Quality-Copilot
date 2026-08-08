@@ -28,6 +28,7 @@ from src.experiment.evaluator import GroundTruth, GroundTruthItem
 from src.experiment.ground_truth_audit import (
     AuditDecision,
     ThermalEvidence,
+    audit_canonical_item,
     audit_legacy_item,
     derive_casa_decision,
 )
@@ -53,7 +54,7 @@ THERMAL_UNIT = (
 
 # SHA-256 dos artefatos canônicos revisados na Task 5; necessário para reuso fechado.
 EXPECTED_GROUND_TRUTH_SHA256: dict[str, str] = {
-    "predio": "f4eab8dd3ed0ec1f447d934895ccddc117cf48a4dc279cde153594b469601d7a",
+    "predio": "2594d7efee7c29b662e7b9253cb5fe06867a046192f12b62d1acdf00d0199800",
     "casa": "5903db9a3e3904f16a82df38b10d09f13769e7d88f3b61f52730a27dc8627c59",
 }
 
@@ -98,12 +99,6 @@ def build_dataset(
         raise ValueError(f"dataset desconhecido: {spec.key}")
     _require_input(spec.ifc_path, "IFC", expected_sha256=expected_ifc_sha256)
     _require_input(IDS_PATH, "IDS", expected_sha256=IDS_SHA256)
-    actual_ids_sha256 = sha256_file(IDS_PATH)
-    if actual_ids_sha256.lower() != IDS_SHA256.lower():
-        raise ValueError(
-            "hash do IDS diverge do perfil congelado: "
-            f"esperado {IDS_SHA256}, obtido {actual_ids_sha256}"
-        )
 
     predio_source: tuple[dict[str, Any], str, bool] | None = None
     if spec.key == "predio":
@@ -247,7 +242,7 @@ def _read_predio_source(
     *,
     expected_sha256: str = RATIFIED_LEGACY_SHA256,
 ) -> tuple[dict[str, Any], str, bool]:
-    _require_input(
+    _require_file_present(
         path,
         "ground truth legado/canonico do predio",
         expected_sha256=expected_sha256,
@@ -265,6 +260,7 @@ def _read_predio_source(
     protocol = metadata.get("protocol") if isinstance(metadata, Mapping) else None
     canonical = protocol == "evidence-audited-v1"
     if canonical:
+        assert isinstance(metadata, Mapping)
         if metadata.get("previous_gt_sha256") != RATIFIED_LEGACY_SHA256:
             raise ValueError("previous_gt_sha256 canonico diverge da base ratificada")
         expected = EXPECTED_GROUND_TRUTH_SHA256.get(spec.key)
@@ -302,7 +298,16 @@ def _build_predio(
         prior_skip = skip_by_key.get(key)
         if canonical:
             if prior_item is not None:
-                items.append(prior_item.model_copy(update={"issue_id": issue.id}))
+                expected_canonical_sha256 = EXPECTED_GROUND_TRUTH_SHA256.get("predio")
+                if expected_canonical_sha256 is None:
+                    raise ValueError("hash canonico de predio nao congelado")
+                decision = audit_canonical_item(
+                    issue,
+                    prior_item,
+                    canonical_source_sha256=source_digest,
+                    expected_canonical_sha256=expected_canonical_sha256,
+                )
+                _append_decision(issue, decision, items, skipped)
             elif prior_skip is not None:
                 skipped.append(prior_skip.model_copy(update={"issue_id": issue.id}))
             else:
@@ -584,6 +589,22 @@ def _skip_sort_key(item: SkippedIssue) -> tuple[str, str, str, str]:
 
 
 def _require_input(path: Path, label: str, *, expected_sha256: str | None = None) -> None:
+    _require_file_present(path, label, expected_sha256=expected_sha256)
+    if expected_sha256 is None:
+        return
+    actual_sha256 = sha256_file(path)
+    if actual_sha256.lower() != expected_sha256.lower():
+        raise ValueError(
+            f"hash do {label} diverge: esperado {expected_sha256}, obtido {actual_sha256}"
+        )
+
+
+def _require_file_present(
+    path: Path,
+    label: str,
+    *,
+    expected_sha256: str | None = None,
+) -> None:
     if not path.is_file():
         expected = f"; SHA-256 esperado: {expected_sha256}" if expected_sha256 else ""
         raise FileNotFoundError(f"{label} ausente: {path}{expected}")

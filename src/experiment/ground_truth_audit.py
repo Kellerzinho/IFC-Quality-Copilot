@@ -27,11 +27,15 @@ _AUTHORIAL_NOTE = (
 )
 _UNCERTAINTY_MARKERS = (
     "a confirmar",
+    "atencao",
     "conferir",
     "incerta",
     "incerto",
     "pendente",
     "por confirmar",
+    "provavel",
+    "sem especificacao",
+    "usual",
     "verificar",
 )
 _PENDING_EI_ALTERNATIVES = frozenset({"EI 60", "EI 90", "EI 120"})
@@ -53,12 +57,13 @@ class AuditDecision(BaseModel):
     @model_validator(mode="after")
     def _require_exactly_one_branch(self) -> AuditDecision:
         is_item = self.expected_value is not None
-        has_skip_field = self.skip_reason is not None
+        skip_reason = self.skip_reason
+        has_skip_field = skip_reason is not None
         if is_item == has_skip_field:
             raise ValueError("audit decision must contain exactly one of item or skip")
-        if has_skip_field and not self.skip_reason.strip():
+        if skip_reason is not None and not skip_reason.strip():
             raise ValueError("audit skip reason cannot be blank")
-        if has_skip_field and self.accepted_alternatives:
+        if skip_reason is not None and self.accepted_alternatives:
             raise ValueError("skipped audit decision cannot contain accepted alternatives")
         return self
 
@@ -93,27 +98,47 @@ def audit_legacy_item(
     if legacy_source_sha256 != _RATIFIED_LEGACY_SHA256:
         return _skip("item sem prova do snapshot legado congelado")
 
+    return _audit_frozen_item(issue, legacy)
+
+
+def audit_canonical_item(
+    issue: Issue,
+    canonical: GroundTruthItem,
+    *,
+    canonical_source_sha256: str,
+    expected_canonical_sha256: str,
+) -> AuditDecision:
+    """Reaudita um item canônico somente quando seus bytes estão congelados."""
+    if canonical_source_sha256.lower() != expected_canonical_sha256.lower():
+        return _skip("item sem prova do snapshot canônico congelado")
+
+    return _audit_frozen_item(issue, canonical)
+
+
+def _audit_frozen_item(issue: Issue, frozen: GroundTruthItem) -> AuditDecision:
+    """Aplica a mesma política semântica a qualquer snapshot com identidade provada."""
+
     property_name = _read_check_property(issue)
     if property_name is None:
         return _skip("check_property ausente, não textual ou incompatível com issue_type")
     issue_key = (issue.element_guid, issue.issue_type, property_name)
-    if legacy.natural_key != issue_key:
+    if frozen.natural_key != issue_key:
         return _skip("chave natural legada diverge literalmente da issue")
-    if legacy.issue_id is not None and legacy.issue_id != issue.id:
+    if frozen.issue_id is not None and frozen.issue_id != issue.id:
         return _skip("issue_id legado diverge literalmente da issue")
-    if not legacy.verified:
+    if not frozen.verified:
         return _skip("item legado não verificado")
-    if _contains_uncertainty(legacy.notes):
+    if _contains_uncertainty(frozen.notes):
         return _skip("nota legada contém marcador textual de incerteza")
 
-    if _is_unratified_thermal_reference(issue, property_name, legacy.expected_value):
+    if _is_unratified_thermal_reference(issue, property_name, frozen.expected_value):
         return _skip("referência térmica genérica explicitamente não ratificada")
 
-    alternatives = list(legacy.accepted_alternatives)
-    if property_name == "FireRating" and legacy.expected_value == "REI 60":
+    alternatives = list(frozen.accepted_alternatives)
+    if property_name == "FireRating" and frozen.expected_value == "REI 60":
         alternatives = [value for value in alternatives if value not in _PENDING_EI_ALTERNATIVES]
 
-    if not _is_supported_legacy_value(issue, property_name, legacy.expected_value):
+    if not _is_supported_legacy_value(issue, property_name, frozen.expected_value):
         return _skip("valor legado fora do conjunto semântico ratificado")
     alternatives = [
         value
@@ -121,13 +146,13 @@ def audit_legacy_item(
         if _is_supported_legacy_value(issue, property_name, value)
     ]
 
-    notes = legacy.notes
+    notes = frozen.notes
     if property_name in {"FireRating", "LoadBearing", "IsLoadBearing"} or (
         issue.issue_type == "system_unclassified"
     ):
         notes = _append_once(notes, _AUTHORIAL_NOTE)
     return AuditDecision(
-        expected_value=legacy.expected_value,
+        expected_value=frozen.expected_value,
         accepted_alternatives=alternatives,
         notes=notes,
     )

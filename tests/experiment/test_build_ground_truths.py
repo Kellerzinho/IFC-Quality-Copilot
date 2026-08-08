@@ -62,9 +62,18 @@ def _result(issue: Issue, *, value: Any = "BEDROOM") -> GTExtractionResult:
     )
 
 
-def _spec(tmp_path: Path, key: str = "casa") -> builder.DatasetSpec:
+def _spec(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    key: str = "casa",
+) -> builder.DatasetSpec:
     ifc_path = tmp_path / f"{key}.ifc"
     ifc_path.write_bytes(b"synthetic ifc")
+    monkeypatch.setitem(
+        builder.EXPECTED_INPUT_IFC_SHA256,
+        key,
+        hashlib.sha256(ifc_path.read_bytes()).hexdigest(),
+    )
     return builder.DatasetSpec(
         key=key,
         ifc_path=ifc_path,
@@ -192,7 +201,7 @@ def test_build_preserves_literal_check_property(tmp_path, monkeypatch):
         ),
     )
 
-    result, returned_issues = builder.build_dataset(_spec(tmp_path))
+    result, returned_issues = builder.build_dataset(_spec(tmp_path, monkeypatch))
 
     assert returned_issues == [issue]
     assert result.ground_truth.items[0].check_property == "LoadBearing"
@@ -206,7 +215,7 @@ def test_build_rejects_ids_that_does_not_match_frozen_profile(tmp_path, monkeypa
     monkeypatch.setattr(builder, "IDS_SHA256", "0" * 64)
 
     with pytest.raises(ValueError, match="hash do IDS"):
-        builder.build_dataset(_spec(tmp_path))
+        builder.build_dataset(_spec(tmp_path, monkeypatch))
 
     assert ids_path.read_bytes() == b"synthetic ids"
 
@@ -230,7 +239,7 @@ def test_cli_missing_ifc_reports_its_dataset_path_and_frozen_hash(tmp_path, monk
 
 def test_cli_missing_ids_reports_its_path_and_frozen_hash(tmp_path, monkeypatch, capsys):
     """Instalação incompleta precisa identificar qual IDS canônico obter."""
-    spec = _spec(tmp_path, "casa")
+    spec = _spec(tmp_path, monkeypatch, "casa")
     missing_ids = tmp_path / "missing-requirements.ids"
     monkeypatch.setattr(builder, "IDS_PATH", missing_ids)
     monkeypatch.setattr(builder, "DATASETS", {"casa": spec})
@@ -241,9 +250,37 @@ def test_cli_missing_ids_reports_its_path_and_frozen_hash(tmp_path, monkeypatch,
     assert builder.IDS_SHA256 in stderr
 
 
-def test_missing_legacy_predio_reports_ratified_hash(tmp_path):
+def test_existing_ifc_hash_mismatch_fails_before_pipeline_and_writes_nothing(
+    tmp_path,
+    monkeypatch,
+):
+    """Adiar a identidade da entrada até depois do pipeline deve quebrar este teste."""
+    spec = _spec(tmp_path, monkeypatch, "casa")
+    expected_sha256 = "0" * 64
+    actual_sha256 = hashlib.sha256(spec.ifc_path.read_bytes()).hexdigest()
+    sentinel = b"ground truth anterior"
+    spec.ground_truth_path.write_bytes(sentinel)
+    monkeypatch.setitem(builder.EXPECTED_INPUT_IFC_SHA256, "casa", expected_sha256)
+
+    class PipelineMustNotStart:
+        def __init__(self, *_args, **_kwargs):
+            raise AssertionError("QualityPipeline iniciou antes da verificacao do IFC")
+
+    monkeypatch.setattr(builder, "QualityPipeline", PipelineMustNotStart)
+
+    with pytest.raises(ValueError) as error:
+        builder.build_dataset(spec)
+
+    message = str(error.value)
+    assert "IFC" in message
+    assert expected_sha256 in message
+    assert actual_sha256 in message
+    assert spec.ground_truth_path.read_bytes() == sentinel
+
+
+def test_missing_legacy_predio_reports_ratified_hash(tmp_path, monkeypatch):
     """A fonte legada ausente permanece identificável pela identidade ratificada."""
-    spec = _spec(tmp_path, "predio")
+    spec = _spec(tmp_path, monkeypatch, "predio")
     missing_legacy = tmp_path / "missing-legacy.yaml"
 
     with pytest.raises(FileNotFoundError) as error:
@@ -270,7 +307,7 @@ def test_build_partitions_every_issue_into_item_or_skip(tmp_path, monkeypatch):
 
     monkeypatch.setattr(builder, "derive_casa_decision", decide)
 
-    result, issues = builder.build_dataset(_spec(tmp_path))
+    result, issues = builder.build_dataset(_spec(tmp_path, monkeypatch))
 
     assert len(result.ground_truth.items) == 1
     assert len(result.skipped) == 1
@@ -295,7 +332,7 @@ def test_build_orders_output_deterministically(tmp_path, monkeypatch):
             notes="Category derivada exclusivamente do LongName.",
         ),
     )
-    spec = _spec(tmp_path)
+    spec = _spec(tmp_path, monkeypatch)
 
     result, issues = builder.build_dataset(spec)
     first_path = builder.write_canonical_ground_truth(result, issues, spec)
@@ -312,7 +349,7 @@ def test_build_refuses_to_overwrite_without_valid_output(tmp_path, monkeypatch):
     """Substituir o YAML antes da validacao deve quebrar este teste."""
     issue = _issue()
     _install_ids(tmp_path, monkeypatch)
-    spec = _spec(tmp_path)
+    spec = _spec(tmp_path, monkeypatch)
     spec.ground_truth_path.write_bytes(b"original ground truth")
     monkeypatch.setattr(
         builder,
@@ -333,7 +370,7 @@ def test_check_mode_never_writes(tmp_path, monkeypatch):
     """Criar temporario ou alterar destino no modo check deve quebrar este teste."""
     issue = _issue()
     _install_ids(tmp_path, monkeypatch)
-    spec = _spec(tmp_path)
+    spec = _spec(tmp_path, monkeypatch)
     result = _result(issue)
     expected = builder.canonical_ground_truth_bytes(result, [issue], spec)
     spec.ground_truth_path.write_bytes(expected)
@@ -356,7 +393,7 @@ def test_check_mode_returns_nonzero_on_drift(tmp_path, monkeypatch):
     """Aceitar bytes divergentes no modo check deve quebrar este teste."""
     issue = _issue()
     _install_ids(tmp_path, monkeypatch)
-    spec = _spec(tmp_path)
+    spec = _spec(tmp_path, monkeypatch)
     spec.ground_truth_path.write_bytes(b"semantic drift")
     monkeypatch.setattr(builder, "DATASETS", {"casa": spec})
     monkeypatch.setattr(builder, "build_dataset", lambda _spec: (_result(issue), [issue]))
@@ -369,9 +406,14 @@ def test_check_mode_never_touches_persistent_suggestion_cache(tmp_path, monkeypa
     """Abrir o SQLite da aplicacao durante --check deve quebrar este teste."""
     issue = _issue()
     ids_path = _install_ids(tmp_path, monkeypatch)
-    spec = _spec(tmp_path)
+    spec = _spec(tmp_path, monkeypatch)
     ifc_file = ifcopenshell.file(schema="IFC4")
     ifc_file.write(str(spec.ifc_path))
+    monkeypatch.setitem(
+        builder.EXPECTED_INPUT_IFC_SHA256,
+        "casa",
+        hashlib.sha256(spec.ifc_path.read_bytes()).hexdigest(),
+    )
 
     expected = GTExtractionResult(
         ground_truth=GroundTruth(items=[]),
@@ -477,7 +519,7 @@ def test_build_hashes_legacy_file_bytes_and_rejects_tampering(tmp_path, monkeypa
         )
 
     monkeypatch.setattr(builder, "audit_legacy_item", audit_with_observed_digest)
-    spec = _spec(tmp_path, "predio")
+    spec = _spec(tmp_path, monkeypatch, "predio")
 
     result, _ = builder.build_dataset(spec, legacy_gt_path=legacy_path)
     assert result.ground_truth.items[0].expected_value == "BEDROOM"
@@ -493,7 +535,7 @@ def test_frozen_canonical_hash_prevents_reuse_laundering(tmp_path, monkeypatch):
     issue = _issue()
     _install_ids(tmp_path, monkeypatch)
     _install_fake_pipeline(monkeypatch, [issue])
-    spec = _spec(tmp_path, "predio")
+    spec = _spec(tmp_path, monkeypatch, "predio")
     canonical = {
         "metadata": {
             "protocol": "evidence-audited-v1",
@@ -516,7 +558,7 @@ def test_frozen_canonical_hash_prevents_reuse_laundering(tmp_path, monkeypatch):
     monkeypatch.setitem(builder.EXPECTED_GROUND_TRUTH_SHA256, "predio", "0" * 64)
 
     with pytest.raises(ValueError, match="hash canonico"):
-        builder.build_dataset(spec, legacy_gt_path=spec.ground_truth_path)
+        builder.build_dataset(spec)
 
 
 def test_canonical_reuse_requires_frozen_hash_pin(tmp_path, monkeypatch):
@@ -524,7 +566,7 @@ def test_canonical_reuse_requires_frozen_hash_pin(tmp_path, monkeypatch):
     issue = _issue()
     _install_ids(tmp_path, monkeypatch)
     _install_fake_pipeline(monkeypatch, [issue])
-    spec = _spec(tmp_path, "predio")
+    spec = _spec(tmp_path, monkeypatch, "predio")
     spec.ground_truth_path.write_text(
         yaml.safe_dump(
             {
@@ -551,7 +593,7 @@ def test_canonical_reuse_requires_frozen_hash_pin(tmp_path, monkeypatch):
     monkeypatch.delitem(builder.EXPECTED_GROUND_TRUTH_SHA256, "predio", raising=False)
 
     with pytest.raises(ValueError, match=r"hash canonico.*nao congelado"):
-        builder.build_dataset(spec, legacy_gt_path=spec.ground_truth_path)
+        builder.build_dataset(spec)
 
 
 def test_casa_thermal_group_preserves_smallest_donor_value_and_honest_unit(tmp_path, monkeypatch):
@@ -600,7 +642,7 @@ def test_casa_thermal_group_preserves_smallest_donor_value_and_honest_unit(tmp_p
     monkeypatch.setattr(builder.ue, "get_psets", lambda element: element.psets)
     monkeypatch.setattr(builder, "read_material_layers", lambda _element: MaterialReading())
 
-    result, _ = builder.build_dataset(_spec(tmp_path))
+    result, _ = builder.build_dataset(_spec(tmp_path, monkeypatch))
 
     item = result.ground_truth.items[0]
     assert item.expected_value == 1.6875
@@ -654,19 +696,22 @@ def test_casa_thermal_group_marks_values_over_one_percent_as_conflicted(tmp_path
     monkeypatch.setattr(builder.ue, "get_psets", lambda element: element.psets)
     monkeypatch.setattr(builder, "read_material_layers", lambda _element: MaterialReading())
 
-    result, _ = builder.build_dataset(_spec(tmp_path))
+    result, _ = builder.build_dataset(_spec(tmp_path, monkeypatch))
 
     assert result.ground_truth.items == []
     assert "conflito" in result.skipped[0].reason
 
 
-def test_predio_reuses_canonical_item_without_reauditing_or_repeating_note(tmp_path, monkeypatch):
-    """Reauditar o canonical e duplicar a nota autoral deve quebrar este teste."""
-    issue = _issue()
+def test_predio_reaudits_frozen_canonical_uncertainty_without_laundering(
+    tmp_path,
+    monkeypatch,
+):
+    """Reutilizar item canônico incerto sem nova auditoria deve quebrar este teste."""
+    issue = _issue(property_name="FireRating", element_class="IfcWall")
     _install_ids(tmp_path, monkeypatch)
     _install_fake_pipeline(monkeypatch, [issue])
-    spec = _spec(tmp_path, "predio")
-    note = "Category derivada exclusivamente do LongName."
+    spec = _spec(tmp_path, monkeypatch, "predio")
+    note = "Desempenho provável do sistema; referência autoral revisada."
     spec.ground_truth_path.write_text(
         yaml.safe_dump(
             {
@@ -678,9 +723,9 @@ def test_predio_reuses_canonical_item_without_reauditing_or_repeating_note(tmp_p
                     {
                         "element_guid": issue.element_guid,
                         "issue_type": issue.issue_type,
-                        "check_property": "Category",
+                        "check_property": "FireRating",
                         "issue_id": issue.id,
-                        "expected_value": "BEDROOM",
+                        "expected_value": "REI 60",
                         "accepted_alternatives": [],
                         "verified": True,
                         "notes": note,
@@ -698,12 +743,15 @@ def test_predio_reuses_canonical_item_without_reauditing_or_repeating_note(tmp_p
         "predio",
         hashlib.sha256(spec.ground_truth_path.read_bytes()).hexdigest(),
     )
-    monkeypatch.setattr(
-        builder,
-        "audit_legacy_item",
-        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("reauditou")),
-    )
 
     result, _ = builder.build_dataset(spec)
 
-    assert result.ground_truth.items[0].notes == note
+    assert result.ground_truth.items == []
+    assert len(result.skipped) == 1
+    assert result.skipped[0].issue_id == issue.id
+    assert (
+        result.skipped[0].element_guid,
+        result.skipped[0].issue_type,
+        result.skipped[0].check_property,
+    ) == (issue.element_guid, issue.issue_type, "FireRating")
+    assert "incerteza" in result.skipped[0].reason

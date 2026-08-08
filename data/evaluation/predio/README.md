@@ -21,7 +21,7 @@ certificado, aprovação ou declaração de conformidade.
 
 | Artefato | SHA-256 | Contagem / observação |
 | --- | --- | --- |
-| `ground_truth.yaml` | `f4eab8dd3ed0ec1f447d934895ccddc117cf48a4dc279cde153594b469601d7a` | 4.720 issues diagnósticos; 1.916 itens; 2.804 abstenções (`skipped`) |
+| `ground_truth.yaml` | `2594d7efee7c29b662e7b9253cb5fe06867a046192f12b62d1acdf00d0199800` | 4.720 issues diagnósticos; 1.654 itens; 3.066 abstenções (`skipped`) |
 | `predio_v1.ifc` | `a71c8be30d82760218f5b3f3a1c476b49e3f30e608b0065916b9d5206a1a6dd0` | entrada IFC do GT canônico; não versionada pelo Git |
 | `ground_truth_spaces.yaml` | `f1451e983f7a6a869c908051a7c527f394cae670e07fc3da2a4432682c065ac8` | 82 nomes de espaços curados |
 | `predio_v1_masked.ifc` | `750315bbfe9379937f3d45b94170c8e45c0a1280ff4237d48839caa29e6ecec6` | variante mascarada para `space_unnamed`; não versionada pelo Git |

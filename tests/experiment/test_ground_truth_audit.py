@@ -154,6 +154,36 @@ def test_predio_skips_legacy_item_marked_conferir(element_class, expected_value,
     assert any(word in decision.skip_reason.lower() for word in ("incerteza", "não ratificada"))
 
 
+@pytest.mark.parametrize(
+    "notes",
+    [
+        "Composição a CONFERIR em projeto.",
+        "ATENÇÃO: confirmar a especificação.",
+        "Desempenho PROVÁVEL do sistema.",
+        "Valor USUAL para esta tipologia.",
+        "Elemento SEM ESPECIFICAÇÃO de desempenho.",
+    ],
+)
+def test_predio_skips_all_uncertainty_markers_case_and_accent_insensitively(notes):
+    """Remover qualquer marcador aprovado da política deve quebrar este teste."""
+    issue = _issue(property_name="FireRating", element_class="IfcWall")
+    legacy = _legacy_item(
+        issue,
+        expected_value="REI 60",
+        verified=True,
+        notes=notes,
+    )
+
+    decision = _audit_legacy(
+        issue,
+        legacy,
+        legacy_source_sha256=_RATIFIED_LEGACY_SHA256,
+    )
+
+    _assert_skipped(decision)
+    assert "incerteza" in decision.skip_reason.lower()
+
+
 def test_predio_removes_unratified_ei_alternatives():
     """A mutação que retenha a emenda EI pendente deve quebrar este teste."""
     issue = _issue(property_name="FireRating", element_class="IfcWall")
