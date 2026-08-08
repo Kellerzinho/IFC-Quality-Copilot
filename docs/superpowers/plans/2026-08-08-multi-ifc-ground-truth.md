@@ -369,7 +369,16 @@ Os READMEs devem registrar hashes finais dos YAMLs, hashes dos IFCs, data, proto
 - ABNT NBR 15575-1/-4/-5:2025;
 - LabEEE/UFSC zoneamento e lista Sudeste;
 - COSCIP Decreto Estadual 42/2018 compilado;
-- CBMERJ NT 1-04, NT 2-08, NT 2-18 e NT 2-19:2025 com Portaria 1.317/2025.
+- CBMERJ NT 1-04:2019, NT 2-01:2020, NT 2-05:2023, NT 2-08:2019
+  atualizada pela Portaria 1.317/2025, NT 2-09:2025 quando aplicável,
+  NT 2-18:2022 e NT 2-19:2025 atualizada pela Portaria 1.317/2025.
+
+Os READMEs devem explicitar que A-1 não recebe violações automáticas por ausência
+de extintor/sinalização e que as medidas de A-2 dependem de área, altura,
+pavimentos, população, sistemas de proteção e escopo declarado do IFC. Ausência
+de objeto no modelo não prova ausência física. Valores normativos entram como
+fonte/limite da análise ou razão de abstinência, nunca como `expected_value`
+fornecido pelo elemento.
 
 - [ ] **Step 2: Validar YAML de fontes e ausência de PDFs ABNT**
 

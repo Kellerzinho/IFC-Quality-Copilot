@@ -212,7 +212,17 @@ Fontes de contexto identificadas:
 - COSCIP compilado: Decreto Estadual nº 42/2018 com alterações;
 - ABNT NBR 15220-3:2024 e ABNT TR 15220-3-1:2024 Versão Corrigida:2025;
 - ABNT NBR 15575 partes 1, 4 e 5 nas formas consolidadas de 2025;
+- CBMERJ NT 1-04:2019, NT 2-01:2020, NT 2-05:2023, NT 2-08:2019
+  atualizada em 2025, NT 2-09:2025 quando aplicável, NT 2-18:2022 e
+  NT 2-19:2025 atualizada em 2025;
 - ABNT NBR 14432, NBR 9077, NBR 11742 e NBR 15965-6, quando aplicáveis.
+
+A classificação de uso A-1/A-2 será premissa autoral explícita. Para A-1, não se
+inferirá violação por ausência de extintor ou sinalização no IFC. Para A-2, área,
+altura, pavimentos, população e sistemas de proteção ainda precisam ser
+confirmados antes de transformar uma exigência do COSCIP em verificação. Ausência
+de objeto no IFC não demonstra ausência física, e o GT não equivale a aprovação
+ou certificado do CBMERJ.
 
 Documentos públicos poderão ser baixados para pesquisa local apenas a partir da
 fonte oficial. Redistribuição no pacote do benchmark dependerá de licença
