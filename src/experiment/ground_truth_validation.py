@@ -304,7 +304,8 @@ def _validate_item_value(
     if issue_type == "system_unclassified":
         values = (
             SLAB_SYSTEM_VALUES
-            if diagnostic_issue and diagnostic_issue.element_class == "IfcSlab"
+            if diagnostic_issue
+            and diagnostic_issue.element_class in {"IfcSlab", "IfcSlabStandardCase"}
             else WALL_SYSTEM_VALUES
         )
         if not isinstance(value, str) or value not in values:

@@ -340,6 +340,7 @@ def test_rejects_blank_notes(tmp_path):
         ("pset_missing", "Category", "IfcSpace", "KITCHEN"),
         ("pset_missing", "FireRating", "IfcWall", "REI 120"),
         ("system_unclassified", "", "IfcSlab", "Piso vin\u00edlico / laminado"),
+        ("system_unclassified", "", "IfcSlabStandardCase", "Laje maci\u00e7a de concreto armado"),
         ("system_unclassified", "", "IfcWall", "Drywall / Steel frame"),
     ],
 )
@@ -379,6 +380,34 @@ def test_accepts_semantic_values_for_expected_value_and_alternatives(
     assert report.item_keys == {("GUID_SEMANTIC", issue_type, check_property)}
 
 
+def test_validates_ifc_slab_standard_case_system_values_as_slab(tmp_path):
+    """Classifica IfcSlabStandardCase pelo vocabulário de lajes, não de paredes."""
+    issue = _diagnostic_issue(
+        "issue-slab-standard-case",
+        "GUID_SLAB_STANDARD_CASE",
+        "system_unclassified",
+        element_class="IfcSlabStandardCase",
+    )
+    document = {
+        "metadata": {"total_items": 1, "total_skipped": 0, "total_diagnostic_issues": 1},
+        "items": [
+            {
+                "element_guid": "GUID_SLAB_STANDARD_CASE",
+                "issue_type": "system_unclassified",
+                "check_property": "",
+                "issue_id": "issue-slab-standard-case",
+                "expected_value": "Laje maciça de concreto armado",
+                "accepted_alternatives": ["Estrutura metálica"],
+                "notes": "Evidência e decisão humana documentadas.",
+                "verified": True,
+            }
+        ],
+        "skipped": [],
+    }
+
+    _assert_external_invariant(tmp_path, document, [issue], "invalid_system_value")
+
+
 @pytest.mark.parametrize(
     ("issue_type", "check_property", "element_class", "invalid_value", "invariant"),
     [
@@ -405,7 +434,13 @@ def test_rejects_invalid_semantic_alternative(
     issue = _diagnostic_issue(
         "issue-semantic", "GUID_SEMANTIC", issue_type, check_property, element_class
     )
-    valid_value = "Concreto armado moldado in loco" if issue_type == "system_unclassified" else 2.5
+    valid_value = (
+        "Laje maciça de concreto armado"
+        if issue_type == "system_unclassified" and element_class == "IfcSlab"
+        else "Concreto armado moldado in loco"
+        if issue_type == "system_unclassified"
+        else 2.5
+    )
     if check_property in {"LoadBearing", "IsLoadBearing"}:
         valid_value = True
     elif check_property == "Category":
