@@ -502,3 +502,16 @@ def test_accepts_matching_issues_and_hashes(tmp_path):
 
     assert report.total_items == 3
     assert report.total_skipped == 1
+
+
+def test_accepts_system_issue_with_none_check_property(tmp_path):
+    """Casa a chave vazia do YAML quando o diagnóstico representa a propriedade como None."""
+    document, issues = _external_document()
+    issues[2].context["check_property"] = None
+    path, ifc_path, ids_path = _write_external_document(tmp_path, document)
+
+    report = validate_ground_truth_against_issues(
+        path, issues, ifc_path=ifc_path, ids_path=ids_path
+    )
+
+    assert ("GUID_SYSTEM", "system_unclassified", "") in report.item_keys

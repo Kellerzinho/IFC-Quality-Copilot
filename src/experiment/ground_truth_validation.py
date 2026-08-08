@@ -254,7 +254,7 @@ def _natural_key_from_issue(issue: Issue) -> NaturalKey:
     return (
         issue.element_guid,
         issue.issue_type,
-        str(issue.context.get("check_property", "")),
+        str(issue.context.get("check_property") or ""),
     )
 
 
