@@ -213,7 +213,11 @@ Testar com dublês pequenos em `test_dataset_registry_has_predio_and_casa_only`,
 `test_build_partitions_every_issue_into_item_or_skip`,
 `test_build_orders_output_deterministically` e
 `test_build_refuses_to_overwrite_without_valid_output`. Acrescentar
-`test_check_mode_never_writes` e `test_check_mode_returns_nonzero_on_drift`.
+`test_check_mode_never_writes`, `test_check_mode_returns_nonzero_on_drift` e
+`test_build_hashes_legacy_file_bytes_and_rejects_tampering`. O último teste cria
+um arquivo legado temporário, altera seu conteúdo sem alterar o argumento da API
+e prova que o construtor calcula o SHA-256 dos bytes efetivamente lidos em vez de
+repassar a constante congelada.
 
 - [ ] **Step 2: Confirmar falha inicial**
 
@@ -239,7 +243,7 @@ None) -> tuple[GTExtractionResult, list[Issue]]`,
 `write_canonical_ground_truth(result: GTExtractionResult, issues: Sequence[Issue],
 spec: DatasetSpec) -> Path` e `main(argv: list[str] | None = None) -> int`.
 
-CLI: `python scripts/build_ground_truths.py --dataset predio|casa|all [--check]`. O default é `all`. Para o prédio, carregar o YAML atual em memória antes de gerar e exigir o SHA-256 congelado acima antes de aceitar qualquer item legado. Se ele já tiver protocolo `evidence-audited-v1`, reutilizar seus itens sem repetir o sufixo de auditoria; `previous_gt_sha256` permanece o hash congelado da base de 2026-07-02. Escrever primeiro em arquivo temporário no mesmo diretório, validar documento/hashes/issues, e somente então usar `Path.replace()` no caminho canônico. Se validar falhar, preservar o YAML anterior. Com `--check`, gerar em memória, validar e comparar bytes com o YAML canônico sem criar, substituir ou tocar em nenhum arquivo; retornar `0` se idêntico e `1` se ausente, inválido ou com drift.
+CLI: `python scripts/build_ground_truths.py --dataset predio|casa|all [--check]`. O default é `all`. Para o prédio ainda no formato legado, ler os bytes de `legacy_gt_path` uma única vez, calcular seu SHA-256 antes do parse, exigir o digest congelado acima e passar exatamente o digest calculado como `legacy_source_sha256` em toda chamada de `audit_legacy_item`; é proibido repassar a constante sem calcular os bytes. Arquivo legado adulterado deve falhar antes da geração e preservar o YAML anterior. Se o arquivo já tiver protocolo `evidence-audited-v1`, validar seu `previous_gt_sha256` e reutilizar seus itens sem repetir o sufixo de auditoria; `previous_gt_sha256` permanece o hash congelado da base de 2026-07-02. Escrever primeiro em arquivo temporário no mesmo diretório, validar documento/hashes/issues, e somente então usar `Path.replace()` no caminho canônico. Se validar falhar, preservar o YAML anterior. Com `--check`, gerar em memória, validar e comparar bytes com o YAML canônico sem criar, substituir ou tocar em nenhum arquivo; retornar `0` se idêntico e `1` se ausente, inválido ou com drift.
 
 Metadata obrigatório:
 
