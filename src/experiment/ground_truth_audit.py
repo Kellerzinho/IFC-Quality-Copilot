@@ -8,7 +8,7 @@ import unicodedata
 from collections.abc import Mapping
 from typing import Any
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from src.experiment.evaluator import GroundTruthItem
 from src.experiment.ground_truth_validation import (
@@ -35,6 +35,7 @@ _UNCERTAINTY_MARKERS = (
     "verificar",
 )
 _PENDING_EI_ALTERNATIVES = frozenset({"EI 60", "EI 90", "EI 120"})
+_RATIFIED_LEGACY_SHA256 = "d08d2c7466a71c0cde467a959ed2aebfd4857d1da64944e4504f8f97d4edd6f6"
 
 
 class AuditDecision(BaseModel):
@@ -66,19 +67,41 @@ class ThermalEvidence(BaseModel):
     unit: str
     conflicted: bool
 
+    @field_validator("value", mode="before")
+    @classmethod
+    def _reject_boolean_value(cls, value: Any) -> Any:
+        if isinstance(value, bool):
+            raise ValueError("thermal evidence value cannot be boolean")
+        return value
+
 
 def _skip(reason: str) -> AuditDecision:
     return AuditDecision(skip_reason=reason)
 
 
-def audit_legacy_item(issue: Issue, legacy: GroundTruthItem) -> AuditDecision:
+def audit_legacy_item(
+    issue: Issue,
+    legacy: GroundTruthItem,
+    *,
+    source_sha256: str | None,
+) -> AuditDecision:
     """Preserva apenas a parte ratificada e semanticamente válida do GT do prédio."""
+    if source_sha256 != _RATIFIED_LEGACY_SHA256:
+        return _skip("item sem prova do snapshot legado congelado")
+
+    property_name = _read_check_property(issue)
+    if property_name is None:
+        return _skip("check_property ausente, não textual ou incompatível com issue_type")
+    issue_key = (issue.element_guid, issue.issue_type, property_name)
+    if legacy.natural_key != issue_key:
+        return _skip("chave natural legada diverge literalmente da issue")
+    if legacy.issue_id is not None and legacy.issue_id != issue.id:
+        return _skip("issue_id legado diverge literalmente da issue")
     if not legacy.verified:
         return _skip("item legado não verificado")
     if _contains_uncertainty(legacy.notes):
         return _skip("nota legada contém marcador textual de incerteza")
 
-    property_name = str(issue.context.get("check_property") or "")
     if _is_unratified_thermal_reference(issue, property_name, legacy.expected_value):
         return _skip("referência térmica genérica explicitamente não ratificada")
 
@@ -116,21 +139,24 @@ def derive_casa_decision(
     material_reading: MaterialReading,
 ) -> AuditDecision:
     """Deriva rótulo da casa somente quando a evidência autoral é inequívoca."""
-    property_name = str(issue.context.get("check_property") or "")
+    property_name = _read_check_property(issue)
+    if property_name is None:
+        return _skip(_OUT_OF_SCOPE)
 
-    if property_name == "ThermalTransmittance":
-        return _thermal_decision(
-            issue,
-            element_type_key,
-            element_type_name,
-            authored_thermal_by_type,
-        )
-    if property_name == "FireRating":
-        return _skip("sem declaração autoral de desempenho ao fogo")
-    if property_name in {"LoadBearing", "IsLoadBearing"}:
-        return _skip("sem declaração autoral de intencionalidade portante")
-    if property_name == "Category" and issue.element_class == "IfcSpace":
-        return _category_decision(element_long_name)
+    if issue.issue_type == "pset_missing":
+        if property_name == "ThermalTransmittance":
+            return _thermal_decision(
+                issue,
+                element_type_key,
+                element_type_name,
+                authored_thermal_by_type,
+            )
+        if property_name == "FireRating":
+            return _skip("sem declaração autoral de desempenho ao fogo")
+        if property_name in {"LoadBearing", "IsLoadBearing"}:
+            return _skip("sem declaração autoral de intencionalidade portante")
+        if property_name == "Category" and issue.element_class == "IfcSpace":
+            return _category_decision(element_long_name)
     if issue.issue_type == "system_unclassified" and property_name == "":
         return _material_system_decision(
             issue.element_class,
@@ -164,13 +190,9 @@ def _thermal_decision(
     ):
         return _skip("valor térmico autoral inválido")
 
-    donor_guids = sorted(
-        {
-            guid.strip()
-            for guid in evidence.donor_guids
-            if guid.strip() and guid != issue.element_guid
-        }
-    )
+    normalised_donors = {guid.strip() for guid in evidence.donor_guids if guid.strip()}
+    normalised_donors.discard(issue.element_guid.strip())
+    donor_guids = sorted(normalised_donors)
     if not donor_guids:
         return _skip("sem GUID de instância doadora do mesmo tipo")
     if not evidence.unit.strip():
@@ -210,11 +232,13 @@ def _material_system_decision(
         *(str(layer.get("name") or "") for layer in material_reading.layers),
     ]
     evidence = _normalise(" | ".join(evidence_parts))
+    if _has_material_negation(evidence):
+        return _skip("evidência material contém negação ou contradição explícita")
 
     if element_class in {"IfcWall", "IfcWallStandardCase"}:
         candidates = _wall_candidates(evidence)
         vocabulary = WALL_SYSTEM_VALUES
-    elif element_class == "IfcSlab":
+    elif _is_slab_class(element_class):
         candidates = _slab_candidates(evidence)
         vocabulary = SLAB_SYSTEM_VALUES
     else:
@@ -289,8 +313,10 @@ def _slab_candidates(evidence: str) -> set[str]:
 
 def _is_supported_legacy_value(issue: Issue, property_name: str, value: Any) -> bool:
     if issue.issue_type == "system_unclassified" and property_name == "":
-        vocabulary = SLAB_SYSTEM_VALUES if issue.element_class == "IfcSlab" else WALL_SYSTEM_VALUES
-        return isinstance(value, str) and value in vocabulary
+        vocabulary = _system_vocabulary(issue.element_class)
+        return vocabulary is not None and isinstance(value, str) and value in vocabulary
+    if issue.issue_type != "pset_missing":
+        return False
     if property_name == "ThermalTransmittance":
         return (
             not isinstance(value, bool)
@@ -322,6 +348,17 @@ def _contains_uncertainty(notes: str | None) -> bool:
     return any(marker in normalised for marker in _UNCERTAINTY_MARKERS)
 
 
+def _read_check_property(issue: Issue) -> str | None:
+    if "check_property" not in issue.context:
+        return None
+    value = issue.context["check_property"]
+    if not isinstance(value, str):
+        return None
+    if issue.issue_type == "system_unclassified":
+        return value if value == "" else None
+    return value if value else None
+
+
 def _append_once(notes: str | None, addition: str) -> str:
     existing = (notes or "").strip()
     if "nao representa desempenho fisico medido" in _normalise(existing):
@@ -338,6 +375,26 @@ def _normalise(value: str) -> str:
 
 def _has_any(value: str, *needles: str) -> bool:
     return any(needle in value for needle in needles)
+
+
+def _is_slab_class(element_class: str) -> bool:
+    return element_class in {"IfcSlab", "IfcSlabStandardCase"}
+
+
+def _system_vocabulary(element_class: str) -> frozenset[str] | None:
+    if element_class in {"IfcWall", "IfcWallStandardCase"}:
+        return WALL_SYSTEM_VALUES
+    if _is_slab_class(element_class):
+        return SLAB_SYSTEM_VALUES
+    return None
+
+
+def _has_material_negation(evidence: str) -> bool:
+    return re.search(
+        r"\b(?:sem|nao)\s+(?:sistema\s+)?"
+        r"(?:drywall|steel frame|estrutural|moldado (?:in loco|no local))\b",
+        evidence,
+    ) is not None
 
 
 def _category_aliases(category: str, *aliases: str) -> dict[str, str]:
