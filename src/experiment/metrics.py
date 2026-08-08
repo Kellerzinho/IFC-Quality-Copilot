@@ -22,7 +22,6 @@ from pydantic import BaseModel, Field
 from src.experiment.evaluator import EvaluationMetrics
 from src.models import Issue, SuggestionMetrics
 
-
 # ---------------------------------------------------------------------------
 # Métricas simples por lote (compat — usada pelo runner legado e pela UI)
 # ---------------------------------------------------------------------------
@@ -69,6 +68,10 @@ class RunMetadata(BaseModel):
     ifc_sha256: str = ""
     ids_sha256: str | None = None
     ground_truth_sha256: str | None = None
+    building_context: dict[str, str] = Field(default_factory=dict)
+    dataset_key: str = ""
+    execution_identity: dict[str, Any] = Field(default_factory=dict)
+    execution_identity_sha256: str = ""
     prompt_version: str = ""
     repo_commit: str | None = None
     cache_enabled: bool = False
@@ -77,7 +80,7 @@ class RunMetadata(BaseModel):
     bsdd_cache_sha256: str | None = None
     """Hash do cache bSDD: identifica a condição de grounding do run."""
     hardware: dict[str, Any] | None = None
-    """Retrato da máquina (GPU/VRAM/driver, CPU, RAM, OS, hostname).
+    """Retrato anônimo da máquina (GPU/VRAM/driver, CPU, RAM e OS).
 
     Enquanto houve uma máquina só, ela era implícita. Com duas, sem este campo
     dois JSONs do mesmo benchmark ficam indistinguíveis.

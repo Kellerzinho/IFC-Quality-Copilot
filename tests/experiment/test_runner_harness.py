@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+import json
+
 import ifcopenshell
 import ifcopenshell.api
 import ifcopenshell.api.owner.settings
 import ifcopenshell.guid
 import pytest
 
-from src.experiment.metrics import aggregate_stability, aggregate_timing
+from src.experiment.execution_identity import DatasetIdentity, ExecutionIdentity
+from src.experiment.metrics import RunMetadata, aggregate_stability, aggregate_timing
 from src.experiment.runner import (
     ExperimentRunner,
     filter_issues_by_type,
@@ -17,7 +20,10 @@ from src.experiment.runner import (
 )
 from src.models import Issue, Suggestion, SuggestionMetrics, SuggestionSet
 
-_BUILDING_CTX = {"building_type": "Residencial unifamiliar", "bioclimatic_zone": "3"}
+_BUILDING_CTX = {
+    "building_type": "Residencial multifamiliar",
+    "bioclimatic_zone": "4A",
+}
 _SPACE_NAME = "Sala de Estar"
 
 
@@ -341,6 +347,18 @@ class TestHarnessEndToEnd:
         assert result.metadata.prompt_version
         assert result.metadata.ifc_sha256
         assert result.metadata.cache_enabled is False
+        assert result.metadata.building_context == {
+            "building_type": "Residencial multifamiliar",
+            "bioclimatic_zone": "4A",
+        }
+
+    def test_metadados_antigos_carregam_com_novos_campos_vazios(self):
+        metadata = RunMetadata.model_validate({"model_name": "mock-model:test"})
+
+        assert metadata.building_context == {}
+        assert metadata.dataset_key == ""
+        assert metadata.execution_identity == {}
+        assert metadata.execution_identity_sha256 == ""
 
     def test_ifc_original_nao_e_alterado(self, ifc_with_space, ground_truth_yaml):
         """O hash do IFC original deve ser idêntico antes e depois do run (revisor em cópia)."""
@@ -363,6 +381,35 @@ class TestHarnessEndToEnd:
         ifc_path, _ = ifc_with_space
         out_dir = tmp_path / "results"
         runner = ExperimentRunner(suggestion_batch_fn=_mock_batch_correct)
+        execution_identity = ExecutionIdentity(
+            release_id="ifcqc-r1",
+            project_sha256="1" * 64,
+            models_lock_sha256="2" * 64,
+            datasets=(
+                DatasetIdentity(
+                    key="predio",
+                    ifc_sha256="3" * 64,
+                    ground_truth_sha256="4" * 64,
+                    ids_sha256="5" * 64,
+                    building_context=tuple(sorted(_BUILDING_CTX.items())),
+                ),
+                DatasetIdentity(
+                    key="casa",
+                    ifc_sha256="6" * 64,
+                    ground_truth_sha256="7" * 64,
+                    ids_sha256="5" * 64,
+                    building_context=(
+                        ("bioclimatic_zone", "4A"),
+                        ("building_type", "Residencial unifamiliar"),
+                    ),
+                ),
+            ),
+            replica_count=2,
+            cache_enabled=False,
+            prompt_version="v7.2",
+            prompt_sha256="8" * 64,
+            reuse_equivalent=True,
+        )
 
         results = runner.run(
             ifc_path=ifc_path,
@@ -371,11 +418,21 @@ class TestHarnessEndToEnd:
             model_name="mock-model:test",
             n_replicas=2,
             output_dir=str(out_dir),
+            dataset_key="predio",
+            execution_identity=execution_identity,
         )
 
         assert len(results) == 2
         exported = list(out_dir.rglob("run_*.json"))
         assert len(exported) == 2
+        assert {result.metadata.dataset_key for result in results} == {"predio"}
+        assert all(result.metadata.execution_identity for result in results)
+        assert all(result.metadata.execution_identity_sha256 for result in results)
+        for path in exported:
+            metadata = json.loads(path.read_text(encoding="utf-8"))["metadata"]
+            assert metadata["dataset_key"] == "predio"
+            assert metadata["execution_identity"]["release_id"] == "ifcqc-r1"
+            assert metadata["execution_identity_sha256"]
 
 
 # ---------------------------------------------------------------------------
@@ -388,7 +445,12 @@ class TestAgregadores:
         metrics = [
             SuggestionMetrics(issue_id="a", attempts=1, final_status="ready"),
             SuggestionMetrics(issue_id="b", attempts=2, final_status="ready", json_repaired=True),
-            SuggestionMetrics(issue_id="c", attempts=3, final_status="failed", failure_reason="json_invalid"),
+            SuggestionMetrics(
+                issue_id="c",
+                attempts=3,
+                final_status="failed",
+                failure_reason="json_invalid",
+            ),
             # cache hit não conta (attempts=0)
             SuggestionMetrics(issue_id="d", attempts=0, cache_hit=True, final_status="cached"),
         ]

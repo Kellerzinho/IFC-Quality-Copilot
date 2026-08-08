@@ -116,8 +116,15 @@ def test_residencia_none_quando_modelo_ja_descarregado():
 
 def test_hardware_snapshot_tem_as_chaves_do_contrato():
     snap = hardware_snapshot()
-    for chave in ("gpus", "gpu_count", "cpu", "cpu_count", "ram_total_gb", "os", "hostname"):
+    for chave in ("gpus", "gpu_count", "cpu", "cpu_count", "ram_total_gb", "os"):
         assert chave in snap
+
+
+def test_hardware_snapshot_omite_identificadores_pessoais():
+    snapshot = hardware_snapshot()
+    assert "hostname" not in snapshot
+    assert "username" not in snapshot
+    assert "serial" not in snapshot
 
 
 def test_hardware_snapshot_sobrevive_sem_nvidia_smi():

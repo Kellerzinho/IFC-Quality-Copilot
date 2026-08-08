@@ -30,6 +30,7 @@ import sys
 import tempfile
 from collections.abc import Callable
 from contextlib import contextmanager
+from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
@@ -42,6 +43,10 @@ from src.experiment.environment import (
     ollama_model_digest,
 )
 from src.experiment.evaluator import Evaluator, GroundTruth
+from src.experiment.execution_identity import (
+    ExecutionIdentity,
+    canonical_identity_sha256,
+)
 from src.experiment.metrics import (
     ExperimentResult,
     RunMetadata,
@@ -269,6 +274,8 @@ class ExperimentRunner:
         issue_types: list[str] | None = None,
         check_properties: list[str] | None = None,
         reuse_equivalent: bool = False,
+        dataset_key: str = "",
+        execution_identity: ExecutionIdentity | None = None,
     ) -> ExperimentResult:
         """Executa uma réplica e retorna o ExperimentResult agregado.
 
@@ -400,6 +407,18 @@ class ExperimentRunner:
                         ifc_sha256=ifc_hash or "",
                         ids_sha256=sha256_of(ids_path),
                         ground_truth_sha256=sha256_of(ground_truth_path),
+                        building_context={
+                            str(key): str(value) for key, value in building_context.items()
+                        },
+                        dataset_key=dataset_key,
+                        execution_identity=(
+                            asdict(execution_identity) if execution_identity else {}
+                        ),
+                        execution_identity_sha256=(
+                            canonical_identity_sha256(execution_identity)
+                            if execution_identity
+                            else ""
+                        ),
                         prompt_version=PROMPT_VERSION,
                         repo_commit=_REPO_COMMIT_AT_IMPORT,
                         cache_enabled=cache_enabled,
@@ -448,6 +467,8 @@ class ExperimentRunner:
         max_issues: int | None = None,
         sample_seed: int = 42,
         issue_types: list[str] | None = None,
+        dataset_key: str = "",
+        execution_identity: ExecutionIdentity | None = None,
     ) -> list[ExperimentResult]:
         """Executa N réplicas e, se ``output_dir`` for dado, exporta um JSON por réplica."""
         results: list[ExperimentResult] = []
@@ -466,6 +487,8 @@ class ExperimentRunner:
                 max_issues=max_issues,
                 sample_seed=sample_seed,
                 issue_types=issue_types,
+                dataset_key=dataset_key,
+                execution_identity=execution_identity,
             )
             results.append(result)
             if output_dir is not None:
@@ -488,7 +511,11 @@ class ExperimentRunner:
         # Resultado por issue: base do breakdown por estrato e do teste pareado.
         jsonl_path = model_dir / f"run_{replica}_issues.jsonl"
         write_outcomes_jsonl(result.outcomes, jsonl_path)
-        logger.info("Resultados por issue exportados: {} ({} itens)", jsonl_path, len(result.outcomes))
+        logger.info(
+            "Resultados por issue exportados: {} ({} itens)",
+            jsonl_path,
+            len(result.outcomes),
+        )
         return str(out_path)
 
 

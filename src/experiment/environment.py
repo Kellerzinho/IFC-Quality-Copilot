@@ -124,7 +124,7 @@ def _ram_total_gb() -> float | None:
 
 
 def hardware_snapshot() -> dict[str, Any]:
-    """Retrato da máquina que está executando a fila.
+    """Retrato anônimo da máquina que está executando a fila.
 
     Coletado uma vez por estágio; os campos que faltarem ficam ``None`` em vez
     de derrubar o run.
@@ -137,7 +137,6 @@ def hardware_snapshot() -> dict[str, Any]:
         "cpu_count": _cpu_count(),
         "ram_total_gb": _ram_total_gb(),
         "os": f"{platform.system()} {platform.release()}",
-        "hostname": platform.node() or None,
         "python": platform.python_version(),
     }
 
