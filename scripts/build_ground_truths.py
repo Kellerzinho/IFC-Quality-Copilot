@@ -43,6 +43,10 @@ from src.pipeline import QualityPipeline
 IDS_PATH = PROJECT_ROOT / "data" / "ids_templates" / "residencial_nbr15575.ids"
 RATIFIED_LEGACY_SHA256 = "7d1b1dc8b4756e5a48cd28925d3dceb53a83ab401c31ae0fcf80914ddf85bccb"
 IDS_SHA256 = "f698f2c020d79140bb314f077f8de680f492fd7ba42867e4000a4cead5d20905"
+EXPECTED_INPUT_IFC_SHA256 = {
+    "predio": "a71c8be30d82760218f5b3f3a1c476b49e3f30e608b0065916b9d5206a1a6dd0",
+    "casa": "3b84789c7396449f2c8a3d2f4a66468d81e59f8351ebd4b71fad161fa06112f2",
+}
 THERMAL_UNIT = (
     "W/(m²·K) (unidade semântica de IfcThermalTransmittanceMeasure; Unit IFC não declarada)"
 )
@@ -89,8 +93,11 @@ def build_dataset(
     legacy_gt_path: Path | None = None,
 ) -> tuple[GTExtractionResult, list[Issue]]:
     """Diagnostica um IFC e particiona cada issue em item auditado ou abstencao."""
-    _require_input(spec.ifc_path, "IFC")
-    _require_input(IDS_PATH, "IDS")
+    expected_ifc_sha256 = EXPECTED_INPUT_IFC_SHA256.get(spec.key)
+    if expected_ifc_sha256 is None:
+        raise ValueError(f"dataset desconhecido: {spec.key}")
+    _require_input(spec.ifc_path, "IFC", expected_sha256=expected_ifc_sha256)
+    _require_input(IDS_PATH, "IDS", expected_sha256=IDS_SHA256)
     actual_ids_sha256 = sha256_file(IDS_PATH)
     if actual_ids_sha256.lower() != IDS_SHA256.lower():
         raise ValueError(
@@ -101,7 +108,16 @@ def build_dataset(
     predio_source: tuple[dict[str, Any], str, bool] | None = None
     if spec.key == "predio":
         source_path = Path(legacy_gt_path or spec.ground_truth_path)
-        predio_source = _read_predio_source(source_path, spec)
+        source_sha256 = (
+            RATIFIED_LEGACY_SHA256
+            if legacy_gt_path is not None
+            else EXPECTED_GROUND_TRUTH_SHA256.get(spec.key, RATIFIED_LEGACY_SHA256)
+        )
+        predio_source = _read_predio_source(
+            source_path,
+            spec,
+            expected_sha256=source_sha256,
+        )
 
     with _persistent_suggestion_cache_disabled():
         pipeline: QualityPipeline | None = None
@@ -225,8 +241,17 @@ def main(argv: list[str] | None = None) -> int:
     return status
 
 
-def _read_predio_source(path: Path, spec: DatasetSpec) -> tuple[dict[str, Any], str, bool]:
-    _require_input(path, "ground truth legado/canonico do predio")
+def _read_predio_source(
+    path: Path,
+    spec: DatasetSpec,
+    *,
+    expected_sha256: str = RATIFIED_LEGACY_SHA256,
+) -> tuple[dict[str, Any], str, bool]:
+    _require_input(
+        path,
+        "ground truth legado/canonico do predio",
+        expected_sha256=expected_sha256,
+    )
     raw_bytes = path.read_bytes()
     digest = _sha256_bytes(raw_bytes)
     try:
@@ -558,9 +583,10 @@ def _skip_sort_key(item: SkippedIssue) -> tuple[str, str, str, str]:
     return item.issue_type, item.element_guid, item.check_property, item.issue_id
 
 
-def _require_input(path: Path, label: str) -> None:
+def _require_input(path: Path, label: str, *, expected_sha256: str | None = None) -> None:
     if not path.is_file():
-        raise FileNotFoundError(f"{label} ausente: {path}")
+        expected = f"; SHA-256 esperado: {expected_sha256}" if expected_sha256 else ""
+        raise FileNotFoundError(f"{label} ausente: {path}{expected}")
 
 
 @contextmanager

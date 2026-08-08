@@ -211,6 +211,48 @@ def test_build_rejects_ids_that_does_not_match_frozen_profile(tmp_path, monkeypa
     assert ids_path.read_bytes() == b"synthetic ids"
 
 
+def test_cli_missing_ifc_reports_its_dataset_path_and_frozen_hash(tmp_path, monkeypatch, capsys):
+    """Instalação incompleta precisa identificar qual IFC canônico obter."""
+    spec = builder.DatasetSpec(
+        key="casa",
+        ifc_path=tmp_path / "missing-casa.ifc",
+        ground_truth_path=tmp_path / "ground_truth.yaml",
+        building_context={},
+    )
+
+    monkeypatch.setattr(builder, "DATASETS", {"casa": spec})
+
+    assert builder.main(["--dataset", "casa"]) == 1
+    stderr = capsys.readouterr().err
+    assert str(spec.ifc_path) in stderr
+    assert builder.EXPECTED_INPUT_IFC_SHA256["casa"] in stderr
+
+
+def test_cli_missing_ids_reports_its_path_and_frozen_hash(tmp_path, monkeypatch, capsys):
+    """Instalação incompleta precisa identificar qual IDS canônico obter."""
+    spec = _spec(tmp_path, "casa")
+    missing_ids = tmp_path / "missing-requirements.ids"
+    monkeypatch.setattr(builder, "IDS_PATH", missing_ids)
+    monkeypatch.setattr(builder, "DATASETS", {"casa": spec})
+
+    assert builder.main(["--dataset", "casa"]) == 1
+    stderr = capsys.readouterr().err
+    assert str(missing_ids) in stderr
+    assert builder.IDS_SHA256 in stderr
+
+
+def test_missing_legacy_predio_reports_ratified_hash(tmp_path):
+    """A fonte legada ausente permanece identificável pela identidade ratificada."""
+    spec = _spec(tmp_path, "predio")
+    missing_legacy = tmp_path / "missing-legacy.yaml"
+
+    with pytest.raises(FileNotFoundError) as error:
+        builder._read_predio_source(missing_legacy, spec)
+
+    assert str(missing_legacy) in str(error.value)
+    assert builder.RATIFIED_LEGACY_SHA256 in str(error.value)
+
+
 def test_build_partitions_every_issue_into_item_or_skip(tmp_path, monkeypatch):
     """Perder ou duplicar issue entre item/skip deve quebrar este teste."""
     accepted = _issue("GUID-A")
