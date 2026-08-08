@@ -626,6 +626,9 @@ usar Ollama nem IFC real.
 Cobrir:
 
 ```python
+import hashlib
+
+
 def _expectation() -> module.StageExpectation:
     return module.StageExpectation(
         dataset_key="casa", model_name="m:test", model_digest="a" * 64,
@@ -826,6 +829,8 @@ def test_rollback_failure_finishes_quarantine_before_raising(monkeypatch, tmp_pa
     path = results_root / "casa" / "m_test" / "run_0.json"
     _write_stage_pair(path, asdict(_expectation()))
     _, issues_path = module._stage_artifact_paths(path)
+    before = (path.read_bytes(), issues_path.read_bytes())
+    before_sha256 = tuple(hashlib.sha256(payload).hexdigest() for payload in before)
     real_replace = os.replace
     failed = {"second_move": False, "rollback": False}
 
@@ -850,6 +855,10 @@ def test_rollback_failure_finishes_quarantine_before_raising(monkeypatch, tmp_pa
     assert len(json_copies) == len(jsonl_copies) == 1
     assert json_copies[0].parent == jsonl_copies[0].parent
     assert not json_copies[0].parent.name.endswith(".partial")
+    after = (json_copies[0].read_bytes(), jsonl_copies[0].read_bytes())
+    after_sha256 = tuple(hashlib.sha256(payload).hexdigest() for payload in after)
+    assert after == before
+    assert after_sha256 == before_sha256
     assert not path.exists() and not issues_path.exists()
     assert not list(quarantine_root.rglob("*.journal.json"))
 
@@ -903,6 +912,9 @@ def test_next_invocation_reconciles_split_before_any_run_single(monkeypatch, tmp
     results_root = tmp_path / "results"
     path = module._stage_path(results_root, "casa", "m:test", 0)
     _write_stage_pair(path, asdict(_expectation()))
+    _, original_issues_path = module._stage_artifact_paths(path)
+    before = (path.read_bytes(), original_issues_path.read_bytes())
+    before_sha256 = tuple(hashlib.sha256(payload).hexdigest() for payload in before)
     with monkeypatch.context() as transaction_fault:
         issues_path = _leave_unresolved_split_transaction(
             transaction_fault, path, results_root
@@ -910,7 +922,25 @@ def test_next_invocation_reconciles_split_before_any_run_single(monkeypatch, tmp
 
     calls = install_fake_runner(monkeypatch, tmp_path)
     original_run_single = module.ExperimentRunner.run_single
+    original_acquire_pidfile = module._acquire_pidfile
+    original_reconcile = module._reconcile_quarantine_transactions
     quarantine_root = results_root.parent / ".invalid-stage-artifacts"
+    acquired_tokens: list[str] = []
+    reconcile_tokens: list[str] = []
+
+    def capture_owned_pid_lease(pid_path):
+        lease = original_acquire_pidfile(pid_path)
+        assert lease is not None
+        acquired_tokens.append(lease.token)
+        return lease
+
+    def assert_owned_pid_lease_during_reconcile(root):
+        assert acquired_tokens
+        record = json.loads(module.PID_FILE.read_text(encoding="utf-8"))
+        assert record["pid"] == os.getpid()
+        assert record["token"] == acquired_tokens[-1]
+        reconcile_tokens.append(record["token"])
+        return original_reconcile(root)
 
     def assert_reconciled_before_runner(self, **kwargs):
         json_copies = list(quarantine_root.rglob(path.name))
@@ -918,10 +948,19 @@ def test_next_invocation_reconciles_split_before_any_run_single(monkeypatch, tmp
         assert len(json_copies) == len(jsonl_copies) == 1
         assert json_copies[0].parent == jsonl_copies[0].parent
         assert not json_copies[0].parent.name.endswith(".partial")
+        after = (json_copies[0].read_bytes(), jsonl_copies[0].read_bytes())
+        after_sha256 = tuple(hashlib.sha256(payload).hexdigest() for payload in after)
+        assert after == before
+        assert after_sha256 == before_sha256
         assert not path.exists() and not issues_path.exists()
         assert not list(quarantine_root.rglob("*.journal.json"))
         return original_run_single(self, **kwargs)
 
+    monkeypatch.setattr(module, "_acquire_pidfile", capture_owned_pid_lease)
+    monkeypatch.setattr(
+        module, "_reconcile_quarantine_transactions",
+        assert_owned_pid_lease_during_reconcile,
+    )
     monkeypatch.setattr(
         module.ExperimentRunner, "run_single", assert_reconciled_before_runner
     )
@@ -930,6 +969,8 @@ def test_next_invocation_reconciles_split_before_any_run_single(monkeypatch, tmp
         "--execution-identity", str(tmp_path / "identity.json"),
         "--results-root", str(results_root),
     ]) == 0
+    assert reconcile_tokens == acquired_tokens
+    assert not module.PID_FILE.exists()
     assert {call["dataset_key"] for call in calls} == {"predio", "casa"}
 
 
@@ -1078,8 +1119,15 @@ zero, gravando com `_write_stage_pair` exatamente o metadata de cada
 outcome. Assim o teste materializa 20 pares, remove alternadamente o JSON ou o
 JSONL de um deles e espera o nome exato do único estágio inválido. O helper nunca
 cria um JSON sem o JSONL correspondente, para que os testes de matriz não possam
-aprovar por presença isolada do agregado. O segundo teste acrescenta um 21º stem como par completo ou
-órfão em cada direção e exige um único diagnóstico `unexpected:<stem>`.
+aprovar por presença isolada do agregado. O segundo teste acrescenta um 21º stem
+como par completo ou órfão em cada direção e exige um único diagnóstico
+`unexpected:<stem>`.
+
+Nos testes de recuperação forward e de relançamento, capturar antes da falha os
+bytes e SHA-256 de agregado e JSONL separadamente e comparar os mesmos dois valores
+no diretório final. No relançamento, o wrapper de `_acquire_pidfile` captura o token
+do lease; o wrapper de `_reconcile_quarantine_transactions` só delega depois de
+provar que o PID file contém o PID atual e exatamente esse token.
 
 - [ ] **Step 3: Confirmar RED**
 

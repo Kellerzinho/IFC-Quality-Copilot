@@ -1556,7 +1556,8 @@ def test_manual_checklist_requires_both_windows_versions_and_resume_cases():
     required = [
         "Windows 10 22H2 build 19045 x64", "Windows 11 x64", "Ctrl+C",
         "BENCHMARK_STOP", "20 pares válidos (JSON + JSONL)",
-        "quarentena reconciliada", "/api/pull", "SHA-256",
+        "quarentena reconciliada", "PID/token da execução",
+        "SHA-256 dos dois membros", "/api/pull", "SHA-256",
     ]
     assert all(value in text for value in required)
 ```
@@ -1690,7 +1691,9 @@ x64. Em cada linha registrar operador, build, CPU/RAM/GPU/driver e marcar:
 - `BENCHMARK_STOP` preexistente é ignorado e um novo retorna 130;
 - após fault injection no segundo move/rollback, relançamento não inicia estágio
   até registrar “quarentena reconciliada” com os dois membros juntos nos sources
-  ativos ou no mesmo diretório final;
+  ativos ou no mesmo diretório final; durante a reconciliação, o registro
+  PID/token da execução já está adquirido, e bytes + SHA-256 dos dois membros são
+  idênticos aos capturados antes da falha;
 - run só fica `complete` com `20 pares válidos (JSON + JSONL)`: os stems casam e
   cada JSONL é UTF-8, não vazio, termina em newline, tem toda linha parseável e
   contagem igual a `issue_counts.total_issues` do agregado;
