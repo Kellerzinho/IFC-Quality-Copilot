@@ -22,6 +22,36 @@ sources:
     use: 'Referência térmica complementar; delimita análise e não comprova desempenho IFC.'
     redistribution: link-only
     observation: 'Norma ABNT paga: somente metadados e link de catálogo, sem cópia local.'
+  - id: abnt-nbr-14432-2001
+    title: 'ABNT NBR 14432:2001 — Exigências de resistência ao fogo de elementos construtivos de edificações — Procedimento'
+    edition_or_date: 'publicada em 30/11/2001; válida a partir de 31/12/2001; confirmada em 25/04/2024; em vigor'
+    issuer: 'ABNT — Associação Brasileira de Normas Técnicas'
+    official_url: 'https://www.abntcatalogo.com.br/pav.aspx'
+    accessed_at: '2026-08-08'
+    status: 'em vigor; edição explicitamente identificada na evidência legada e confirmada no catálogo oficial'
+    use: 'Âncora bibliográfica exata para a string legada "NBR 14432:2001"; os metadados públicos não validam a alegação específica sobre a Tabela A.1, o TRRF de 60 min ou o desempenho fornecido pelo IFC.'
+    redistribution: link-only
+    observation: 'Na pesquisa avançada oficial, buscar número 14432 e selecionar exatamente ABNT NBR 14432:2001. Os deep links Q do catálogo são transitórios e por isso não foram persistidos. O catálogo informa que esta edição consolida a edição de 2000 e a Emenda 1:2001.'
+  - id: abnt-nbr-15220-2-2022-corrigida-2023
+    title: 'ABNT NBR 15220-2:2022 — Desempenho térmico de edificações — Parte 2: Componentes e elementos construtivos das edificações — Resistência e transmitância térmica — Métodos de cálculo — Versão Corrigida:2023'
+    edition_or_date: '2022, Versão Corrigida:2023; em vigor'
+    issuer: 'ABNT — Associação Brasileira de Normas Técnicas'
+    official_url: 'https://www.abntcatalogo.com.br/pav.aspx'
+    accessed_at: '2026-08-08'
+    status: 'em vigor; registro vigente consultado, sem atribuição retroativa à citação legada'
+    use: 'Desambiguação de catálogo. As notas legadas dizem apenas "NBR 15220-2", sem ano; portanto não é possível estabelecer se se referiam à edição de 2005 ou à edição de 2022 corrigida em 2023, nem atribuir Rsi, Rse, condutividades ou resultados à edição vigente.'
+    redistribution: link-only
+    observation: 'Na pesquisa avançada oficial, buscar número 15220 e parte 2; selecionar a versão corrigida de 2023. Os deep links Q são transitórios. O catálogo também lista a edição de 2005 e sua Errata 1:2008 como canceladas; nenhuma edição foi inferida para a citação legada.'
+  - id: abnt-nbr-15200-2024-corrigida-2024
+    title: 'ABNT NBR 15200:2024 — Projeto de estruturas de concreto em situação de incêndio — Versão Corrigida:2024'
+    edition_or_date: '2024, Versão Corrigida:2024; em vigor'
+    issuer: 'ABNT — Associação Brasileira de Normas Técnicas'
+    official_url: 'https://www.abntcatalogo.com.br/pav.aspx'
+    accessed_at: '2026-08-08'
+    status: 'em vigor; registro vigente consultado, sem atribuição retroativa à citação legada'
+    use: 'Desambiguação de catálogo. A nota legada diz apenas "NBR 15200", sem ano; não é possível afirmar qual edição fundamentou a revisão, atribuí-la à edição de 2024 ou usar a citação para comprovar resistência ao fogo de pilares no IFC.'
+    redistribution: link-only
+    observation: 'Na pesquisa avançada oficial, buscar número 15200 e selecionar a versão corrigida de 2024. Os deep links Q são transitórios. A menção legada delimita contexto de projeto estrutural em incêndio, não ensaio, dimensionamento reproduzido ou conformidade.'
   - id: abnt-nbr-15575-1-2025
     title: 'ABNT NBR 15575-1:2025 — Edificações habitacionais — Desempenho — Parte 1: Requisitos gerais'
     edition_or_date: 'forma consolidada, 2025; em vigor'
@@ -172,3 +202,13 @@ sources:
     use: 'Registro da atualização aplicável às NT 2-08 e NT 2-19 usadas como limite de análise.'
     redistribution: link-only
     observation: 'Fonte de atualização; não substitui avaliação da aplicabilidade ao caso concreto.'
+  - id: cbpmesp-it-08-legacy-underspecified
+    title: 'IT 08 — Segurança estrutural contra incêndio — tratamento da citação legada CBPMESP sem edição'
+    edition_or_date: 'citação legada sem edição; portal oficial consultado em 2026-08-08'
+    issuer: 'CBPMESP — Corpo de Bombeiros da Polícia Militar do Estado de São Paulo'
+    official_url: 'https://cbaplang.corpodebombeiros.sp.gov.br/internetCB/#/LegislacaoConsulta'
+    accessed_at: '2026-08-08'
+    status: 'contexto histórico não fluminense; edição não recuperável da evidência; não aplicável como fonte normativa a Deodoro/RJ'
+    use: 'Registro exclusivo de proveniência. Com a reclassificação como skipped das 262 entradas prováveis de paredes, a IT 08 não é doadora de rótulos pontuados para os datasets do Rio de Janeiro.'
+    redistribution: link-only
+    observation: 'O portal oficial permite consultar legislação vigente e não vigente, mas a string legada "IT-08 CBPMESP" não informa ano. Nenhuma edição foi inferida; para Deodoro prevalecem os limites territoriais do COSCIP e das fontes CBMERJ registradas acima.'
