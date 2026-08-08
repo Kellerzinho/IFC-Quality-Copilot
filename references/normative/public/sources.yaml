@@ -1,0 +1,174 @@
+schema_version: 1
+accessed_at: '2026-08-08'
+redistribution_policy: link-only
+sources:
+  - id: abnt-nbr-15220-3-2024
+    title: 'ABNT NBR 15220-3:2024 — Desempenho térmico de edificações — Parte 3: Zoneamento bioclimático brasileiro e diretrizes construtivas para habitações unifamiliares de interesse social'
+    edition_or_date: '2ª edição, 2024; em vigor'
+    issuer: 'ABNT — Associação Brasileira de Normas Técnicas'
+    official_url: 'https://www.abntcatalogo.com.br/pnm.aspx?Q=MUFBV1NQaU5pdWwvclQ4TGdJODFrWHBVcS84b2xQY3FtNkRXdDhpbEpHcz0='
+    accessed_at: '2026-08-08'
+    status: 'em vigor; catálogo oficial'
+    use: 'Referência de zoneamento e limites de aplicabilidade térmica; não é valor esperado fornecido por elemento IFC.'
+    redistribution: link-only
+    observation: 'Norma ABNT paga: somente metadados e link de catálogo, sem cópia local.'
+  - id: abnt-tr-15220-3-1-2024-corrigida-2025
+    title: 'ABNT TR 15220-3-1:2024 — Desempenho térmico de edificações — Parte 3-1: Zoneamento bioclimático brasileiro e diretrizes construtivas — Versão Corrigida:2025'
+    edition_or_date: '2024, Versão Corrigida:2025; em vigor'
+    issuer: 'ABNT — Associação Brasileira de Normas Técnicas'
+    official_url: 'https://www.abntcatalogo.com.br/pnm.aspx?Q=OE1lQ1NEaUQ4M0l5QWZpR0lBNDVIVWVwS2JVRFduUUVKU1dvRDEvdG1iMD0='
+    accessed_at: '2026-08-08'
+    status: 'em vigor; catálogo oficial'
+    use: 'Referência térmica complementar; delimita análise e não comprova desempenho IFC.'
+    redistribution: link-only
+    observation: 'Norma ABNT paga: somente metadados e link de catálogo, sem cópia local.'
+  - id: abnt-nbr-15575-1-2025
+    title: 'ABNT NBR 15575-1:2025 — Edificações habitacionais — Desempenho — Parte 1: Requisitos gerais'
+    edition_or_date: 'forma consolidada, 2025; em vigor'
+    issuer: 'ABNT — Associação Brasileira de Normas Técnicas'
+    official_url: 'https://www.abntcatalogo.com.br/pnm.aspx?Q=ejV3VzI2aTFNRC9aQy9WY2JvaU40cDNFNnUycjBUcFAxWnlaVk4zVmp1ST0='
+    accessed_at: '2026-08-08'
+    status: 'em vigor; catálogo oficial'
+    use: 'Referência de escopo habitacional e limites de análise.'
+    redistribution: link-only
+    observation: 'Norma ABNT paga: somente metadados e link de catálogo, sem cópia local.'
+  - id: abnt-nbr-15575-4-2025
+    title: 'ABNT NBR 15575-4:2025 — Edificações habitacionais — Desempenho — Parte 4: Sistemas de vedações verticais internas e externas'
+    edition_or_date: 'forma consolidada, 2025; em vigor'
+    issuer: 'ABNT — Associação Brasileira de Normas Técnicas'
+    official_url: 'https://www.abntcatalogo.com.br/pnm.aspx?Q=ZHZCUHRXS2pLSmVieU9melFqZXdORjB2TzdCVDVRM0ZlSFNsblk3eVFtdz0='
+    accessed_at: '2026-08-08'
+    status: 'em vigor; catálogo oficial'
+    use: 'Referência para análise de vedações; não atesta desempenho de elemento IFC.'
+    redistribution: link-only
+    observation: 'Norma ABNT paga: somente metadados e link de catálogo, sem cópia local.'
+  - id: abnt-nbr-15575-5-2025
+    title: 'ABNT NBR 15575-5:2025 — Edificações habitacionais — Desempenho — Parte 5: Requisitos para sistemas de coberturas'
+    edition_or_date: 'forma consolidada, 2025; em vigor'
+    issuer: 'ABNT — Associação Brasileira de Normas Técnicas'
+    official_url: 'https://www.abntcatalogo.com.br/pnm.aspx?Q=cjRmUkF1RDIwdW9pSGNNMkgzRGt0dFU1WGlmQU8wYk1zRWoxaHZIY2pDST0='
+    accessed_at: '2026-08-08'
+    status: 'em vigor; catálogo oficial'
+    use: 'Referência para análise de coberturas; não atesta desempenho de elemento IFC.'
+    redistribution: link-only
+    observation: 'Norma ABNT paga: somente metadados e link de catálogo, sem cópia local.'
+  - id: labeee-zoneamento-aplicativo
+    title: 'Zoneamento bioclimático — aplicativo público'
+    edition_or_date: 'consulta pública, sem edição normativa'
+    issuer: 'LabEEE/UFSC — Laboratório de Eficiência Energética em Edificações'
+    official_url: 'https://labeee.ufsc.br/zoneamento/'
+    accessed_at: '2026-08-08'
+    status: 'fonte técnica pública; sem valor normativo declarado'
+    use: 'Contexto técnico para associar Rio de Janeiro/RJ à ZB 4A.'
+    redistribution: link-only
+    observation: 'A classificação é contexto técnico e não declaração de conformidade.'
+  - id: labeee-lista-sudeste
+    title: 'Lista de cidades — Sudeste'
+    edition_or_date: 'documento público, sem edição normativa'
+    issuer: 'LabEEE/UFSC — Laboratório de Eficiência Energética em Edificações'
+    official_url: 'https://labeee.ufsc.br/sites/default/files/documents/Sudeste.pdf'
+    accessed_at: '2026-08-08'
+    status: 'fonte técnica pública; sem valor normativo declarado'
+    use: 'Registra Rio de Janeiro/RJ como ZB 4A para o contexto dos datasets em Deodoro.'
+    redistribution: link-only
+    observation: 'PDF institucional público referenciado externamente; não incluído no repositório.'
+  - id: coscip-decreto-42-2018-compilado
+    title: 'COSCIP — Decreto Estadual nº 42/2018 compilado com Decreto nº 46.925/2020'
+    edition_or_date: 'Decreto nº 42/2018, compilado com alterações de 2020'
+    issuer: 'Estado do Rio de Janeiro / CBMERJ'
+    official_url: 'https://www.cbmerj.rj.gov.br/wp-content/uploads/2024/05/COSCIP_DEC_42-2018_COMPILADO.pdf'
+    accessed_at: '2026-08-08'
+    status: 'documento institucional público consultado'
+    use: 'Marco estadual de aplicabilidade para incêndio; não prova proteção instalada ou desempenho fornecido.'
+    redistribution: link-only
+    observation: 'PDF institucional público referenciado externamente; não incluído no repositório.'
+  - id: cbmerj-indice-notas-tecnicas
+    title: 'Notas Técnicas — índice oficial e vigente'
+    edition_or_date: 'página institucional consultada em 2026-08-08'
+    issuer: 'CBMERJ — Corpo de Bombeiros Militar do Estado do Rio de Janeiro'
+    official_url: 'https://www.cbmerj.rj.gov.br/notas-tecnicas/'
+    accessed_at: '2026-08-08'
+    status: 'índice oficial e vigente consultado'
+    use: 'Confirmação de fontes de incêndio aplicáveis no Rio de Janeiro.'
+    redistribution: link-only
+    observation: 'Índice externo; não substitui a verificação das condições de aplicabilidade.'
+  - id: cbmerj-nt-1-04-2019
+    title: 'NT 1-04 — Classificação das edificações e áreas de risco quanto ao risco de incêndio'
+    edition_or_date: '1ª edição, 2019; vigente'
+    issuer: 'CBMERJ — Corpo de Bombeiros Militar do Estado do Rio de Janeiro'
+    official_url: 'https://www.cbmerj.rj.gov.br/wp-content/uploads/2022/04/NT-1-04-Classificacao-das-edificacoes-e-areas-de-risco-quanto-ao-risco-de-incendio.pdf'
+    accessed_at: '2026-08-08'
+    status: 'vigente; documento institucional público'
+    use: 'Referência para A-1/A-2 como premissas autorais de análise.'
+    redistribution: link-only
+    observation: 'A classificação do dataset não equivale a classificação oficial da edificação.'
+  - id: cbmerj-nt-2-01-2020
+    title: 'NT 2-01 — Sistema de proteção por extintores de incêndio'
+    edition_or_date: '2ª edição, 2020; vigente'
+    issuer: 'CBMERJ — Corpo de Bombeiros Militar do Estado do Rio de Janeiro'
+    official_url: 'https://www.cbmerj.rj.gov.br/wp-content/uploads/2022/04/NT-2-01-Sistema-de-protecao-por-extintores-de-incendio-versao-02-Aprovada-pela-Portaria-CBMERJ-1120_2020_1601400175.pdf'
+    accessed_at: '2026-08-08'
+    status: 'vigente; documento institucional público'
+    use: 'Delimita análise de extintores; residência unifamiliar é excluída conforme a fonte.'
+    redistribution: link-only
+    observation: 'Ausência de extintor no IFC não gera violação automática para a premissa A-1.'
+  - id: cbmerj-nt-2-05-2023
+    title: 'NT 2-05 — Sinalização de segurança contra incêndio e pânico'
+    edition_or_date: '3ª edição, 2023; vigente'
+    issuer: 'CBMERJ — Corpo de Bombeiros Militar do Estado do Rio de Janeiro'
+    official_url: 'https://www.cbmerj.rj.gov.br/wp-content/uploads/2024/05/NT2-05_3Edio_2023.pdf'
+    accessed_at: '2026-08-08'
+    status: 'vigente; documento institucional público'
+    use: 'Delimita análise de sinalização, condicionada ao escopo aplicável.'
+    redistribution: link-only
+    observation: 'Ausência de sinalização no IFC não prova ausência física nem conformidade/não conformidade.'
+  - id: cbmerj-nt-2-08-2019-portaria-1317-2025
+    title: 'NT 2-08 — Saídas de emergência em edificações'
+    edition_or_date: '1ª edição, 2019, alterada pela Portaria CBMERJ nº 1.317/2025'
+    issuer: 'CBMERJ — Corpo de Bombeiros Militar do Estado do Rio de Janeiro'
+    official_url: 'https://www.cbmerj.rj.gov.br/wp-content/uploads/2026/01/NT_2-08_1Ed_2019_alterada_Portaria_1317_2025.pdf'
+    accessed_at: '2026-08-08'
+    status: 'documento institucional público atualizado pela Portaria nº 1.317/2025'
+    use: 'Limite para análise de saídas, condicionado a área, altura, pavimentos, população e proteção.'
+    redistribution: link-only
+    observation: 'O IFC isolado não permite inferir rota válida ou descarga segura.'
+  - id: cbmerj-nt-2-09-2025
+    title: 'NT 2-09 — Sistemas de controle de fumaça'
+    edition_or_date: '2ª edição, 2025; quando aplicável a escada ou área pressurizada'
+    issuer: 'CBMERJ — Corpo de Bombeiros Militar do Estado do Rio de Janeiro'
+    official_url: 'https://www.cbmerj.rj.gov.br/wp-content/uploads/2024/12/NT_2_09_2Ed_2025.pdf'
+    accessed_at: '2026-08-08'
+    status: 'documento institucional público; aplicabilidade condicional'
+    use: 'Fonte de limite apenas quando houver escada ou área pressurizada no escopo declarado.'
+    redistribution: link-only
+    observation: 'Não usar para inferir automaticamente sistema existente no IFC.'
+  - id: cbmerj-nt-2-18-2022
+    title: 'NT 2-18 — Compartimentação horizontal e vertical'
+    edition_or_date: '2ª edição, 2022'
+    issuer: 'CBMERJ — Corpo de Bombeiros Militar do Estado do Rio de Janeiro'
+    official_url: 'https://www.cbmerj.rj.gov.br/wp-content/uploads/2024/05/NT-2-18-Compartimentao-horizontal-e-vertical-2022_1649879739.pdf'
+    accessed_at: '2026-08-08'
+    status: 'documento institucional público consultado'
+    use: 'Fonte para delimitar análise de compartimentação e razão de abstinência.'
+    redistribution: link-only
+    observation: 'Não comprova a função ou a resistência ao fogo fornecida por elemento IFC.'
+  - id: cbmerj-nt-2-19-2025-portaria-1317-2025
+    title: 'NT 2-19 — Tempo requerido de resistência ao fogo'
+    edition_or_date: '2ª edição, 2025, alterada pela Portaria CBMERJ nº 1.317/2025'
+    issuer: 'CBMERJ — Corpo de Bombeiros Militar do Estado do Rio de Janeiro'
+    official_url: 'https://www.cbmerj.rj.gov.br/wp-content/uploads/2025/12/NT2_19_2Ed_2025_alterada_Portaria_1317_2025.pdf'
+    accessed_at: '2026-08-08'
+    status: 'documento institucional público atualizado pela Portaria nº 1.317/2025'
+    use: 'Fonte de limite para TRRF; não equivale a resistência ao fogo fornecida por elemento IFC.'
+    redistribution: link-only
+    observation: 'Classes R, E, I, REI, EI e P-CF não são intercambiáveis sem evidência específica.'
+  - id: cbmerj-portaria-1317-2025
+    title: 'Portaria CBMERJ nº 1.317/2025'
+    edition_or_date: '2025'
+    issuer: 'CBMERJ — Corpo de Bombeiros Militar do Estado do Rio de Janeiro'
+    official_url: 'https://www.cbmerj.rj.gov.br/wp-content/uploads/2025/12/PORTARIA_CBMERJ_1317_2025.pdf'
+    accessed_at: '2026-08-08'
+    status: 'documento institucional público consultado'
+    use: 'Registro da atualização aplicável às NT 2-08 e NT 2-19 usadas como limite de análise.'
+    redistribution: link-only
+    observation: 'Fonte de atualização; não substitui avaliação da aplicabilidade ao caso concreto.'
