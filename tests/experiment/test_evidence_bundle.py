@@ -190,6 +190,56 @@ def test_structured_policy_blocks_sensitive_components_anywhere_in_nested_keys(t
     assert not scan_sensitive_text(tmp_path, forbidden_values=set())
 
 
+@pytest.mark.parametrize("suffix", [".json", ".jsonl"])
+def test_compact_alias_policy_blocks_credentials_without_hiding_token_metrics(tmp_path, suffix):
+    safe_metrics = {
+        "OUTPUTTOKENS": 12,
+        "prompttokens": 8,
+        "TokenCount": 12,
+        "TOKENSperSECOND": 4.5,
+        "CompletionTokensTotal": 6,
+        "inputtokenspersample": 5.0,
+        "outputtokensmean": 6.0,
+        "tokenizer_version": "1.0",
+        "detokenized_length": 42,
+    }
+    sensitive = {
+        "APIKEY": "s01",
+        "ollamakeyvalue": "s02",
+        "PRIVATEKEYHASH": "s03",
+        "accesskeyid": "s04",
+        "SERIALNUMBER": "s05",
+        "MACADDRESSHASH": "s06",
+        "ipaddressvalue": "s07",
+        "HOSTIDHASH": "s08",
+        "useridvalue": "s09",
+        "AUTHTOKENHASH": "s10",
+        "accesstokenvalue": "s11",
+        "BearerTOKENHash": "s12",
+        "REFRESHTOKENVALUE": "s13",
+        "secrettokenhash": "s14",
+        "apiTOKENhash": "s15",
+        "IDTOKENVALUE": "s16",
+        "PASSWORDVALUE": "s17",
+        "secretvalue": "s18",
+        "OUTPUTACCESSTOKENHASH": "s19",
+    }
+    path = tmp_path / f"compact{suffix}"
+    record = {"metrics": safe_metrics, "nested": {"payload": sensitive}}
+    path.write_text(json.dumps(record, sort_keys=True) + "\n", encoding="utf-8")
+
+    findings = scan_sensitive_text(tmp_path, forbidden_values=set())
+    assert [finding.kind for finding in findings].count("sensitive-key") == 19
+
+    sanitize_text_files(tmp_path, forbidden_values=set())
+    if suffix == ".json":
+        clean_records = [json.loads(path.read_text(encoding="utf-8"))]
+    else:
+        clean_records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+    assert clean_records == [{"metrics": safe_metrics, "nested": {"payload": {}}}]
+    assert not scan_sensitive_text(tmp_path, forbidden_values=set())
+
+
 def test_ipv6_candidates_are_validated_so_times_and_versions_survive(tmp_path):
     path = tmp_path / "versions.log"
     path.write_text(

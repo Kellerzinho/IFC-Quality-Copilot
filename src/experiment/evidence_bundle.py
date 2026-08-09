@@ -122,6 +122,53 @@ SAFE_STANDALONE_TOKEN_METRICS = frozenset(
         ("total", "tokens"),
     }
 )
+SENSITIVE_COMPACT_FRAGMENTS = frozenset(
+    {
+        "accesskey",
+        "accesstoken",
+        "apikey",
+        "apitoken",
+        "authtoken",
+        "bearertoken",
+        "hostaddress",
+        "hostid",
+        "hostname",
+        "idtoken",
+        "ipaddress",
+        "ipid",
+        "ipname",
+        "macaddress",
+        "macid",
+        "macname",
+        "ollamakey",
+        "password",
+        "privatekey",
+        "refreshtoken",
+        "secret",
+        "secrettoken",
+        "serial",
+        "serialnumber",
+        "useraddress",
+        "userid",
+        "username",
+    }
+)
+SAFE_COMPACT_TOKEN_METRIC_SUFFIXES = frozenset(
+    {"", "average", "count", "max", "mean", "median", "min", "persample", "persecond", "total"}
+)
+SAFE_COMPACT_TOKEN_METRIC_PREFIXES = frozenset(
+    f"{direction}{unit}"
+    for direction in SAFE_TOKEN_METRIC_DIRECTIONS
+    for unit in ("token", "tokens")
+)
+SAFE_COMPACT_TOKEN_METRICS = frozenset(
+    {
+        f"{prefix}{suffix}"
+        for prefix in SAFE_COMPACT_TOKEN_METRIC_PREFIXES
+        for suffix in SAFE_COMPACT_TOKEN_METRIC_SUFFIXES
+    }
+    | {"tokencount", "tokenspersample", "tokenspersecond", "totaltokens"}
+)
 SECRET_ENV_KEYS = re.compile(
     r"(?:TOKEN|SECRET|PASSWORD|API[_-]?KEY|OLLAMA[_-]?KEY)",
     re.IGNORECASE,
@@ -204,6 +251,13 @@ def _is_sensitive_key(key: object) -> bool:
     if SENSITIVE_KEY_COMPONENTS.intersection(parts):
         return True
     if any(_contains_parts(parts, sequence) for sequence in SENSITIVE_KEY_SEQUENCES):
+        return True
+    compact = "".join(parts)
+    if any(fragment in compact for fragment in SENSITIVE_COMPACT_FRAGMENTS):
+        return True
+    if compact in SAFE_COMPACT_TOKEN_METRICS:
+        return False
+    if any(compact.startswith(prefix) for prefix in SAFE_COMPACT_TOKEN_METRIC_PREFIXES):
         return True
     token_indexes = [
         index for index, component in enumerate(parts) if component in {"token", "tokens"}
