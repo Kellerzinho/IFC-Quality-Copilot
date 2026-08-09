@@ -1,131 +1,956 @@
-"""Orquestrador do benchmark completo (Fase B) — fila retomável por estágios.
+"""Executa a matriz oficial do benchmark com retomada integral e auditável.
 
-Executa a matriz oficial (``models.lock.json``) sobre os dois datasets
-congelados do prédio, em ordem **réplica-major**: a réplica 0 de todos os
-modelos conclui antes da réplica 1 começar — sob interrupção, é melhor ter
-1 réplica de tudo do que 3 réplicas de dois modelos.
-
-Propriedades operacionais:
-
-- **Retomável**: um estágio (dataset × modelo × réplica) cujo JSON de saída já
-  existe é pulado — relançar o script continua de onde parou.
-- **Parada graciosa**: criar o arquivo ``BENCHMARK_STOP`` na raiz do projeto
-  encerra a fila no fim do estágio corrente (sem corromper nada).
-- **Gate do 14B**: antes do primeiro estágio do ``qwen3:14b``, uma sondagem
-  mínima verifica se o modelo responde (na RTX 4060 8GB ele exige RAM livre);
-  se falhar, os estágios do 14B são pulados e registrados — a fila continua.
-- **Instância única**: um pidfile (``BENCHMARK_RUNNING``) impede fila dupla.
-- Dataset mascarado roda com ``issue_types=["space_unnamed"]`` (82 issues),
-  evitando regerar as ~2790 issues já cobertas pelo dataset principal.
-
-Uso (idealmente via ``Start-Process`` com log redirecionado):
-
-    python scripts/run_benchmark.py [--replicas 3] [--only-model TAG]
+Cada estágio é considerado concluído somente quando o agregado JSON e o
+JSONL por issue formam um par íntegro cuja identidade experimental coincide
+com o snapshot fornecido pelo instalador portátil.
 """
+
+# ruff: noqa: E402 -- a CLI precisa inserir a raiz antes dos imports do projeto.
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
+import re
 import sys
 import time
-from datetime import datetime
-from pathlib import Path
+from contextlib import suppress
+from dataclasses import asdict, dataclass
+from datetime import UTC, datetime
+from pathlib import Path, PurePosixPath
+from typing import Any, Literal, cast
+from uuid import UUID, uuid4
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+import psutil  # type: ignore[import-untyped]
 from loguru import logger
+from pydantic import BaseModel, ConfigDict
 
+from src.experiment.execution_identity import (
+    DatasetIdentity,
+    ExecutionIdentity,
+    canonical_identity_sha256,
+)
+from src.experiment.model_lock import load_model_lock
 from src.experiment.runner import ExperimentRunner, _sanitize
-from src.suggestion_engine.ollama_client import OllamaClient
+from src.suggestion_engine.prompt_templates import PROMPT_VERSION
 
 STOP_FILE = PROJECT_ROOT / "BENCHMARK_STOP"
 PID_FILE = PROJECT_ROOT / "BENCHMARK_RUNNING"
 LOCK_FILE = PROJECT_ROOT / "src" / "experiment" / "results" / "models.lock.json"
-
-BUILDING_CONTEXT = {"building_type": "Residencial multifamiliar", "bioclimatic_zone": "3"}
 IDS_PATH = PROJECT_ROOT / "data" / "ids_templates" / "residencial_nbr15575.ids"
-EVAL_DIR = PROJECT_ROOT / "data" / "evaluation" / "predio"
+EVAL_ROOT = PROJECT_ROOT / "data" / "evaluation"
+PROMPT_FILE = PROJECT_ROOT / "src" / "suggestion_engine" / "prompt_templates.py"
 
-# Modelo cuja viabilidade depende de RAM livre (offload) — protegido por gate.
-GATED_MODELS = {"qwen3:14b"}
-
-DATASETS: list[dict] = [
+DATASETS: list[dict[str, Any]] = [
     {
         "key": "predio",
-        "ifc": EVAL_DIR / "predio_v1.ifc",
-        "gt": EVAL_DIR / "ground_truth.yaml",
-        "issue_types": None,  # tarefas: preenchimento de Pset + classificação
+        "ifc": EVAL_ROOT / "predio" / "predio_v1.ifc",
+        "gt": EVAL_ROOT / "predio" / "ground_truth.yaml",
+        "issue_types": None,
+        "building_context": {
+            "building_type": "Residencial multifamiliar",
+            "bioclimatic_zone": "4A",
+        },
     },
     {
-        "key": "predio-masked",
-        "ifc": EVAL_DIR / "predio_v1_masked.ifc",
-        "gt": EVAL_DIR / "ground_truth_spaces.yaml",
-        "issue_types": ["space_unnamed"],  # tarefa: nomeação de espaços
+        "key": "casa",
+        "ifc": EVAL_ROOT / "casa" / "casa_v1.ifc",
+        "gt": EVAL_ROOT / "casa" / "ground_truth.yaml",
+        "issue_types": None,
+        "building_context": {
+            "building_type": "Residencial unifamiliar",
+            "bioclimatic_zone": "4A",
+        },
     },
 ]
 
+_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+_STAGE_JSON_RE = re.compile(r"^run_\d+\.json$")
+_STAGE_JSONL_RE = re.compile(r"^run_\d+_issues\.jsonl$")
+
+
+@dataclass(frozen=True)
+class StageExpectation:
+    """Campos congelados que tornam um par de saída reutilizável."""
+
+    dataset_key: str
+    model_name: str
+    model_digest: str
+    replica_index: int
+    execution_identity: dict[str, object]
+    execution_identity_sha256: str
+    ifc_sha256: str
+    ground_truth_sha256: str
+    ids_sha256: str
+    prompt_version: str
+    cache_enabled: bool
+    reuse_equivalent: bool
+    building_context: dict[str, str]
+
+
+@dataclass(frozen=True)
+class StopBaseline:
+    """Fingerprint do arquivo STOP no instante de lançamento."""
+
+    exists: bool
+    mtime_ns: int | None
+    size_bytes: int | None
+    sha256: str | None
+
+
+@dataclass(frozen=True)
+class PidLease:
+    """Lease exclusivo de uma fila, identificado por token imprevisível."""
+
+    pid: int
+    create_time: float
+    token: str
+
+
+class QuarantineMember(BaseModel):
+    """Membro existente do par no início de uma transação."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    kind: Literal["aggregate", "issues"]
+    source_relative: str
+    size_bytes: int
+    sha256: str
+
+
+class QuarantineJournal(BaseModel):
+    """Journal persistente de uma mudança de par para a quarentena."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: Literal[1] = 1
+    transaction_id: UUID
+    state: Literal["prepared", "moving", "recovery_required", "finalized"]
+    results_root_relative: str
+    staging_relative: str
+    final_relative: str
+    members: tuple[QuarantineMember, ...]
+
+
+class QuarantineRecoveryError(RuntimeError):
+    """A fila não pode executar enquanto a transação não for reconciliada."""
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
 
 def _locked_models() -> list[str]:
-    """Lê a ordem oficial dos modelos do models.lock.json."""
-    lock = json.loads(LOCK_FILE.read_text(encoding="utf-8"))
-    return [m["name"] for m in lock["models"]]
+    """Retorna a ordem validada da matriz oficial."""
+    return [entry.name for entry in load_model_lock(LOCK_FILE).models]
 
 
 def _locked_digests() -> dict[str, str]:
-    """Mapeia ``modelo -> digest curto`` do models.lock.json."""
-    lock = json.loads(LOCK_FILE.read_text(encoding="utf-8"))
-    return {m["name"]: m.get("digest", "") for m in lock["models"] if m.get("digest")}
+    """Retorna os digests completos da matriz validada."""
+    return {entry.name: entry.digest for entry in load_model_lock(LOCK_FILE).models}
 
 
-def _check_digest(model: str, locked: dict[str, str]) -> None:
-    """Avisa (alto) se o modelo instalado divergir do congelado no lock.
-
-    Avisa em vez de abortar: um lock desatualizado não deve derrubar uma fila de
-    horas, e o digest real fica gravado no metadata de cada run — a divergência
-    é auditável depois. O que não pode acontecer é passar despercebida.
-    """
-    from src.config import get_settings
-    from src.experiment.environment import lock_digest_mismatch, ollama_model_digest
-
-    real = ollama_model_digest(model, get_settings().ollama_url)
-    aviso = lock_digest_mismatch(model, real, locked.get(model))
-    if aviso:
-        logger.warning("DIGEST DIVERGENTE — {}", aviso)
-    elif real:
-        logger.info("Digest conferido: {} = {}", model, real[:12])
+def _require_exact_keys(value: object, expected: set[str], label: str) -> dict[str, Any]:
+    if not isinstance(value, dict) or set(value) != expected:
+        raise ValueError(f"{label} possui campos ausentes ou extras")
+    return value
 
 
-def _probe_model(model: str) -> bool:
-    """Sondagem mínima: o modelo carrega e responde? (gate do 14B)."""
-    logger.info("Gate: sondando {} (pode levar minutos no primeiro load)…", model)
+def _parse_execution_identity(raw: object) -> ExecutionIdentity:
+    identity_data = _require_exact_keys(
+        raw,
+        {
+            "release_id",
+            "project_sha256",
+            "models_lock_sha256",
+            "datasets",
+            "replica_count",
+            "cache_enabled",
+            "prompt_version",
+            "prompt_sha256",
+            "reuse_equivalent",
+        },
+        "execution_identity",
+    )
+    if not isinstance(identity_data["release_id"], str):
+        raise TypeError("release_id deve ser string")
+    if type(identity_data["replica_count"]) is not int:
+        raise TypeError("replica_count deve ser inteiro")
+    if type(identity_data["cache_enabled"]) is not bool:
+        raise TypeError("cache_enabled deve ser booleano")
+    if type(identity_data["reuse_equivalent"]) is not bool:
+        raise TypeError("reuse_equivalent deve ser booleano")
+    if not isinstance(identity_data["prompt_version"], str):
+        raise TypeError("prompt_version deve ser string")
+    raw_datasets = identity_data["datasets"]
+    if not isinstance(raw_datasets, list):
+        raise ValueError("datasets deve ser uma lista JSON")
+    datasets: list[DatasetIdentity] = []
+    for index, raw_dataset in enumerate(raw_datasets):
+        dataset_data = _require_exact_keys(
+            raw_dataset,
+            {
+                "key",
+                "ifc_sha256",
+                "ground_truth_sha256",
+                "ids_sha256",
+                "building_context",
+            },
+            f"datasets[{index}]",
+        )
+        raw_context = dataset_data["building_context"]
+        if not isinstance(raw_context, list):
+            raise ValueError("building_context deve ser uma lista JSON")
+        context: list[tuple[str, str]] = []
+        for pair in raw_context:
+            if (
+                not isinstance(pair, list)
+                or len(pair) != 2
+                or not all(isinstance(item, str) for item in pair)
+            ):
+                raise ValueError("building_context contém par inválido")
+            context.append((pair[0], pair[1]))
+        context_keys = [key for key, _ in context]
+        if len(context_keys) != len(set(context_keys)):
+            raise ValueError("building_context contém chave duplicada")
+        datasets.append(
+            DatasetIdentity(
+                key=dataset_data["key"],
+                ifc_sha256=dataset_data["ifc_sha256"],
+                ground_truth_sha256=dataset_data["ground_truth_sha256"],
+                ids_sha256=dataset_data["ids_sha256"],
+                building_context=tuple(context),
+            )
+        )
+    identity = ExecutionIdentity(
+        release_id=identity_data["release_id"],
+        project_sha256=identity_data["project_sha256"],
+        models_lock_sha256=identity_data["models_lock_sha256"],
+        datasets=tuple(datasets),
+        replica_count=identity_data["replica_count"],
+        cache_enabled=identity_data["cache_enabled"],
+        prompt_version=identity_data["prompt_version"],
+        prompt_sha256=identity_data["prompt_sha256"],
+        reuse_equivalent=identity_data["reuse_equivalent"],
+    )
+    if not identity.release_id:
+        raise ValueError("release_id vazio")
+    return identity
+
+
+def _load_and_validate_execution_identity(path: Path) -> ExecutionIdentity:
+    """Carrega o snapshot e recalcula todas as entradas disponíveis localmente."""
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    identity = _parse_execution_identity(raw)
+    if identity.cache_enabled:
+        raise ValueError("a execução oficial exige cache desabilitado")
+    if identity.prompt_version != PROMPT_VERSION:
+        raise ValueError("prompt_version diverge do projeto")
+
+    load_model_lock(LOCK_FILE)
+    if _sha256(LOCK_FILE) != identity.models_lock_sha256:
+        raise ValueError("models_lock_sha256 diverge do arquivo local")
+    if _sha256(PROMPT_FILE) != identity.prompt_sha256:
+        raise ValueError("prompt_sha256 diverge do arquivo local")
+
+    if [item["key"] for item in DATASETS] != ["predio", "casa"]:
+        raise ValueError("registro local de datasets não é predio,casa")
+    if [dataset.key for dataset in identity.datasets] != ["predio", "casa"]:
+        raise ValueError("snapshot de datasets não é predio,casa")
+    for local, frozen in zip(DATASETS, identity.datasets, strict=True):
+        actual = {
+            "ifc_sha256": _sha256(Path(local["ifc"])),
+            "ground_truth_sha256": _sha256(Path(local["gt"])),
+            "ids_sha256": _sha256(IDS_PATH),
+        }
+        for field, digest in actual.items():
+            if digest != getattr(frozen, field):
+                raise ValueError(f"{frozen.key}.{field} diverge do arquivo local")
+        if dict(frozen.building_context) != local["building_context"]:
+            raise ValueError(f"{frozen.key}.building_context diverge do registro local")
+    return identity
+
+
+def _stage_path(results_root: Path, dataset_key: str, model: str, replica: int) -> Path:
+    """Caminho canônico do agregado de um estágio."""
+    return results_root / dataset_key / _sanitize(model) / f"run_{replica}.json"
+
+
+def _stage_artifact_paths(json_path: Path) -> tuple[Path, Path]:
+    """Deriva o par agregado/por-issue de um caminho canônico ``run_N.json``."""
+    if _STAGE_JSON_RE.fullmatch(json_path.name) is None:
+        raise ValueError("caminho de estágio deve terminar em run_N.json")
+    issues_path = json_path.with_name(f"{json_path.stem}_issues.jsonl")
+    return json_path, issues_path
+
+
+def _canonical_json(value: object) -> str:
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def _stage_done(json_path: Path, expectation: StageExpectation) -> bool:
+    """Valida integralmente agregado, metadata congelado e JSONL por issue."""
     try:
-        client = OllamaClient(model=model)
-        text, _ = client.generate(prompt="Responda apenas: ok", system=None)
-        ok = bool(str(text).strip())
-        logger.info("Gate: {} respondeu ({} chars) → {}", model, len(str(text)), ok)
-        return ok
-    except Exception as exc:
-        logger.error("Gate: {} indisponível ({}). Estágios serão pulados.", model, exc)
+        aggregate_path, issues_path = _stage_artifact_paths(json_path)
+        if aggregate_path.is_symlink() or issues_path.is_symlink():
+            raise ValueError("membro de estágio não pode ser symlink")
+        aggregate = json.loads(aggregate_path.read_text(encoding="utf-8", errors="strict"))
+        if not isinstance(aggregate, dict):
+            raise ValueError("agregado não é objeto")
+        metadata = aggregate.get("metadata")
+        if not isinstance(metadata, dict):
+            raise ValueError("metadata ausente")
+        expected_metadata = asdict(expectation)
+        projected: dict[str, object] = {}
+        for field in expected_metadata:
+            if field not in metadata:
+                raise ValueError(f"metadata sem {field}")
+            projected[field] = metadata[field]
+        if _canonical_json(projected) != _canonical_json(expected_metadata):
+            raise ValueError("metadata diverge da expectativa")
+
+        counts = aggregate.get("issue_counts")
+        if not isinstance(counts, dict):
+            raise ValueError("issue_counts ausente")
+        total = counts.get("total_issues")
+        if isinstance(total, bool) or not isinstance(total, int) or total <= 0:
+            raise ValueError("total_issues deve ser inteiro positivo")
+
+        payload = issues_path.read_bytes()
+        if not payload:
+            raise ValueError("JSONL vazio")
+        if not payload.endswith(b"\n"):
+            raise ValueError("JSONL sem newline final")
+        text = payload.decode("utf-8", errors="strict")
+        lines = text[:-1].split("\n")
+        if any(not line for line in lines):
+            raise ValueError("JSONL contém linha vazia")
+        for line in lines:
+            json.loads(line)
+        if len(lines) != total:
+            raise ValueError("contagem JSONL diverge do agregado")
+        return True
+    except (OSError, UnicodeError, ValueError, TypeError, json.JSONDecodeError) as exc:
+        logger.debug("STAGE_INVALID {}: {}", json_path.name, exc)
         return False
 
 
-def _stage_done(output_root: Path, model: str, replica: int) -> bool:
-    """True se o JSON deste estágio já existe (retomada)."""
-    return (output_root / _sanitize(model) / f"run_{replica}.json").is_file()
+def _stage_expectation(
+    identity: ExecutionIdentity,
+    dataset: DatasetIdentity,
+    model_name: str,
+    model_digest: str,
+    replica: int,
+) -> StageExpectation:
+    return StageExpectation(
+        dataset_key=dataset.key,
+        model_name=model_name,
+        model_digest=model_digest,
+        replica_index=replica,
+        execution_identity=asdict(identity),
+        execution_identity_sha256=canonical_identity_sha256(identity),
+        ifc_sha256=dataset.ifc_sha256,
+        ground_truth_sha256=dataset.ground_truth_sha256,
+        ids_sha256=dataset.ids_sha256,
+        prompt_version=identity.prompt_version,
+        cache_enabled=identity.cache_enabled,
+        reuse_equivalent=identity.reuse_equivalent,
+        building_context=dict(dataset.building_context),
+    )
+
+
+def _invalid_matrix_stages(
+    results_root: Path,
+    identity: ExecutionIdentity,
+    models: list[tuple[str, str]],
+) -> list[str]:
+    """Revalida a matriz e rejeita stems de estágio esperados a mais ou a menos."""
+    invalid: list[str] = []
+    expected_physical: set[str] = set()
+    for dataset in identity.datasets:
+        for model_name, model_digest in models:
+            for replica in range(identity.replica_count):
+                path = _stage_path(results_root, dataset.key, model_name, replica)
+                expected_physical.add(path.relative_to(results_root).as_posix()[:-5])
+                expectation = _stage_expectation(
+                    identity, dataset, model_name, model_digest, replica
+                )
+                if not _stage_done(path, expectation):
+                    invalid.append(f"{dataset.key}/{model_name}/run_{replica}")
+
+    found: set[str] = set()
+    if results_root.is_dir():
+        for path in results_root.rglob("*"):
+            if not path.is_file():
+                continue
+            name = path.name
+            relative = path.relative_to(results_root).as_posix()
+            if _STAGE_JSON_RE.fullmatch(name):
+                found.add(relative.removesuffix(".json"))
+            elif _STAGE_JSONL_RE.fullmatch(name):
+                found.add(relative.removesuffix("_issues.jsonl"))
+    invalid.extend(f"unexpected:{stem}" for stem in sorted(found - expected_physical))
+    return invalid
+
+
+def _relative_to_base(path: Path, base: Path) -> str:
+    try:
+        return path.absolute().relative_to(base.absolute()).as_posix()
+    except ValueError as exc:
+        raise QuarantineRecoveryError("recovery_required: path escape") from exc
+
+
+def _safe_relative(base: Path, value: str) -> Path:
+    pure = PurePosixPath(value)
+    if (
+        not value
+        or pure.is_absolute()
+        or any(part in {"", ".", ".."} or ":" in part for part in pure.parts)
+    ):
+        raise QuarantineRecoveryError("recovery_required: path relativo inválido")
+    candidate = base.joinpath(*pure.parts)
+    try:
+        candidate.absolute().relative_to(base.absolute())
+    except ValueError as exc:
+        raise QuarantineRecoveryError("recovery_required: path escape") from exc
+    current = base
+    for part in pure.parts:
+        current = current / part
+        if current.is_symlink():
+            raise QuarantineRecoveryError("recovery_required: symlink proibido")
+    return candidate
+
+
+def _write_json_atomic(path: Path, payload: dict[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f"{path.name}.{uuid4().hex}.tmp")
+    data = (
+        json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n"
+    ).encode("utf-8")
+    descriptor: int | None = None
+    try:
+        descriptor = os.open(temporary, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+        with os.fdopen(descriptor, "wb") as stream:
+            descriptor = None
+            stream.write(data)
+            stream.flush()
+            os.fsync(stream.fileno())
+        for attempt in range(5):
+            try:
+                os.replace(temporary, path)
+                break
+            except PermissionError:
+                if attempt == 4:
+                    raise
+                time.sleep(0.01)
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
+        temporary.unlink(missing_ok=True)
+
+
+def _persist_journal(path: Path, journal: QuarantineJournal) -> None:
+    _write_json_atomic(path, journal.model_dump(mode="json"))
+
+
+@dataclass(frozen=True)
+class _TransactionPaths:
+    base: Path
+    results_root: Path
+    journal: Path
+    staging: Path
+    final: Path
+
+
+def _validated_transaction_paths(
+    results_root: Path,
+    journal_path: Path,
+    journal: QuarantineJournal,
+) -> _TransactionPaths:
+    base = results_root.parent
+    declared_results = _safe_relative(base, journal.results_root_relative)
+    if declared_results.absolute() != results_root.absolute():
+        raise QuarantineRecoveryError("recovery_required: results_root divergente")
+    staging = _safe_relative(base, journal.staging_relative)
+    final = _safe_relative(base, journal.final_relative)
+    expected_root = base / ".invalid-stage-artifacts"
+    expected_staging = expected_root / ".transactions" / (f"{journal.transaction_id}.partial")
+    expected_final = expected_root / "quarantine" / str(journal.transaction_id)
+    expected_journal = expected_root / ".transactions" / (f"{journal.transaction_id}.journal.json")
+    if (
+        staging.absolute() != expected_staging.absolute()
+        or final.absolute() != expected_final.absolute()
+        or journal_path.absolute() != expected_journal.absolute()
+    ):
+        raise QuarantineRecoveryError("recovery_required: destinos divergentes")
+    seen_sources: set[str] = set()
+    sources_by_kind: dict[str, Path] = {}
+    for member in journal.members:
+        if member.size_bytes < 0 or _SHA256_RE.fullmatch(member.sha256) is None:
+            raise QuarantineRecoveryError("recovery_required: membro inválido")
+        source = _safe_relative(base, member.source_relative)
+        try:
+            source.absolute().relative_to(results_root.absolute())
+        except ValueError as exc:
+            raise QuarantineRecoveryError("recovery_required: source fora da matriz") from exc
+        if member.source_relative in seen_sources:
+            raise QuarantineRecoveryError("recovery_required: membro duplicado")
+        seen_sources.add(member.source_relative)
+        if member.kind in sources_by_kind:
+            raise QuarantineRecoveryError("recovery_required: kind duplicado")
+        sources_by_kind[member.kind] = source
+        if member.kind == "aggregate" and _STAGE_JSON_RE.fullmatch(source.name) is None:
+            raise QuarantineRecoveryError("recovery_required: aggregate inválido")
+        if member.kind == "issues" and _STAGE_JSONL_RE.fullmatch(source.name) is None:
+            raise QuarantineRecoveryError("recovery_required: issues inválido")
+    if not journal.members:
+        raise QuarantineRecoveryError("recovery_required: transação vazia")
+    if len(journal.members) > 2:
+        raise QuarantineRecoveryError("recovery_required: membros excedentes")
+    if set(sources_by_kind) == {"aggregate", "issues"}:
+        aggregate = sources_by_kind["aggregate"]
+        expected_issues = _stage_artifact_paths(aggregate)[1]
+        if sources_by_kind["issues"].absolute() != expected_issues.absolute():
+            raise QuarantineRecoveryError("recovery_required: stems divergentes")
+    paths = _TransactionPaths(base, results_root, journal_path, staging, final)
+    _assert_transaction_dirs_clean(paths, journal)
+    return paths
+
+
+def _member_paths(paths: _TransactionPaths, member: QuarantineMember) -> tuple[Path, Path, Path]:
+    source = _safe_relative(paths.base, member.source_relative)
+    return source, paths.staging / source.name, paths.final / source.name
+
+
+def _assert_transaction_dirs_clean(paths: _TransactionPaths, journal: QuarantineJournal) -> None:
+    expected_names = {
+        _safe_relative(paths.base, member.source_relative).name for member in journal.members
+    }
+    for directory in (paths.staging, paths.final):
+        if directory.is_symlink():
+            raise QuarantineRecoveryError("recovery_required: symlink proibido")
+        if directory.exists():
+            if not directory.is_dir():
+                raise QuarantineRecoveryError("recovery_required: destino não é diretório")
+            actual_names = {entry.name for entry in directory.iterdir()}
+            if not actual_names.issubset(expected_names):
+                raise QuarantineRecoveryError(
+                    "recovery_required: arquivo não registrado na transação"
+                )
+
+
+def _validate_member_file(path: Path, member: QuarantineMember) -> None:
+    if path.is_symlink() or not path.is_file():
+        raise QuarantineRecoveryError("recovery_required: membro ausente ou symlink")
+    stat = path.stat()
+    if stat.st_size != member.size_bytes or _sha256(path) != member.sha256:
+        raise QuarantineRecoveryError("recovery_required: hash/tamanho divergente")
+
+
+def _member_location(
+    paths: _TransactionPaths, member: QuarantineMember
+) -> Literal["source", "staging", "final"]:
+    locations: list[Literal["source", "staging", "final"]] = []
+    for label, candidate in zip(
+        ("source", "staging", "final"), _member_paths(paths, member), strict=True
+    ):
+        if candidate.exists() or candidate.is_symlink():
+            _validate_member_file(candidate, member)
+            locations.append(cast(Literal["source", "staging", "final"], label))
+    if len(locations) != 1:
+        raise QuarantineRecoveryError("recovery_required: membro ausente ou duplicado")
+    return locations[0]
+
+
+def _remove_empty_staging(staging: Path) -> None:
+    if staging.is_dir():
+        with suppress(OSError):
+            staging.rmdir()
+
+
+def _clear_transaction(paths: _TransactionPaths) -> None:
+    paths.journal.unlink(missing_ok=True)
+    _remove_empty_staging(paths.staging)
+
+
+def _finalize_forward(
+    paths: _TransactionPaths,
+    journal: QuarantineJournal,
+) -> Path:
+    _assert_transaction_dirs_clean(paths, journal)
+    if paths.final.exists() or paths.final.is_symlink():
+        raise QuarantineRecoveryError("recovery_required: destino final já existe")
+    for member in journal.members:
+        source, staged, _ = _member_paths(paths, member)
+        if source.exists() or not staged.exists():
+            raise QuarantineRecoveryError("recovery_required: conjunto ainda dividido")
+        _validate_member_file(staged, member)
+    paths.final.parent.mkdir(parents=True, exist_ok=True)
+    os.replace(paths.staging, paths.final)
+    for member in journal.members:
+        _, _, final = _member_paths(paths, member)
+        _validate_member_file(final, member)
+    journal.state = "finalized"
+    _persist_journal(paths.journal, journal)
+    paths.journal.unlink(missing_ok=True)
+    return paths.final
+
+
+def _attempt_forward(paths: _TransactionPaths, journal: QuarantineJournal) -> bool:
+    try:
+        _assert_transaction_dirs_clean(paths, journal)
+        paths.staging.mkdir(parents=True, exist_ok=True)
+        for member in journal.members:
+            source, staged, final = _member_paths(paths, member)
+            if final.exists() or final.is_symlink():
+                return False
+            if staged.exists() or staged.is_symlink():
+                _validate_member_file(staged, member)
+                if source.exists() or source.is_symlink():
+                    return False
+                continue
+            _validate_member_file(source, member)
+            os.replace(source, staged)
+            _validate_member_file(staged, member)
+        _finalize_forward(paths, journal)
+        return True
+    except (OSError, QuarantineRecoveryError):
+        return False
+
+
+def _attempt_rollback(paths: _TransactionPaths, journal: QuarantineJournal) -> bool:
+    try:
+        _assert_transaction_dirs_clean(paths, journal)
+        for member in reversed(journal.members):
+            source, staged, final = _member_paths(paths, member)
+            if final.exists() or final.is_symlink():
+                return False
+            if source.exists() or source.is_symlink():
+                _validate_member_file(source, member)
+                if staged.exists() or staged.is_symlink():
+                    return False
+                continue
+            _validate_member_file(staged, member)
+            source.parent.mkdir(parents=True, exist_ok=True)
+            os.replace(staged, source)
+            _validate_member_file(source, member)
+        if any(_member_location(paths, member) != "source" for member in journal.members):
+            return False
+        _clear_transaction(paths)
+        return True
+    except (OSError, QuarantineRecoveryError):
+        return False
+
+
+def _quarantine_invalid_stage_pair(json_path: Path, results_root: Path) -> Path | None:
+    """Move, transacionalmente, os membros existentes de um par inválido."""
+    aggregate, issues = _stage_artifact_paths(json_path)
+    existing = [
+        ("aggregate", aggregate),
+        ("issues", issues),
+    ]
+    existing = [(kind, path) for kind, path in existing if path.exists()]
+    if not existing:
+        return None
+    base = results_root.parent
+    for _, source in existing:
+        try:
+            source.absolute().relative_to(results_root.absolute())
+        except ValueError as exc:
+            raise RuntimeError("quarentena recusou path fora da matriz") from exc
+        if source.is_symlink() or not source.is_file():
+            raise RuntimeError("quarentena recusou membro não regular")
+
+    transaction_id = uuid4()
+    root = base / ".invalid-stage-artifacts"
+    journal_path = root / ".transactions" / f"{transaction_id}.journal.json"
+    staging = root / ".transactions" / f"{transaction_id}.partial"
+    final = root / "quarantine" / str(transaction_id)
+    members = tuple(
+        QuarantineMember(
+            kind=kind,
+            source_relative=_relative_to_base(source, base),
+            size_bytes=source.stat().st_size,
+            sha256=_sha256(source),
+        )
+        for kind, source in existing
+    )
+    journal = QuarantineJournal(
+        transaction_id=transaction_id,
+        state="prepared",
+        results_root_relative=_relative_to_base(results_root, base),
+        staging_relative=_relative_to_base(staging, base),
+        final_relative=_relative_to_base(final, base),
+        members=members,
+    )
+    paths = _TransactionPaths(base, results_root, journal_path, staging, final)
+    _safe_relative(base, journal.staging_relative)
+    _safe_relative(base, journal.final_relative)
+    staging.mkdir(parents=True, exist_ok=False)
+    _persist_journal(journal_path, journal)
+    journal.state = "moving"
+    _persist_journal(journal_path, journal)
+    try:
+        for member in members:
+            source, staged, _ = _member_paths(paths, member)
+            if staged.exists() or staged.is_symlink():
+                raise OSError("destino de staging já existe")
+            os.replace(source, staged)
+            _validate_member_file(staged, member)
+        return _finalize_forward(paths, journal)
+    except (OSError, QuarantineRecoveryError) as exc:
+        if _attempt_rollback(paths, journal):
+            raise RuntimeError("falha de quarentena; par restaurado") from exc
+        if _attempt_forward(paths, journal):
+            raise RuntimeError("falha de quarentena; par isolado por recuperação") from exc
+        journal.state = "recovery_required"
+        _persist_journal(journal_path, journal)
+        raise QuarantineRecoveryError(
+            "recovery_required: transação de quarentena pendente"
+        ) from exc
+
+
+def _load_journal(path: Path) -> QuarantineJournal:
+    try:
+        if path.is_symlink():
+            raise ValueError("journal symlink")
+        raw = json.loads(path.read_text(encoding="utf-8", errors="strict"))
+        data = _require_exact_keys(
+            raw,
+            {
+                "schema_version",
+                "transaction_id",
+                "state",
+                "results_root_relative",
+                "staging_relative",
+                "final_relative",
+                "members",
+            },
+            "journal",
+        )
+        if type(data["schema_version"]) is not int:
+            raise TypeError("schema_version inválido")
+        for field in (
+            "transaction_id",
+            "state",
+            "results_root_relative",
+            "staging_relative",
+            "final_relative",
+        ):
+            if not isinstance(data[field], str):
+                raise TypeError(f"{field} inválido")
+        if not isinstance(data["members"], list):
+            raise TypeError("members inválido")
+        for raw_member in data["members"]:
+            member = _require_exact_keys(
+                raw_member,
+                {"kind", "source_relative", "size_bytes", "sha256"},
+                "journal.members",
+            )
+            if (
+                not isinstance(member["kind"], str)
+                or not isinstance(member["source_relative"], str)
+                or type(member["size_bytes"]) is not int
+                or not isinstance(member["sha256"], str)
+            ):
+                raise TypeError("journal.members possui tipo inválido")
+        return QuarantineJournal.model_validate(raw)
+    except Exception as exc:
+        raise QuarantineRecoveryError("recovery_required: journal inválido") from exc
+
+
+def _reconcile_quarantine_transactions(results_root: Path) -> None:
+    """Reconcilia journals lexicograficamente antes de qualquer estágio."""
+    transaction_root = results_root.parent / ".invalid-stage-artifacts" / ".transactions"
+    if not transaction_root.is_dir():
+        return
+    for journal_path in sorted(transaction_root.glob("*.journal.json")):
+        journal: QuarantineJournal | None = None
+        try:
+            journal = _load_journal(journal_path)
+            paths = _validated_transaction_paths(results_root, journal_path, journal)
+            locations = [_member_location(paths, member) for member in journal.members]
+            if all(location == "source" for location in locations):
+                _clear_transaction(paths)
+                continue
+            if all(location == "final" for location in locations):
+                paths.journal.unlink(missing_ok=True)
+                continue
+            if "final" not in locations:
+                if _attempt_forward(paths, journal):
+                    continue
+                if _attempt_rollback(paths, journal):
+                    continue
+            journal.state = "recovery_required"
+            _persist_journal(journal_path, journal)
+            raise QuarantineRecoveryError("recovery_required: transação não reconciliada")
+        except QuarantineRecoveryError:
+            if journal is not None:
+                journal.state = "recovery_required"
+                with suppress(OSError):
+                    _persist_journal(journal_path, journal)
+            raise
+
+
+def _pid_record_is_live(record: object) -> bool:
+    """Confere PID, instante de criação e comando do runner."""
+    if not isinstance(record, dict):
+        return False
+    if set(record) != {"pid", "create_time", "token"}:
+        return False
+    pid = record.get("pid")
+    create_time = record.get("create_time")
+    token = record.get("token")
+    if (
+        isinstance(pid, bool)
+        or not isinstance(pid, int)
+        or not isinstance(create_time, (int, float))
+        or not isinstance(token, str)
+        or not token
+    ):
+        return False
+    try:
+        process = psutil.Process(pid)
+        if abs(process.create_time() - float(create_time)) > 0.01:
+            return False
+        return any("run_benchmark.py" in part.lower() for part in process.cmdline())
+    except (psutil.Error, OSError):
+        return False
+
+
+def _lease_payload(lease: PidLease) -> bytes:
+    return (json.dumps(asdict(lease), sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+
+
+def _create_lease_exclusive(path: Path, lease: PidLease) -> bool:
+    descriptor: int | None = None
+    try:
+        descriptor = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+        with os.fdopen(descriptor, "wb") as stream:
+            descriptor = None
+            stream.write(_lease_payload(lease))
+            stream.flush()
+            os.fsync(stream.fileno())
+        return True
+    except FileExistsError:
+        return False
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
+
+
+def _read_pid_record(path: Path) -> tuple[object, bytes, os.stat_result] | None:
+    try:
+        before = path.stat()
+        payload = path.read_bytes()
+        after = path.stat()
+        if before.st_mtime_ns != after.st_mtime_ns or before.st_size != after.st_size:
+            return None
+        return json.loads(payload.decode("utf-8")), payload, after
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return None
+
+
+def _acquire_pidfile(path: Path) -> PidLease | None:
+    """Adquire lease O_EXCL; coleta registro morto sob um segundo lease."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lease = PidLease(
+        pid=os.getpid(),
+        create_time=psutil.Process(os.getpid()).create_time(),
+        token=str(uuid4()),
+    )
+    if _create_lease_exclusive(path, lease):
+        return lease
+
+    observed = _read_pid_record(path)
+    if observed is not None and _pid_record_is_live(observed[0]):
+        return None
+    reap_path = path.with_name(f"{path.name}.reap")
+    reap_lease = PidLease(lease.pid, lease.create_time, str(uuid4()))
+    if not _create_lease_exclusive(reap_path, reap_lease):
+        return None
+    try:
+        current = _read_pid_record(path)
+        if current is not None and _pid_record_is_live(current[0]):
+            return None
+        if observed is not None and current is not None:
+            _, old_bytes, old_stat = observed
+            _, new_bytes, new_stat = current
+            unchanged = (
+                old_bytes == new_bytes
+                and old_stat.st_mtime_ns == new_stat.st_mtime_ns
+                and old_stat.st_size == new_stat.st_size
+            )
+            if not unchanged:
+                return None
+        path.unlink(missing_ok=True)
+    finally:
+        _release_pidfile(reap_path, reap_lease)
+    return lease if _create_lease_exclusive(path, lease) else None
+
+
+def _release_pidfile(path: Path, lease: PidLease) -> None:
+    """Remove o pidfile somente quando PID e token ainda pertencem ao chamador."""
+    observed = _read_pid_record(path)
+    if observed is None:
+        return
+    record, payload, stat = observed
+    if (
+        not isinstance(record, dict)
+        or record.get("pid") != lease.pid
+        or record.get("token") != lease.token
+    ):
+        return
+    current = _read_pid_record(path)
+    if current is None:
+        return
+    _, current_payload, current_stat = current
+    if (
+        current_payload == payload
+        and current_stat.st_mtime_ns == stat.st_mtime_ns
+        and current_stat.st_size == stat.st_size
+    ):
+        path.unlink(missing_ok=True)
+
+
+def _capture_stop_baseline(path: Path) -> StopBaseline:
+    try:
+        stat = path.stat()
+        return StopBaseline(True, stat.st_mtime_ns, stat.st_size, _sha256(path))
+    except OSError:
+        return StopBaseline(False, None, None, None)
+
+
+def _stop_requested(path: Path, baseline: StopBaseline) -> bool:
+    current = _capture_stop_baseline(path)
+    return current.exists and current != baseline
+
+
+def _installed_digest(model: str) -> str | None:
+    from src.config import get_settings
+    from src.experiment.environment import ollama_model_digest
+
+    return ollama_model_digest(model, get_settings().ollama_url)
+
+
+def _assert_model_digest(model: str, expected: str, actual: str | None) -> None:
+    if actual != expected:
+        actual_display = actual or "<ausente>"
+        raise RuntimeError(
+            f"digest divergente para {model}: esperado {expected}, atual {actual_display}"
+        )
 
 
 def _unload_model(model: str) -> None:
-    """Descarrega o modelo da VRAM antes de trocar de estágio.
-
-    A GPU do experimento tem 8 GB e os modelos da matriz ocupam 4–6 GB cada.
-    Com ``keep_alive`` de 15 min, o modelo anterior continua residente quando o
-    proximo carrega: os dois nao cabem juntos e o entrante sofre offload parcial
-    para a CPU, que e ordens de magnitude mais lento. Descarregar e barato — o
-    proximo estagio dura horas.
-    """
     import httpx
 
     from src.config import get_settings
@@ -136,109 +961,115 @@ def _unload_model(model: str) -> None:
             json={"model": model, "prompt": "", "keep_alive": 0},
             timeout=60,
         )
-        logger.info("Modelo {} descarregado da VRAM", model)
+        logger.info("Modelo {} descarregado", model)
     except Exception as exc:
-        logger.warning("Falha ao descarregar {} (segue adiante): {}", model, exc)
+        logger.warning("Falha ao descarregar {}: {}", model, exc)
+
+
+def _build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(prog="python scripts/run_benchmark.py")
+    parser.add_argument("--replicas", type=int, default=1)
+    parser.add_argument("--only-model", default=None)
+    parser.add_argument("--results-root", default=None)
+    parser.add_argument("--execution-identity", type=Path, required=True)
+    parser.add_argument("--no-cache", action="store_true", required=True)
+    parser.add_argument("--reuse-equivalent", action="store_true")
+    return parser
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Roda a fila completa do benchmark; retorna 1 se algum estágio falhou."""
-    parser = argparse.ArgumentParser(prog="python scripts/run_benchmark.py")
-    parser.add_argument("--replicas", type=int, default=1, help="Réplicas por estágio (default 1)")
-    parser.add_argument("--only-model", default=None, help="Restringe a fila a um único modelo")
-    parser.add_argument(
-        "--results-root",
-        default=None,
-        help="Raiz dos resultados (default: src/experiment/results/<data>-benchmark)",
-    )
-    parser.add_argument(
-        "--reuse-equivalent",
-        action="store_true",
-        help=(
-            "Issues estruturalmente equivalentes reaproveitam a sugestão da primária "
-            "em vez de repetir a chamada ao LLM (no modelo do experimento, 4720 issues "
-            "correspondem a 1069 estímulos distintos: ~77%% menos chamadas). Fica "
-            "registrado em reuse_equivalent no metadata do run."
-        ),
-    )
-    args = parser.parse_args(argv)
-
-    # Instância única
-    if PID_FILE.exists():
-        logger.error("Fila já em execução? Remova {} se for engano.", PID_FILE)
+    """Executa a fila; 0=matriz íntegra, 1=falha, 130=interrupção."""
+    args = _build_parser().parse_args(argv)
+    if args.replicas < 1:
+        logger.error("--replicas deve ser positivo")
         return 1
-    PID_FILE.write_text(str(os.getpid()), encoding="utf-8")
+    stop_baseline = _capture_stop_baseline(STOP_FILE)
+    lease = _acquire_pidfile(PID_FILE)
+    if lease is None:
+        logger.error("BENCHMARK_ALREADY_RUNNING")
+        return 1
 
-    launch_stamp = datetime.now().strftime("%Y-%m-%d")
-    results_root = Path(
-        args.results_root
-        or PROJECT_ROOT / "src" / "experiment" / "results" / f"{launch_stamp}-benchmark"
-    )
-
-    models = _locked_models()
-    if args.only_model:
-        models = [m for m in models if m == args.only_model]
-        if not models:
-            logger.error("Modelo {} não está no lock.", args.only_model)
-            PID_FILE.unlink(missing_ok=True)
+    resident_model: str | None = None
+    try:
+        launch_stamp = datetime.now(UTC).isoformat()
+        results_root = Path(
+            args.results_root
+            or PROJECT_ROOT
+            / "src"
+            / "experiment"
+            / "results"
+            / f"{datetime.now():%Y-%m-%d}-benchmark"
+        )
+        try:
+            _reconcile_quarantine_transactions(results_root)
+        except QuarantineRecoveryError:
+            logger.error("QUARANTINE_RECOVERY_REQUIRED")
             return 1
 
-    runner = ExperimentRunner()
-    locked_digests = _locked_digests()
-    digest_checked: set[str] = set()
-    gate_results: dict[str, bool] = {}
-    failures: list[str] = []
-    completed = 0
-    skipped = 0
-    t_queue = time.perf_counter()
+        identity = _load_and_validate_execution_identity(args.execution_identity)
+        if identity.replica_count != args.replicas:
+            raise RuntimeError("replica_count diverge de --replicas")
+        if identity.cache_enabled is not False:
+            raise RuntimeError("cache oficial deve permanecer desabilitado")
+        if identity.reuse_equivalent != args.reuse_equivalent:
+            raise RuntimeError("reuse_equivalent diverge da identidade")
 
-    try:
-        logger.info(
-            "Fila do benchmark: {} modelos × {} datasets × {} réplicas → {}",
-            len(models),
-            len(DATASETS),
-            args.replicas,
-            results_root,
-        )
-        modelo_residente: str | None = None
+        models = _locked_models()
+        locked_digests = _locked_digests()
+        official_model_matrix = [(model, locked_digests[model]) for model in models]
+        if args.only_model:
+            if args.only_model not in models:
+                raise RuntimeError("--only-model não pertence ao lock")
+            models = [args.only_model]
+        model_matrix = [(model, locked_digests[model]) for model in models]
+        identity_by_key = {dataset.key: dataset for dataset in identity.datasets}
+        runner = ExperimentRunner()
+        failures: list[str] = []
+        checked_digests: set[str] = set()
+        completed = 0
+        skipped = 0
+        started = time.perf_counter()
+
         for replica in range(args.replicas):
-            for model in models:
-                if modelo_residente is not None and modelo_residente != model:
-                    _unload_model(modelo_residente)
-                modelo_residente = model
+            for model, expected_digest in model_matrix:
+                if resident_model is not None and resident_model != model:
+                    _unload_model(resident_model)
+                    resident_model = None
                 for dataset in DATASETS:
                     stage = f"{dataset['key']}/{model}/run_{replica}"
-                    if STOP_FILE.exists():
-                        logger.warning(
-                            "BENCHMARK_STOP detectado — encerrando após {} estágios.", completed
-                        )
-                        return 0
-
-                    output_root = results_root / dataset["key"]
-                    if _stage_done(output_root, model, replica):
+                    if _stop_requested(STOP_FILE, stop_baseline):
+                        logger.warning("interrupted: BENCHMARK_STOP")
+                        return 130
+                    frozen_dataset = identity_by_key[dataset["key"]]
+                    expectation = _stage_expectation(
+                        identity, frozen_dataset, model, expected_digest, replica
+                    )
+                    json_path = _stage_path(results_root, dataset["key"], model, replica)
+                    if _stage_done(json_path, expectation):
                         skipped += 1
-                        logger.info("SKIP (já existe): {}", stage)
+                        logger.info("STAGE SKIP: {}", stage)
                         continue
-
-                    if model not in digest_checked:
-                        digest_checked.add(model)
-                        _check_digest(model, locked_digests)
-
-                    if model in GATED_MODELS:
-                        if model not in gate_results:
-                            gate_results[model] = _probe_model(model)
-                        if not gate_results[model]:
-                            failures.append(f"{stage} (gate)")
-                            logger.warning("SKIP (gate fechado): {}", stage)
+                    _, issues_path = _stage_artifact_paths(json_path)
+                    if json_path.exists() or issues_path.exists():
+                        try:
+                            _quarantine_invalid_stage_pair(json_path, results_root)
+                        except QuarantineRecoveryError:
+                            logger.error("QUARANTINE_RECOVERY_REQUIRED")
+                            return 1
+                        except RuntimeError as exc:
+                            failures.append(stage)
+                            logger.error("STAGE FAIL {}: {}", stage, exc)
                             continue
 
-                    logger.info("STAGE START: {}", stage)
-                    t0 = time.perf_counter()
+                    if model not in checked_digests:
+                        _assert_model_digest(model, expected_digest, _installed_digest(model))
+                        checked_digests.add(model)
+                    resident_model = model
                     try:
                         result = runner.run_single(
                             ifc_path=str(dataset["ifc"]),
                             ground_truth_path=str(dataset["gt"]),
-                            building_context=BUILDING_CONTEXT,
+                            building_context=dataset["building_context"],
                             ids_path=str(IDS_PATH),
                             model_name=model,
                             cache_enabled=False,
@@ -246,46 +1077,46 @@ def main(argv: list[str] | None = None) -> int:
                             timestamp=launch_stamp,
                             issue_types=dataset["issue_types"],
                             reuse_equivalent=args.reuse_equivalent,
+                            dataset_key=dataset["key"],
+                            execution_identity=identity,
                         )
-                        ExperimentRunner._export(result, str(output_root))
+                        ExperimentRunner._export(result, str(results_root / dataset["key"]))
+                        if not _stage_done(json_path, expectation):
+                            raise RuntimeError("par exportado não passou na revalidação")
                         completed += 1
-                        dt = time.perf_counter() - t0
-                        ev = result.evaluation
-                        logger.info(
-                            "STAGE OK: {} em {:.0f} min | top1={} top3={} | falhas_llm={}",
-                            stage,
-                            dt / 60,
-                            ev.accuracy_top1,
-                            ev.accuracy_top3,
-                            result.stability.failed_count,
-                        )
+                        if _stop_requested(STOP_FILE, stop_baseline):
+                            logger.warning("interrupted: BENCHMARK_STOP")
+                            return 130
+                        logger.info("STAGE OK: {}", stage)
+                    except KeyboardInterrupt:
+                        raise
                     except Exception as exc:
                         failures.append(stage)
-                        logger.exception("STAGE FAIL: {} ({})", stage, exc)
+                        logger.exception("STAGE FAIL {}: {}", stage, exc)
 
-        # Relatórios por dataset (best-effort)
-        from src.experiment.report import generate_report
-
-        for dataset in DATASETS:
-            root = results_root / dataset["key"]
-            if root.is_dir():
-                try:
-                    generate_report(root, root / "report")
-                except Exception as exc:
-                    logger.warning("Relatório de {} falhou: {}", dataset["key"], exc)
-
-        total_h = (time.perf_counter() - t_queue) / 3600
+        invalid = _invalid_matrix_stages(results_root, identity, official_model_matrix)
+        if invalid:
+            failures.extend(invalid)
+            logger.error("MATRIX_INVALID: {}", invalid)
+        elapsed = (time.perf_counter() - started) / 3600
         logger.info(
-            "FILA CONCLUÍDA em {:.1f} h: {} estágios ok, {} pulados, {} falhas: {}",
-            total_h,
+            "FILA FINAL: {:.2f}h, {} concluídos, {} retomados, {} falhas",
+            elapsed,
             completed,
             skipped,
             len(failures),
-            failures or "nenhuma",
         )
         return 1 if failures else 0
+    except KeyboardInterrupt:
+        logger.warning("interrupted: KeyboardInterrupt")
+        return 130
+    except Exception as exc:
+        logger.exception("BENCHMARK_FAILED: {}", exc)
+        return 1
     finally:
-        PID_FILE.unlink(missing_ok=True)
+        if resident_model is not None:
+            _unload_model(resident_model)
+        _release_pidfile(PID_FILE, lease)
 
 
 if __name__ == "__main__":
