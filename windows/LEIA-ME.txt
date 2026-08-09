@@ -1,0 +1,77 @@
+IFC QUALITY COPILOT - BENCHMARK WINDOWS x64 (MVP)
+==================================================
+
+O que fazer
+-----------
+
+1. Mantenha todos os arquivos e a pasta "payload" juntos, sem renomear nem
+   mover somente uma parte do pacote.
+2. Confirme que o computador usa Windows 10 22H2 build 19045 ou Windows 11,
+   ambos x64, possui internet estável e pelo menos 55 GiB livres no disco de
+   %LOCALAPPDATA%.
+3. Dê duplo clique em EXECUTAR_BENCHMARK.cmd.
+4. Não instale Python, Git, Ollama, llmfit ou modelos manualmente. O pacote cria
+   seu ambiente isolado e não altera instalações existentes.
+5. Mantenha a janela aberta. A primeira preparação pode transferir cerca de
+   48 GB; o benchmark completo pode durar muitas horas.
+6. Ao final, guarde o arquivo RESULTADO_IFCQC_*.zip cujo caminho aparece na
+   tela. Esse ZIP é o arquivo a enviar para análise.
+
+Não é preciso colocar mais nada nesta pasta. Ela já contém o projeto, os IFCs
+predio_v1.ifc e casa_v1.ifc, os dois ground truths e o manifesto. Ferramentas e
+os dez modelos fixados são baixados e verificados automaticamente.
+
+O que será executado
+---------------------
+
+- Um ambiente Python 3.12.13 exclusivo desta aplicação.
+- Ollama 0.32.5 standalone e os dez modelos do models.lock.json.
+- predio e casa, uma réplica de cada modelo, com cache desligado e
+  reuse-equivalent: 20 etapas no total.
+- Inventário de hardware/software e llmfit, incluindo recomendações de outros
+  modelos que o hardware aparenta suportar. Esses modelos extras não são
+  baixados e não entram no benchmark oficial.
+
+Interromper e continuar
+-----------------------
+
+- Para uma parada controlada, crie um arquivo vazio chamado BENCHMARK_STOP na
+  pasta onde iniciou o CMD, ou pressione Ctrl+C uma vez.
+- O programa tenta gerar um RESULTADO_IFCQC_*_interrupted.zip e encerra com o
+  código 130. Não desligue o computador durante a gravação desse ZIP.
+- Execute o mesmo EXECUTAR_BENCHMARK.cmd novamente para continuar. Etapas que
+  já possuem o par JSON + JSONL válido são reaproveitadas.
+- Um BENCHMARK_STOP antigo, presente antes de iniciar, é ignorado.
+
+Se aparecer QUARANTINE_RECOVERY_REQUIRED, execute novamente o mesmo CMD sem
+apagar, mover ou editar resultados e sem mexer em .invalid-stage-artifacts. Se a
+mensagem se repetir, envie o ZIP marcado como failed para análise. Não tente
+juntar manualmente os arquivos JSON e JSONL.
+
+Problemas comuns
+----------------
+
+- Proxy HTTPS ou rede institucional: solicite ao administrador da rede acesso
+  HTTPS aos endereços exibidos no log. Não desative TLS nem a conferência de
+  SHA-256. Depois, execute o mesmo CMD novamente.
+- Pouco espaço: libere o valor pedido no volume indicado pelo log e execute
+  novamente. Não mova somente a pasta de modelos.
+- Driver NVIDIA anterior a 452.39: atualize o driver usando a orientação
+  oficial do fabricante e reinicie o Windows. O pacote não instala drivers.
+- "digest divergente", "hash divergente" ou ativo removido da origem: pare e
+  envie o log. Não edite release-manifest.json nem models.lock.json para
+  "fazer passar"; isso eliminaria a referência reproduzível do experimento.
+- Outra falha: abra o caminho de log mostrado na última mensagem, preserve a
+  pasta da aplicação e execute novamente. Se houver ZIP failed, envie-o junto.
+
+Privacidade e integridade
+-------------------------
+
+O ZIP de evidências tenta excluir e verificar nome de usuário, hostname,
+IP/MAC, seriais, tokens, chaves e conteúdo de .env. Revise o ZIP antes de
+compartilhar se a política da sua instituição exigir uma inspeção adicional.
+Ele não inclui os IFCs, modelos ou executáveis.
+
+SHA-256 não é assinatura digital: ele detecta divergência em relação a este
+manifesto, mas não prova quem publicou a pasta. Receba a pasta por canal confiável
+e não a execute se a origem for desconhecida.

@@ -66,4 +66,5 @@ markers = [
     "slow: testes lentos (>1s)",
     "network: requer rede ou serviço externo (Ollama, bSDD)",
     "integration: testes de integração end-to-end",
+    "windows_e2e: smoke opt-in e aceite manual do pacote Windows",
 ]
