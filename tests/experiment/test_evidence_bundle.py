@@ -1,4 +1,5 @@
 import hashlib
+import itertools
 import json
 import os
 import subprocess
@@ -237,6 +238,67 @@ def test_compact_alias_policy_blocks_credentials_without_hiding_token_metrics(tm
     else:
         clean_records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
     assert clean_records == [{"metrics": safe_metrics, "nested": {"payload": {}}}]
+    assert not scan_sensitive_text(tmp_path, forbidden_values=set())
+
+
+@pytest.mark.parametrize("suffix", [".json", ".jsonl"])
+def test_compact_token_policy_is_fail_closed_outside_exact_allowlists(tmp_path, suffix):
+    directions = ("INPUT", "output", "Prompt", "cOmPlEtIoN")
+    units = ("TOKEN", "tokens")
+    metric_suffixes = (
+        "",
+        "AVERAGE",
+        "count",
+        "Max",
+        "MEAN",
+        "median",
+        "MIN",
+        "perSample",
+        "PERSECOND",
+        "total",
+    )
+    safe_metrics: dict[str, object] = {
+        f"{direction}{unit}{metric_suffix}": value
+        for value, (direction, unit, metric_suffix) in enumerate(
+            itertools.product(directions, units, metric_suffixes), start=1
+        )
+    }
+    safe_metrics.update(
+        {
+            "TokenCount": 101,
+            "TOKENSperSAMPLE": 102,
+            "tokensPERSECOND": 103,
+            "TOTALtokens": 104,
+            "Tokenizer": "BPE",
+            "tokenizerVERSION": "1.0",
+            "DETOKENIZED": True,
+            "detokenizedLength": 42,
+        }
+    )
+    sensitive_names = (
+        "SESSIONTOKENVALUE",
+        "csrftoken",
+        "CustomTOKENBlob",
+        "DEVICETOKENHASH",
+        "PREFIXTOKEN",
+        "TOKENSUFFIX",
+        "PREFIXTOKENSUFFIX",
+        "MyTokenField",
+        "TOKENIZATION",
+        "TOKENIZERCONFIG",
+        "DETOKENIZEDTEXT",
+    )
+    sensitive = {name: f"s{index:02d}" for index, name in enumerate(sensitive_names, start=1)}
+    path = tmp_path / f"compact-token{suffix}"
+    record = {"metrics": safe_metrics, "nested": {"payload": sensitive}}
+    path.write_text(json.dumps(record, sort_keys=True) + "\n", encoding="utf-8")
+
+    findings = scan_sensitive_text(tmp_path, forbidden_values=set())
+    assert [finding.kind for finding in findings].count("sensitive-key") == len(sensitive)
+
+    sanitize_text_files(tmp_path, forbidden_values=set())
+    clean_record = json.loads(path.read_text(encoding="utf-8").strip())
+    assert clean_record == {"metrics": safe_metrics, "nested": {"payload": {}}}
     assert not scan_sensitive_text(tmp_path, forbidden_values=set())
 
 

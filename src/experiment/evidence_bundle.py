@@ -96,32 +96,7 @@ SENSITIVE_KEY_SEQUENCES = (
     ("private", "key"),
     ("user", "name"),
 )
-CREDENTIAL_TOKEN_QUALIFIERS = frozenset(
-    {"access", "api", "auth", "bearer", "id", "refresh", "secret"}
-)
 SAFE_TOKEN_METRIC_DIRECTIONS = frozenset({"completion", "input", "output", "prompt"})
-SAFE_TOKEN_METRIC_SUFFIXES = frozenset(
-    {
-        (),
-        ("average",),
-        ("count",),
-        ("max",),
-        ("mean",),
-        ("median",),
-        ("min",),
-        ("per", "sample"),
-        ("per", "second"),
-        ("total",),
-    }
-)
-SAFE_STANDALONE_TOKEN_METRICS = frozenset(
-    {
-        ("token", "count"),
-        ("tokens", "per", "sample"),
-        ("tokens", "per", "second"),
-        ("total", "tokens"),
-    }
-)
 SENSITIVE_COMPACT_FRAGMENTS = frozenset(
     {
         "accesskey",
@@ -168,6 +143,9 @@ SAFE_COMPACT_TOKEN_METRICS = frozenset(
         for suffix in SAFE_COMPACT_TOKEN_METRIC_SUFFIXES
     }
     | {"tokencount", "tokenspersample", "tokenspersecond", "totaltokens"}
+)
+SAFE_COMPACT_LINGUISTIC_TOKEN_KEYS = frozenset(
+    {"detokenized", "detokenizedlength", "tokenizer", "tokenizerversion"}
 )
 SECRET_ENV_KEYS = re.compile(
     r"(?:TOKEN|SECRET|PASSWORD|API[_-]?KEY|OLLAMA[_-]?KEY)",
@@ -229,17 +207,6 @@ def _contains_parts(parts: tuple[str, ...], sequence: tuple[str, ...]) -> bool:
     return any(parts[index : index + width] == sequence for index in range(len(parts) - width + 1))
 
 
-def _is_safe_token_metric(parts: tuple[str, ...]) -> bool:
-    """Permite somente formas científicas explícitas de métricas de tokens."""
-    if parts in SAFE_STANDALONE_TOKEN_METRICS:
-        return True
-    if len(parts) < 2 or parts[0] not in SAFE_TOKEN_METRIC_DIRECTIONS:
-        return False
-    if parts[1] not in {"token", "tokens"}:
-        return False
-    return parts[2:] in SAFE_TOKEN_METRIC_SUFFIXES
-
-
 def _is_sensitive_key(key: object) -> bool:
     """Classifica chaves por estrutura, sem confundir métricas com credenciais."""
     parts = _normalized_key_parts(key)
@@ -255,16 +222,9 @@ def _is_sensitive_key(key: object) -> bool:
     compact = "".join(parts)
     if any(fragment in compact for fragment in SENSITIVE_COMPACT_FRAGMENTS):
         return True
-    if compact in SAFE_COMPACT_TOKEN_METRICS:
+    if compact in SAFE_COMPACT_TOKEN_METRICS or compact in SAFE_COMPACT_LINGUISTIC_TOKEN_KEYS:
         return False
-    if any(compact.startswith(prefix) for prefix in SAFE_COMPACT_TOKEN_METRIC_PREFIXES):
-        return True
-    token_indexes = [
-        index for index, component in enumerate(parts) if component in {"token", "tokens"}
-    ]
-    if any(CREDENTIAL_TOKEN_QUALIFIERS.intersection(parts[:index]) for index in token_indexes):
-        return True
-    return bool(token_indexes) and not _is_safe_token_metric(parts)
+    return "token" in compact
 
 
 def _parsed_ip_candidate(
