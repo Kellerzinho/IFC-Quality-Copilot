@@ -236,7 +236,7 @@ def _build_registry() -> ToolRegistry:
     registry.register(
         name="listar_tools_disponiveis",
         handler=handle_listar_tools_disponiveis,
-        schema=_tool_meta["listar_tools_disponiveis"].inputSchema,
+        schema=_tool_meta["listar_tools_disponiveis"].input_schema,
         description=_tool_meta["listar_tools_disponiveis"].description,
         profiles=None,
         category="general",
@@ -262,7 +262,7 @@ def _build_registry() -> ToolRegistry:
         registry.register(
             name=name,
             handler=handler,
-            schema=tool.inputSchema,
+            schema=tool.input_schema,
             description=tool.description,
             profiles=_diag_profiles[name],
             category="readiness" if name == "verificar_readiness" else "diagnostic",
@@ -285,7 +285,7 @@ def _build_registry() -> ToolRegistry:
         registry.register(
             name=tool.name,
             handler=_pipeline_handlers[tool.name],
-            schema=tool.inputSchema,
+            schema=tool.input_schema,
             description=tool.description,
             profiles=None,
             category="pipeline",
@@ -316,7 +316,7 @@ def _build_registry() -> ToolRegistry:
         registry.register(
             name=tool.name,
             handler=_write_handlers[tool.name],
-            schema=tool.inputSchema,
+            schema=tool.input_schema,
             description=tool.description,
             profiles=_write_profiles[tool.name],
             category="write",
@@ -333,7 +333,6 @@ _session["tool_registry"] = _TOOL_REGISTRY
 # MCP handlers
 # ---------------------------------------------------------------------------
 
-@server.list_tools()
 async def list_tools() -> list[types.Tool]:
     """Lista todas as ferramentas disponíveis no servidor (sem filtro de perfil)."""
     return [
@@ -346,13 +345,42 @@ async def list_tools() -> list[types.Tool]:
     ]
 
 
-@server.call_tool()
 async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
     """Dispatcher principal — delega ao ToolRegistry."""
     entry = _TOOL_REGISTRY.get_tool(name)
     if entry is None:
         raise ValueError(f"Tool desconhecida: '{name}'")
     return await entry["handler"](_session, arguments)
+
+
+async def _handle_list_tools_request(
+    _context: Any,
+    _params: types.PaginatedRequestParams,
+) -> types.ListToolsResult:
+    """Adapta o dispatcher interno ao contrato de transporte do MCP 2.x."""
+    return types.ListToolsResult(tools=await list_tools())
+
+
+async def _handle_call_tool_request(
+    _context: Any,
+    params: types.CallToolRequestParams,
+) -> types.CallToolResult:
+    """Adapta os parâmetros tipados do MCP 2.x ao ToolRegistry do projeto."""
+    return types.CallToolResult(
+        content=await call_tool(params.name, params.arguments or {}),
+    )
+
+
+server.add_request_handler(
+    "tools/list",
+    types.PaginatedRequestParams,
+    _handle_list_tools_request,
+)
+server.add_request_handler(
+    "tools/call",
+    types.CallToolRequestParams,
+    _handle_call_tool_request,
+)
 
 
 async def _main() -> None:
