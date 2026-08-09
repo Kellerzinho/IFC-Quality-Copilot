@@ -7,11 +7,12 @@ import ipaddress
 import json
 import os
 import re
+import stat
 import zipfile
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from enum import StrEnum
-from pathlib import Path, PurePosixPath
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any, Literal, cast
 
 from src.experiment.ground_truth_validation import sha256_file
@@ -59,24 +60,63 @@ class FailureCode(StrEnum):
     UNKNOWN_FAILED = "UNKNOWN_FAILED"
 
 
-SENSITIVE_KEYS = re.compile(
-    r"(?:user(?:name)?|host(?:name)?|serial|mac|ip_address|api[_-]?key|token|secret|"
-    r"password|ollama_key)",
-    re.IGNORECASE,
+SENSITIVE_EXACT_KEYS = frozenset(
+    {
+        "api_key",
+        "auth",
+        "authorization",
+        "bearer",
+        "host",
+        "host_name",
+        "hostname",
+        "ip",
+        "ip_address",
+        "mac",
+        "mac_address",
+        "ollama_key",
+        "password",
+        "secret",
+        "serial",
+        "serial_number",
+        "token",
+        "tokens",
+        "user",
+        "user_name",
+        "username",
+    }
+)
+SENSITIVE_TOKEN_QUALIFIERS = frozenset(
+    {"access", "api", "auth", "bearer", "id", "refresh", "secret"}
 )
 SECRET_ENV_KEYS = re.compile(
     r"(?:TOKEN|SECRET|PASSWORD|API[_-]?KEY|OLLAMA[_-]?KEY)",
     re.IGNORECASE,
+)
+ASSIGNED_SECRET_PATTERN = re.compile(
+    r"""
+    \b
+    (?:
+        api[_-]?key
+        | ollama[_-]?key
+        | (?:(?:auth|access|id|api|bearer|refresh|secret)[_-]?)?token
+        | secret
+        | password
+    )
+    \s*[:=]\s*
+    (?:
+        "(?:\\.|[^"\\\r\n])*(?:"|$)
+        | '(?:\\.|[^'\\\r\n])*(?:'|$)
+        | (?!["'])[^\s,;]+
+    )
+    """,
+    re.IGNORECASE | re.MULTILINE | re.VERBOSE,
 )
 SENSITIVE_TEXT_PATTERNS = {
     "ipv6": re.compile(r"(?<![\w:.])\[?[0-9a-f:.]*:[0-9a-f:.]+\]?(?![\w:.])", re.I),
     "ipv4": re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b"),
     "mac": re.compile(r"\b(?:[0-9a-f]{2}[:-]){5}[0-9a-f]{2}\b", re.I),
     "bearer-token": re.compile(r"\bBearer\s+[A-Za-z0-9._~+/=-]+", re.I),
-    "assigned-secret": re.compile(
-        r"\b(?:api[_-]?key|token|secret|password|ollama[_-]?key)\s*[:=]\s*[^\s,;]+",
-        re.I,
-    ),
+    "assigned-secret": ASSIGNED_SECRET_PATTERN,
 }
 
 SAFE_TEXT_SUFFIXES = {
@@ -91,6 +131,40 @@ SAFE_TEXT_SUFFIXES = {
 }
 FORBIDDEN_NAMES = {".env", "id_ed25519", "id_ed25519.pub"}
 DETERMINISTIC_ZIP_TIME = (1980, 1, 1, 0, 0, 0)
+WINDOWS_REPARSE_POINT = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+
+
+def _normalized_key_parts(key: object) -> tuple[str, ...]:
+    """Normaliza snake/kebab/camel/Pascal case em componentes estáveis."""
+    raw = str(key)
+    separated_acronyms = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1_\2", raw)
+    separated_camel = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", separated_acronyms)
+    return tuple(part for part in re.split(r"[^a-z0-9]+", separated_camel.casefold()) if part)
+
+
+def _is_sensitive_key(key: object) -> bool:
+    """Classifica chaves por estrutura, sem confundir métricas com credenciais."""
+    parts = _normalized_key_parts(key)
+    if not parts:
+        return False
+    normalized = "_".join(parts)
+    if normalized in SENSITIVE_EXACT_KEYS:
+        return True
+    if parts[-1] in {"password", "secret"}:
+        return True
+    if len(parts) >= 2 and parts[-2:] in {
+        ("api", "key"),
+        ("host", "name"),
+        ("ip", "address"),
+        ("mac", "address"),
+        ("ollama", "key"),
+        ("serial", "number"),
+        ("user", "name"),
+    }:
+        return True
+    return parts[-1] in {"token", "tokens"} and bool(
+        SENSITIVE_TOKEN_QUALIFIERS.intersection(parts[:-1])
+    )
 
 
 def _parsed_ip_candidate(
@@ -173,6 +247,16 @@ def _path_contains_forbidden_value(relative: str, forbidden_values: set[str]) ->
     return any(forbidden.casefold() in folded for forbidden in forbidden_values if forbidden)
 
 
+def _ordered_forbidden_values(forbidden_values: Iterable[str]) -> tuple[str, ...]:
+    """Define ordem total: maior valor primeiro e desempate lexical estável."""
+    return tuple(
+        sorted(
+            (item for item in forbidden_values if item),
+            key=lambda item: (-len(item), item.casefold(), item),
+        )
+    )
+
+
 def _has_sensitive_relative_path(
     root: Path,
     *,
@@ -180,6 +264,7 @@ def _has_sensitive_relative_path(
     excluded_paths: Iterable[Path] = (),
 ) -> bool:
     """Faz preflight lexical de nomes antes que qualquer conteúdo seja lido."""
+    _reject_reparse(root, display_path=".")
     excluded = {Path(os.path.abspath(path)) for path in excluded_paths}
     excluded.add(Path(os.path.abspath(root / "manifest.json")))
     for candidate in root.rglob("*"):
@@ -215,17 +300,40 @@ def _read_text_strict(path: Path) -> str:
     return text
 
 
+def _path_is_reparse(path: Path) -> bool:
+    """Detecta links e reparse points sem resolver o alvo."""
+    try:
+        information = os.lstat(path)
+    except FileNotFoundError:
+        information = None
+    if information is not None:
+        if stat.S_ISLNK(information.st_mode):
+            return True
+        attributes = getattr(information, "st_file_attributes", 0)
+        if attributes & WINDOWS_REPARSE_POINT:
+            return True
+    if path.is_symlink():
+        return True
+    is_junction = getattr(path, "is_junction", None)
+    return bool(is_junction is not None and is_junction())
+
+
+def _reject_reparse(path: Path, *, display_path: str) -> None:
+    """Falha fechado sem incluir um caminho absoluto potencialmente sensível."""
+    if _path_is_reparse(path):
+        raise EvidencePrivacyError(f"symlink, junction ou reparse point proibido: {display_path}")
+
+
 def _evidence_files(root: Path, *, excluded_paths: Iterable[Path] = ()) -> list[Path]:
     """Enumera arquivos textuais contidos na raiz e falha fechado."""
+    _reject_reparse(root, display_path=".")
     root_resolved = root.resolve(strict=True)
     excluded = {path.resolve(strict=False) for path in excluded_paths}
     excluded.add((root / "manifest.json").resolve(strict=False))
     files: list[Path] = []
     for candidate in sorted(root.rglob("*"), key=lambda item: item.as_posix()):
         relative = candidate.relative_to(root).as_posix()
-        is_junction = getattr(candidate, "is_junction", lambda: False)()
-        if candidate.is_symlink() or is_junction:
-            raise EvidencePrivacyError(f"symlink proibido: {relative}")
+        _reject_reparse(candidate, display_path=relative)
         if not candidate.is_file():
             continue
         resolved = candidate.resolve(strict=True)
@@ -275,7 +383,7 @@ def redact_sensitive(
         clean: dict[str, Any] = {}
         for key, child in value.items():
             child_path = f"{path}.{key}".strip(".")
-            if SENSITIVE_KEYS.search(str(key)):
+            if _is_sensitive_key(key):
                 removed.append(RemovedField(child_path, "sensitive-key"))
                 continue
             clean_child, child_removed = redact_sensitive(
@@ -299,7 +407,7 @@ def redact_sensitive(
         return clean_list, removed
     if isinstance(value, str):
         clean_text = value
-        for forbidden in sorted((item for item in forbidden_values if item), key=len, reverse=True):
+        for forbidden in _ordered_forbidden_values(forbidden_values):
             if forbidden.casefold() in clean_text.casefold():
                 clean_text = re.sub(
                     re.escape(forbidden),
@@ -318,7 +426,7 @@ def _sensitive_key_paths(value: Any, *, prefix: str = "") -> list[str]:
     if isinstance(value, dict):
         for key, child in value.items():
             child_path = f"{prefix}.{key}".strip(".")
-            if SENSITIVE_KEYS.search(str(key)):
+            if _is_sensitive_key(key):
                 paths.append(child_path)
             paths.extend(_sensitive_key_paths(child, prefix=child_path))
     elif isinstance(value, list):
@@ -416,7 +524,7 @@ def sanitize_text_files(
                 )
             candidate.write_bytes(serialized.encode("utf-8"))
         text = _read_text_strict(candidate)
-        for forbidden in sorted((item for item in forbidden_values if item), key=len, reverse=True):
+        for forbidden in _ordered_forbidden_values(forbidden_values):
             matches = len(re.findall(re.escape(forbidden), text, flags=re.I))
             if matches:
                 text = re.sub(re.escape(forbidden), "[REDACTED]", text, flags=re.I)
@@ -514,11 +622,18 @@ def _manifest_map(raw: bytes) -> dict[str, tuple[int, str]]:
         for row in document["files"]:
             if set(row) != {"path", "size_bytes", "sha256"}:
                 raise ValueError("entry schema")
-            name = str(row["path"])
+            if not isinstance(row["path"], str):
+                raise ValueError("path type")
+            name = row["path"]
             pure = PurePosixPath(name)
+            windows = PureWindowsPath(name)
             if (
                 not name
+                or name == "."
                 or pure.is_absolute()
+                or windows.is_absolute()
+                or bool(windows.drive)
+                or bool(windows.root)
                 or ".." in pure.parts
                 or "\\" in name
                 or pure.as_posix() != name

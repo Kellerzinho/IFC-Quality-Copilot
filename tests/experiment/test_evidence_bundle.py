@@ -1,8 +1,10 @@
 import hashlib
 import json
 import os
+import subprocess
 import zipfile
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -78,6 +80,28 @@ def test_sanitizer_redacts_all_patterns_before_scanner_but_allows_loopback(tmp_p
     assert not scan_sensitive_text(tmp_path, forbidden_values={"Keller"})
 
 
+@pytest.mark.parametrize(
+    "assignment",
+    [
+        'token="alpha beta"',
+        "api_key='gamma delta'",
+        r'token="alpha \"quoted\" beta"',
+        r"secret='gamma \'quoted\' delta'",
+        "password=unquoted-value",
+    ],
+)
+def test_assigned_secret_redacts_the_complete_quoted_or_unquoted_value(tmp_path, assignment):
+    path = tmp_path / "runner.log"
+    path.write_text(f"prefix {assignment} suffix=public\n", encoding="utf-8")
+
+    findings = scan_sensitive_text(tmp_path, forbidden_values=set())
+    assert [finding.kind for finding in findings].count("assigned-secret") == 1
+
+    sanitize_text_files(tmp_path, forbidden_values=set())
+    assert path.read_text(encoding="utf-8") == "prefix [REDACTED] suffix=public\n"
+    assert not scan_sensitive_text(tmp_path, forbidden_values=set())
+
+
 def test_json_and_jsonl_scanner_find_unknown_sensitive_keys_even_with_null_value(tmp_path):
     (tmp_path / "legacy.json").write_text('{"hostname":"NEVER-SEEN-PC"}\n', encoding="utf-8")
     (tmp_path / "legacy.jsonl").write_text(
@@ -95,6 +119,39 @@ def test_json_scanner_is_fail_closed_when_structured_payload_is_invalid(tmp_path
     (tmp_path / "broken.json").write_text('{"hostname":', encoding="utf-8")
     with pytest.raises(EvidencePrivacyError, match="JSON invalido"):
         scan_sensitive_text(tmp_path, forbidden_values=set())
+
+
+@pytest.mark.parametrize("suffix", [".json", ".jsonl"])
+def test_structured_token_policy_preserves_metrics_and_blocks_credentials(tmp_path, suffix):
+    metrics = {
+        "output_tokens": 12,
+        "output_tokens_total": 24,
+        "output_tokens_per_sample": 6.0,
+        "token_count": 12,
+    }
+    credentials = {
+        "auth_token": "auth-secret",
+        "accessToken": "access-secret",
+        "id-token": "id-secret",
+        "api_token": "api-secret",
+        "bearerToken": "bearer-secret",
+        "secret_token": "secret-secret",
+    }
+    path = tmp_path / f"metrics{suffix}"
+    record = {**metrics, **credentials}
+    serialized = json.dumps(record, sort_keys=True) + "\n"
+    path.write_text(serialized, encoding="utf-8")
+
+    findings = scan_sensitive_text(tmp_path, forbidden_values=set())
+    assert [finding.kind for finding in findings].count("sensitive-key") == 6
+
+    sanitize_text_files(tmp_path, forbidden_values=set())
+    if suffix == ".json":
+        clean_records = [json.loads(path.read_text(encoding="utf-8"))]
+    else:
+        clean_records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+    assert clean_records == [metrics]
+    assert not scan_sensitive_text(tmp_path, forbidden_values=set())
 
 
 def test_ipv6_candidates_are_validated_so_times_and_versions_survive(tmp_path):
@@ -165,6 +222,85 @@ def test_symlink_is_rejected_without_requiring_windows_symlink_privilege(tmp_pat
     monkeypatch.setattr(Path, "is_symlink", lambda self: self == linked or original(self))
     with pytest.raises(EvidencePrivacyError, match="symlink"):
         build_file_manifest(tmp_path)
+
+
+@pytest.mark.parametrize("link_kind", ["symlink", "junction"])
+def test_evidence_root_link_is_rejected_before_resolve(tmp_path, monkeypatch, link_kind):
+    root = tmp_path / "evidence"
+    root.mkdir()
+    (root / "public.txt").write_text("safe", encoding="utf-8")
+    method_name = "is_symlink" if link_kind == "symlink" else "is_junction"
+    real_method = getattr(Path, method_name, lambda self: False)
+    real_resolve = Path.resolve
+    monkeypatch.setattr(
+        Path,
+        method_name,
+        lambda self: self == root or real_method(self),
+        raising=False,
+    )
+
+    def reject_root_resolve(self, *args, **kwargs):
+        if self == root:
+            raise AssertionError("root resolvido antes de validar reparse")
+        return real_resolve(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "resolve", reject_root_resolve)
+    with pytest.raises(EvidencePrivacyError, match=r"symlink|junction|reparse"):
+        build_file_manifest(root)
+
+
+def test_evidence_root_windows_reparse_attribute_is_rejected(tmp_path, monkeypatch):
+    root = tmp_path / "evidence"
+    root.mkdir()
+    (root / "public.txt").write_text("safe", encoding="utf-8")
+    real_lstat = os.lstat
+
+    def reparse_lstat(path):
+        result = real_lstat(path)
+        if Path(path) == root:
+            return SimpleNamespace(
+                st_mode=result.st_mode,
+                st_file_attributes=0x400,
+            )
+        return result
+
+    monkeypatch.setattr(os, "lstat", reparse_lstat)
+    with pytest.raises(EvidencePrivacyError, match=r"symlink|junction|reparse"):
+        build_file_manifest(root)
+
+
+@pytest.mark.skipif(os.name != "nt", reason="junction real requer Windows")
+def test_real_windows_evidence_root_junction_is_rejected(tmp_path):
+    target = tmp_path / "target"
+    target.mkdir()
+    target_file = target / "public.txt"
+    target_file.write_text("safe", encoding="utf-8")
+    junction = tmp_path / "evidence-junction"
+    environment = os.environ.copy()
+    environment["IFCQC_TEST_JUNCTION"] = str(junction)
+    environment["IFCQC_TEST_TARGET"] = str(target)
+    created = subprocess.run(
+        [
+            "powershell.exe",
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            "New-Item -ItemType Junction -Path $env:IFCQC_TEST_JUNCTION "
+            "-Target $env:IFCQC_TEST_TARGET | Out-Null",
+        ],
+        check=False,
+        capture_output=True,
+        env=environment,
+        text=True,
+    )
+    if created.returncode != 0:
+        pytest.skip(f"junction indisponivel: codigo {created.returncode}")
+    try:
+        with pytest.raises(EvidencePrivacyError, match=r"symlink|junction|reparse"):
+            build_file_manifest(junction)
+    finally:
+        os.rmdir(junction)
+    assert target_file.read_text(encoding="utf-8") == "safe"
 
 
 def test_resolved_path_escape_is_rejected(tmp_path, monkeypatch):
@@ -319,6 +455,30 @@ def test_main_zip_bytes_ignore_source_mtime_and_use_fixed_metadata(tmp_path, mon
             assert (info.external_attr >> 16) & 0o777 == 0o644
 
 
+def test_equal_length_overlapping_secrets_ignore_set_iteration_order(tmp_path):
+    class IterationOrderedSet(set[str]):
+        def __init__(self, values):
+            super().__init__(values)
+            self._iteration_order = tuple(values)
+
+        def __iter__(self):
+            return iter(self._iteration_order)
+
+    outputs = [tmp_path / "first.zip", tmp_path / "second.zip"]
+    orders = [("ab", "bc"), ("bc", "ab")]
+    for index, order in enumerate(orders):
+        root = tmp_path / f"source-{index}"
+        root.mkdir()
+        (root / "payload.txt").write_text("abc", encoding="utf-8")
+        create_evidence_zip(
+            root,
+            outputs[index],
+            forbidden_values=IterationOrderedSet(order),
+        )
+
+    assert outputs[0].read_bytes() == outputs[1].read_bytes()
+
+
 def make_valid_evidence_archive(tmp_path):
     source = tmp_path / "archive-source"
     source.mkdir()
@@ -345,6 +505,37 @@ def rewrite_archive_with_damage(path, damage):
 def test_archive_manifest_rejects_altered_missing_and_extra_members(tmp_path, damage):
     archive_path = make_valid_evidence_archive(tmp_path)
     rewrite_archive_with_damage(archive_path, damage)
+    assert validate_evidence_archive(archive_path)
+
+
+@pytest.mark.parametrize(
+    "unsafe_path",
+    [
+        "C:/secret.txt",
+        "C:secret.txt",
+        "//server/share/secret.txt",
+        r"\\server\share\secret.txt",
+        "/absolute.txt",
+        ".",
+        r"folder\secret.txt",
+    ],
+)
+def test_archive_manifest_rejects_windows_unsafe_member_paths(tmp_path, unsafe_path):
+    payload = b"safe"
+    manifest = {
+        "files": [
+            {
+                "path": unsafe_path,
+                "size_bytes": len(payload),
+                "sha256": hashlib.sha256(payload).hexdigest(),
+            }
+        ]
+    }
+    archive_path = tmp_path / "unsafe.zip"
+    with zipfile.ZipFile(archive_path, "w") as archive:
+        archive.writestr("manifest.json", json.dumps(manifest).encode("utf-8"))
+        archive.writestr(unsafe_path, payload)
+
     assert validate_evidence_archive(archive_path)
 
 
