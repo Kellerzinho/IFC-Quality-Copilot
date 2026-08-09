@@ -18,8 +18,9 @@ O que fazer
    tela. Esse ZIP é o arquivo a enviar para análise.
 
 Não é preciso colocar mais nada nesta pasta. Ela já contém o projeto, os IFCs
-predio_v1.ifc e casa_v1.ifc, os dois ground truths e o manifesto. Ferramentas e
-os dez modelos fixados são baixados e verificados automaticamente.
+predio_v1.ifc e casa_v1.ifc, os dois ground truths integrais, o lock da base
+anterior e o manifesto. Ferramentas e os dez modelos fixados são baixados e
+verificados automaticamente.
 
 O que será executado
 ---------------------
@@ -28,6 +29,9 @@ O que será executado
 - Ollama 0.32.5 standalone e os dez modelos do models.lock.json.
 - predio e casa, uma réplica de cada modelo, com cache desligado e
   reuse-equivalent: 20 etapas no total.
+- Ground truths com 4.720 valores do prédio e 263 valores da casa, sem casos
+  abstidos. O resultado separa acurácia por ocorrência, equivalência,
+  confiança e itens preservados da base anterior.
 - Inventário de hardware/software e llmfit, incluindo recomendações de outros
   modelos que o hardware aparenta suportar. Esses modelos extras não são
   baixados e não entram no benchmark oficial.

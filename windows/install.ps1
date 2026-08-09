@@ -232,7 +232,7 @@ function Read-ValidatedManifest {
         throw 'python_version fixado divergente; esperado 3.12.13.'
     }
     if (($manifest.release_id -isnot [string]) -or
-        ([string]$manifest.release_id -cnotmatch '^ifcqc-2026-08-08-[0-9a-f]{12}$')) {
+        ([string]$manifest.release_id -cnotmatch '^ifcqc-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9a-f]{12}$')) {
         throw 'release_id invalido.'
     }
     if (($manifest.source_commit -isnot [string]) -or

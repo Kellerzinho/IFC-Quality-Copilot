@@ -89,6 +89,10 @@ def project_fixture(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> ProjectF
         "pyproject.toml": "[project]\nname = 'fixture'\n",
         "src/__init__.py": "",
         "src/core.py": b"VALUE = 1\r\n",
+        "src/experiment/ground_truth_policy.py": "POLICY_VERSION = 'fixture'\n",
+        "src/experiment/ground_truth_value_policy.py": "VALUE_POLICY = 'fixture'\n",
+        "src/experiment/ground_truth_validation.py": "VALIDATION = 'fixture'\n",
+        "src/experiment/evaluator.py": "EVALUATOR = 'fixture'\n",
         "src/experiment/results/models.lock.json": (
             '{"schema_version":2,"runtime":{"name":"ollama"},"models":[]}\n'
         ),
@@ -100,6 +104,9 @@ def project_fixture(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> ProjectF
         "data/ids_templates/residencial_nbr15575.ids": ids,
         "data/ids_schema/ids.xsd": "<schema/>\n",
         "data/cache/bsdd_cache.json": "{}\n",
+        "data/evaluation/legacy-reference.lock.json": (
+            '{"schema_version":1,"datasets":{}}\n'
+        ),
         "data/evaluation/predio/predio_v1.ifc": predio,
         "data/evaluation/casa/casa_v1.ifc": casa,
         "data/evaluation/predio/README.md": "# Predio\n",
@@ -173,7 +180,12 @@ def test_project_archive_is_deterministic_allowlisted_and_portable(
             "scripts/run_benchmark.py",
             "scripts/windows_benchmark.py",
             "scripts/build_ground_truths.py",
+            "src/experiment/ground_truth_policy.py",
+            "src/experiment/ground_truth_value_policy.py",
+            "src/experiment/ground_truth_validation.py",
+            "src/experiment/evaluator.py",
             "src/experiment/results/models.lock.json",
+            "data/evaluation/legacy-reference.lock.json",
             "data/ids_schema/ids.xsd",
             "references/normative/public/sources.yaml",
         } <= set(names)
@@ -243,7 +255,7 @@ def test_release_contains_exact_public_shape_and_canonical_manifest(
         "datasets",
         "inputs",
     }
-    assert re.fullmatch(r"ifcqc-2026-08-08-[0-9a-f]{12}", manifest["release_id"])
+    assert re.fullmatch(r"ifcqc-2026-08-09-[0-9a-f]{12}", manifest["release_id"])
     assert release.name == f"IFCQC-Benchmark-Windows-x64-{manifest['release_id']}"
     # O fixture vive sob um Git externo; esse commit não pode vazar para a release.
     assert re.fullmatch(r"tree-[0-9a-f]{64}", manifest["source_commit"])
@@ -287,6 +299,7 @@ def test_manifest_hashes_every_local_payload_and_internal_input(
         "data/evaluation/casa/casa_v1.ifc",
         "data/evaluation/predio/ground_truth.yaml",
         "data/evaluation/casa/ground_truth.yaml",
+        "data/evaluation/legacy-reference.lock.json",
         "data/ids_templates/residencial_nbr15575.ids",
         "src/experiment/results/models.lock.json",
         "src/suggestion_engine/prompt_templates.py",

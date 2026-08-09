@@ -11,6 +11,7 @@ from pathlib import Path
 
 import httpx
 import pytest
+import yaml
 
 from scripts.build_windows_release import build_release, sha256_file
 from src.experiment.model_lock import load_model_lock
@@ -76,6 +77,7 @@ def _project_member_is_allowlisted(name: str) -> bool:
         "data/evaluation/predio/README.md",
         "data/evaluation/casa/ground_truth.yaml",
         "data/evaluation/casa/README.md",
+        "data/evaluation/legacy-reference.lock.json",
         "src/experiment/results/models.lock.json",
     }
     if name in exact:
@@ -180,6 +182,11 @@ def test_project_zip_is_allowlisted_and_contains_no_local_state(
         "src/experiment/results/models.lock.json",
         "data/evaluation/predio/ground_truth.yaml",
         "data/evaluation/casa/ground_truth.yaml",
+        "data/evaluation/legacy-reference.lock.json",
+        "src/experiment/ground_truth_policy.py",
+        "src/experiment/ground_truth_value_policy.py",
+        "src/experiment/ground_truth_validation.py",
+        "src/experiment/evaluator.py",
     }
     assert required <= set(names)
 
@@ -203,6 +210,21 @@ def test_project_zip_is_allowlisted_and_contains_no_local_state(
         assert not parts[-1].startswith(("credentials.", "secret.")), name
         if parts[:3] == ("src", "experiment", "results"):
             assert name == "src/experiment/results/models.lock.json"
+
+
+def test_project_zip_contains_integral_ground_truths_and_legacy_lock(
+    built_release: Path,
+) -> None:
+    with zipfile.ZipFile(built_release / "payload/project.zip") as archive:
+        assert "data/evaluation/legacy-reference.lock.json" in archive.namelist()
+        for dataset, expected in (("predio", 4720), ("casa", 263)):
+            document = yaml.safe_load(
+                archive.read(f"data/evaluation/{dataset}/ground_truth.yaml")
+            )
+            assert document["metadata"]["protocol"] == "full-coverage-equivalent-v1"
+            assert document["metadata"]["total_items"] == expected
+            assert len(document["items"]) == expected
+            assert document["skipped"] == []
 
 
 def test_built_release_validate_and_plan_are_offline(built_release: Path, tmp_path: Path) -> None:
