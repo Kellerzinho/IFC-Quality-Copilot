@@ -1,0 +1,24 @@
+{
+  "models": [
+    {
+      "best_quant": "AWQ-4bit",
+      "effective_context_length": 2048,
+      "estimated_tps": 39.3,
+      "fit_label": "Perfect",
+      "memory_required_gb": 4.42,
+      "name": "Orion-zhen/Qwen2.5-Coder-7B-Instruct-AWQ",
+      "ollama_name": null,
+      "parameter_count": "7.6B",
+      "provider": "orion-zhen",
+      "runtime": "vLLM",
+      "score": 91.7
+    }
+  ],
+  "system": {
+    "backend": "CUDA",
+    "cpu_cores": 20,
+    "gpu_name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "gpu_vram_gb": 8.0,
+    "total_ram_gb": 15.73
+  }
+}
