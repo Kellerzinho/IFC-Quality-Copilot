@@ -25,6 +25,7 @@ import pandas as pd
 import yaml
 from pydantic import BaseModel, Field, model_validator
 
+from src.experiment.ground_truth_policy import Confidence, SourceKind
 from src.models import (
     Issue,
     ProfileRegistry,
@@ -195,6 +196,10 @@ class GroundTruthItem(BaseModel):
     accepted_alternatives: list[Any] = Field(default_factory=list)
     verified: bool = False
     notes: str | None = None
+    equivalence_id: str | None = None
+    confidence: Confidence | None = None
+    source_kind: SourceKind | None = None
+    legacy_reference: bool = False
 
     @property
     def natural_key(self) -> tuple[str, str, str] | None:

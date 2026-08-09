@@ -6,6 +6,8 @@ from src.models import Issue
 from src.suggestion_engine.issue_deduplicator import (
     IssueDeduplicator,
     compute_structural_signature,
+    equivalence_id_for_issue,
+    structural_fingerprint_payload,
 )
 
 
@@ -195,3 +197,44 @@ def test_sparse_doors_are_not_reused():
     reuse = IssueDeduplicator().build_reuse_map([a, b])
 
     assert reuse == {}
+
+
+def test_equivalence_id_is_public_and_stable_for_safe_reuse():
+    first = _wall_thermal_issue("A")
+    second = _wall_thermal_issue("B")
+
+    assert equivalence_id_for_issue(first) == equivalence_id_for_issue(second)
+    assert len(equivalence_id_for_issue(first)) == len("eq-") + 16
+    assert equivalence_id_for_issue(first).startswith("eq-")
+
+
+def test_equivalence_id_is_unique_for_unsafe_issues():
+    first = _space_issue("A")
+    second = _space_issue("B")
+
+    assert equivalence_id_for_issue(first) != equivalence_id_for_issue(second)
+    assert structural_fingerprint_payload(first)["unique_issue_id"] == first.id
+    assert structural_fingerprint_payload(second)["unique_issue_id"] == second.id
+
+
+def test_equivalence_id_ignores_context_insertion_order():
+    first = _wall_thermal_issue("A")
+    second = _wall_thermal_issue("B")
+    second.context = dict(reversed(list(second.context.items())))
+
+    assert equivalence_id_for_issue(first) == equivalence_id_for_issue(second)
+
+
+def test_grouping_uses_the_same_public_equivalence_identity():
+    first = _wall_thermal_issue("A")
+    second = _wall_thermal_issue("B")
+    distinct = _wall_fire_issue()
+
+    groups = IssueDeduplicator().group_issues([first, second, distinct])
+
+    members_by_equivalence = {
+        equivalence_id_for_issue(issue): issue.id
+        for issue in (first, second, distinct)
+    }
+    assert sorted(groups[first.id]) == sorted([first.id, second.id])
+    assert members_by_equivalence[equivalence_id_for_issue(distinct)] == distinct.id

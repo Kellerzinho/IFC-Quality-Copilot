@@ -230,6 +230,45 @@ items:
         space_item = gt.get_for_issue(space)
         assert "WC Social" in space_item.accepted_alternatives
 
+    def test_carrega_metadados_de_cobertura_integral_no_item(self, tmp_path):
+        path = tmp_path / "ground_truth.yaml"
+        path.write_text(
+            """
+metadata: {protocol: full-coverage-equivalent-v1}
+items:
+  - element_guid: GUID_PAREDE_01
+    issue_type: pset_missing
+    check_property: FireRating
+    issue_id: issue-1
+    expected_value: REI 60
+    accepted_alternatives: []
+    verified: true
+    notes: Referência autoral congelada.
+    equivalence_id: eq-aabbccddeeff0011
+    confidence: medium
+    source_kind: typology
+    legacy_reference: false
+skipped: []
+""",
+            encoding="utf-8",
+        )
+
+        item = GroundTruth.from_yaml(path).items[0]
+
+        assert item.equivalence_id == "eq-aabbccddeeff0011"
+        assert item.confidence == "medium"
+        assert item.source_kind == "typology"
+        assert item.legacy_reference is False
+
+    def test_legacy_corrections_keep_working_without_new_metadata(self):
+        item = GroundTruth(corrections={"old-id": 2.48}).items[0]
+
+        assert item.issue_id == "old-id"
+        assert item.equivalence_id is None
+        assert item.confidence is None
+        assert item.source_kind is None
+        assert item.legacy_reference is False
+
 
 # ---------------------------------------------------------------------------
 # Métricas (F11) — precision condicionada à geração

@@ -264,12 +264,8 @@ def is_safe_to_reuse(issue: Issue) -> bool:
     return True
 
 
-def compute_structural_signature(issue: Issue) -> str:
-    """Gera assinatura estrutural de uma issue.
-
-    Issues com a mesma assinatura podem reutilizar sugestoes apenas quando a
-    assinatura inclui as caracteristicas que influenciam o valor sugerido.
-    """
+def _structural_components(issue: Issue) -> list[str]:
+    """Retorna os discriminadores ordenados usados pelo reuso real."""
     parts = [
         issue.issue_type,
         issue.element_class,
@@ -317,6 +313,35 @@ def compute_structural_signature(issue: Issue) -> str:
         parts.append(f"unique:{issue.element_guid}")
         parts.append(_context_text_hints(issue))
 
+    return parts
+
+
+def structural_fingerprint_payload(issue: Issue) -> dict[str, object]:
+    """Expõe o payload canônico que define uma classe ``reuse_equivalent``."""
+    safe = is_safe_to_reuse(issue)
+    return {
+        "schema": "reuse-equivalent-v1",
+        "safe_to_reuse": safe,
+        "components": _structural_components(issue),
+        "unique_issue_id": None if safe else issue.id,
+    }
+
+
+def equivalence_id_for_issue(issue: Issue) -> str:
+    """Retorna o ID público e determinístico da equivalência de uma issue."""
+    payload = json.dumps(
+        structural_fingerprint_payload(issue),
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return f"eq-{hashlib.sha256(payload).hexdigest()[:16]}"
+
+
+def compute_structural_signature(issue: Issue) -> str:
+    """Gera a assinatura histórica de uma issue para compatibilidade/debug."""
+    parts = _structural_components(issue)
+
     payload = "::".join(parts).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()[:16]
 
@@ -329,11 +354,7 @@ class IssueDeduplicator:
         groups: OrderedDict[str, list[str]] = OrderedDict()
         sig_to_primary: dict[str, str] = {}
         for issue in issues:
-            if not is_safe_to_reuse(issue):
-                groups[issue.id] = [issue.id]
-                continue
-
-            sig = compute_structural_signature(issue)
+            sig = equivalence_id_for_issue(issue)
             primary = sig_to_primary.get(sig)
             if primary is None:
                 sig_to_primary[sig] = issue.id
