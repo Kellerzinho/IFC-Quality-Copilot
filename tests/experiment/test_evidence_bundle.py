@@ -130,6 +130,20 @@ def test_collects_nonempty_secret_and_dotenv_values_without_output(tmp_path, cap
     assert capsys.readouterr() == ("", "")
 
 
+def test_dotenv_inline_comments_do_not_hide_the_actual_secret(tmp_path):
+    dotenv = tmp_path / ".env"
+    dotenv.write_text(
+        "TOKEN=plain-secret # deployment comment\n"
+        "QUOTED='quoted # value' # trailing comment\n"
+        "LITERAL=prefix#suffix\n",
+        encoding="utf-8",
+    )
+
+    values = collect_forbidden_values({}, dotenv_paths=(dotenv,))
+
+    assert values == {"plain-secret", "quoted # value", "prefix#suffix"}
+
+
 @pytest.mark.parametrize("bad_name", ["weights.gguf", "payload.bin", "helper.exe", ".env"])
 def test_unknown_binary_and_forbidden_names_are_rejected(tmp_path, bad_name):
     (tmp_path / bad_name).write_bytes(b"not evidence")
@@ -211,6 +225,36 @@ def test_zip_rejects_privacy_findings_that_remain_after_sanitizer(tmp_path, monk
     monkeypatch.setattr(module, "sanitize_text_files", lambda *args, **kwargs: [])
     with pytest.raises(EvidencePrivacyError, match="known-value"):
         create_evidence_zip(evidence, tmp_path / "result.zip", forbidden_values={"PC-PRIVATE"})
+
+
+def test_zip_removes_stale_partial_when_privacy_preflight_fails(tmp_path, monkeypatch):
+    evidence = tmp_path / "evidence"
+    evidence.mkdir()
+    (evidence / "leak.txt").write_text("PC-PRIVATE", encoding="utf-8")
+    output = tmp_path / "result.zip"
+    temporary = output.with_suffix(".zip.partial")
+    temporary.write_bytes(b"stale")
+    monkeypatch.setattr(module, "sanitize_text_files", lambda *args, **kwargs: [])
+
+    with pytest.raises(EvidencePrivacyError, match="known-value"):
+        create_evidence_zip(evidence, output, forbidden_values={"PC-PRIVATE"})
+
+    assert not temporary.exists()
+
+
+def test_zip_rejects_known_value_in_relative_path_before_manifest(tmp_path):
+    evidence = tmp_path / "evidence"
+    private_directory = evidence / "PC-PRIVATE-results"
+    private_directory.mkdir(parents=True)
+    (private_directory / "public.txt").write_text("safe content", encoding="utf-8")
+    output = tmp_path / "result.zip"
+
+    with pytest.raises(EvidencePrivacyError, match="known-value-path") as captured:
+        create_evidence_zip(evidence, output, forbidden_values={"PC-PRIVATE"})
+
+    assert "PC-PRIVATE" not in str(captured.value)
+    assert not output.exists()
+    assert not output.with_suffix(".zip.partial").exists()
 
 
 def test_zip_fails_closed_on_unknown_hostname_if_sanitizer_misses_it(tmp_path, monkeypatch):

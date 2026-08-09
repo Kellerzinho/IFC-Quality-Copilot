@@ -114,6 +114,34 @@ def _allowed_local_ip(kind: str, raw: str) -> bool:
     return bool(address and (address.is_loopback or address.is_unspecified))
 
 
+def _parse_dotenv_value(raw: str) -> str:
+    """Remove comentário inline fora de aspas sem truncar ``#`` literal."""
+    value = raw.strip()
+    quoted_value = value.startswith(("'", '"'))
+    quote: str | None = None
+    escaped = False
+    for index, character in enumerate(value):
+        if escaped:
+            escaped = False
+            continue
+        if character == "\\" and quote is not None:
+            escaped = True
+            continue
+        if quote is not None:
+            if character == quote:
+                quote = None
+            continue
+        if character in {"'", '"'}:
+            quote = character
+            continue
+        if character == "#" and (quoted_value or index == 0 or value[index - 1].isspace()):
+            value = value[:index].rstrip()
+            break
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+        return value[1:-1]
+    return value
+
+
 def collect_forbidden_values(
     environment: Mapping[str, str],
     *,
@@ -133,9 +161,7 @@ def collect_forbidden_values(
             if not line or line.startswith("#") or "=" not in line:
                 continue
             _, raw_value = line.removeprefix("export ").split("=", 1)
-            value = raw_value.strip()
-            if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
-                value = value[1:-1]
+            value = _parse_dotenv_value(raw_value)
             if value:
                 values.add(value)
     return values
@@ -301,17 +327,25 @@ def scan_sensitive_text(
     findings: list[PrivacyFinding] = []
     for candidate in _evidence_files(root, excluded_paths=excluded_paths):
         relative = candidate.relative_to(root).as_posix()
+        sensitive_path = any(
+            forbidden.casefold() in relative.casefold()
+            for forbidden in forbidden_values
+            if forbidden
+        )
+        finding_path = "[REDACTED-PATH]" if sensitive_path else relative
+        if sensitive_path:
+            findings.append(PrivacyFinding(finding_path, "known-value-path", 0))
         if candidate.suffix.lower() in {".json", ".jsonl"}:
             for line_number, document in _structured_documents(candidate):
                 findings.extend(
-                    PrivacyFinding(relative, "sensitive-key", line_number)
+                    PrivacyFinding(finding_path, "sensitive-key", line_number)
                     for _ in _sensitive_key_paths(document)
                 )
         lines = _read_text_strict(candidate).splitlines()
         for number, line in enumerate(lines, 1):
             for forbidden in (item for item in forbidden_values if item):
                 if forbidden.casefold() in line.casefold():
-                    findings.append(PrivacyFinding(relative, "known-value", number))
+                    findings.append(PrivacyFinding(finding_path, "known-value", number))
             for kind, pattern in SENSITIVE_TEXT_PATTERNS.items():
                 for match in pattern.finditer(line):
                     if (
@@ -321,7 +355,7 @@ def scan_sensitive_text(
                         continue
                     if _allowed_local_ip(kind, match.group()):
                         continue
-                    findings.append(PrivacyFinding(relative, kind, number))
+                    findings.append(PrivacyFinding(finding_path, kind, number))
     return sorted(findings, key=lambda item: (item.path, item.line, item.kind))
 
 
@@ -539,34 +573,34 @@ def create_evidence_zip(root: Path, output: Path, *, forbidden_values: set[str])
     """Sanitiza, valida e publica atomicamente o pacote principal."""
     temporary = output.with_suffix(output.suffix + ".partial")
     excluded = (output, temporary)
-    sanitize_text_files(
-        root,
-        forbidden_values=forbidden_values,
-        excluded_paths=excluded,
-    )
-    findings = scan_sensitive_text(
-        root,
-        forbidden_values=forbidden_values,
-        excluded_paths=excluded,
-    )
-    if findings:
-        raise EvidencePrivacyError(
-            "; ".join(f"{item.kind}:{item.path}:{item.line}" for item in findings)
-        )
-    payload_files = _evidence_files(root, excluded_paths=excluded)
-    manifest_path = root / "manifest.json"
-    write_manifest(
-        manifest_path,
-        [
-            {
-                "path": candidate.relative_to(root).as_posix(),
-                "size_bytes": candidate.stat().st_size,
-                "sha256": sha256_file(candidate),
-            }
-            for candidate in payload_files
-        ],
-    )
     try:
+        sanitize_text_files(
+            root,
+            forbidden_values=forbidden_values,
+            excluded_paths=excluded,
+        )
+        findings = scan_sensitive_text(
+            root,
+            forbidden_values=forbidden_values,
+            excluded_paths=excluded,
+        )
+        if findings:
+            raise EvidencePrivacyError(
+                "; ".join(f"{item.kind}:{item.path}:{item.line}" for item in findings)
+            )
+        payload_files = _evidence_files(root, excluded_paths=excluded)
+        manifest_path = root / "manifest.json"
+        write_manifest(
+            manifest_path,
+            [
+                {
+                    "path": candidate.relative_to(root).as_posix(),
+                    "size_bytes": candidate.stat().st_size,
+                    "sha256": sha256_file(candidate),
+                }
+                for candidate in payload_files
+            ],
+        )
         with zipfile.ZipFile(temporary, "w") as archive:
             _write_deterministic_member(
                 archive,
