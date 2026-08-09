@@ -1,45 +1,46 @@
 # Ground truth — casa
 
-Referência de proveniência do dataset `casa`, congelada em 2026-08-08 para o
-benchmark. O conjunto é uma referência anotada para avaliação, não um laudo,
-certificado, aprovação ou declaração de conformidade.
+Referência experimental integral do dataset `casa`, congelada em 2026-08-09.
+O arquivo atribui um valor concreto a cada diagnóstico para permitir um benchmark
+reproduzível. Ele não é laudo, certificado, aprovação ou declaração de
+conformidade.
 
 ## Identificação e integridade
 
 | Campo | Valor |
 | --- | --- |
-| Protocolo | `evidence-audited-v1` |
-| Localidade declarada | Deodoro, Rio de Janeiro/RJ |
-| Tipologia declarada | Residencial unifamiliar |
-| Classificação de incêndio | A-1, premissa autoral para análise; não classificação oficial |
-| Contexto bioclimático | ZB 4A, conforme fonte técnica pública LabEEE/UFSC para Rio de Janeiro/RJ |
-| Status da ZB 4A | contexto técnico, sem valor de declaração formal de conformidade |
-| Data de verificação | 2026-08-08 |
+| Protocolo | `full-coverage-equivalent-v1` |
+| Localidade | Deodoro, Rio de Janeiro/RJ |
+| Tipologia | Residencial unifamiliar |
+| Contexto bioclimático | ZB 4A, fonte técnica pública LabEEE/UFSC; sem valor de declaração formal |
+| Data do freeze | 2026-08-09 |
 | `conformity_claim` | `false` |
-| `ground_truth.yaml` | SHA-256 `5903db9a3e3904f16a82df38b10d09f13769e7d88f3b61f52730a27dc8627c59` |
-| `casa_v1.ifc` | SHA-256 `3b84789c7396449f2c8a3d2f4a66468d81e59f8351ebd4b71fad161fa06112f2`; não versionado pelo Git |
-| IDS de entrada | SHA-256 `f698f2c020d79140bb314f077f8de680f492fd7ba42867e4000a4cead5d20905` (`data/ids_templates/residencial_nbr15575.ids`) |
-| Contagens | 263 issues diagnósticos; 12 itens; 251 abstenções (`skipped`) |
+| `ground_truth.yaml` | SHA-256 `60f87a079d2a9dccb7cfaedf43f3193b887f8606a1001d630a11321a6f8cfee5` |
+| `casa_v1.ifc` | SHA-256 `3b84789c7396449f2c8a3d2f4a66468d81e59f8351ebd4b71fad161fa06112f2`; entrada local não versionada pelo Git |
+| IDS | SHA-256 `f698f2c020d79140bb314f077f8de680f492fd7ba42867e4000a4cead5d20905` |
+| Cobertura | 263 diagnósticos; 263 itens; zero `skipped`; 101 classes de equivalência |
+| Base preservada | 12 itens, protegidos por `data/evaluation/legacy-reference.lock.json` |
+| Confiança | 52 `high`; 132 `medium`; 79 `low` |
 
-## Escopo e limites de inferência
+## Como interpretar os valores
 
-Os valores esperados são evidência modelada e/ou intenção de projeto submetida à
-auditoria determinística aprovada pelo autor. Não são desempenho certificado. Um
-valor ou limite normativo pode ser fonte da análise, de um cálculo reproduzível ou
-da razão de abstinência; não deve ser usado como `expected_value` fornecido pelo
-elemento sem evidência específica desse elemento.
+- `high`: valor literal/alias do IFC ou valor já presente na base autoral.
+- `medium`: cálculo reproduzível ou decisão tipológica determinística.
+- `low`: hipótese autoral congelada para que o benchmark tenha uma referência
+  completa. Toda nota desse nível começa com `Hipótese congelada:`.
 
-A-1 é premissa autoral. A ausência de extintor, sinalização ou objeto de saída de
-emergência no IFC não recebe violação automática e não prova ausência física. O
-IFC tampouco basta para inferir ocupação, população, rota de fuga, proteção
-instalada, aprovação, laudo ou certificado do CBMERJ.
+Os itens de uma mesma `equivalence_id` compartilham valor, alternativas, fonte e
+confiança. Para o artigo, a métrica principal recomendada é
+`accuracy_equivalence`, acompanhada por resultados por confiança e pela fatia
+`legacy_reference`.
 
-ZB 4A é apenas contexto técnico da localidade declarada; não prova desempenho
-térmico. Em particular, `ThermalTransmittance` presente no IFC não substitui
-composição, ensaio ou evidência de execução. A falta dessas evidências justifica
-`skipped`, não uma conclusão de conformidade ou não conformidade.
+## Limites científicos e normativos
 
-As fontes oficiais, edições consultadas e sua política de redistribuição estão em
+Valores `low` são referências autorais experimentais, não requisitos normativos
+nem desempenho certificado. A tipologia de incêndio e a ZB 4A são contexto de
+análise; o IFC isolado não prova composição, ensaio, execução, rota de fuga,
+proteção instalada ou aprovação pelo CBMERJ.
+
+As fontes públicas e os limites de uso estão em
 [`references/normative/public/sources.yaml`](../../../references/normative/public/sources.yaml).
-As normas ABNT aparecem somente como links de catálogo oficial; nenhum texto de
-norma paga é distribuído neste repositório.
+O repositório não redistribui textos licenciados da ABNT.

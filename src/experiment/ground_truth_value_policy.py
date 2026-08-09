@@ -192,7 +192,8 @@ def _thermal_decision(issue: Issue, evidence: ElementEvidence) -> GroundTruthDec
             "medium",
             "calculation",
             (
-                f"Cálculo U=1/Rt ({flow}); Rsi={rsi:.2f}; {layer_note}; "
+                f"Cálculo U=1/Rt={value:.2f} W/(m²·K) ({flow}); "
+                f"Rsi={rsi:.2f}; {layer_note}; "
                 f"Rse={rse:.2f}; Rt={r_total:.4f} m²·K/W."
             ),
         )
@@ -218,7 +219,8 @@ def _thermal_decision(issue: Issue, evidence: ElementEvidence) -> GroundTruthDec
             "typology",
             (
                 "Referência tipológica congelada por classe/material; composição "
-                f"insuficiente para cálculo integral: {material_hint}."
+                f"insuficiente para cálculo integral; U={fallback:.2f} W/(m²·K): "
+                f"{material_hint}."
             ),
         )
     return _decision(
@@ -226,7 +228,8 @@ def _thermal_decision(issue: Issue, evidence: ElementEvidence) -> GroundTruthDec
         "low",
         "probable",
         (
-            "Hipótese congelada: transmitância mais provável para "
+            f"Hipótese congelada: U={fallback:.2f} W/(m²·K), "
+            "transmitância mais provável para "
             f"{issue.element_class}; camadas, espessuras ou λ não foram declarados no IFC."
         ),
     )

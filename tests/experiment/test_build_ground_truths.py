@@ -154,15 +154,16 @@ def test_dataset_registry_has_predio_and_casa_only():
     }
 
 
-def test_ratified_legacy_snapshot_is_lf_and_matches_frozen_hash():
-    """O GT canônico preserva a proveniência da base autoral ratificada em LF."""
+def test_integral_snapshot_is_lf_and_preserves_ratified_provenance():
+    """O GT integral preserva a proveniência da base autoral ratificada em LF."""
     path = builder.DATASETS["predio"].ground_truth_path
     content = path.read_bytes()
     document = yaml.safe_load(content.decode("utf-8"))
 
     assert b"\r\n" not in content
-    assert document["metadata"]["protocol"] == "evidence-audited-v1"
+    assert document["metadata"]["protocol"] == "full-coverage-equivalent-v1"
     assert document["metadata"]["previous_gt_sha256"] == RATIFIED_LF_SHA256
+    assert hashlib.sha256(content).hexdigest() == builder.EXPECTED_GROUND_TRUTH_SHA256["predio"]
     assert builder.RATIFIED_LEGACY_SHA256 == RATIFIED_LF_SHA256
 
 
@@ -409,6 +410,7 @@ def test_full_coverage_builder_completes_partial_source_without_llm(tmp_path, mo
         "casa",
         hashlib.sha256(spec.ground_truth_path.read_bytes()).hexdigest(),
     )
+    monkeypatch.setitem(builder.EXPECTED_INTEGRAL_ITEM_COUNTS, "casa", 1)
     partial = GTExtractionResult(ground_truth=GroundTruth(items=[]), skipped=[])
     monkeypatch.setattr(builder, "build_dataset", lambda _spec: (partial, [issue]))
 
@@ -441,6 +443,51 @@ def test_full_coverage_builder_completes_partial_source_without_llm(tmp_path, mo
     }
     assert result.ground_truth.metadata["equivalence_class_count"] == 1
     assert result.ground_truth.metadata["legacy_reference_count"] == 0
+
+
+def test_integral_coverage_rejects_wrong_frozen_count(tmp_path, monkeypatch):
+    issue = _issue("GUID-SPACE", property_name="Category", element_class="IfcSpace")
+    spec = _spec(tmp_path, monkeypatch, "casa")
+    result = _result(issue)
+    monkeypatch.setitem(builder.EXPECTED_INTEGRAL_ITEM_COUNTS, "casa", 2)
+
+    with pytest.raises(ValueError, match=r"casa.*esperados 2.*obtidos 1"):
+        builder._require_integral_coverage(spec, result, [issue])
+
+
+def test_main_writes_full_coverage_candidate_outside_canonical_path(tmp_path, monkeypatch):
+    issue = _issue("GUID-SPACE", property_name="Category", element_class="IfcSpace")
+    spec = _spec(tmp_path, monkeypatch, "casa")
+    spec.ground_truth_path.write_bytes(b"canonical untouched")
+    result = _result(issue)
+    candidate_root = tmp_path / "candidates"
+    calls: list[str] = []
+
+    monkeypatch.setattr(builder, "DATASETS", {"casa": spec})
+
+    def build_candidate(selected):
+        calls.append(selected.key)
+        return result, [issue]
+
+    monkeypatch.setattr(
+        builder,
+        "build_full_coverage_dataset",
+        build_candidate,
+    )
+    monkeypatch.setattr(builder, "validate_ground_truth_against_issues", lambda *a, **k: None)
+
+    exit_code = builder.main(
+        ["--dataset", "casa", "--output-dir", str(candidate_root)]
+    )
+
+    assert exit_code == 0
+    assert calls == ["casa"]
+    assert spec.ground_truth_path.read_bytes() == b"canonical untouched"
+    candidate = candidate_root / "casa" / "ground_truth.yaml"
+    assert candidate.is_file()
+    assert candidate.read_bytes() == builder.canonical_ground_truth_bytes(
+        result, [issue], spec
+    )
 
 
 def test_build_orders_output_deterministically(tmp_path, monkeypatch):
@@ -504,7 +551,9 @@ def test_check_mode_never_writes(tmp_path, monkeypatch):
     }
     monkeypatch.setattr(builder, "DATASETS", {"casa": spec})
     monkeypatch.setattr(builder, "EXPECTED_GROUND_TRUTH_SHA256", {})
-    monkeypatch.setattr(builder, "build_dataset", lambda _spec: (result, [issue]))
+    monkeypatch.setattr(
+        builder, "build_full_coverage_dataset", lambda _spec: (result, [issue])
+    )
     monkeypatch.setattr(builder, "validate_ground_truth_against_issues", lambda *a, **k: None)
 
     exit_code = builder.main(["--dataset", "casa", "--check"])
@@ -521,7 +570,11 @@ def test_check_mode_returns_nonzero_on_drift(tmp_path, monkeypatch):
     spec = _spec(tmp_path, monkeypatch)
     spec.ground_truth_path.write_bytes(b"semantic drift")
     monkeypatch.setattr(builder, "DATASETS", {"casa": spec})
-    monkeypatch.setattr(builder, "build_dataset", lambda _spec: (_result(issue), [issue]))
+    monkeypatch.setattr(
+        builder,
+        "build_full_coverage_dataset",
+        lambda _spec: (_result(issue), [issue]),
+    )
 
     assert builder.main(["--dataset", "casa", "--check"]) == 1
     assert spec.ground_truth_path.read_bytes() == b"semantic drift"
@@ -585,6 +638,7 @@ def test_check_mode_never_touches_persistent_suggestion_cache(tmp_path, monkeypa
     get_settings.cache_clear()
     monkeypatch.setattr(builder, "DATASETS", {"casa": spec})
     monkeypatch.setattr(builder, "EXPECTED_GROUND_TRUTH_SHA256", {})
+    monkeypatch.setattr(builder, "build_full_coverage_dataset", builder.build_dataset)
     monkeypatch.setattr(
         builder.QualityPipeline,
         "diagnose",
@@ -719,6 +773,34 @@ def test_canonical_reuse_requires_frozen_hash_pin(tmp_path, monkeypatch):
 
     with pytest.raises(ValueError, match=r"hash canonico.*nao congelado"):
         builder.build_dataset(spec)
+
+
+def test_integral_predio_snapshot_is_a_pinned_canonical_source(tmp_path, monkeypatch):
+    spec = _spec(tmp_path, monkeypatch, "predio")
+    document = {
+        "metadata": {
+            "protocol": "full-coverage-equivalent-v1",
+            "previous_gt_sha256": builder.RATIFIED_LEGACY_SHA256,
+        },
+        "items": [],
+        "skipped": [],
+    }
+    spec.ground_truth_path.write_text(
+        yaml.safe_dump(document, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+    digest = hashlib.sha256(spec.ground_truth_path.read_bytes()).hexdigest()
+    monkeypatch.setitem(builder.EXPECTED_GROUND_TRUTH_SHA256, "predio", digest)
+
+    loaded, actual, canonical = builder._read_predio_source(
+        spec.ground_truth_path,
+        spec,
+        expected_sha256=digest,
+    )
+
+    assert loaded == document
+    assert actual == digest
+    assert canonical is True
 
 
 def test_casa_thermal_group_preserves_smallest_donor_value_and_honest_unit(tmp_path, monkeypatch):

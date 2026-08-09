@@ -1,5 +1,5 @@
 metadata:
-  protocol: evidence-audited-v1
+  protocol: full-coverage-equivalent-v1
   source_dataset: casa
   locality: Deodoro, Rio de Janeiro/RJ
   building_type: Residencial unifamiliar
@@ -8,12 +8,1781 @@ metadata:
   input_ifc_sha256: 3b84789c7396449f2c8a3d2f4a66468d81e59f8351ebd4b71fad161fa06112f2
   ids_sha256: f698f2c020d79140bb314f077f8de680f492fd7ba42867e4000a4cead5d20905
   verified_by: auditoria determinística por evidência (protocolo aprovado por Felipe Keller em 2026-08-08)
-  verified_at: '2026-08-08'
+  verified_at: '2026-08-09'
   verification_scope: expert-annotated benchmark reference; not a performance certificate
   total_diagnostic_issues: 263
-  total_items: 12
-  total_skipped: 251
+  total_items: 263
+  total_skipped: 0
+  policy_version: full-coverage-equivalent-v1
+  equivalence_class_count: 101
+  confidence_counts:
+    high: 52
+    medium: 132
+    low: 79
+  legacy_reference_count: 12
 items:
+- element_guid: 02cRNOEBFs_rUpDJ1rdfFv
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: ea37b4dd972e
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-79708365ad41036f
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 02cRNOEBFs_rUpDJ1rdfFv
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: cd03d4661f32
+  expected_value: 3.2
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=3.20 W/(m²·K): piso:grama 2cm growarq piso:grama 2cm growarq .grama growarq.'
+  equivalence_id: eq-e0346b6d604a5ebd
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 08FMwR_FjC4P8xhz1M4XJj
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 1c981dcad3ad
+  expected_value: Rw 25 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-ec24fb68b9913966
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 08FMwR_FjC4P8xhz1M4XJj
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 902ad787ba18
+  expected_value: EI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcDoor residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-3990b45385dd9ceb
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 08FMwR_FjC4P8xhz1M4XVG
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 683d020f1ec0
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-ab40eea1fffef35a
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 08FMwR_FjC4P8xhz1M4XVG
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: d64e52813df1
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-b8360be7fda258f7
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 08FMwR_FjC4P8xhz1M4XVG
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: c36297310208
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-33db9e9d3bf89fc1
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 08FMwR_FjC4P8xhz1M4XVG
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: bfd0466e62f6
+  expected_value: 2.48
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=2.48 W/(m²·K): parede basica:cro5 - dry-wall 7cm parede basica:cro5 - dry-wall 7cm normadom - gesso
+    acartonado 10 normadom - pvc branco normadom - gesso acartonado 10.'
+  equivalence_id: eq-a3d8f14c0df9afeb
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 08dlqIFzX2fQfWGI0ctyTz
+  issue_type: pset_missing
+  check_property: SolarHeatGainCoefficient
+  issue_id: e0b4e6c97c62
+  expected_value: 0.87
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: adotado vidro incolor comum (SHGC=0.87); produto, película e composição
+    não foram declarados no IFC.'
+  equivalence_id: eq-24bc130f86eaba4c
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 08dlqIFzX2fQfWGI0ctyTz
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: 96ed682804ed
+  expected_value: 5.7
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=5.70 W/(m²·K): janela basculante growarq:janela basculante 40 x 40 cm growarq.'
+  equivalence_id: eq-471837001417a270
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0DquSHV5X5iAT1Rv0KmXCt
+  issue_type: pset_missing
+  check_property: Category
+  issue_id: 03a8a7758129
+  expected_value: TECHNICAL_AREA
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: espaço sem nome funcional inequívoco; TECHNICAL_AREA é o rótulo conservador
+    adotado para o benchmark.'
+  equivalence_id: eq-3baa183f3fd31092
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 0EeCfMGen2QPcdKjonawGz
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 3874e26f27af
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcRoof residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-e3e74869c36e7a7a
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 0EeCfMGen2QPcdKjonawGz
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: 6dd6ed414781
+  expected_value: 2.0
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=2.00 W/(m²·K): normadom - madeira massaranduba vidraca inclinada:estrutura - caibros normadom -
+    madeira massaranduba.'
+  equivalence_id: eq-24d6b7fe83aea7c5
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0HJkTz8PfBHRoP4lUkVnpX
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 1187f275bdbc
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-6ca7e23f0c3276d6
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0HJkTz8PfBHRoP4lUkVnpX
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 84cc3f84af3d
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-7900633de8e93ebe
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 0HJkTz8PfBHRoP4lUkVnpX
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: 9f558895d3e5
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-5b799600d24cde3e
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 0KDyN9gT18mewR6io7EK0$
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: a9b06412c193
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcRoof residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-ef72bd67fe5c95c4
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 0KDyN9gT18mewR6io7EK0$
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: b404fb3aeee3
+  expected_value: 2.0
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=2.00 W/(m²·K): .vidro verde growarq vidraca inclinada:vidraca inclinada .vidro verde growarq.'
+  equivalence_id: eq-049ee677988f49ca
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0KDyN9gT18mewR6io7EK5U
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: eedd8ff7bdf5
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-9182cb73c0a9cbc2
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 0KDyN9gT18mewR6io7EK5U
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: 2a6d09367c18
+  expected_value: 3.2
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=3.20 W/(m²·K): piso:laje de concreto + piso generico 15cm growarq garagem piso:laje de concreto
+    + piso generico 15cm growarq garagem .pedra basalto growarq .concreto regularizacao growarq .concreto
+    generico growarq.'
+  equivalence_id: eq-c371247d2d88ccb4
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0KDyN9gT18mewR6io7EKB8
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 8dafd88def30
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-9182cb73c0a9cbc2
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 0KDyN9gT18mewR6io7EKB8
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: cd35aff102f5
+  expected_value: 3.2
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=3.20 W/(m²·K): piso:laje de concreto + piso generico 15cm growarq garagem piso:laje de concreto
+    + piso generico 15cm growarq garagem .pedra basalto growarq .concreto regularizacao growarq .concreto
+    generico growarq.'
+  equivalence_id: eq-c371247d2d88ccb4
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0bF6V1Ein6wfZBo5c6V0nE
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: cb83f02b34d6
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-e6c4d6276494d130
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 0bF6V1Ein6wfZBo5c6V0nE
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: de0bb2bbd8ad
+  expected_value: 3.38
+  accepted_alternatives: []
+  verified: true
+  notes: Cálculo U=1/Rt=3.38 W/(m²·K) (fluxo descendente); Rsi=0.17; .calçada de concreto_growarq=0.0200/1.75;
+    .concreto regularização_growarq=0.0300/1.75; .concreto usinado_growarq=0.1000/1.75; Rse=0.04; Rt=0.2957
+    m²·K/W.
+  equivalence_id: eq-195aaa16eaa46183
+  confidence: medium
+  source_kind: calculation
+  legacy_reference: false
+- element_guid: 0bF6V1Ein6wfZBo5c6V1$n
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 7bcbce13da2d
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-e6c4d6276494d130
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 0bF6V1Ein6wfZBo5c6V1$n
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: bd6d1c9add46
+  expected_value: 3.38
+  accepted_alternatives: []
+  verified: true
+  notes: Cálculo U=1/Rt=3.38 W/(m²·K) (fluxo descendente); Rsi=0.17; .calçada de concreto_growarq=0.0200/1.75;
+    .concreto regularização_growarq=0.0300/1.75; .concreto usinado_growarq=0.1000/1.75; Rse=0.04; Rt=0.2957
+    m²·K/W.
+  equivalence_id: eq-195aaa16eaa46183
+  confidence: medium
+  source_kind: calculation
+  legacy_reference: false
+- element_guid: 0bF6V1Ein6wfZBo5c6V1km
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 2cacebaf613e
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-e6c4d6276494d130
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 0bF6V1Ein6wfZBo5c6V1km
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: 9a65bf4e816c
+  expected_value: 3.38
+  accepted_alternatives: []
+  verified: true
+  notes: Cálculo U=1/Rt=3.38 W/(m²·K) (fluxo descendente); Rsi=0.17; .calçada de concreto_growarq=0.0200/1.75;
+    .concreto regularização_growarq=0.0300/1.75; .concreto usinado_growarq=0.1000/1.75; Rse=0.04; Rt=0.2957
+    m²·K/W.
+  equivalence_id: eq-195aaa16eaa46183
+  confidence: medium
+  source_kind: calculation
+  legacy_reference: false
+- element_guid: 0dah8JnFwmvs5E2wJ5slGX
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: e72dd88e5ea0
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-9182cb73c0a9cbc2
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 0dah8JnFwmvs5E2wJ5slGX
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: 9dd410b50ff7
+  expected_value: 3.2
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=3.20 W/(m²·K): piso:laje de concreto + piso generico 15cm growarq garagem piso:laje de concreto
+    + piso generico 15cm growarq garagem .pedra basalto growarq .concreto regularizacao growarq .concreto
+    generico growarq.'
+  equivalence_id: eq-c371247d2d88ccb4
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0jF_4eAhH6beBAVZTm6o39
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 3ad51bcba20a
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-6ca7e23f0c3276d6
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0jF_4eAhH6beBAVZTm6o39
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 473f58b8160c
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-7900633de8e93ebe
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 0jF_4eAhH6beBAVZTm6o39
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: c159bf0e7df0
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-5b799600d24cde3e
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 0jF_4eAhH6beBAVZTm6o45
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 1f4c0cbf94c1
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-444181799ba193dc
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0jF_4eAhH6beBAVZTm6o45
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 7f0dc60a6b63
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-ccc74580ad844348
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 0jF_4eAhH6beBAVZTm6o45
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: e43a33ba6ff1
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-c64c1f39264e7c54
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 0jF_4eAhH6beBAVZTm6o67
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 47a5f88118c4
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-6ca7e23f0c3276d6
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0jF_4eAhH6beBAVZTm6o67
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: d9801e6438f0
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-7900633de8e93ebe
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 0jF_4eAhH6beBAVZTm6o67
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: 27bac8c0eea1
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-5b799600d24cde3e
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 0jF_4eAhH6beBAVZTm6oMf
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: ec1f56446ef6
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-444181799ba193dc
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0jF_4eAhH6beBAVZTm6oMf
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 0336de2c4d5b
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-ccc74580ad844348
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 0jF_4eAhH6beBAVZTm6oMf
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: c6c7f846b6a4
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-c64c1f39264e7c54
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 0jF_4eAhH6beBAVZTm6oQd
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 66db54378322
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-444181799ba193dc
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0jF_4eAhH6beBAVZTm6oQd
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 98bca37a921f
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-ccc74580ad844348
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 0jF_4eAhH6beBAVZTm6oQd
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: fc61d5781632
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-c64c1f39264e7c54
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 0st0aD40PCvPxXJgFLhs6D
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 903631968d51
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-6ca7e23f0c3276d6
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0st0aD40PCvPxXJgFLhs6D
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: ef25f0d492ec
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-7900633de8e93ebe
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 0st0aD40PCvPxXJgFLhs6D
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: bafc33a55d77
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-5b799600d24cde3e
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 0tSLW28TTFXeROu_bygIcu
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: f02892c06a76
+  expected_value: Rw 25 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-765c0aa79e2e29c6
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0tSLW28TTFXeROu_bygIcu
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: e936ef56afbe
+  expected_value: EI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcDoor residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-cc04483097f35ddc
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 0vINo141j3DeXo8nPSqBb3
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 9844f10a3e0d
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-6ca7e23f0c3276d6
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0vINo141j3DeXo8nPSqBb3
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 185c3a2908ff
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-7900633de8e93ebe
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 0vINo141j3DeXo8nPSqBb3
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: 6b28a8234994
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-5b799600d24cde3e
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 1G2LqRwDrFDuGY$271DOcy
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: a1c502997afb
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-bd7853a2ada069f8
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 1G2LqRwDrFDuGY$271DOcy
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: 94909825def5
+  expected_value: 3.2
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=3.20 W/(m²·K): piso:laje de concreto + piso porcelanato 80x80cm 15cm growarq box piso:laje de concreto
+    + piso porcelanato 80x80cm 15cm growarq box .acabamento porcelanato 80x80cm growarq(1) rachura .concreto
+    regularizacao growarq .concreto generico growarq.'
+  equivalence_id: eq-2a2b95b6c066ff8b
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 1G2LqRwDrFDuGY$271DOfw
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 7a0dd2194ecc
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-c703b4d4f7588246
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 1G2LqRwDrFDuGY$271DOfw
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: 9e281259c674
+  expected_value: 3.2
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=3.20 W/(m²·K): piso:laje de concreto + piso porcelanato 80x80cm 15cm growarq rachura piso:laje de
+    concreto + piso porcelanato 80x80cm 15cm growarq rachura .acabamento porcelanato 80x80cm growarq(1)
+    rachura banheiro .concreto regularizacao growarq .concreto generico growarq.'
+  equivalence_id: eq-ce091fb0c3f75574
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 1G2LqRwDrFDuGY$271DPjJ
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 277154c1aa4a
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-c703b4d4f7588246
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 1G2LqRwDrFDuGY$271DPjJ
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: c02b944ebcd9
+  expected_value: 3.2
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=3.20 W/(m²·K): piso:laje de concreto + piso porcelanato 80x80cm 15cm growarq rachura piso:laje de
+    concreto + piso porcelanato 80x80cm 15cm growarq rachura .acabamento porcelanato 80x80cm growarq(1)
+    rachura banheiro .concreto regularizacao growarq .concreto generico growarq.'
+  equivalence_id: eq-ce091fb0c3f75574
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 1G2LqRwDrFDuGY$271DPpc
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: aefa12019092
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-c703b4d4f7588246
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 1G2LqRwDrFDuGY$271DPpc
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: d370cb20477a
+  expected_value: 3.2
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=3.20 W/(m²·K): piso:laje de concreto + piso porcelanato 80x80cm 15cm growarq rachura piso:laje de
+    concreto + piso porcelanato 80x80cm 15cm growarq rachura .acabamento porcelanato 80x80cm growarq(1)
+    rachura banheiro .concreto regularizacao growarq .concreto generico growarq.'
+  equivalence_id: eq-ce091fb0c3f75574
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 1MMpYRkhr9COts6E8DtYiC
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 660759098f96
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcRoof residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-97ccef3146b590c2
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 1MMpYRkhr9COts6E8DtYiC
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: 2b3056e1bbe9
+  expected_value: 2.0
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=2.00 W/(m²·K): telhado basico:normadom - telhado fibrocimento ondulado telhado basico:normadom -
+    telhado fibrocimento ondulado cro5 - telha fibrocimento ondulada.'
+  equivalence_id: eq-7d4be0ba8eefa710
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 1N0wKml$r77A7dpRGpOJgZ
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 91f0d43dd121
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcRoof residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-54caa2029156ee1d
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 1N0wKml$r77A7dpRGpOJgZ
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: 362651c6d26b
+  expected_value: 2.0
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=2.00 W/(m²·K): normadom - madeira massaranduba vidraca inclinada:normadom - tercas normadom - madeira
+    massaranduba.'
+  equivalence_id: eq-4f702835418da06e
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 1msekdwzrChwsmTanTVCDJ
+  issue_type: pset_missing
+  check_property: SolarHeatGainCoefficient
+  issue_id: b3e290870638
+  expected_value: 0.87
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: adotado vidro incolor comum (SHGC=0.87); produto, película e composição
+    não foram declarados no IFC.'
+  equivalence_id: eq-0cdb54e5a3888138
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 1msekdwzrChwsmTanTVCDJ
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: 743c62a3446c
+  expected_value: 5.7
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=5.70 W/(m²·K): janela com esquadria maxim-ar - 4 folhas:200 x 60.'
+  equivalence_id: eq-9b6178d1024acfe6
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2$tmlycAL58OvCiJvd1$HE
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: cec3ee72c94e
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-444181799ba193dc
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2$tmlycAL58OvCiJvd1$HE
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 5375f6c2f842
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-ccc74580ad844348
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 2$tmlycAL58OvCiJvd1$HE
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: d863bdec4a5e
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-c64c1f39264e7c54
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 2$tmlycAL58OvCiJvd1_oI
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 2ae9aba6251c
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-6abb0f4a2bd3b86d
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 2$tmlycAL58OvCiJvd1_oI
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: 44ad141ced7c
+  expected_value: 3.38
+  accepted_alternatives: []
+  verified: true
+  notes: Cálculo U=1/Rt=3.38 W/(m²·K) (fluxo descendente); Rsi=0.17; .calçada de concreto_growarq=0.0200/1.75;
+    .concreto regularização_growarq=0.0300/1.75; .concreto usinado_growarq=0.1000/1.75; Rse=0.04; Rt=0.2957
+    m²·K/W.
+  equivalence_id: eq-676b01b8f8edd817
+  confidence: medium
+  source_kind: calculation
+  legacy_reference: false
+- element_guid: 2$tmlycAL58OvCiJvd1s4y
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: f8df9e93dcf9
+  expected_value: Rw 25 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-67daa468037e5ad2
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2$tmlycAL58OvCiJvd1s4y
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 4975cb2e07e1
+  expected_value: EI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcDoor residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-7725507d79ff0fb9
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 2$tmlycAL58OvCiJvd1tHl
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 6d50bd0c6567
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-6ca7e23f0c3276d6
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2$tmlycAL58OvCiJvd1tHl
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 477990e1fc80
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-7900633de8e93ebe
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 2$tmlycAL58OvCiJvd1tHl
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: e59df534aa66
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-5b799600d24cde3e
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 2$tmlycAL58OvCiJvd1tMy
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 472314ec33bd
+  expected_value: Rw 25 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-02425ebd19e812df
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2$tmlycAL58OvCiJvd1tMy
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 17f036fd36ef
+  expected_value: EI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcDoor residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-29cb1f0c7ae3701f
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 2$tmlycAL58OvCiJvd1wv_
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: fea539269490
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-5cd5e0b292d3c64c
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2$tmlycAL58OvCiJvd1wv_
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 969bdca4cdc8
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-b5084718106afe9d
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 2$tmlycAL58OvCiJvd1wv_
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: 8bfc72e7a877
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-ee502c6e1ddc253b
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 2$tmlycAL58OvCiJvd1wv_
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: 62d007905898
+  expected_value: 2.48
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=2.48 W/(m²·K): parede basica:parede interna 15cm growarq parede basica:parede interna 15cm growarq
+    .massa corrida e pintura growarq .alvenaria de cutelo 9 cm growarq .massa corrida e pintura growarq.'
+  equivalence_id: eq-e9151418fc74be2f
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2$tmlycAL58OvCiJvd1xd7
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 08f0ce245b82
+  expected_value: Rw 25 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-837d8219e0eb1543
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2$tmlycAL58OvCiJvd1xd7
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: fba388bfdf0b
+  expected_value: EI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcDoor residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-886aa0442cf6a9ca
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 2525hlGuHMIAZ8BqQUmhMK
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 8b4fbf1f6adf
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-79708365ad41036f
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 2525hlGuHMIAZ8BqQUmhMK
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: 0d5ec36f8bb6
+  expected_value: 3.2
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=3.20 W/(m²·K): piso:grama 2cm growarq piso:grama 2cm growarq .grama growarq.'
+  equivalence_id: eq-e0346b6d604a5ebd
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tYrP
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 14e3de203cde
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-444181799ba193dc
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tYrP
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: ee56edc4e7ed
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-ccc74580ad844348
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tYrP
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: becb65b0ce3b
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-c64c1f39264e7c54
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tYtG
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: f2b31914c664
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-444181799ba193dc
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tYtG
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: d0b0109f8660
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-ccc74580ad844348
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tYtG
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: 97eebd9f70a7
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-c64c1f39264e7c54
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tZEM
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: c9fdd32c026a
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-444181799ba193dc
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tZEM
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 40d256040614
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-ccc74580ad844348
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tZEM
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: 06f6e3414fe7
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-c64c1f39264e7c54
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tZKH
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 08ded9f35158
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-6ca7e23f0c3276d6
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tZKH
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 4512d356fd8a
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-7900633de8e93ebe
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tZKH
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: cc2ed8c05393
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-5b799600d24cde3e
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tZOM
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 885b11aa91a7
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-5cd5e0b292d3c64c
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tZOM
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 072b0f39ca5a
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-b5084718106afe9d
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tZOM
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: dec037e0844c
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-ee502c6e1ddc253b
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tZOM
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: c9cbb3402c2f
+  expected_value: 2.48
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=2.48 W/(m²·K): parede basica:parede interna 15cm growarq parede basica:parede interna 15cm growarq
+    .massa corrida e pintura growarq .alvenaria de cutelo 9 cm growarq .massa corrida e pintura growarq.'
+  equivalence_id: eq-e9151418fc74be2f
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tZUs
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 7d5b45eaa899
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-5cd5e0b292d3c64c
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tZUs
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 43a7f355fb7f
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-b5084718106afe9d
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tZUs
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: '270494859532'
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-ee502c6e1ddc253b
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tZUs
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: 5ddcf7180c9b
+  expected_value: 2.48
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=2.48 W/(m²·K): parede basica:parede interna 15cm growarq parede basica:parede interna 15cm growarq
+    .massa corrida e pintura growarq .alvenaria de cutelo 9 cm growarq .massa corrida e pintura growarq.'
+  equivalence_id: eq-e9151418fc74be2f
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2IwmxyHBvFS9zSXZCe$LAY
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 97016c1ece8e
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-5cd5e0b292d3c64c
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2IwmxyHBvFS9zSXZCe$LAY
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 1fb16aa144b4
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-b5084718106afe9d
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 2IwmxyHBvFS9zSXZCe$LAY
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: df3625894dfd
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-ee502c6e1ddc253b
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 2IwmxyHBvFS9zSXZCe$LAY
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: e9fb345ffa32
+  expected_value: 2.48
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=2.48 W/(m²·K): parede basica:parede interna 15cm growarq parede basica:parede interna 15cm growarq
+    .massa corrida e pintura growarq .alvenaria de cutelo 9 cm growarq .massa corrida e pintura growarq.'
+  equivalence_id: eq-e9151418fc74be2f
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2IwmxyHBvFS9zSXZCe$ghQ
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 2face7fc3078
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-444181799ba193dc
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2IwmxyHBvFS9zSXZCe$ghQ
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: cfa4bccf9729
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-ccc74580ad844348
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 2IwmxyHBvFS9zSXZCe$ghQ
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: bfe4edecb797
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-c64c1f39264e7c54
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 2Kl7rnh3D9zO6g7elaK$60
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 77c2c54411d2
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-6abb0f4a2bd3b86d
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 2Kl7rnh3D9zO6g7elaK$60
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: 83fec58f3fc4
+  expected_value: 3.38
+  accepted_alternatives: []
+  verified: true
+  notes: Cálculo U=1/Rt=3.38 W/(m²·K) (fluxo descendente); Rsi=0.17; .calçada de concreto_growarq=0.0200/1.75;
+    .concreto regularização_growarq=0.0300/1.75; .concreto usinado_growarq=0.1000/1.75; Rse=0.04; Rt=0.2957
+    m²·K/W.
+  equivalence_id: eq-676b01b8f8edd817
+  confidence: medium
+  source_kind: calculation
+  legacy_reference: false
+- element_guid: 2Kl7rnh3D9zO6g7elaK$pE
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: b9d451a35200
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-79708365ad41036f
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 2Kl7rnh3D9zO6g7elaK$pE
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: 581371bf6aeb
+  expected_value: 3.2
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=3.20 W/(m²·K): piso:grama 2cm growarq piso:grama 2cm growarq .grama growarq.'
+  equivalence_id: eq-e0346b6d604a5ebd
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2Kl7rnh3D9zO6g7elaKw8O
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 0d35f64ca999
+  expected_value: Rw 25 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-25a054f124c7418b
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2Kl7rnh3D9zO6g7elaKw8O
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 5221c804a96e
+  expected_value: EI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcDoor residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-d4b9b05f523ccc22
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 2Kl7rnh3D9zO6g7elaKw9N
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: c6432f16f5f6
+  expected_value: Rw 25 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-25a054f124c7418b
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2Kl7rnh3D9zO6g7elaKw9N
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 9709a5abe1ef
+  expected_value: EI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcDoor residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-d4b9b05f523ccc22
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 2Kl7rnh3D9zO6g7elaKwDS
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 9f96d3a53119
+  expected_value: Rw 25 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-25a054f124c7418b
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2Kl7rnh3D9zO6g7elaKwDS
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: fe20bbd4e776
+  expected_value: EI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcDoor residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-d4b9b05f523ccc22
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 2Kl7rnh3D9zO6g7elaKwXp
+  issue_type: pset_missing
+  check_property: SolarHeatGainCoefficient
+  issue_id: 133e7b2a0c54
+  expected_value: 0.87
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada para vidro incolor comum.
+  equivalence_id: eq-cff18c833608fb22
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2Kl7rnh3D9zO6g7elaKwXp
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: 24de2c254d3d
+  expected_value: 5.7
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=5.70 W/(m²·K): janela vidro multiplas growarq:janela 2 folhas - 160 x 110 cm growarq.'
+  equivalence_id: eq-f8d0d0ef1ff76e14
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2Kl7rnh3D9zO6g7elaKwYD
+  issue_type: pset_missing
+  check_property: SolarHeatGainCoefficient
+  issue_id: 57c650f11e1c
+  expected_value: 0.87
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada para vidro incolor comum.
+  equivalence_id: eq-cff18c833608fb22
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2Kl7rnh3D9zO6g7elaKwYD
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: f945e1e8897d
+  expected_value: 5.7
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=5.70 W/(m²·K): janela vidro multiplas growarq:janela 2 folhas - 160 x 110 cm growarq.'
+  equivalence_id: eq-f8d0d0ef1ff76e14
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2QPUwptF59iOuAeH$YWG2j
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 1ef48ad130f3
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcRoof residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-97ccef3146b590c2
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 2QPUwptF59iOuAeH$YWG2j
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: c615bc9cdadf
+  expected_value: 2.0
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=2.00 W/(m²·K): telhado basico:normadom - telhado fibrocimento ondulado telhado basico:normadom -
+    telhado fibrocimento ondulado cro5 - telha fibrocimento ondulada.'
+  equivalence_id: eq-7d4be0ba8eefa710
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2fAI9i_QH93AveG7CTacNQ
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: e222f947f8d4
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-444181799ba193dc
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2fAI9i_QH93AveG7CTacNQ
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 6c5246c263b8
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-ccc74580ad844348
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 2fAI9i_QH93AveG7CTacNQ
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: c037e64c6265
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-c64c1f39264e7c54
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 2fAI9i_QH93AveG7CTawaN
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 008b74e0c174
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-8c82cfd401da3ebb
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 2fAI9i_QH93AveG7CTawaN
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: 60923e8eb913
+  expected_value: 3.2
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=3.20 W/(m²·K): piso:laje de concreto + piso generico 15cm growarq piso:laje de concreto + piso generico
+    15cm growarq .acabamento porcelanato 80x80cm growarq .concreto regularizacao growarq .concreto generico
+    growarq.'
+  equivalence_id: eq-aa7be3e3a39f48cd
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
 - element_guid: 2lyKyDpyH2RfV3sGdJ3N5X
   issue_type: pset_missing
   check_property: Category
@@ -22,6 +1791,10 @@ items:
   accepted_alternatives: []
   verified: true
   notes: Category derivada exclusivamente do LongName.
+  equivalence_id: eq-0b1119b258869ecc
+  confidence: high
+  source_kind: existing_gt
+  legacy_reference: true
 - element_guid: 2lyKyDpyH2RfV3sGdJ3N5c
   issue_type: pset_missing
   check_property: Category
@@ -30,6 +1803,10 @@ items:
   accepted_alternatives: []
   verified: true
   notes: Category derivada exclusivamente do LongName.
+  equivalence_id: eq-6302636cd09c8c64
+  confidence: high
+  source_kind: existing_gt
+  legacy_reference: true
 - element_guid: 2lyKyDpyH2RfV3sGdJ3N5e
   issue_type: pset_missing
   check_property: Category
@@ -38,6 +1815,23 @@ items:
   accepted_alternatives: []
   verified: true
   notes: Category derivada exclusivamente do LongName.
+  equivalence_id: eq-5b1a1e38151c6c46
+  confidence: high
+  source_kind: existing_gt
+  legacy_reference: true
+- element_guid: 2lyKyDpyH2RfV3sGdJ3N5h
+  issue_type: pset_missing
+  check_property: Category
+  issue_id: b81e53775d0d
+  expected_value: TECHNICAL_AREA
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: espaço sem nome funcional inequívoco; TECHNICAL_AREA é o rótulo conservador
+    adotado para o benchmark.'
+  equivalence_id: eq-84c604f8896395ae
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
 - element_guid: 2lyKyDpyH2RfV3sGdJ3N5j
   issue_type: pset_missing
   check_property: Category
@@ -46,6 +1840,23 @@ items:
   accepted_alternatives: []
   verified: true
   notes: Category derivada exclusivamente do LongName.
+  equivalence_id: eq-d81003c72f0b849d
+  confidence: high
+  source_kind: existing_gt
+  legacy_reference: true
+- element_guid: 2lyKyDpyH2RfV3sGdJ3NAI
+  issue_type: pset_missing
+  check_property: Category
+  issue_id: 0724e41a6147
+  expected_value: TECHNICAL_AREA
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: espaço sem nome funcional inequívoco; TECHNICAL_AREA é o rótulo conservador
+    adotado para o benchmark.'
+  equivalence_id: eq-dae670347ab4d891
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
 - element_guid: 2lyKyDpyH2RfV3sGdJ3NEb
   issue_type: pset_missing
   check_property: Category
@@ -54,6 +1865,422 @@ items:
   accepted_alternatives: []
   verified: true
   notes: Category derivada exclusivamente do LongName.
+  equivalence_id: eq-98d4079f06fade5b
+  confidence: high
+  source_kind: existing_gt
+  legacy_reference: true
+- element_guid: 2lyKyDpyH2RfV3sGdJ3Nro
+  issue_type: pset_missing
+  check_property: Category
+  issue_id: 731b3f83135b
+  expected_value: BEDROOM
+  accepted_alternatives: []
+  verified: true
+  notes: 'Category derivada do nome IFC: quarto 2.'
+  equivalence_id: eq-a9fd6759ceb5825c
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 2lyKyDpyH2RfV3sGdJ3Nrt
+  issue_type: pset_missing
+  check_property: Category
+  issue_id: f76cf7b7d091
+  expected_value: BEDROOM
+  accepted_alternatives: []
+  verified: true
+  notes: 'Category derivada do nome IFC: quarto 1.'
+  equivalence_id: eq-ddd4d290dcc60b44
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 2lyKyDpyH2RfV3sGdJ3NwJ
+  issue_type: pset_missing
+  check_property: Category
+  issue_id: 7f56c150b721
+  expected_value: LIVING_ROOM
+  accepted_alternatives: []
+  verified: true
+  notes: 'Category derivada do nome IFC: sala de jantar.'
+  equivalence_id: eq-9b7f6722109e2ad1
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 3M_GIB2Ij47f7a$yCvFxxP
+  issue_type: pset_missing
+  check_property: Category
+  issue_id: a1c2aae0db9d
+  expected_value: TECHNICAL_AREA
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: espaço sem nome funcional inequívoco; TECHNICAL_AREA é o rótulo conservador
+    adotado para o benchmark.'
+  equivalence_id: eq-7956bb994963bcf1
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOY2w
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: f6aee2ddc907
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcRoof residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-2931f8c59e70a53c
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOY2w
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: f1cbf84f96eb
+  expected_value: 2.0
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=2.00 W/(m²·K): .vidro verde growarq vidraca inclinada:cobertura de vidro 80 cm 2 growarq 2 .vidro
+    verde growarq.'
+  equivalence_id: eq-db7842068769c899
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOYxv
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: fa57ca3b1506
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcRoof residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-2931f8c59e70a53c
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOYxv
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: ffeb6fcdb389
+  expected_value: 2.0
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=2.00 W/(m²·K): .vidro verde growarq vidraca inclinada:cobertura de vidro 80 cm 2 growarq 2 .vidro
+    verde growarq.'
+  equivalence_id: eq-db7842068769c899
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOzDn
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 86b093ec64bd
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-444181799ba193dc
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOzDn
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: e0adc6fcff79
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-ccc74580ad844348
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOzDn
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: faa1805c2fe5
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-c64c1f39264e7c54
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOzKq
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 79ac5c8842ab
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-444181799ba193dc
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOzKq
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 8f0126fb9536
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-ccc74580ad844348
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOzKq
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: 02a6906ed94e
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-c64c1f39264e7c54
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOzLe
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 13d9cbb2344a
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-444181799ba193dc
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOzLe
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: dbdeef1b15fc
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-ccc74580ad844348
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOzLe
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: 68bbcd8cfff5
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-c64c1f39264e7c54
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOzNd
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 397e6cbe93fa
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-444181799ba193dc
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOzNd
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: beff0183c9c8
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-ccc74580ad844348
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOzNd
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: 3d735deeb0cd
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-c64c1f39264e7c54
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOzTg
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 2945941ee99e
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-444181799ba193dc
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOzTg
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 9197fd26b282
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-ccc74580ad844348
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOzTg
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: d912cf6b8839
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-c64c1f39264e7c54
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOzVp
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 7f2396eaf69f
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-444181799ba193dc
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOzVp
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 6be73ce4d5a4
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-ccc74580ad844348
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOzVp
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: 93ee25f3e324
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-c64c1f39264e7c54
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOztj
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 834fe62043ce
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-7eb90247c27cf8a3
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOztj
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: 99f861d1386d
+  expected_value: 3.2
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=3.20 W/(m²·K): piso:generico 150 mm piso:generico 150 mm <unnamed>.'
+  equivalence_id: eq-3407cc681c964038
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3SnvZdUqz4cvTlbZnpF1GS
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 48a00b150e5d
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-e6c4d6276494d130
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 3SnvZdUqz4cvTlbZnpF1GS
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: 2f357f069b60
+  expected_value: 3.38
+  accepted_alternatives: []
+  verified: true
+  notes: Cálculo U=1/Rt=3.38 W/(m²·K) (fluxo descendente); Rsi=0.17; .calçada de concreto_growarq=0.0200/1.75;
+    .concreto regularização_growarq=0.0300/1.75; .concreto usinado_growarq=0.1000/1.75; Rse=0.04; Rt=0.2957
+    m²·K/W.
+  equivalence_id: eq-195aaa16eaa46183
+  confidence: medium
+  source_kind: calculation
+  legacy_reference: false
+- element_guid: 3SnvZdUqz4cvTlbZnpF1HI
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 6dab115293a4
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-1bc497873aa59f4f
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 3SnvZdUqz4cvTlbZnpF1HI
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: 4bdfb525a81d
+  expected_value: 3.2
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=3.20 W/(m²·K): piso:laje de concreto usinado + piso generico 15cm growarq rua piso:laje de concreto
+    usinado + piso generico 15cm growarq rua .asfalto growarq .concreto regularizacao growarq .concreto
+    usinado growarq.'
+  equivalence_id: eq-38ea15d3da14e216
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
 - element_guid: 3SnvZdUqz4cvTlbZnpF1KQ
   issue_type: pset_missing
   check_property: Category
@@ -62,6 +2289,469 @@ items:
   accepted_alternatives: []
   verified: true
   notes: Category derivada exclusivamente do LongName.
+  equivalence_id: eq-5ee7e29b188cbfea
+  confidence: high
+  source_kind: existing_gt
+  legacy_reference: true
+- element_guid: 3YK4YDwtv9JQuHnWAgsgeG
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 4f66bbc42c9a
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcRoof residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-ef72bd67fe5c95c4
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 3YK4YDwtv9JQuHnWAgsgeG
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: fde129285efa
+  expected_value: 2.0
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=2.00 W/(m²·K): .vidro verde growarq vidraca inclinada:vidraca inclinada .vidro verde growarq.'
+  equivalence_id: eq-049ee677988f49ca
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3aH1YSjLbFFOXbaVe1cqrW
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: cc54d4f8dfd0
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-b86143bff6c31c55
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3aH1YSjLbFFOXbaVe1cqrW
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 4db4701963ef
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-05611cb2e8c84b86
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 3aH1YSjLbFFOXbaVe1cqrW
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: 746b10924a49
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-f10ead2475060acd
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 3aH1YSjLbFFOXbaVe1cqsk
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: e4ac5c0a5e82
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-b86143bff6c31c55
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3aH1YSjLbFFOXbaVe1cqsk
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 166c976834f2
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-05611cb2e8c84b86
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 3aH1YSjLbFFOXbaVe1cqsk
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: 6fdf127af16e
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-f10ead2475060acd
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 3aH1YSjLbFFOXbaVe1cqzG
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 99e8c77ede83
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-b86143bff6c31c55
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3aH1YSjLbFFOXbaVe1cqzG
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 32c03323f51c
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-05611cb2e8c84b86
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 3aH1YSjLbFFOXbaVe1cqzG
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: 05b8f1fd7920
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-f10ead2475060acd
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOU_Yx
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 885d9a9e21a3
+  expected_value: Rw 25 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-06ab0688937cffc3
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOU_Yx
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 6e1364373fee
+  expected_value: EI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcDoor residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-50f9171775811980
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOU_dP
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: fcf92d16d1fa
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcCurtainWall residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-b93d73c1f848b237
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOU_dP
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: 0b845407fde6
+  expected_value: 5.56
+  accepted_alternatives: []
+  verified: true
+  notes: Cálculo U=1/Rt=5.56 W/(m²·K) (fluxo horizontal); Rsi=0.13; .vidro verde_growarq=0.0100/1.00;
+    Rse=0.04; Rt=0.1800 m²·K/W.
+  equivalence_id: eq-75483c40b63e753f
+  confidence: medium
+  source_kind: calculation
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOUhnj
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 68280d56b978
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-5cd5e0b292d3c64c
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOUhnj
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: c8c8fa46f2aa
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-b5084718106afe9d
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOUhnj
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: f3f210631c4c
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-ee502c6e1ddc253b
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOUhnj
+  issue_type: pset_missing
+  check_property: ThermalTransmittance
+  issue_id: 298966f64807
+  expected_value: 2.48
+  accepted_alternatives: []
+  verified: true
+  notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
+    U=2.48 W/(m²·K): parede basica:parede interna 15cm growarq parede basica:parede interna 15cm growarq
+    .massa corrida e pintura growarq .alvenaria de cutelo 9 cm growarq .massa corrida e pintura growarq.'
+  equivalence_id: eq-e9151418fc74be2f
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOUuv_
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: b88b43a9a123
+  expected_value: Rw 25 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-61b88c6e289c168f
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOUuv_
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 69e521630e9e
+  expected_value: EI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcDoor residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-41ff4ba2357e732e
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOUvax
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: e7db592c3eab
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-444181799ba193dc
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOUvax
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: 441d9b8e3385
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-ccc74580ad844348
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOUvax
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: 324c910f7610
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-c64c1f39264e7c54
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOUvc4
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 6e324784471e
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-6ca7e23f0c3276d6
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOUvc4
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: f7b0180b07b9
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-7900633de8e93ebe
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOUvc4
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: 7b77c0318f92
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-5b799600d24cde3e
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOUvnP
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: df0047d35a1d
+  expected_value: Rw 25 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-c003ead65c3f248b
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOUvnP
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: b5295670b961
+  expected_value: EI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcDoor residencial; função,
+    ensaio e especificação completos ausentes.'
+  equivalence_id: eq-d6dc055a56c4b541
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOUvry
+  issue_type: pset_missing
+  check_property: AcousticRating
+  issue_id: 387fe79f7210
+  expected_value: Rw 40 dB
+  accepted_alternatives: []
+  verified: true
+  notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
+    do sistema construído.
+  equivalence_id: eq-444181799ba193dc
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOUvry
+  issue_type: pset_missing
+  check_property: FireRating
+  issue_id: fc093be9ac44
+  expected_value: REI 60
+  accepted_alternatives: []
+  verified: true
+  notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
+    função, ensaio e especificação completos ausentes.'
+  equivalence_id: eq-ccc74580ad844348
+  confidence: low
+  source_kind: probable
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOUvry
+  issue_type: pset_missing
+  check_property: IsLoadBearing
+  issue_id: 71839c11f6e1
+  expected_value: false
+  accepted_alternatives: []
+  verified: true
+  notes: Alias IFC LoadBearing=false.
+  equivalence_id: eq-c64c1f39264e7c54
+  confidence: high
+  source_kind: ifc_alias
+  legacy_reference: false
+- element_guid: 0s9SKb6yL3Hw45Qf5sUEQp
+  issue_type: relation_broken
+  check_property: ''
+  issue_id: 3251890afaa7
+  expected_value: IfcRelSpaceBoundary
+  accepted_alternatives: []
+  verified: true
+  notes: Relação esperada declarada literalmente no diagnóstico IFC.
+  equivalence_id: eq-4edfb5d1550b1ed4
+  confidence: high
+  source_kind: ifc_literal
+  legacy_reference: false
+- element_guid: 2$tmlycAL58OvCiJvd1s4y
+  issue_type: relation_broken
+  check_property: ''
+  issue_id: 602a14f4f1ec
+  expected_value: IfcRelFillsElement
+  accepted_alternatives: []
+  verified: true
+  notes: Relação esperada declarada literalmente no diagnóstico IFC.
+  equivalence_id: eq-5962c9c64f425f38
+  confidence: high
+  source_kind: ifc_literal
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOU_Yx
+  issue_type: relation_broken
+  check_property: ''
+  issue_id: a6c6baecfb2e
+  expected_value: IfcRelFillsElement
+  accepted_alternatives: []
+  verified: true
+  notes: Relação esperada declarada literalmente no diagnóstico IFC.
+  equivalence_id: eq-62804d35ec1feae8
+  confidence: high
+  source_kind: ifc_literal
+  legacy_reference: false
+- element_guid: 02cRNOEBFs_rUpDJ1rdfFv
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: 9d3646d2c77b
+  expected_value: Grama natural ou artificial
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: piso:grama 2cm growarq piso:grama
+    2cm growarq .grama growarq.'
+  equivalence_id: eq-63533d768eb21aa7
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
 - element_guid: 08FMwR_FjC4P8xhz1M4XVG
   issue_type: system_unclassified
   check_property: ''
@@ -70,6 +2760,206 @@ items:
   accepted_alternatives: []
   verified: true
   notes: Sistema derivado de nome, classe IFC e leitura unificada de materiais/camadas.
+  equivalence_id: eq-21f759d0aae9f242
+  confidence: high
+  source_kind: existing_gt
+  legacy_reference: true
+- element_guid: 0HJkTz8PfBHRoP4lUkVnpX
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: 3229c0fcb655
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    20cm growarq parede basica:parede externa 20cm growarq .pintura growarq .alvenaria deitado 18 cm growarq
+    .massa corrida e pintura growarq.'
+  equivalence_id: eq-1b8509bf18d64fa3
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0KDyN9gT18mewR6io7EK5U
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: 99d3d1540e01
+  expected_value: Laje maciça de concreto armado
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: piso:laje de concreto + piso
+    generico 15cm growarq garagem piso:laje de concreto + piso generico 15cm growarq garagem .pedra basalto
+    growarq .concreto regularizacao growarq .concreto generico growarq.'
+  equivalence_id: eq-aefed765df6e9078
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0KDyN9gT18mewR6io7EKB8
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: c4c843940540
+  expected_value: Laje maciça de concreto armado
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: piso:laje de concreto + piso
+    generico 15cm growarq garagem piso:laje de concreto + piso generico 15cm growarq garagem .pedra basalto
+    growarq .concreto regularizacao growarq .concreto generico growarq.'
+  equivalence_id: eq-aefed765df6e9078
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0bF6V1Ein6wfZBo5c6V0nE
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: d0d8b73ae426
+  expected_value: Laje maciça de concreto armado
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: piso:laje de concreto usinado
+    + piso generico 15cm growarq calcada piso:laje de concreto usinado + piso generico 15cm growarq calcada
+    .calcada de concreto growarq .concreto regularizacao growarq .concreto usinado growarq.'
+  equivalence_id: eq-3eabff954b4131a8
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0bF6V1Ein6wfZBo5c6V1$n
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: 9c0a70af9f39
+  expected_value: Laje maciça de concreto armado
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: piso:laje de concreto usinado
+    + piso generico 15cm growarq calcada piso:laje de concreto usinado + piso generico 15cm growarq calcada
+    .calcada de concreto growarq .concreto regularizacao growarq .concreto usinado growarq.'
+  equivalence_id: eq-3eabff954b4131a8
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0bF6V1Ein6wfZBo5c6V1km
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: 514547cfc8f5
+  expected_value: Laje maciça de concreto armado
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: piso:laje de concreto usinado
+    + piso generico 15cm growarq calcada piso:laje de concreto usinado + piso generico 15cm growarq calcada
+    .calcada de concreto growarq .concreto regularizacao growarq .concreto usinado growarq.'
+  equivalence_id: eq-3eabff954b4131a8
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0dah8JnFwmvs5E2wJ5slGX
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: 1e3f08be5b97
+  expected_value: Laje maciça de concreto armado
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: piso:laje de concreto + piso
+    generico 15cm growarq garagem piso:laje de concreto + piso generico 15cm growarq garagem .pedra basalto
+    growarq .concreto regularizacao growarq .concreto generico growarq.'
+  equivalence_id: eq-aefed765df6e9078
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0jF_4eAhH6beBAVZTm6o39
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: 2a05ae285c96
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    20cm growarq parede basica:parede externa 20cm growarq .pintura growarq .alvenaria deitado 18 cm growarq
+    .massa corrida e pintura growarq.'
+  equivalence_id: eq-1b8509bf18d64fa3
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0jF_4eAhH6beBAVZTm6o45
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: ae90462e5dee
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    20cm growarq pintada parede basica:parede externa 20cm growarq pintada .pintura branca gelo growarq
+    .alvenaria deitado 18 cm growarq .pintura branca gelo growarq.'
+  equivalence_id: eq-1fd6028d1a89762c
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0jF_4eAhH6beBAVZTm6o67
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: 06509585b006
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    20cm growarq parede basica:parede externa 20cm growarq .pintura growarq .alvenaria deitado 18 cm growarq
+    .massa corrida e pintura growarq.'
+  equivalence_id: eq-1b8509bf18d64fa3
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0jF_4eAhH6beBAVZTm6oMf
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: b90eb31e46df
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    20cm growarq pintada parede basica:parede externa 20cm growarq pintada .pintura branca gelo growarq
+    .alvenaria deitado 18 cm growarq .pintura branca gelo growarq.'
+  equivalence_id: eq-1fd6028d1a89762c
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0jF_4eAhH6beBAVZTm6oQd
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: e5d234d98d38
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    20cm growarq pintada parede basica:parede externa 20cm growarq pintada .pintura branca gelo growarq
+    .alvenaria deitado 18 cm growarq .pintura branca gelo growarq.'
+  equivalence_id: eq-1fd6028d1a89762c
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0st0aD40PCvPxXJgFLhs6D
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: 00af0767f437
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    20cm growarq parede basica:parede externa 20cm growarq .pintura growarq .alvenaria deitado 18 cm growarq
+    .massa corrida e pintura growarq.'
+  equivalence_id: eq-1b8509bf18d64fa3
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 0vINo141j3DeXo8nPSqBb3
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: 5fbd82934c13
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    20cm growarq parede basica:parede externa 20cm growarq .pintura growarq .alvenaria deitado 18 cm growarq
+    .massa corrida e pintura growarq.'
+  equivalence_id: eq-1b8509bf18d64fa3
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
 - element_guid: 1G2LqRwDrFDuGY$271DOcy
   issue_type: system_unclassified
   check_property: ''
@@ -78,6 +2968,10 @@ items:
   accepted_alternatives: []
   verified: true
   notes: Sistema derivado de nome, classe IFC e leitura unificada de materiais/camadas.
+  equivalence_id: eq-bdaf2c9263f410e4
+  confidence: high
+  source_kind: existing_gt
+  legacy_reference: true
 - element_guid: 1G2LqRwDrFDuGY$271DOfw
   issue_type: system_unclassified
   check_property: ''
@@ -86,6 +2980,10 @@ items:
   accepted_alternatives: []
   verified: true
   notes: Sistema derivado de nome, classe IFC e leitura unificada de materiais/camadas.
+  equivalence_id: eq-818b7761e2bc6f20
+  confidence: high
+  source_kind: existing_gt
+  legacy_reference: true
 - element_guid: 1G2LqRwDrFDuGY$271DPjJ
   issue_type: system_unclassified
   check_property: ''
@@ -94,6 +2992,10 @@ items:
   accepted_alternatives: []
   verified: true
   notes: Sistema derivado de nome, classe IFC e leitura unificada de materiais/camadas.
+  equivalence_id: eq-818b7761e2bc6f20
+  confidence: high
+  source_kind: existing_gt
+  legacy_reference: true
 - element_guid: 1G2LqRwDrFDuGY$271DPpc
   issue_type: system_unclassified
   check_property: ''
@@ -102,6 +3004,232 @@ items:
   accepted_alternatives: []
   verified: true
   notes: Sistema derivado de nome, classe IFC e leitura unificada de materiais/camadas.
+  equivalence_id: eq-818b7761e2bc6f20
+  confidence: high
+  source_kind: existing_gt
+  legacy_reference: true
+- element_guid: 2$tmlycAL58OvCiJvd1$HE
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: c43bff94f202
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    20cm growarq pintada parede basica:parede externa 20cm growarq pintada .pintura branca gelo growarq
+    .alvenaria deitado 18 cm growarq .pintura branca gelo growarq.'
+  equivalence_id: eq-1fd6028d1a89762c
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2$tmlycAL58OvCiJvd1_oI
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: 07b8250762ee
+  expected_value: Laje maciça de concreto armado
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: piso:laje de concreto usinado
+    + piso generico 15cm growarq piso:laje de concreto usinado + piso generico 15cm growarq .calcada de
+    concreto growarq .concreto regularizacao growarq .concreto usinado growarq.'
+  equivalence_id: eq-c10f2d37d614501a
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2$tmlycAL58OvCiJvd1tHl
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: 6702cce8df7e
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    20cm growarq parede basica:parede externa 20cm growarq .pintura growarq .alvenaria deitado 18 cm growarq
+    .massa corrida e pintura growarq.'
+  equivalence_id: eq-1b8509bf18d64fa3
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2$tmlycAL58OvCiJvd1wv_
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: 67d142067cff
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede interna
+    15cm growarq parede basica:parede interna 15cm growarq .massa corrida e pintura growarq .alvenaria
+    de cutelo 9 cm growarq .massa corrida e pintura growarq.'
+  equivalence_id: eq-f4cfc343a6da915b
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2525hlGuHMIAZ8BqQUmhMK
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: 5fc1ed33eca6
+  expected_value: Grama natural ou artificial
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: piso:grama 2cm growarq piso:grama
+    2cm growarq .grama growarq.'
+  equivalence_id: eq-63533d768eb21aa7
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tYrP
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: 00b1529dc1a1
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    20cm growarq pintada parede basica:parede externa 20cm growarq pintada .pintura branca gelo growarq
+    .alvenaria deitado 18 cm growarq .pintura branca gelo growarq.'
+  equivalence_id: eq-1fd6028d1a89762c
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tYtG
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: b73cac0c26ce
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    20cm growarq pintada parede basica:parede externa 20cm growarq pintada .pintura branca gelo growarq
+    .alvenaria deitado 18 cm growarq .pintura branca gelo growarq.'
+  equivalence_id: eq-1fd6028d1a89762c
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tZEM
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: fa9b93418032
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    20cm growarq pintada parede basica:parede externa 20cm growarq pintada .pintura branca gelo growarq
+    .alvenaria deitado 18 cm growarq .pintura branca gelo growarq.'
+  equivalence_id: eq-1fd6028d1a89762c
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tZKH
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: d010912887ac
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    20cm growarq parede basica:parede externa 20cm growarq .pintura growarq .alvenaria deitado 18 cm growarq
+    .massa corrida e pintura growarq.'
+  equivalence_id: eq-1b8509bf18d64fa3
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tZOM
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: 3f9f0303a48d
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede interna
+    15cm growarq parede basica:parede interna 15cm growarq .massa corrida e pintura growarq .alvenaria
+    de cutelo 9 cm growarq .massa corrida e pintura growarq.'
+  equivalence_id: eq-f4cfc343a6da915b
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 263mmTFO98CvhLXZL4tZUs
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: ba434938fdc4
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede interna
+    15cm growarq parede basica:parede interna 15cm growarq .massa corrida e pintura growarq .alvenaria
+    de cutelo 9 cm growarq .massa corrida e pintura growarq.'
+  equivalence_id: eq-f4cfc343a6da915b
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2IwmxyHBvFS9zSXZCe$LAY
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: 82b89a5dad63
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede interna
+    15cm growarq parede basica:parede interna 15cm growarq .massa corrida e pintura growarq .alvenaria
+    de cutelo 9 cm growarq .massa corrida e pintura growarq.'
+  equivalence_id: eq-f4cfc343a6da915b
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2IwmxyHBvFS9zSXZCe$ghQ
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: fa8b7f89493c
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    20cm growarq pintada parede basica:parede externa 20cm growarq pintada .pintura branca gelo growarq
+    .alvenaria deitado 18 cm growarq .pintura branca gelo growarq.'
+  equivalence_id: eq-1fd6028d1a89762c
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2Kl7rnh3D9zO6g7elaK$60
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: 31d1fc43f767
+  expected_value: Laje maciça de concreto armado
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: piso:laje de concreto usinado
+    + piso generico 15cm growarq piso:laje de concreto usinado + piso generico 15cm growarq .calcada de
+    concreto growarq .concreto regularizacao growarq .concreto usinado growarq.'
+  equivalence_id: eq-c10f2d37d614501a
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2Kl7rnh3D9zO6g7elaK$pE
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: 4e501963b979
+  expected_value: Grama natural ou artificial
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: piso:grama 2cm growarq piso:grama
+    2cm growarq .grama growarq.'
+  equivalence_id: eq-63533d768eb21aa7
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 2fAI9i_QH93AveG7CTacNQ
+  issue_type: system_unclassified
+  check_property: ''
+  issue_id: adcb2fa24161
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    20cm growarq pintada parede basica:parede externa 20cm growarq pintada .pintura branca gelo growarq
+    .alvenaria deitado 18 cm growarq .pintura branca gelo growarq.'
+  equivalence_id: eq-1fd6028d1a89762c
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
 - element_guid: 2fAI9i_QH93AveG7CTawaN
   issue_type: system_unclassified
   check_property: ''
@@ -110,1259 +3238,231 @@ items:
   accepted_alternatives: []
   verified: true
   notes: Sistema derivado de nome, classe IFC e leitura unificada de materiais/camadas.
-skipped:
-- issue_id: ea37b4dd972e
-  element_guid: 02cRNOEBFs_rUpDJ1rdfFv
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: cd03d4661f32
-  element_guid: 02cRNOEBFs_rUpDJ1rdfFv
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: 1c981dcad3ad
-  element_guid: 08FMwR_FjC4P8xhz1M4XJj
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 902ad787ba18
-  element_guid: 08FMwR_FjC4P8xhz1M4XJj
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 683d020f1ec0
-  element_guid: 08FMwR_FjC4P8xhz1M4XVG
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: d64e52813df1
-  element_guid: 08FMwR_FjC4P8xhz1M4XVG
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: c36297310208
-  element_guid: 08FMwR_FjC4P8xhz1M4XVG
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: bfd0466e62f6
-  element_guid: 08FMwR_FjC4P8xhz1M4XVG
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: e0b4e6c97c62
-  element_guid: 08dlqIFzX2fQfWGI0ctyTz
-  issue_type: pset_missing
-  check_property: SolarHeatGainCoefficient
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 96ed682804ed
-  element_guid: 08dlqIFzX2fQfWGI0ctyTz
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: 03a8a7758129
-  element_guid: 0DquSHV5X5iAT1Rv0KmXCt
-  issue_type: pset_missing
-  check_property: Category
-  reason: LongName ausente ou não inequívoco para Category
-- issue_id: 3874e26f27af
-  element_guid: 0EeCfMGen2QPcdKjonawGz
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 6dd6ed414781
-  element_guid: 0EeCfMGen2QPcdKjonawGz
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: 1187f275bdbc
-  element_guid: 0HJkTz8PfBHRoP4lUkVnpX
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 84cc3f84af3d
-  element_guid: 0HJkTz8PfBHRoP4lUkVnpX
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 9f558895d3e5
-  element_guid: 0HJkTz8PfBHRoP4lUkVnpX
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: a9b06412c193
-  element_guid: 0KDyN9gT18mewR6io7EK0$
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: b404fb3aeee3
-  element_guid: 0KDyN9gT18mewR6io7EK0$
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: eedd8ff7bdf5
-  element_guid: 0KDyN9gT18mewR6io7EK5U
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 2a6d09367c18
-  element_guid: 0KDyN9gT18mewR6io7EK5U
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: 8dafd88def30
-  element_guid: 0KDyN9gT18mewR6io7EKB8
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: cd35aff102f5
-  element_guid: 0KDyN9gT18mewR6io7EKB8
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: cb83f02b34d6
-  element_guid: 0bF6V1Ein6wfZBo5c6V0nE
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: de0bb2bbd8ad
-  element_guid: 0bF6V1Ein6wfZBo5c6V0nE
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: 7bcbce13da2d
-  element_guid: 0bF6V1Ein6wfZBo5c6V1$n
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: bd6d1c9add46
-  element_guid: 0bF6V1Ein6wfZBo5c6V1$n
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: 2cacebaf613e
-  element_guid: 0bF6V1Ein6wfZBo5c6V1km
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 9a65bf4e816c
-  element_guid: 0bF6V1Ein6wfZBo5c6V1km
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: e72dd88e5ea0
-  element_guid: 0dah8JnFwmvs5E2wJ5slGX
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 9dd410b50ff7
-  element_guid: 0dah8JnFwmvs5E2wJ5slGX
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: 3ad51bcba20a
-  element_guid: 0jF_4eAhH6beBAVZTm6o39
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 473f58b8160c
-  element_guid: 0jF_4eAhH6beBAVZTm6o39
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: c159bf0e7df0
-  element_guid: 0jF_4eAhH6beBAVZTm6o39
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: 1f4c0cbf94c1
-  element_guid: 0jF_4eAhH6beBAVZTm6o45
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 7f0dc60a6b63
-  element_guid: 0jF_4eAhH6beBAVZTm6o45
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: e43a33ba6ff1
-  element_guid: 0jF_4eAhH6beBAVZTm6o45
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: 47a5f88118c4
-  element_guid: 0jF_4eAhH6beBAVZTm6o67
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: d9801e6438f0
-  element_guid: 0jF_4eAhH6beBAVZTm6o67
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 27bac8c0eea1
-  element_guid: 0jF_4eAhH6beBAVZTm6o67
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: ec1f56446ef6
-  element_guid: 0jF_4eAhH6beBAVZTm6oMf
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 0336de2c4d5b
-  element_guid: 0jF_4eAhH6beBAVZTm6oMf
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: c6c7f846b6a4
-  element_guid: 0jF_4eAhH6beBAVZTm6oMf
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: 66db54378322
-  element_guid: 0jF_4eAhH6beBAVZTm6oQd
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 98bca37a921f
-  element_guid: 0jF_4eAhH6beBAVZTm6oQd
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: fc61d5781632
-  element_guid: 0jF_4eAhH6beBAVZTm6oQd
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: 903631968d51
-  element_guid: 0st0aD40PCvPxXJgFLhs6D
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: ef25f0d492ec
-  element_guid: 0st0aD40PCvPxXJgFLhs6D
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: bafc33a55d77
-  element_guid: 0st0aD40PCvPxXJgFLhs6D
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: f02892c06a76
-  element_guid: 0tSLW28TTFXeROu_bygIcu
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: e936ef56afbe
-  element_guid: 0tSLW28TTFXeROu_bygIcu
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 9844f10a3e0d
-  element_guid: 0vINo141j3DeXo8nPSqBb3
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 185c3a2908ff
-  element_guid: 0vINo141j3DeXo8nPSqBb3
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 6b28a8234994
-  element_guid: 0vINo141j3DeXo8nPSqBb3
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: a1c502997afb
-  element_guid: 1G2LqRwDrFDuGY$271DOcy
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 94909825def5
-  element_guid: 1G2LqRwDrFDuGY$271DOcy
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: 7a0dd2194ecc
-  element_guid: 1G2LqRwDrFDuGY$271DOfw
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 9e281259c674
-  element_guid: 1G2LqRwDrFDuGY$271DOfw
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: 277154c1aa4a
-  element_guid: 1G2LqRwDrFDuGY$271DPjJ
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: c02b944ebcd9
-  element_guid: 1G2LqRwDrFDuGY$271DPjJ
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: aefa12019092
-  element_guid: 1G2LqRwDrFDuGY$271DPpc
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: d370cb20477a
-  element_guid: 1G2LqRwDrFDuGY$271DPpc
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: 660759098f96
-  element_guid: 1MMpYRkhr9COts6E8DtYiC
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 2b3056e1bbe9
-  element_guid: 1MMpYRkhr9COts6E8DtYiC
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: 91f0d43dd121
-  element_guid: 1N0wKml$r77A7dpRGpOJgZ
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 362651c6d26b
-  element_guid: 1N0wKml$r77A7dpRGpOJgZ
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: b3e290870638
-  element_guid: 1msekdwzrChwsmTanTVCDJ
-  issue_type: pset_missing
-  check_property: SolarHeatGainCoefficient
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 743c62a3446c
-  element_guid: 1msekdwzrChwsmTanTVCDJ
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: cec3ee72c94e
-  element_guid: 2$tmlycAL58OvCiJvd1$HE
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 5375f6c2f842
-  element_guid: 2$tmlycAL58OvCiJvd1$HE
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: d863bdec4a5e
-  element_guid: 2$tmlycAL58OvCiJvd1$HE
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: 2ae9aba6251c
-  element_guid: 2$tmlycAL58OvCiJvd1_oI
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 44ad141ced7c
-  element_guid: 2$tmlycAL58OvCiJvd1_oI
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: f8df9e93dcf9
-  element_guid: 2$tmlycAL58OvCiJvd1s4y
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 4975cb2e07e1
-  element_guid: 2$tmlycAL58OvCiJvd1s4y
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 6d50bd0c6567
-  element_guid: 2$tmlycAL58OvCiJvd1tHl
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 477990e1fc80
-  element_guid: 2$tmlycAL58OvCiJvd1tHl
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: e59df534aa66
-  element_guid: 2$tmlycAL58OvCiJvd1tHl
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: 472314ec33bd
-  element_guid: 2$tmlycAL58OvCiJvd1tMy
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 17f036fd36ef
-  element_guid: 2$tmlycAL58OvCiJvd1tMy
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: fea539269490
-  element_guid: 2$tmlycAL58OvCiJvd1wv_
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 969bdca4cdc8
-  element_guid: 2$tmlycAL58OvCiJvd1wv_
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 8bfc72e7a877
-  element_guid: 2$tmlycAL58OvCiJvd1wv_
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: 62d007905898
-  element_guid: 2$tmlycAL58OvCiJvd1wv_
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: 08f0ce245b82
-  element_guid: 2$tmlycAL58OvCiJvd1xd7
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: fba388bfdf0b
-  element_guid: 2$tmlycAL58OvCiJvd1xd7
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 8b4fbf1f6adf
-  element_guid: 2525hlGuHMIAZ8BqQUmhMK
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 0d5ec36f8bb6
-  element_guid: 2525hlGuHMIAZ8BqQUmhMK
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: 14e3de203cde
-  element_guid: 263mmTFO98CvhLXZL4tYrP
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: ee56edc4e7ed
-  element_guid: 263mmTFO98CvhLXZL4tYrP
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: becb65b0ce3b
-  element_guid: 263mmTFO98CvhLXZL4tYrP
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: f2b31914c664
-  element_guid: 263mmTFO98CvhLXZL4tYtG
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: d0b0109f8660
-  element_guid: 263mmTFO98CvhLXZL4tYtG
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 97eebd9f70a7
-  element_guid: 263mmTFO98CvhLXZL4tYtG
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: c9fdd32c026a
-  element_guid: 263mmTFO98CvhLXZL4tZEM
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 40d256040614
-  element_guid: 263mmTFO98CvhLXZL4tZEM
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 06f6e3414fe7
-  element_guid: 263mmTFO98CvhLXZL4tZEM
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: 08ded9f35158
-  element_guid: 263mmTFO98CvhLXZL4tZKH
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 4512d356fd8a
-  element_guid: 263mmTFO98CvhLXZL4tZKH
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: cc2ed8c05393
-  element_guid: 263mmTFO98CvhLXZL4tZKH
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: 885b11aa91a7
-  element_guid: 263mmTFO98CvhLXZL4tZOM
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 072b0f39ca5a
-  element_guid: 263mmTFO98CvhLXZL4tZOM
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: dec037e0844c
-  element_guid: 263mmTFO98CvhLXZL4tZOM
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: c9cbb3402c2f
-  element_guid: 263mmTFO98CvhLXZL4tZOM
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: 7d5b45eaa899
-  element_guid: 263mmTFO98CvhLXZL4tZUs
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 43a7f355fb7f
-  element_guid: 263mmTFO98CvhLXZL4tZUs
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: '270494859532'
-  element_guid: 263mmTFO98CvhLXZL4tZUs
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: 5ddcf7180c9b
-  element_guid: 263mmTFO98CvhLXZL4tZUs
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: 97016c1ece8e
-  element_guid: 2IwmxyHBvFS9zSXZCe$LAY
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 1fb16aa144b4
-  element_guid: 2IwmxyHBvFS9zSXZCe$LAY
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: df3625894dfd
-  element_guid: 2IwmxyHBvFS9zSXZCe$LAY
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: e9fb345ffa32
-  element_guid: 2IwmxyHBvFS9zSXZCe$LAY
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: 2face7fc3078
-  element_guid: 2IwmxyHBvFS9zSXZCe$ghQ
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: cfa4bccf9729
-  element_guid: 2IwmxyHBvFS9zSXZCe$ghQ
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: bfe4edecb797
-  element_guid: 2IwmxyHBvFS9zSXZCe$ghQ
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: 77c2c54411d2
-  element_guid: 2Kl7rnh3D9zO6g7elaK$60
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 83fec58f3fc4
-  element_guid: 2Kl7rnh3D9zO6g7elaK$60
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: b9d451a35200
-  element_guid: 2Kl7rnh3D9zO6g7elaK$pE
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 581371bf6aeb
-  element_guid: 2Kl7rnh3D9zO6g7elaK$pE
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: 0d35f64ca999
-  element_guid: 2Kl7rnh3D9zO6g7elaKw8O
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 5221c804a96e
-  element_guid: 2Kl7rnh3D9zO6g7elaKw8O
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: c6432f16f5f6
-  element_guid: 2Kl7rnh3D9zO6g7elaKw9N
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 9709a5abe1ef
-  element_guid: 2Kl7rnh3D9zO6g7elaKw9N
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 9f96d3a53119
-  element_guid: 2Kl7rnh3D9zO6g7elaKwDS
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: fe20bbd4e776
-  element_guid: 2Kl7rnh3D9zO6g7elaKwDS
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 133e7b2a0c54
-  element_guid: 2Kl7rnh3D9zO6g7elaKwXp
-  issue_type: pset_missing
-  check_property: SolarHeatGainCoefficient
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 24de2c254d3d
-  element_guid: 2Kl7rnh3D9zO6g7elaKwXp
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: 57c650f11e1c
-  element_guid: 2Kl7rnh3D9zO6g7elaKwYD
-  issue_type: pset_missing
-  check_property: SolarHeatGainCoefficient
-  reason: fora do escopo evidence-audited-v1
-- issue_id: f945e1e8897d
-  element_guid: 2Kl7rnh3D9zO6g7elaKwYD
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: 1ef48ad130f3
-  element_guid: 2QPUwptF59iOuAeH$YWG2j
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: c615bc9cdadf
-  element_guid: 2QPUwptF59iOuAeH$YWG2j
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: e222f947f8d4
-  element_guid: 2fAI9i_QH93AveG7CTacNQ
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 6c5246c263b8
-  element_guid: 2fAI9i_QH93AveG7CTacNQ
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: c037e64c6265
-  element_guid: 2fAI9i_QH93AveG7CTacNQ
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: 008b74e0c174
-  element_guid: 2fAI9i_QH93AveG7CTawaN
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 60923e8eb913
-  element_guid: 2fAI9i_QH93AveG7CTawaN
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: b81e53775d0d
-  element_guid: 2lyKyDpyH2RfV3sGdJ3N5h
-  issue_type: pset_missing
-  check_property: Category
-  reason: LongName ausente ou não inequívoco para Category
-- issue_id: 0724e41a6147
-  element_guid: 2lyKyDpyH2RfV3sGdJ3NAI
-  issue_type: pset_missing
-  check_property: Category
-  reason: LongName ausente ou não inequívoco para Category
-- issue_id: 731b3f83135b
-  element_guid: 2lyKyDpyH2RfV3sGdJ3Nro
-  issue_type: pset_missing
-  check_property: Category
-  reason: LongName ausente ou não inequívoco para Category
-- issue_id: f76cf7b7d091
-  element_guid: 2lyKyDpyH2RfV3sGdJ3Nrt
-  issue_type: pset_missing
-  check_property: Category
-  reason: LongName ausente ou não inequívoco para Category
-- issue_id: 7f56c150b721
-  element_guid: 2lyKyDpyH2RfV3sGdJ3NwJ
-  issue_type: pset_missing
-  check_property: Category
-  reason: LongName ausente ou não inequívoco para Category
-- issue_id: a1c2aae0db9d
-  element_guid: 3M_GIB2Ij47f7a$yCvFxxP
-  issue_type: pset_missing
-  check_property: Category
-  reason: LongName ausente ou não inequívoco para Category
-- issue_id: f6aee2ddc907
-  element_guid: 3SMUUbRRj1o8sClzCYOY2w
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: f1cbf84f96eb
-  element_guid: 3SMUUbRRj1o8sClzCYOY2w
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: fa57ca3b1506
-  element_guid: 3SMUUbRRj1o8sClzCYOYxv
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: ffeb6fcdb389
-  element_guid: 3SMUUbRRj1o8sClzCYOYxv
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: 86b093ec64bd
-  element_guid: 3SMUUbRRj1o8sClzCYOzDn
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: e0adc6fcff79
-  element_guid: 3SMUUbRRj1o8sClzCYOzDn
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: faa1805c2fe5
-  element_guid: 3SMUUbRRj1o8sClzCYOzDn
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: 79ac5c8842ab
-  element_guid: 3SMUUbRRj1o8sClzCYOzKq
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 8f0126fb9536
-  element_guid: 3SMUUbRRj1o8sClzCYOzKq
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 02a6906ed94e
-  element_guid: 3SMUUbRRj1o8sClzCYOzKq
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: 13d9cbb2344a
-  element_guid: 3SMUUbRRj1o8sClzCYOzLe
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: dbdeef1b15fc
-  element_guid: 3SMUUbRRj1o8sClzCYOzLe
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 68bbcd8cfff5
-  element_guid: 3SMUUbRRj1o8sClzCYOzLe
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: 397e6cbe93fa
-  element_guid: 3SMUUbRRj1o8sClzCYOzNd
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: beff0183c9c8
-  element_guid: 3SMUUbRRj1o8sClzCYOzNd
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 3d735deeb0cd
-  element_guid: 3SMUUbRRj1o8sClzCYOzNd
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: 2945941ee99e
-  element_guid: 3SMUUbRRj1o8sClzCYOzTg
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 9197fd26b282
-  element_guid: 3SMUUbRRj1o8sClzCYOzTg
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: d912cf6b8839
-  element_guid: 3SMUUbRRj1o8sClzCYOzTg
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: 7f2396eaf69f
-  element_guid: 3SMUUbRRj1o8sClzCYOzVp
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 6be73ce4d5a4
-  element_guid: 3SMUUbRRj1o8sClzCYOzVp
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 93ee25f3e324
-  element_guid: 3SMUUbRRj1o8sClzCYOzVp
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: 834fe62043ce
-  element_guid: 3SMUUbRRj1o8sClzCYOztj
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 99f861d1386d
-  element_guid: 3SMUUbRRj1o8sClzCYOztj
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: 48a00b150e5d
-  element_guid: 3SnvZdUqz4cvTlbZnpF1GS
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 2f357f069b60
-  element_guid: 3SnvZdUqz4cvTlbZnpF1GS
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: 6dab115293a4
-  element_guid: 3SnvZdUqz4cvTlbZnpF1HI
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 4bdfb525a81d
-  element_guid: 3SnvZdUqz4cvTlbZnpF1HI
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: 4f66bbc42c9a
-  element_guid: 3YK4YDwtv9JQuHnWAgsgeG
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: fde129285efa
-  element_guid: 3YK4YDwtv9JQuHnWAgsgeG
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: cc54d4f8dfd0
-  element_guid: 3aH1YSjLbFFOXbaVe1cqrW
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 4db4701963ef
-  element_guid: 3aH1YSjLbFFOXbaVe1cqrW
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 746b10924a49
-  element_guid: 3aH1YSjLbFFOXbaVe1cqrW
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: e4ac5c0a5e82
-  element_guid: 3aH1YSjLbFFOXbaVe1cqsk
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 166c976834f2
-  element_guid: 3aH1YSjLbFFOXbaVe1cqsk
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 6fdf127af16e
-  element_guid: 3aH1YSjLbFFOXbaVe1cqsk
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: 99e8c77ede83
-  element_guid: 3aH1YSjLbFFOXbaVe1cqzG
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 32c03323f51c
-  element_guid: 3aH1YSjLbFFOXbaVe1cqzG
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 05b8f1fd7920
-  element_guid: 3aH1YSjLbFFOXbaVe1cqzG
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: 885d9a9e21a3
-  element_guid: 3bzWotDL93mufPfIaOU_Yx
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 6e1364373fee
-  element_guid: 3bzWotDL93mufPfIaOU_Yx
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: fcf92d16d1fa
-  element_guid: 3bzWotDL93mufPfIaOU_dP
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 0b845407fde6
-  element_guid: 3bzWotDL93mufPfIaOU_dP
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: 68280d56b978
-  element_guid: 3bzWotDL93mufPfIaOUhnj
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: c8c8fa46f2aa
-  element_guid: 3bzWotDL93mufPfIaOUhnj
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: f3f210631c4c
-  element_guid: 3bzWotDL93mufPfIaOUhnj
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: 298966f64807
-  element_guid: 3bzWotDL93mufPfIaOUhnj
-  issue_type: pset_missing
-  check_property: ThermalTransmittance
-  reason: sem valor térmico autoral em instância do mesmo tipo
-- issue_id: b88b43a9a123
-  element_guid: 3bzWotDL93mufPfIaOUuv_
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 69e521630e9e
-  element_guid: 3bzWotDL93mufPfIaOUuv_
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: e7db592c3eab
-  element_guid: 3bzWotDL93mufPfIaOUvax
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 441d9b8e3385
-  element_guid: 3bzWotDL93mufPfIaOUvax
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 324c910f7610
-  element_guid: 3bzWotDL93mufPfIaOUvax
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: 6e324784471e
-  element_guid: 3bzWotDL93mufPfIaOUvc4
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: f7b0180b07b9
-  element_guid: 3bzWotDL93mufPfIaOUvc4
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 7b77c0318f92
-  element_guid: 3bzWotDL93mufPfIaOUvc4
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: df0047d35a1d
-  element_guid: 3bzWotDL93mufPfIaOUvnP
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: b5295670b961
-  element_guid: 3bzWotDL93mufPfIaOUvnP
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 387fe79f7210
-  element_guid: 3bzWotDL93mufPfIaOUvry
-  issue_type: pset_missing
-  check_property: AcousticRating
-  reason: fora do escopo evidence-audited-v1
-- issue_id: fc093be9ac44
-  element_guid: 3bzWotDL93mufPfIaOUvry
-  issue_type: pset_missing
-  check_property: FireRating
-  reason: sem declaração autoral de desempenho ao fogo
-- issue_id: 71839c11f6e1
-  element_guid: 3bzWotDL93mufPfIaOUvry
-  issue_type: pset_missing
-  check_property: IsLoadBearing
-  reason: sem declaração autoral de intencionalidade portante
-- issue_id: 3251890afaa7
-  element_guid: 0s9SKb6yL3Hw45Qf5sUEQp
-  issue_type: relation_broken
-  check_property: ''
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 602a14f4f1ec
-  element_guid: 2$tmlycAL58OvCiJvd1s4y
-  issue_type: relation_broken
-  check_property: ''
-  reason: fora do escopo evidence-audited-v1
-- issue_id: a6c6baecfb2e
-  element_guid: 3bzWotDL93mufPfIaOU_Yx
-  issue_type: relation_broken
-  check_property: ''
-  reason: fora do escopo evidence-audited-v1
-- issue_id: 9d3646d2c77b
-  element_guid: 02cRNOEBFs_rUpDJ1rdfFv
+  equivalence_id: eq-f45ff5635f212b38
+  confidence: high
+  source_kind: existing_gt
+  legacy_reference: true
+- element_guid: 3SMUUbRRj1o8sClzCYOzDn
   issue_type: system_unclassified
   check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 3229c0fcb655
-  element_guid: 0HJkTz8PfBHRoP4lUkVnpX
+  issue_id: e96e98eaddb2
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    20cm growarq pintada parede basica:parede externa 20cm growarq pintada .pintura branca gelo growarq
+    .alvenaria deitado 18 cm growarq .pintura branca gelo growarq.'
+  equivalence_id: eq-1fd6028d1a89762c
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOzKq
   issue_type: system_unclassified
   check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 99d3d1540e01
-  element_guid: 0KDyN9gT18mewR6io7EK5U
+  issue_id: 020974ee8359
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    20cm growarq pintada parede basica:parede externa 20cm growarq pintada .pintura branca gelo growarq
+    .alvenaria deitado 18 cm growarq .pintura branca gelo growarq.'
+  equivalence_id: eq-1fd6028d1a89762c
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOzLe
   issue_type: system_unclassified
   check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: c4c843940540
-  element_guid: 0KDyN9gT18mewR6io7EKB8
+  issue_id: b8cdd183d85f
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    20cm growarq pintada parede basica:parede externa 20cm growarq pintada .pintura branca gelo growarq
+    .alvenaria deitado 18 cm growarq .pintura branca gelo growarq.'
+  equivalence_id: eq-1fd6028d1a89762c
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOzNd
   issue_type: system_unclassified
   check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: d0d8b73ae426
-  element_guid: 0bF6V1Ein6wfZBo5c6V0nE
+  issue_id: da1d1a1139a5
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    20cm growarq pintada parede basica:parede externa 20cm growarq pintada .pintura branca gelo growarq
+    .alvenaria deitado 18 cm growarq .pintura branca gelo growarq.'
+  equivalence_id: eq-1fd6028d1a89762c
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOzTg
   issue_type: system_unclassified
   check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 9c0a70af9f39
-  element_guid: 0bF6V1Ein6wfZBo5c6V1$n
+  issue_id: 020faa45af4f
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    20cm growarq pintada parede basica:parede externa 20cm growarq pintada .pintura branca gelo growarq
+    .alvenaria deitado 18 cm growarq .pintura branca gelo growarq.'
+  equivalence_id: eq-1fd6028d1a89762c
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOzVp
   issue_type: system_unclassified
   check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 514547cfc8f5
-  element_guid: 0bF6V1Ein6wfZBo5c6V1km
+  issue_id: 5ed53da5086c
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    20cm growarq pintada parede basica:parede externa 20cm growarq pintada .pintura branca gelo growarq
+    .alvenaria deitado 18 cm growarq .pintura branca gelo growarq.'
+  equivalence_id: eq-1fd6028d1a89762c
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3SMUUbRRj1o8sClzCYOztj
   issue_type: system_unclassified
   check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 1e3f08be5b97
-  element_guid: 0dah8JnFwmvs5E2wJ5slGX
+  issue_id: 38f62f36e0c4
+  expected_value: Laje maciça de concreto armado
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: piso:generico 150 mm piso:generico
+    150 mm <unnamed>.'
+  equivalence_id: eq-461fa80b251b3c37
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3SnvZdUqz4cvTlbZnpF1GS
   issue_type: system_unclassified
   check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 2a05ae285c96
-  element_guid: 0jF_4eAhH6beBAVZTm6o39
+  issue_id: a38e231cc8cc
+  expected_value: Laje maciça de concreto armado
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: piso:laje de concreto usinado
+    + piso generico 15cm growarq calcada piso:laje de concreto usinado + piso generico 15cm growarq calcada
+    .calcada de concreto growarq .concreto regularizacao growarq .concreto usinado growarq.'
+  equivalence_id: eq-3eabff954b4131a8
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3SnvZdUqz4cvTlbZnpF1HI
   issue_type: system_unclassified
   check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: ae90462e5dee
-  element_guid: 0jF_4eAhH6beBAVZTm6o45
+  issue_id: edcf5b94a7b0
+  expected_value: Laje maciça de concreto armado
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: piso:laje de concreto usinado
+    + piso generico 15cm growarq rua piso:laje de concreto usinado + piso generico 15cm growarq rua .asfalto
+    growarq .concreto regularizacao growarq .concreto usinado growarq.'
+  equivalence_id: eq-aeacfeba181efcb0
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3aH1YSjLbFFOXbaVe1cqrW
   issue_type: system_unclassified
   check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 06509585b006
-  element_guid: 0jF_4eAhH6beBAVZTm6o67
+  issue_id: a04c315ecda6
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    9cm growarq pintada parede basica:parede externa 9cm growarq pintada .pintura branca gelo growarq
+    .alvenaria deitado 18 cm growarq .pintura branca gelo growarq.'
+  equivalence_id: eq-8eedad8545f0cd77
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3aH1YSjLbFFOXbaVe1cqsk
   issue_type: system_unclassified
   check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: b90eb31e46df
-  element_guid: 0jF_4eAhH6beBAVZTm6oMf
+  issue_id: f49ef2cce017
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    9cm growarq pintada parede basica:parede externa 9cm growarq pintada .pintura branca gelo growarq
+    .alvenaria deitado 18 cm growarq .pintura branca gelo growarq.'
+  equivalence_id: eq-8eedad8545f0cd77
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3aH1YSjLbFFOXbaVe1cqzG
   issue_type: system_unclassified
   check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: e5d234d98d38
-  element_guid: 0jF_4eAhH6beBAVZTm6oQd
+  issue_id: 0ea36ed91eb5
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    9cm growarq pintada parede basica:parede externa 9cm growarq pintada .pintura branca gelo growarq
+    .alvenaria deitado 18 cm growarq .pintura branca gelo growarq.'
+  equivalence_id: eq-8eedad8545f0cd77
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOUhnj
   issue_type: system_unclassified
   check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 00af0767f437
-  element_guid: 0st0aD40PCvPxXJgFLhs6D
+  issue_id: 923aee82d9cb
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede interna
+    15cm growarq parede basica:parede interna 15cm growarq .massa corrida e pintura growarq .alvenaria
+    de cutelo 9 cm growarq .massa corrida e pintura growarq.'
+  equivalence_id: eq-f4cfc343a6da915b
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOUvax
   issue_type: system_unclassified
   check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 5fbd82934c13
-  element_guid: 0vINo141j3DeXo8nPSqBb3
+  issue_id: 835d45c18082
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    20cm growarq pintada parede basica:parede externa 20cm growarq pintada .pintura branca gelo growarq
+    .alvenaria deitado 18 cm growarq .pintura branca gelo growarq.'
+  equivalence_id: eq-1fd6028d1a89762c
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOUvc4
   issue_type: system_unclassified
   check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: c43bff94f202
-  element_guid: 2$tmlycAL58OvCiJvd1$HE
+  issue_id: 019e9ff2e97b
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    20cm growarq parede basica:parede externa 20cm growarq .pintura growarq .alvenaria deitado 18 cm growarq
+    .massa corrida e pintura growarq.'
+  equivalence_id: eq-1b8509bf18d64fa3
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+- element_guid: 3bzWotDL93mufPfIaOUvry
   issue_type: system_unclassified
   check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 07b8250762ee
-  element_guid: 2$tmlycAL58OvCiJvd1_oI
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 6702cce8df7e
-  element_guid: 2$tmlycAL58OvCiJvd1tHl
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 67d142067cff
-  element_guid: 2$tmlycAL58OvCiJvd1wv_
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 5fc1ed33eca6
-  element_guid: 2525hlGuHMIAZ8BqQUmhMK
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 00b1529dc1a1
-  element_guid: 263mmTFO98CvhLXZL4tYrP
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: b73cac0c26ce
-  element_guid: 263mmTFO98CvhLXZL4tYtG
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: fa9b93418032
-  element_guid: 263mmTFO98CvhLXZL4tZEM
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: d010912887ac
-  element_guid: 263mmTFO98CvhLXZL4tZKH
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 3f9f0303a48d
-  element_guid: 263mmTFO98CvhLXZL4tZOM
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: ba434938fdc4
-  element_guid: 263mmTFO98CvhLXZL4tZUs
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 82b89a5dad63
-  element_guid: 2IwmxyHBvFS9zSXZCe$LAY
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: fa8b7f89493c
-  element_guid: 2IwmxyHBvFS9zSXZCe$ghQ
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 31d1fc43f767
-  element_guid: 2Kl7rnh3D9zO6g7elaK$60
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 4e501963b979
-  element_guid: 2Kl7rnh3D9zO6g7elaK$pE
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: adcb2fa24161
-  element_guid: 2fAI9i_QH93AveG7CTacNQ
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: e96e98eaddb2
-  element_guid: 3SMUUbRRj1o8sClzCYOzDn
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 020974ee8359
-  element_guid: 3SMUUbRRj1o8sClzCYOzKq
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: b8cdd183d85f
-  element_guid: 3SMUUbRRj1o8sClzCYOzLe
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: da1d1a1139a5
-  element_guid: 3SMUUbRRj1o8sClzCYOzNd
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 020faa45af4f
-  element_guid: 3SMUUbRRj1o8sClzCYOzTg
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 5ed53da5086c
-  element_guid: 3SMUUbRRj1o8sClzCYOzVp
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 38f62f36e0c4
-  element_guid: 3SMUUbRRj1o8sClzCYOztj
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: a38e231cc8cc
-  element_guid: 3SnvZdUqz4cvTlbZnpF1GS
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: edcf5b94a7b0
-  element_guid: 3SnvZdUqz4cvTlbZnpF1HI
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: a04c315ecda6
-  element_guid: 3aH1YSjLbFFOXbaVe1cqrW
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: f49ef2cce017
-  element_guid: 3aH1YSjLbFFOXbaVe1cqsk
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 0ea36ed91eb5
-  element_guid: 3aH1YSjLbFFOXbaVe1cqzG
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 923aee82d9cb
-  element_guid: 3bzWotDL93mufPfIaOUhnj
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 835d45c18082
-  element_guid: 3bzWotDL93mufPfIaOUvax
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 019e9ff2e97b
-  element_guid: 3bzWotDL93mufPfIaOUvc4
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
-- issue_id: 8d365e7c7b9b
-  element_guid: 3bzWotDL93mufPfIaOUvry
-  issue_type: system_unclassified
-  check_property: ''
-  reason: evidência material não identifica um único rótulo literal
+  issue_id: 8d365e7c7b9b
+  expected_value: Alvenaria de vedação em bloco cerâmico
+  accepted_alternatives: []
+  verified: true
+  notes: 'Sistema classificado por classe e evidência material congelada: parede basica:parede externa
+    20cm growarq pintada parede basica:parede externa 20cm growarq pintada .pintura branca gelo growarq
+    .alvenaria deitado 18 cm growarq .pintura branca gelo growarq.'
+  equivalence_id: eq-1fd6028d1a89762c
+  confidence: medium
+  source_kind: typology
+  legacy_reference: false
+skipped: []

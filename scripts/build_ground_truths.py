@@ -69,8 +69,12 @@ THERMAL_UNIT = (
 
 # SHA-256 dos artefatos canônicos revisados na Task 5; necessário para reuso fechado.
 EXPECTED_GROUND_TRUTH_SHA256: dict[str, str] = {
-    "predio": "2594d7efee7c29b662e7b9253cb5fe06867a046192f12b62d1acdf00d0199800",
-    "casa": "5903db9a3e3904f16a82df38b10d09f13769e7d88f3b61f52730a27dc8627c59",
+    "predio": "f92057437c8b5f6a7c098e818f6936e01c868afd82500b14d3844a1e10940c9d",
+    "casa": "60f87a079d2a9dccb7cfaedf43f3193b887f8606a1001d630a11321a6f8cfee5",
+}
+EXPECTED_INTEGRAL_ITEM_COUNTS: dict[str, int] = {
+    "predio": 4720,
+    "casa": 263,
 }
 
 
@@ -187,6 +191,11 @@ def build_full_coverage_dataset(
     spec: DatasetSpec,
 ) -> tuple[GTExtractionResult, list[Issue]]:
     """Converte a fonte congelada em um item concreto por diagnóstico."""
+    expected_ifc_sha256 = EXPECTED_INPUT_IFC_SHA256.get(spec.key)
+    if expected_ifc_sha256 is None:
+        raise ValueError(f"dataset desconhecido: {spec.key}")
+    _require_input(spec.ifc_path, "IFC", expected_sha256=expected_ifc_sha256)
+    _require_input(IDS_PATH, "IDS", expected_sha256=IDS_SHA256)
     document, source_is_integral = _read_frozen_ground_truth_source(spec)
     _partial, issues = build_dataset(spec)
     model = ifcopenshell.open(str(spec.ifc_path))
@@ -199,6 +208,7 @@ def build_full_coverage_dataset(
         source_is_integral=source_is_integral,
     )
     _require_exact_partition(result, issues)
+    _require_integral_coverage(spec, result, issues)
     result.ground_truth.metadata = _full_coverage_metadata(spec, issues, result)
     return result, issues
 
@@ -237,10 +247,12 @@ def write_canonical_ground_truth(
     result: GTExtractionResult,
     issues: Sequence[Issue],
     spec: DatasetSpec,
+    *,
+    output_path: Path | None = None,
 ) -> Path:
     """Valida um temporario no mesmo diretorio e so entao substitui o YAML."""
     candidate = canonical_ground_truth_bytes(result, issues, spec)
-    output = spec.ground_truth_path
+    output = output_path or spec.ground_truth_path
     output.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temporary_name = tempfile.mkstemp(
         dir=output.parent,
@@ -276,14 +288,21 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Valida e compara os bytes sem criar ou alterar arquivos.",
     )
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        help="Grava candidatos em <diretorio>/<dataset>/ground_truth.yaml.",
+    )
     args = parser.parse_args(argv)
+    if args.check and args.output_dir is not None:
+        parser.error("--check e --output-dir nao podem ser usados juntos")
     selected = list(DATASETS) if args.dataset == "all" else [args.dataset]
     status = 0
 
     for key in selected:
         spec = DATASETS[key]
         try:
-            result, issues = build_dataset(spec)
+            result, issues = build_full_coverage_dataset(spec)
             candidate = canonical_ground_truth_bytes(result, issues, spec)
             if args.check:
                 if not _check_candidate(spec, candidate, issues):
@@ -293,7 +312,17 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"OK {key}: {len(issues)} issues; sem drift")
                 continue
 
-            output = write_canonical_ground_truth(result, issues, spec)
+            output_path = (
+                args.output_dir / key / "ground_truth.yaml"
+                if args.output_dir is not None
+                else None
+            )
+            output = write_canonical_ground_truth(
+                result,
+                issues,
+                spec,
+                output_path=output_path,
+            )
             print(
                 f"OK {key}: {len(issues)} issues, "
                 f"{len(result.ground_truth.items)} itens, {len(result.skipped)} skips; "
@@ -327,7 +356,7 @@ def _read_predio_source(
 
     metadata = document.get("metadata")
     protocol = metadata.get("protocol") if isinstance(metadata, Mapping) else None
-    canonical = protocol == "evidence-audited-v1"
+    canonical = protocol in {"evidence-audited-v1", POLICY_VERSION}
     if canonical:
         assert isinstance(metadata, Mapping)
         if metadata.get("previous_gt_sha256") != RATIFIED_LEGACY_SHA256:
@@ -822,6 +851,23 @@ def _require_exact_partition(result: GTExtractionResult, issues: Sequence[Issue]
         or set(item_keys) | set(skip_keys) != set(diagnostic_keys)
     ):
         raise ValueError("items e skipped nao formam particao exata das issues")
+
+
+def _require_integral_coverage(
+    spec: DatasetSpec,
+    result: GTExtractionResult,
+    issues: Sequence[Issue],
+) -> None:
+    expected = EXPECTED_INTEGRAL_ITEM_COUNTS.get(spec.key)
+    if expected is None:
+        raise ValueError(f"contagem integral de {spec.key} nao congelada")
+    obtained = len(result.ground_truth.items)
+    if len(issues) != expected or obtained != expected or result.skipped:
+        raise ValueError(
+            f"cobertura integral de {spec.key}: esperados {expected}, "
+            f"obtidos {obtained} itens, {len(issues)} issues e "
+            f"{len(result.skipped)} skips"
+        )
 
 
 def _check_candidate(

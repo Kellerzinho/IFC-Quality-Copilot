@@ -221,6 +221,7 @@ def test_thermal_transmittance_is_calculated_from_complete_layers():
     assert decision.source_kind == "calculation"
     assert decision.confidence == "medium"
     assert "Rsi=0.13" in decision.notes
+    assert "W/(m²·K)" in decision.notes
 
 
 @pytest.mark.parametrize(
@@ -245,6 +246,7 @@ def test_thermal_fallback_is_concrete_for_supported_class(
     assert decision.expected_value == expected
     assert decision.source_kind == "probable"
     assert decision.confidence == "low"
+    assert "W/(m²·K)" in decision.notes
 
 
 @pytest.mark.parametrize(

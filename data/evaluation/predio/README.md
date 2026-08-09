@@ -1,60 +1,51 @@
 # Ground truth — prédio
 
-Referência de proveniência do dataset `predio`, congelada em 2026-08-08 para o
-benchmark. Este arquivo substitui descrições históricas de GT e não é um laudo,
-certificado, aprovação ou declaração de conformidade.
+Referência experimental integral do dataset `predio`, congelada em 2026-08-09.
+O arquivo atribui um valor concreto a cada diagnóstico para permitir um benchmark
+reproduzível. Ele não é laudo, certificado, aprovação ou declaração de
+conformidade.
 
-## Identificação do conjunto
+## Identificação e integridade
 
 | Campo | Valor |
 | --- | --- |
-| Protocolo | `evidence-audited-v1` |
-| Localidade declarada | Deodoro, Rio de Janeiro/RJ |
-| Tipologia declarada | Residencial multifamiliar |
-| Classificação de incêndio | A-2, premissa autoral para análise; não classificação oficial |
-| Contexto bioclimático | ZB 4A, conforme fonte técnica pública LabEEE/UFSC para Rio de Janeiro/RJ |
-| Status da ZB 4A | contexto técnico, sem valor de declaração formal de conformidade |
-| Data de verificação | 2026-08-08 |
+| Protocolo | `full-coverage-equivalent-v1` |
+| Localidade | Deodoro, Rio de Janeiro/RJ |
+| Tipologia | Residencial multifamiliar |
+| Contexto bioclimático | ZB 4A, fonte técnica pública LabEEE/UFSC; sem valor de declaração formal |
+| Data do freeze | 2026-08-09 |
 | `conformity_claim` | `false` |
+| `ground_truth.yaml` | SHA-256 `f92057437c8b5f6a7c098e818f6936e01c868afd82500b14d3844a1e10940c9d` |
+| `predio_v1.ifc` | SHA-256 `a71c8be30d82760218f5b3f3a1c476b49e3f30e608b0065916b9d5206a1a6dd0`; entrada local não versionada pelo Git |
+| IDS | SHA-256 `f698f2c020d79140bb314f077f8de680f492fd7ba42867e4000a4cead5d20905` |
+| Cobertura | 4.720 diagnósticos; 4.720 itens; zero `skipped`; 202 classes de equivalência |
+| Base preservada | 1.654 itens, protegidos por `data/evaluation/legacy-reference.lock.json` |
+| Confiança | 2.307 `high`; 1.365 `medium`; 1.048 `low` |
 
-## Artefatos congelados
+O hash do GT histórico anterior,
+`7d1b1dc8b4756e5a48cd28925d3dceb53a83ab401c31ae0fcf80914ddf85bccb`,
+permanece em `metadata.previous_gt_sha256` apenas para rastreabilidade.
 
-| Artefato | SHA-256 | Contagem / observação |
-| --- | --- | --- |
-| `ground_truth.yaml` | `2594d7efee7c29b662e7b9253cb5fe06867a046192f12b62d1acdf00d0199800` | 4.720 issues diagnósticos; 1.654 itens; 3.066 abstenções (`skipped`) |
-| `predio_v1.ifc` | `a71c8be30d82760218f5b3f3a1c476b49e3f30e608b0065916b9d5206a1a6dd0` | entrada IFC do GT canônico; não versionada pelo Git |
-| `ground_truth_spaces.yaml` | `f1451e983f7a6a869c908051a7c527f394cae670e07fc3da2a4432682c065ac8` | 82 nomes de espaços curados |
-| `predio_v1_masked.ifc` | `750315bbfe9379937f3d45b94170c8e45c0a1280ff4237d48839caa29e6ecec6` | variante mascarada para `space_unnamed`; não versionada pelo Git |
-| IDS de entrada | `f698f2c020d79140bb314f077f8de680f492fd7ba42867e4000a4cead5d20905` | `data/ids_templates/residencial_nbr15575.ids` |
+## Como interpretar os valores
 
-O hash legado do GT anterior é
-`7d1b1dc8b4756e5a48cd28925d3dceb53a83ab401c31ae0fcf80914ddf85bccb` e está
-registrado em `metadata.previous_gt_sha256` apenas para rastreabilidade. O GT
-canônico é o arquivo e hash apresentados na primeira linha da tabela.
+- `high`: valor literal/alias do IFC ou valor já presente na base autoral.
+- `medium`: cálculo reproduzível ou decisão tipológica determinística.
+- `low`: hipótese autoral congelada para que o benchmark tenha uma referência
+  completa. Toda nota desse nível começa com `Hipótese congelada:`.
 
-## Escopo e limites de inferência
+Os itens de uma mesma `equivalence_id` compartilham valor, alternativas, fonte e
+confiança. Para o artigo, a métrica principal recomendada é
+`accuracy_equivalence`, acompanhada por resultados por confiança e pela fatia
+`legacy_reference`, para que milhares de repetições estruturais não dominem a
+análise.
 
-Os valores em `ground_truth.yaml` são evidência modelada e/ou intenção de
-projeto revisada pelo autor para fins de benchmark. Não transformam um requisito
-normativo em desempenho fornecido por um elemento: um limite normativo pode
-justificar análise, cálculo ou abstinência, mas nunca é copiado como
-`expected_value` sem evidência específica do elemento.
+## Limites científicos e normativos
 
-A tipologia A-2 é uma premissa autoral. As medidas de segurança contra incêndio
-dependem, entre outros dados, de área, altura, número de pavimentos, população,
-sistemas de proteção (inclusive sprinklers) e escopo declarado do IFC. A ausência
-de um objeto no modelo não prova sua ausência física. Por isso, o conjunto não
-infere rota de fuga válida, aprovação, laudo ou certificado do CBMERJ a partir do
-IFC.
+Valores `low` são referências autorais experimentais, não requisitos normativos
+nem desempenho certificado. A tipologia de incêndio e a ZB 4A são contexto de
+análise; o IFC isolado não prova composição, ensaio, execução, rota de fuga,
+proteção instalada ou aprovação pelo CBMERJ.
 
-O contexto ZB 4A não prova desempenho térmico. A presença de
-`ThermalTransmittance` indica disponibilidade de dado no modelo; isoladamente,
-não comprova composição, ensaio, execução ou atendimento a requisito. Quando a
-evidência não é suficiente, o caso permanece em `skipped`.
-
-Não usar referências históricas a zona bioclimática 3, à IT-11 de outra
-jurisdição, ou a edições imprecisas como base deste dataset. As fontes oficiais e
-as edições consultadas estão em
+As fontes públicas e os limites de uso estão em
 [`references/normative/public/sources.yaml`](../../../references/normative/public/sources.yaml).
-As normas ABNT são apontadas somente por seus catálogos oficiais; o repositório
-não redistribui seus textos.
+O repositório não redistribui textos licenciados da ABNT.
