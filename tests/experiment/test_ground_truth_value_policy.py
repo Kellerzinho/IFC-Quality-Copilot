@@ -188,6 +188,22 @@ def test_literal_expected_relation_has_priority():
     assert decision.confidence == "high"
 
 
+def test_relation_does_not_require_synthetic_check_property():
+    issue = _issue("", element_class="IfcDoor", issue_type="relation_broken")
+    issue.context = {"expected_relation": "IfcRelFillsElement"}
+
+    decision = _resolve(
+        issue,
+        ElementEvidence(
+            element_class="IfcDoor",
+            expected_relation="IfcRelFillsElement",
+        ),
+    )
+
+    assert decision.expected_value == "IfcRelFillsElement"
+    assert decision.source_kind == "ifc_literal"
+
+
 def test_thermal_transmittance_is_calculated_from_complete_layers():
     issue = _issue("ThermalTransmittance")
     evidence = ElementEvidence(

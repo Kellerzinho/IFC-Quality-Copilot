@@ -355,6 +355,8 @@ def resolve_ground_truth_decision(
             source_kind="equivalent_donor",
             legacy_reference=False,
         )
+    if issue.issue_type == "relation_broken":
+        return _relation_decision(issue, evidence)
 
     property_name = issue.context.get("check_property")
     if not isinstance(property_name, str):
@@ -396,8 +398,6 @@ def resolve_ground_truth_decision(
         return _category_decision(evidence)
     if issue.issue_type == "system_unclassified" and property_name == "":
         return _system_decision(issue, evidence)
-    if issue.issue_type == "relation_broken":
-        return _relation_decision(issue, evidence)
     if property_name == "ThermalTransmittance":
         return _thermal_decision(issue, evidence)
     if property_name == "FireRating":
