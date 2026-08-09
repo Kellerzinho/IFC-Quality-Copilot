@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "platform": "windows-x86_64",
+  "minimum_windows_build": 19045,
+  "python_version": "3.12.13",
+  "tools": {
+    "uv": {
+      "version": "0.12.3",
+      "url": "https://github.com/astral-sh/uv/releases/download/0.12.3/uv-x86_64-pc-windows-msvc.zip",
+      "sha256": "b23350c79e8ad0192b8124af13a0f17e8d4e4549524785e1aef389ae5a06990e",
+      "size_bytes": 19013455
+    },
+    "ollama": {
+      "version": "0.32.5",
+      "url": "https://github.com/ollama/ollama/releases/download/v0.32.5/ollama-windows-amd64.zip",
+      "sha256": "7c941ae084569d298062d29f8139163a3187c76dbca0479c70d085e78fd8c7bb",
+      "size_bytes": 1457824795
+    },
+    "ollama_rocm": {
+      "version": "0.32.5",
+      "url": "https://github.com/ollama/ollama/releases/download/v0.32.5/ollama-windows-amd64-rocm.zip",
+      "sha256": "f2284e7008ffd64eadb7a05ac4ca1a0de843d1e8d0c861aa0923ef855ca94615",
+      "size_bytes": 245370090
+    },
+    "llmfit": {
+      "version": "1.1.8",
+      "url": "https://github.com/AlexsJones/llmfit/releases/download/v1.1.8/llmfit-v1.1.8-x86_64-pc-windows-msvc.zip",
+      "sha256": "bf8a509d68bc02f4cafc7040501938a30841eeb8c496eda51ae886a2f43a88e2",
+      "size_bytes": 5249067
+    }
+  }
+}
