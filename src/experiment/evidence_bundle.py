@@ -167,6 +167,30 @@ def collect_forbidden_values(
     return values
 
 
+def _path_contains_forbidden_value(relative: str, forbidden_values: set[str]) -> bool:
+    """Confere um caminho relativo sem devolver o valor que causou o bloqueio."""
+    folded = relative.casefold()
+    return any(forbidden.casefold() in folded for forbidden in forbidden_values if forbidden)
+
+
+def _has_sensitive_relative_path(
+    root: Path,
+    *,
+    forbidden_values: set[str],
+    excluded_paths: Iterable[Path] = (),
+) -> bool:
+    """Faz preflight lexical de nomes antes que qualquer conteúdo seja lido."""
+    excluded = {Path(os.path.abspath(path)) for path in excluded_paths}
+    excluded.add(Path(os.path.abspath(root / "manifest.json")))
+    for candidate in root.rglob("*"):
+        if Path(os.path.abspath(candidate)) in excluded:
+            continue
+        relative = candidate.relative_to(root).as_posix()
+        if _path_contains_forbidden_value(relative, forbidden_values):
+            return True
+    return False
+
+
 def failure_code_for_exception(error: BaseException) -> FailureCode:
     """Traduz uma exceção do empacotador para um código estável."""
     if isinstance(error, EvidencePrivacyError):
@@ -327,11 +351,7 @@ def scan_sensitive_text(
     findings: list[PrivacyFinding] = []
     for candidate in _evidence_files(root, excluded_paths=excluded_paths):
         relative = candidate.relative_to(root).as_posix()
-        sensitive_path = any(
-            forbidden.casefold() in relative.casefold()
-            for forbidden in forbidden_values
-            if forbidden
-        )
+        sensitive_path = _path_contains_forbidden_value(relative, forbidden_values)
         finding_path = "[REDACTED-PATH]" if sensitive_path else relative
         if sensitive_path:
             findings.append(PrivacyFinding(finding_path, "known-value-path", 0))
@@ -574,6 +594,12 @@ def create_evidence_zip(root: Path, output: Path, *, forbidden_values: set[str])
     temporary = output.with_suffix(output.suffix + ".partial")
     excluded = (output, temporary)
     try:
+        if _has_sensitive_relative_path(
+            root,
+            forbidden_values=forbidden_values,
+            excluded_paths=excluded,
+        ):
+            raise EvidencePrivacyError("known-value-path:[REDACTED-PATH]:0")
         sanitize_text_files(
             root,
             forbidden_values=forbidden_values,

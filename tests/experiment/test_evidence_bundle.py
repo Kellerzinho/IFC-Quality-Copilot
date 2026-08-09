@@ -257,6 +257,22 @@ def test_zip_rejects_known_value_in_relative_path_before_manifest(tmp_path):
     assert not output.with_suffix(".zip.partial").exists()
 
 
+def test_zip_checks_sensitive_path_before_parsing_invalid_json(tmp_path):
+    evidence = tmp_path / "evidence"
+    evidence.mkdir()
+    (evidence / "PC-PRIVATE.json").write_text('{"broken":', encoding="utf-8")
+
+    with pytest.raises(EvidencePrivacyError, match="known-value-path") as captured:
+        create_evidence_zip(
+            evidence,
+            tmp_path / "result.zip",
+            forbidden_values={"PC-PRIVATE"},
+        )
+
+    assert "PC-PRIVATE" not in str(captured.value)
+    assert "JSON invalido" not in str(captured.value)
+
+
 def test_zip_fails_closed_on_unknown_hostname_if_sanitizer_misses_it(tmp_path, monkeypatch):
     evidence = tmp_path / "legacy"
     evidence.mkdir()
