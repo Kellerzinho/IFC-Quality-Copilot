@@ -61,7 +61,7 @@ def official_identity(**overrides: object) -> ExecutionIdentity:
         ),
         "replica_count": 1,
         "cache_enabled": False,
-        "prompt_version": "v7.2",
+        "prompt_version": "v7.3",
         "prompt_sha256": "8" * 64,
         "reuse_equivalent": True,
     }
@@ -266,7 +266,7 @@ def _install_identity_fixture(
     prompt = tmp_path / "prompt_templates.py"
     ids = tmp_path / "profile.ids"
     shutil.copyfile(module.LOCK_FILE, lock)
-    prompt.write_text('PROMPT_VERSION = "v7.2"\n', encoding="utf-8")
+    prompt.write_text('PROMPT_VERSION = "v7.3"\n', encoding="utf-8")
     ids.write_text("<ids/>\n", encoding="utf-8")
     datasets = []
     identities = []
@@ -321,7 +321,7 @@ def _install_identity_fixture(
         datasets=tuple(identities),
         replica_count=1,
         cache_enabled=False,
-        prompt_version="v7.2",
+        prompt_version="v7.3",
         prompt_sha256=hashlib.sha256(prompt.read_bytes()).hexdigest(),
         reuse_equivalent=True,
     )
