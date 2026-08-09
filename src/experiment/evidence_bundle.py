@@ -191,6 +191,7 @@ SAFE_TEXT_SUFFIXES = {
 FORBIDDEN_NAMES = {".env", "id_ed25519", "id_ed25519.pub"}
 DETERMINISTIC_ZIP_TIME = (1980, 1, 1, 0, 0, 0)
 WINDOWS_REPARSE_POINT = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+EvidenceSnapshot = tuple[tuple[str, bytes], ...]
 
 
 def _normalized_key_parts(key: object) -> tuple[str, ...]:
@@ -347,17 +348,22 @@ def failure_code_for_exception(error: BaseException) -> FailureCode:
     return FailureCode.UNKNOWN_FAILED
 
 
-def _read_text_strict(path: Path) -> str:
-    """Lê apenas UTF-8 textual, sem NUL nem controles C0 proibidos."""
+def _decode_text_strict(payload: bytes, *, display_name: str) -> str:
+    """Decodifica bytes exatos como UTF-8 textual sem controles proibidos."""
     try:
-        text = path.read_bytes().decode("utf-8", errors="strict")
+        text = payload.decode("utf-8", errors="strict")
     except UnicodeDecodeError as error:
-        raise EvidencePrivacyError(f"texto UTF-8 invalido: {path.name}") from error
+        raise EvidencePrivacyError(f"texto UTF-8 invalido: {display_name}") from error
     if "\x00" in text or any(
         ord(character) < 32 and character not in "\t\r\n" for character in text
     ):
-        raise EvidencePrivacyError(f"texto UTF-8 invalido: {path.name}")
+        raise EvidencePrivacyError(f"texto UTF-8 invalido: {display_name}")
     return text
+
+
+def _read_text_strict(path: Path) -> str:
+    """Lê apenas UTF-8 textual, sem NUL nem controles C0 proibidos."""
+    return _decode_text_strict(path.read_bytes(), display_name=path.name)
 
 
 def _path_is_reparse(path: Path) -> bool:
@@ -415,6 +421,16 @@ def _evidence_files(root: Path, *, excluded_paths: Iterable[Path] = ()) -> list[
         _read_text_strict(candidate)
         files.append(candidate)
     return files
+
+
+def _snapshot_evidence_files(
+    root: Path, *, excluded_paths: Iterable[Path] = ()
+) -> EvidenceSnapshot:
+    """Captura uma fonte imutável para scan, manifesto e publicação."""
+    return tuple(
+        (candidate.relative_to(root).as_posix(), candidate.read_bytes())
+        for candidate in _evidence_files(root, excluded_paths=excluded_paths)
+    )
 
 
 def _write_deterministic_member(archive: zipfile.ZipFile, name: str, payload: bytes) -> None:
@@ -495,42 +511,54 @@ def _sensitive_key_paths(value: Any, *, prefix: str = "") -> list[str]:
     return paths
 
 
-def _structured_documents(path: Path) -> list[tuple[int, Any]]:
-    """Carrega JSON ou cada registro não vazio de um JSONL."""
+def _structured_documents_from_text(
+    text: str, *, suffix: str, display_name: str
+) -> list[tuple[int, Any]]:
+    """Carrega JSON ou registros JSONL a partir do texto já capturado."""
     try:
-        if path.suffix.lower() == ".json":
-            return [(1, json.loads(_read_text_strict(path)))]
+        if suffix == ".json":
+            return [(1, json.loads(text))]
         return [
             (line_number, json.loads(line))
-            for line_number, line in enumerate(_read_text_strict(path).splitlines(), 1)
+            for line_number, line in enumerate(text.splitlines(), 1)
             if line.strip()
         ]
     except json.JSONDecodeError as error:
-        raise EvidencePrivacyError(f"JSON invalido: {path.name}") from error
+        raise EvidencePrivacyError(f"JSON invalido: {display_name}") from error
 
 
-def scan_sensitive_text(
-    root: Path,
-    *,
-    forbidden_values: set[str],
-    excluded_paths: Iterable[Path] = (),
+def _structured_documents(path: Path) -> list[tuple[int, Any]]:
+    """Carrega JSON ou cada registro não vazio de um JSONL."""
+    return _structured_documents_from_text(
+        _read_text_strict(path),
+        suffix=path.suffix.lower(),
+        display_name=path.name,
+    )
+
+
+def _scan_sensitive_snapshot(
+    snapshot: EvidenceSnapshot, *, forbidden_values: set[str]
 ) -> list[PrivacyFinding]:
-    """Procura ocorrências sensíveis restantes sem expor seus valores."""
+    """Procura ocorrências sensíveis nos mesmos bytes que serão publicados."""
     findings: list[PrivacyFinding] = []
-    for candidate in _evidence_files(root, excluded_paths=excluded_paths):
-        relative = candidate.relative_to(root).as_posix()
+    for relative, payload in snapshot:
         sensitive_path = _path_contains_forbidden_value(relative, forbidden_values)
         finding_path = "[REDACTED-PATH]" if sensitive_path else relative
         if sensitive_path:
             findings.append(PrivacyFinding(finding_path, "known-value-path", 0))
-        if candidate.suffix.lower() in {".json", ".jsonl"}:
-            for line_number, document in _structured_documents(candidate):
+        text = _decode_text_strict(payload, display_name=finding_path)
+        suffix = PurePosixPath(relative).suffix.lower()
+        if suffix in {".json", ".jsonl"}:
+            for line_number, document in _structured_documents_from_text(
+                text,
+                suffix=suffix,
+                display_name=finding_path,
+            ):
                 findings.extend(
                     PrivacyFinding(finding_path, "sensitive-key", line_number)
                     for _ in _sensitive_key_paths(document)
                 )
-        lines = _read_text_strict(candidate).splitlines()
-        for number, line in enumerate(lines, 1):
+        for number, line in enumerate(text.splitlines(), 1):
             for forbidden in (item for item in forbidden_values if item):
                 if forbidden.casefold() in line.casefold():
                     findings.append(PrivacyFinding(finding_path, "known-value", number))
@@ -545,6 +573,22 @@ def scan_sensitive_text(
                         continue
                     findings.append(PrivacyFinding(finding_path, kind, number))
     return sorted(findings, key=lambda item: (item.path, item.line, item.kind))
+
+
+def scan_sensitive_text(
+    root: Path,
+    *,
+    forbidden_values: set[str],
+    excluded_paths: Iterable[Path] = (),
+    _snapshot: EvidenceSnapshot | None = None,
+) -> list[PrivacyFinding]:
+    """Procura ocorrências sensíveis restantes sem expor seus valores."""
+    snapshot = (
+        _snapshot_evidence_files(root, excluded_paths=excluded_paths)
+        if _snapshot is None
+        else _snapshot
+    )
+    return _scan_sensitive_snapshot(snapshot, forbidden_values=forbidden_values)
 
 
 def sanitize_text_files(
@@ -657,19 +701,34 @@ def build_file_manifest(root: Path) -> list[dict[str, object]]:
     ]
 
 
+def _snapshot_manifest(snapshot: EvidenceSnapshot) -> list[dict[str, object]]:
+    """Deriva o manifesto dos bytes capturados, sem reler a árvore viva."""
+    return [
+        {
+            "path": relative,
+            "size_bytes": len(payload),
+            "sha256": hashlib.sha256(payload).hexdigest(),
+        }
+        for relative, payload in snapshot
+    ]
+
+
+def _manifest_bytes(entries: list[dict[str, object]]) -> bytes:
+    """Serializa um manifesto canônico em JSON UTF-8."""
+    return (
+        json.dumps(
+            {"files": entries},
+            ensure_ascii=False,
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n"
+    ).encode("utf-8")
+
+
 def write_manifest(path: Path, entries: list[dict[str, object]]) -> None:
     """Grava manifesto canônico em JSON UTF-8."""
-    path.write_bytes(
-        (
-            json.dumps(
-                {"files": entries},
-                ensure_ascii=False,
-                indent=2,
-                sort_keys=True,
-            )
-            + "\n"
-        ).encode("utf-8")
-    )
+    path.write_bytes(_manifest_bytes(entries))
 
 
 def _manifest_map(raw: bytes) -> dict[str, tuple[int, str]]:
@@ -780,39 +839,30 @@ def create_evidence_zip(root: Path, output: Path, *, forbidden_values: set[str])
             forbidden_values=forbidden_values,
             excluded_paths=excluded,
         )
+        snapshot = _snapshot_evidence_files(root, excluded_paths=excluded)
         findings = scan_sensitive_text(
             root,
             forbidden_values=forbidden_values,
             excluded_paths=excluded,
+            _snapshot=snapshot,
         )
         if findings:
             raise EvidencePrivacyError(
                 "; ".join(f"{item.kind}:{item.path}:{item.line}" for item in findings)
             )
-        payload_files = _evidence_files(root, excluded_paths=excluded)
-        manifest_path = root / "manifest.json"
-        write_manifest(
-            manifest_path,
-            [
-                {
-                    "path": candidate.relative_to(root).as_posix(),
-                    "size_bytes": candidate.stat().st_size,
-                    "sha256": sha256_file(candidate),
-                }
-                for candidate in payload_files
-            ],
-        )
+        manifest_payload = _manifest_bytes(_snapshot_manifest(snapshot))
+        (root / "manifest.json").write_bytes(manifest_payload)
         with zipfile.ZipFile(temporary, "w") as archive:
             _write_deterministic_member(
                 archive,
                 "manifest.json",
-                manifest_path.read_bytes(),
+                manifest_payload,
             )
-            for candidate in payload_files:
+            for relative, payload in snapshot:
                 _write_deterministic_member(
                     archive,
-                    candidate.relative_to(root).as_posix(),
-                    candidate.read_bytes(),
+                    relative,
+                    payload,
                 )
         validation_errors = validate_evidence_archive(temporary)
         if validation_errors:

@@ -584,6 +584,47 @@ def test_zip_explicitly_excludes_existing_output_and_stale_partial(tmp_path):
             assert row["sha256"] == hashlib.sha256(payload).hexdigest()
 
 
+@pytest.mark.parametrize("mutation", ["append", "replace"])
+def test_zip_publishes_only_bytes_scanned_before_live_tree_mutation(
+    tmp_path, monkeypatch, mutation
+):
+    evidence = tmp_path / "evidence"
+    evidence.mkdir()
+    payload = evidence / "payload.txt"
+    scanned_bytes = b"public evidence\n"
+    payload.write_bytes(scanned_bytes)
+    output = tmp_path / f"{mutation}.zip"
+    original_scan = module.scan_sensitive_text
+
+    def scan_then_mutate(*args, **kwargs):
+        findings = original_scan(*args, **kwargs)
+        if mutation == "append":
+            payload.write_bytes(scanned_bytes + b"PC-PRIVATE\n")
+        else:
+            payload.write_bytes(b"PC-PRIVATE replacement\n")
+        (evidence / "late.txt").write_bytes(b"PC-PRIVATE late file\n")
+        return findings
+
+    monkeypatch.setattr(module, "scan_sensitive_text", scan_then_mutate)
+
+    create_evidence_zip(evidence, output, forbidden_values={"PC-PRIVATE"})
+
+    assert validate_evidence_archive(output) == []
+    with zipfile.ZipFile(output) as archive:
+        assert archive.namelist() == ["manifest.json", "payload.txt"]
+        assert archive.read("payload.txt") == scanned_bytes
+        manifest = json.loads(archive.read("manifest.json"))
+        assert manifest == {
+            "files": [
+                {
+                    "path": "payload.txt",
+                    "sha256": hashlib.sha256(scanned_bytes).hexdigest(),
+                    "size_bytes": len(scanned_bytes),
+                }
+            ]
+        }
+
+
 def test_main_zip_bytes_ignore_source_mtime_and_use_fixed_metadata(tmp_path, monkeypatch):
     monkeypatch.setattr(module, "sanitize_text_files", lambda *args, **kwargs: [])
     roots = [tmp_path / "first", tmp_path / "second"]
