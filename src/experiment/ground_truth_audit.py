@@ -11,11 +11,16 @@ from typing import Any
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from src.experiment.evaluator import GroundTruthItem
+from src.experiment.ground_truth_policy import GroundTruthDecision
 from src.experiment.ground_truth_validation import (
     CATEGORY_VALUES,
     FIRE_RATING_PATTERN,
     SLAB_SYSTEM_VALUES,
     WALL_SYSTEM_VALUES,
+)
+from src.experiment.ground_truth_value_policy import (
+    ElementEvidence,
+    resolve_ground_truth_decision,
 )
 from src.ifc_analyzer.material_reader import MaterialReading
 from src.models import Issue
@@ -86,6 +91,24 @@ class ThermalEvidence(BaseModel):
 
 def _skip(reason: str) -> AuditDecision:
     return AuditDecision(skip_reason=reason)
+
+
+def audit_or_resolve_item(
+    issue: Issue,
+    evidence: ElementEvidence,
+    *,
+    prior_item: GroundTruthItem | None,
+    equivalent_donor: GroundTruthItem | None,
+    building_context: Mapping[str, str],
+) -> GroundTruthDecision:
+    """Preserva uma referência integral ou resolve um valor concreto sem abstenção."""
+    return resolve_ground_truth_decision(
+        issue,
+        evidence,
+        prior_item=prior_item,
+        equivalent_donor=equivalent_donor,
+        building_context=building_context,
+    )
 
 
 def audit_legacy_item(

@@ -12,12 +12,30 @@ from src.experiment.ground_truth_audit import (
     AuditDecision,
     ThermalEvidence,
     audit_legacy_item,
+    audit_or_resolve_item,
     derive_casa_decision,
 )
+from src.experiment.ground_truth_value_policy import ElementEvidence
 from src.ifc_analyzer.material_reader import MaterialReading
 from src.models import Issue
 
 _RATIFIED_LEGACY_SHA256 = "7d1b1dc8b4756e5a48cd28925d3dceb53a83ab401c31ae0fcf80914ddf85bccb"
+
+
+def test_integral_auditor_returns_concrete_decision_instead_of_skip():
+    issue = _issue(property_name="FireRating", element_class="IfcWall")
+
+    decision = audit_or_resolve_item(
+        issue,
+        ElementEvidence(element_class="IfcWall"),
+        prior_item=None,
+        equivalent_donor=None,
+        building_context={"building_type": "Residencial multifamiliar"},
+    )
+
+    assert decision.expected_value == "REI 60"
+    assert decision.source_kind == "probable"
+    assert decision.notes.startswith("Hipótese congelada:")
 
 
 def _issue(
