@@ -154,6 +154,42 @@ def test_structured_token_policy_preserves_metrics_and_blocks_credentials(tmp_pa
     assert not scan_sensitive_text(tmp_path, forbidden_values=set())
 
 
+@pytest.mark.parametrize("suffix", [".json", ".jsonl"])
+def test_structured_policy_blocks_sensitive_components_anywhere_in_nested_keys(tmp_path, suffix):
+    metrics = {
+        "output_tokens": 12,
+        "InputTokens": 10,
+        "prompt-tokens": 8,
+        "completion.tokens": 6,
+        "token_count": 12,
+        "tokens_per_second": 4.5,
+        "output_tokens_total": 24,
+        "outputTokensPerSample": 6.0,
+    }
+    sensitive = {
+        "secret_value": "s1",
+        "Password-Hash": "s2",
+        "disk.serial": "s3",
+        "ApiKeyValue": "s4",
+        "ACCESS-token-hash": "s5",
+        "output_access_token_hash": "s6",
+    }
+    path = tmp_path / f"nested{suffix}"
+    record = {"metrics": metrics, "payload": sensitive}
+    path.write_text(json.dumps(record, sort_keys=True) + "\n", encoding="utf-8")
+
+    findings = scan_sensitive_text(tmp_path, forbidden_values=set())
+    assert [finding.kind for finding in findings].count("sensitive-key") == 6
+
+    sanitize_text_files(tmp_path, forbidden_values=set())
+    if suffix == ".json":
+        clean_records = [json.loads(path.read_text(encoding="utf-8"))]
+    else:
+        clean_records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+    assert clean_records == [{"metrics": metrics, "payload": {}}]
+    assert not scan_sensitive_text(tmp_path, forbidden_values=set())
+
+
 def test_ipv6_candidates_are_validated_so_times_and_versions_survive(tmp_path):
     path = tmp_path / "versions.log"
     path.write_text(

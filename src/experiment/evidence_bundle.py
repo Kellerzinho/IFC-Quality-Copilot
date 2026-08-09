@@ -85,8 +85,42 @@ SENSITIVE_EXACT_KEYS = frozenset(
         "username",
     }
 )
-SENSITIVE_TOKEN_QUALIFIERS = frozenset(
+SENSITIVE_KEY_COMPONENTS = frozenset({"hostname", "password", "secret", "serial", "username"})
+SENSITIVE_KEY_SEQUENCES = (
+    ("access", "key"),
+    ("api", "key"),
+    ("host", "name"),
+    ("ip", "address"),
+    ("mac", "address"),
+    ("ollama", "key"),
+    ("private", "key"),
+    ("user", "name"),
+)
+CREDENTIAL_TOKEN_QUALIFIERS = frozenset(
     {"access", "api", "auth", "bearer", "id", "refresh", "secret"}
+)
+SAFE_TOKEN_METRIC_DIRECTIONS = frozenset({"completion", "input", "output", "prompt"})
+SAFE_TOKEN_METRIC_SUFFIXES = frozenset(
+    {
+        (),
+        ("average",),
+        ("count",),
+        ("max",),
+        ("mean",),
+        ("median",),
+        ("min",),
+        ("per", "sample"),
+        ("per", "second"),
+        ("total",),
+    }
+)
+SAFE_STANDALONE_TOKEN_METRICS = frozenset(
+    {
+        ("token", "count"),
+        ("tokens", "per", "sample"),
+        ("tokens", "per", "second"),
+        ("total", "tokens"),
+    }
 )
 SECRET_ENV_KEYS = re.compile(
     r"(?:TOKEN|SECRET|PASSWORD|API[_-]?KEY|OLLAMA[_-]?KEY)",
@@ -142,6 +176,23 @@ def _normalized_key_parts(key: object) -> tuple[str, ...]:
     return tuple(part for part in re.split(r"[^a-z0-9]+", separated_camel.casefold()) if part)
 
 
+def _contains_parts(parts: tuple[str, ...], sequence: tuple[str, ...]) -> bool:
+    """Informa se uma sequência aparece em qualquer posição da chave."""
+    width = len(sequence)
+    return any(parts[index : index + width] == sequence for index in range(len(parts) - width + 1))
+
+
+def _is_safe_token_metric(parts: tuple[str, ...]) -> bool:
+    """Permite somente formas científicas explícitas de métricas de tokens."""
+    if parts in SAFE_STANDALONE_TOKEN_METRICS:
+        return True
+    if len(parts) < 2 or parts[0] not in SAFE_TOKEN_METRIC_DIRECTIONS:
+        return False
+    if parts[1] not in {"token", "tokens"}:
+        return False
+    return parts[2:] in SAFE_TOKEN_METRIC_SUFFIXES
+
+
 def _is_sensitive_key(key: object) -> bool:
     """Classifica chaves por estrutura, sem confundir métricas com credenciais."""
     parts = _normalized_key_parts(key)
@@ -150,21 +201,16 @@ def _is_sensitive_key(key: object) -> bool:
     normalized = "_".join(parts)
     if normalized in SENSITIVE_EXACT_KEYS:
         return True
-    if parts[-1] in {"password", "secret"}:
+    if SENSITIVE_KEY_COMPONENTS.intersection(parts):
         return True
-    if len(parts) >= 2 and parts[-2:] in {
-        ("api", "key"),
-        ("host", "name"),
-        ("ip", "address"),
-        ("mac", "address"),
-        ("ollama", "key"),
-        ("serial", "number"),
-        ("user", "name"),
-    }:
+    if any(_contains_parts(parts, sequence) for sequence in SENSITIVE_KEY_SEQUENCES):
         return True
-    return parts[-1] in {"token", "tokens"} and bool(
-        SENSITIVE_TOKEN_QUALIFIERS.intersection(parts[:-1])
-    )
+    token_indexes = [
+        index for index, component in enumerate(parts) if component in {"token", "tokens"}
+    ]
+    if any(CREDENTIAL_TOKEN_QUALIFIERS.intersection(parts[:index]) for index in token_indexes):
+        return True
+    return bool(token_indexes) and not _is_safe_token_metric(parts)
 
 
 def _parsed_ip_candidate(
