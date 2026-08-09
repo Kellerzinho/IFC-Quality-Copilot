@@ -318,6 +318,131 @@ def test_build_partitions_every_issue_into_item_or_skip(tmp_path, monkeypatch):
     }
 
 
+def test_integral_completion_propagates_one_class_decision_and_has_no_skips(
+    tmp_path,
+    monkeypatch,
+):
+    first = _issue(
+        "GUID-A",
+        property_name="FireRating",
+        element_class="IfcWall",
+    )
+    second = _issue(
+        "GUID-B",
+        property_name="FireRating",
+        element_class="IfcWall",
+    )
+    for issue in (first, second):
+        issue.context.update({"material_name": "bloco cerâmico", "thickness_m": 0.14})
+    prior = GroundTruthItem(
+        element_guid=first.element_guid,
+        issue_type=first.issue_type,
+        check_property="FireRating",
+        issue_id=first.id,
+        expected_value="REI 90",
+        accepted_alternatives=[],
+        verified=True,
+        notes="Referência autoral ratificada.",
+    )
+
+    class Element:
+        LongName = None
+        Name = "Parede"
+        ObjectType = "Parede"
+
+        def is_a(self):
+            return "IfcWall"
+
+    class Model:
+        def by_guid(self, _guid):
+            return Element()
+
+    monkeypatch.setattr(builder, "read_material_layers", lambda _element: MaterialReading())
+    monkeypatch.setattr(builder.ue, "get_type", lambda _element: None)
+    monkeypatch.setattr(builder.ue, "get_psets", lambda _element: {})
+    spec = _spec(tmp_path, monkeypatch, "predio")
+
+    result = builder._complete_ground_truth(
+        spec,
+        [first, second],
+        Model(),
+        GroundTruth(items=[prior]),
+    )
+
+    assert len(result.ground_truth.items) == 2
+    assert result.skipped == []
+    by_guid = {item.element_guid: item for item in result.ground_truth.items}
+    assert by_guid["GUID-A"].expected_value == "REI 90"
+    assert by_guid["GUID-B"].expected_value == "REI 90"
+    assert by_guid["GUID-A"].equivalence_id == by_guid["GUID-B"].equivalence_id
+    assert by_guid["GUID-A"].source_kind == by_guid["GUID-B"].source_kind == "existing_gt"
+    assert by_guid["GUID-A"].legacy_reference is True
+    assert by_guid["GUID-B"].legacy_reference is False
+
+
+def test_full_coverage_builder_completes_partial_source_without_llm(tmp_path, monkeypatch):
+    issue = _issue("GUID-SPACE", property_name="Category", element_class="IfcSpace")
+    spec = _spec(tmp_path, monkeypatch, "casa")
+    source = {
+        "metadata": {
+            "protocol": "evidence-audited-v1",
+            "total_items": 0,
+            "total_skipped": 1,
+        },
+        "items": [],
+        "skipped": [
+            {
+                "element_guid": issue.element_guid,
+                "issue_type": issue.issue_type,
+                "check_property": "Category",
+                "issue_id": issue.id,
+                "reason": "sem rótulo anterior",
+            }
+        ],
+    }
+    spec.ground_truth_path.write_text(
+        yaml.safe_dump(source, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+    monkeypatch.setitem(
+        builder.EXPECTED_GROUND_TRUTH_SHA256,
+        "casa",
+        hashlib.sha256(spec.ground_truth_path.read_bytes()).hexdigest(),
+    )
+    partial = GTExtractionResult(ground_truth=GroundTruth(items=[]), skipped=[])
+    monkeypatch.setattr(builder, "build_dataset", lambda _spec: (partial, [issue]))
+
+    class Element:
+        LongName = "Quarto"
+
+    class Model:
+        def by_guid(self, _guid):
+            return Element()
+
+    monkeypatch.setattr(builder.ifcopenshell, "open", lambda _path: Model())
+    monkeypatch.setattr(builder, "read_material_layers", lambda _element: MaterialReading())
+    monkeypatch.setattr(builder.ue, "get_type", lambda _element: None)
+    monkeypatch.setattr(builder.ue, "get_psets", lambda _element: {})
+
+    result, issues = builder.build_full_coverage_dataset(spec)
+
+    assert issues == [issue]
+    assert result.skipped == []
+    assert result.ground_truth.items[0].expected_value == "BEDROOM"
+    assert result.ground_truth.items[0].legacy_reference is False
+    assert result.ground_truth.metadata["protocol"] == "full-coverage-equivalent-v1"
+    assert result.ground_truth.metadata["policy_version"] == "full-coverage-equivalent-v1"
+    assert result.ground_truth.metadata["total_items"] == 1
+    assert result.ground_truth.metadata["total_skipped"] == 0
+    assert result.ground_truth.metadata["confidence_counts"] == {
+        "high": 1,
+        "medium": 0,
+        "low": 0,
+    }
+    assert result.ground_truth.metadata["equivalence_class_count"] == 1
+    assert result.ground_truth.metadata["legacy_reference_count"] == 0
+
+
 def test_build_orders_output_deterministically(tmp_path, monkeypatch):
     """Depender da ordem do diagnostico deve quebrar este teste."""
     first = _issue("GUID-Z")

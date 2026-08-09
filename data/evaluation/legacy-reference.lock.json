@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "datasets": {
+    "predio": {
+      "count": 1654,
+      "semantic_sha256": "f1aac68fec38253faba30ce634bf42bf24a742dd83acd5d04a549497463f4552"
+    },
+    "casa": {
+      "count": 12,
+      "semantic_sha256": "1d526e95d783995a8acea6f01b629bfb4ff9349a7ef1c22106db4a919f79ecf7"
+    }
+  }
+}

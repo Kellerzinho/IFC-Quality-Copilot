@@ -20,6 +20,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+import ifcopenshell
 import ifcopenshell.util.element as ue
 import yaml
 
@@ -32,14 +33,28 @@ from src.experiment.ground_truth_audit import (
     audit_legacy_item,
     derive_casa_decision,
 )
+from src.experiment.ground_truth_policy import (
+    POLICY_VERSION,
+    GroundTruthDecision,
+    assert_equivalence_ids_unique,
+)
 from src.experiment.ground_truth_validation import (
     sha256_file,
     validate_ground_truth_against_issues,
+)
+from src.experiment.ground_truth_value_policy import (
+    ElementEvidence,
+    LayerEvidence,
+    resolve_ground_truth_decision,
 )
 from src.experiment.gt_extractor import GTExtractionResult, SkippedIssue
 from src.ifc_analyzer.material_reader import read_material_layers
 from src.models import Issue
 from src.pipeline import QualityPipeline
+from src.suggestion_engine.issue_deduplicator import (
+    equivalence_id_for_issue,
+    structural_fingerprint_payload,
+)
 
 IDS_PATH = PROJECT_ROOT / "data" / "ids_templates" / "residencial_nbr15575.ids"
 RATIFIED_LEGACY_SHA256 = "7d1b1dc8b4756e5a48cd28925d3dceb53a83ab401c31ae0fcf80914ddf85bccb"
@@ -140,6 +155,54 @@ def build_dataset(
     return result, issues
 
 
+def _read_frozen_ground_truth_source(spec: DatasetSpec) -> tuple[dict[str, Any], bool]:
+    expected = EXPECTED_GROUND_TRUTH_SHA256.get(spec.key)
+    if expected is None:
+        raise ValueError(f"hash canonico de {spec.key} nao congelado")
+    _require_file_present(
+        spec.ground_truth_path,
+        f"ground truth canonico de {spec.key}",
+        expected_sha256=expected,
+    )
+    raw = spec.ground_truth_path.read_bytes()
+    actual = _sha256_bytes(raw)
+    if actual.lower() != expected.lower():
+        raise ValueError(
+            f"hash canonico de {spec.key} diverge: esperado {expected}, obtido {actual}"
+        )
+    try:
+        document = yaml.safe_load(raw.decode("utf-8"))
+    except (UnicodeDecodeError, yaml.YAMLError) as error:
+        raise ValueError(f"ground truth de {spec.key} invalido: {error}") from error
+    if not isinstance(document, dict):
+        raise ValueError(f"ground truth de {spec.key} deve ter mapeamento na raiz")
+    metadata = document.get("metadata")
+    protocol = metadata.get("protocol") if isinstance(metadata, Mapping) else None
+    if protocol not in {"evidence-audited-v1", "full-coverage-equivalent-v1"}:
+        raise ValueError(f"protocolo de ground truth nao suportado: {protocol!r}")
+    return document, protocol == "full-coverage-equivalent-v1"
+
+
+def build_full_coverage_dataset(
+    spec: DatasetSpec,
+) -> tuple[GTExtractionResult, list[Issue]]:
+    """Converte a fonte congelada em um item concreto por diagnóstico."""
+    document, source_is_integral = _read_frozen_ground_truth_source(spec)
+    _partial, issues = build_dataset(spec)
+    model = ifcopenshell.open(str(spec.ifc_path))
+    prior_ground_truth = GroundTruth.model_validate(document)
+    result = _complete_ground_truth(
+        spec,
+        issues,
+        model,
+        prior_ground_truth,
+        source_is_integral=source_is_integral,
+    )
+    _require_exact_partition(result, issues)
+    result.ground_truth.metadata = _full_coverage_metadata(spec, issues, result)
+    return result, issues
+
+
 def canonical_ground_truth_bytes(
     result: GTExtractionResult,
     issues: Sequence[Issue],
@@ -147,7 +210,13 @@ def canonical_ground_truth_bytes(
 ) -> bytes:
     """Serializa o candidato em bytes YAML estaveis, sem tocar no sistema de arquivos."""
     _require_exact_partition(result, issues)
-    metadata = _metadata(spec, issues, result)
+    metadata = (
+        _full_coverage_metadata(spec, issues, result)
+        if not result.skipped
+        and len(result.ground_truth.items) == len(issues)
+        and all(item.equivalence_id for item in result.ground_truth.items)
+        else _metadata(spec, issues, result)
+    )
     items = sorted(result.ground_truth.items, key=_item_sort_key)
     skipped = sorted(result.skipped, key=_skip_sort_key)
     payload = {
@@ -353,6 +422,194 @@ def _build_casa(issues: Sequence[Issue], model: Any) -> GTExtractionResult:
     return _result(items, skipped)
 
 
+def _nested_property_alias(value: Any, names: set[str]) -> Any | None:
+    if isinstance(value, Mapping):
+        for key, nested in value.items():
+            if str(key) in names:
+                return nested
+            found = _nested_property_alias(nested, names)
+            if found is not None:
+                return found
+    elif isinstance(value, list):
+        for nested in value:
+            found = _nested_property_alias(nested, names)
+            if found is not None:
+                return found
+    return None
+
+
+def _element_evidence(issue: Issue, model: Any) -> ElementEvidence:
+    try:
+        element = model.by_guid(issue.element_guid)
+    except (RuntimeError, AttributeError):
+        element = None
+
+    reading = read_material_layers(element) if element is not None else None
+    element_type_name = str(issue.context.get("type_name") or "")
+    element_long_name = ""
+    psets: Mapping[str, Any] = {}
+    if element is not None:
+        element_long_name = str(getattr(element, "LongName", "") or "")
+        try:
+            element_type = ue.get_type(element)
+        except Exception:
+            element_type = None
+        if element_type is not None:
+            element_type_name = str(getattr(element_type, "Name", "") or element_type_name)
+        try:
+            raw_psets = ue.get_psets(element)
+            if isinstance(raw_psets, Mapping):
+                psets = raw_psets
+        except Exception:
+            psets = {}
+
+    evidence_tree = {
+        "context": issue.context,
+        "psets": psets,
+    }
+    load_bearing = _nested_property_alias(
+        evidence_tree,
+        {"LoadBearing", "IsLoadBearing"},
+    )
+    is_external = _nested_property_alias(evidence_tree, {"IsExternal"})
+    layers = tuple(
+        LayerEvidence(
+            material=str(layer.get("name") or layer.get("material") or ""),
+            thickness_m=layer.get("thickness_m"),
+        )
+        for layer in (reading.layers if reading is not None else issue.context.get("layers") or [])
+        if isinstance(layer, Mapping)
+        and str(layer.get("name") or layer.get("material") or "").strip()
+    )
+    return ElementEvidence(
+        element_class=issue.element_class,
+        element_type_name=element_type_name,
+        element_long_name=element_long_name,
+        material_name=str(
+            (reading.material_name if reading is not None else None)
+            or issue.context.get("material_name")
+            or ""
+        ),
+        layers=layers,
+        total_thickness_m=(
+            reading.total_thickness_m
+            if reading is not None
+            else issue.context.get("thickness_m")
+        ),
+        is_external=is_external if type(is_external) is bool else None,
+        load_bearing_alias=load_bearing if type(load_bearing) is bool else None,
+        expected_relation=(
+            str(issue.context["expected_relation"])
+            if isinstance(issue.context.get("expected_relation"), str)
+            else None
+        ),
+    )
+
+
+def _semantic_item_value(item: GroundTruthItem) -> str:
+    import json
+
+    return json.dumps(
+        [item.expected_value, item.accepted_alternatives],
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+
+
+def _complete_ground_truth(
+    spec: DatasetSpec,
+    issues: Sequence[Issue],
+    model: Any,
+    prior_ground_truth: GroundTruth,
+    *,
+    source_is_integral: bool = False,
+) -> GTExtractionResult:
+    """Completa todas as classes e propaga uma única decisão por equivalência."""
+    issue_by_key = {_issue_key(issue): issue for issue in issues}
+    if len(issue_by_key) != len(issues):
+        raise ValueError("diagnostico contem chave natural duplicada")
+    prior_by_key = {
+        item.natural_key: item
+        for item in prior_ground_truth.items
+        if item.natural_key is not None
+    }
+    groups: dict[str, list[Issue]] = defaultdict(list)
+    identity_pairs: list[tuple[str, Mapping[str, object]]] = []
+    for issue in issues:
+        equivalence_id = equivalence_id_for_issue(issue)
+        payload = structural_fingerprint_payload(issue)
+        identity_pairs.append((equivalence_id, payload))
+        groups[equivalence_id].append(issue)
+    assert_equivalence_ids_unique(identity_pairs)
+
+    items: list[GroundTruthItem] = []
+    for equivalence_id in sorted(groups):
+        members = sorted(groups[equivalence_id], key=lambda entry: _issue_key(entry))
+        prior_items = [
+            prior_by_key[key]
+            for key in (_issue_key(issue) for issue in members)
+            if key in prior_by_key
+        ]
+        semantic_values = {_semantic_item_value(item) for item in prior_items}
+        if len(semantic_values) > 1:
+            raise ValueError(
+                f"classe equivalente com valores legados divergentes: {equivalence_id}"
+            )
+
+        representative = members[0]
+        prior = prior_items[0] if prior_items else None
+        if source_is_integral and prior is not None:
+            if prior.confidence is None or prior.source_kind is None or not prior.notes:
+                raise ValueError(f"item integral sem metadados cientificos: {prior.issue_id}")
+            decision = GroundTruthDecision(
+                expected_value=prior.expected_value,
+                accepted_alternatives=prior.accepted_alternatives,
+                confidence=prior.confidence,
+                source_kind=prior.source_kind,
+                notes=prior.notes,
+                legacy_reference=prior.legacy_reference,
+            )
+        else:
+            legacy = prior.model_copy(update={"legacy_reference": True}) if prior else None
+            decision = resolve_ground_truth_decision(
+                representative,
+                _element_evidence(representative, model),
+                prior_item=legacy,
+                equivalent_donor=None,
+                building_context=spec.building_context,
+            )
+
+        for issue in members:
+            prior_member = prior_by_key.get(_issue_key(issue))
+            legacy_reference = (
+                prior_member.legacy_reference
+                if source_is_integral and prior_member is not None
+                else prior_member is not None
+            )
+            items.append(
+                GroundTruthItem(
+                    element_guid=issue.element_guid,
+                    issue_type=issue.issue_type,
+                    check_property=_literal_check_property(issue),
+                    issue_id=issue.id,
+                    expected_value=decision.expected_value,
+                    accepted_alternatives=decision.accepted_alternatives,
+                    verified=True,
+                    notes=decision.notes,
+                    equivalence_id=equivalence_id,
+                    confidence=decision.confidence,
+                    source_kind=decision.source_kind,
+                    legacy_reference=legacy_reference,
+                )
+            )
+
+    return GTExtractionResult(
+        ground_truth=GroundTruth(items=sorted(items, key=_item_sort_key)),
+        skipped=[],
+    )
+
+
 def _collect_authored_thermal(
     issues: Sequence[Issue], model: Any
 ) -> dict[tuple[str, str], ThermalEvidence]:
@@ -514,6 +771,39 @@ def _metadata(
             "total_diagnostic_issues": len(issues),
             "total_items": len(result.ground_truth.items),
             "total_skipped": len(result.skipped),
+        }
+    )
+    return metadata
+
+
+def _full_coverage_metadata(
+    spec: DatasetSpec,
+    issues: Sequence[Issue],
+    result: GTExtractionResult,
+) -> dict[str, Any]:
+    metadata = _metadata(spec, issues, result)
+    confidence_counts = {name: 0 for name in ("high", "medium", "low")}
+    equivalence_ids: set[str] = set()
+    legacy_count = 0
+    for item in result.ground_truth.items:
+        if item.confidence not in confidence_counts:
+            raise ValueError(f"item {item.issue_id} sem confidence integral")
+        if not item.equivalence_id:
+            raise ValueError(f"item {item.issue_id} sem equivalence_id")
+        confidence_counts[item.confidence] += 1
+        equivalence_ids.add(item.equivalence_id)
+        legacy_count += int(item.legacy_reference)
+    metadata.update(
+        {
+            "protocol": POLICY_VERSION,
+            "policy_version": POLICY_VERSION,
+            "verified_at": "2026-08-09",
+            "total_diagnostic_issues": len(issues),
+            "total_items": len(result.ground_truth.items),
+            "total_skipped": 0,
+            "equivalence_class_count": len(equivalence_ids),
+            "confidence_counts": confidence_counts,
+            "legacy_reference_count": legacy_count,
         }
     )
     return metadata

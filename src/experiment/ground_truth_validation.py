@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import math
 import re
 from collections.abc import Mapping, Sequence
@@ -12,9 +13,13 @@ from typing import Any
 
 import yaml
 
+from src.experiment.evaluator import GroundTruthItem
 from src.models import Issue
 
 NaturalKey = tuple[str, str, str]
+LEGACY_REFERENCE_LOCK_PATH = (
+    Path(__file__).resolve().parents[2] / "data" / "evaluation" / "legacy-reference.lock.json"
+)
 
 WALL_SYSTEM_VALUES = frozenset(
     {
@@ -66,6 +71,22 @@ CATEGORY_VALUES = frozenset(
     }
 )
 FIRE_RATING_PATTERN = re.compile(r"^(R|E|I|RE|EI|REI|P-CF) [0-9]{2,3}$")
+ACOUSTIC_RATING_PATTERN = re.compile(r"^Rw [0-9]{2} dB$")
+IFC_RELATION_PATTERN = re.compile(r"^IfcRel[A-Za-z0-9_]+$")
+EQUIVALENCE_ID_PATTERN = re.compile(r"^eq-[0-9a-f]{16}$")
+CONFIDENCE_VALUES = frozenset({"high", "medium", "low"})
+SOURCE_KIND_VALUES = frozenset(
+    {
+        "ifc_literal",
+        "ifc_alias",
+        "existing_gt",
+        "equivalent_donor",
+        "calculation",
+        "normative_rule",
+        "typology",
+        "probable",
+    }
+)
 
 
 class GroundTruthValidationError(ValueError):
@@ -130,6 +151,8 @@ def validate_ground_truth_document(path: str | Path) -> GroundTruthValidationRep
     for key in sorted(item_keys & skipped_keys):
         problems.append(f"item_and_skip_overlap: {key!r}")
     _validate_declared_counts(metadata, len(items), len(skipped), problems)
+    if metadata.get("protocol") == "full-coverage-equivalent-v1":
+        _validate_integral_contract(metadata, items, skipped, problems)
 
     if problems:
         ordered = "\n".join(f"- {problem}" for problem in sorted(problems))
@@ -144,9 +167,172 @@ def validate_ground_truth_document(path: str | Path) -> GroundTruthValidationRep
     )
 
 
+def _validate_integral_contract(
+    metadata: Mapping[str, Any],
+    items: list[Any],
+    skipped: list[Any],
+    problems: list[str],
+) -> None:
+    if skipped:
+        problems.append("integral_protocol_requires_zero_skips")
+    if metadata.get("policy_version") != "full-coverage-equivalent-v1":
+        problems.append("invalid_integral_policy_version")
+
+    decisions: dict[str, str] = {}
+    confidence_counts = {name: 0 for name in ("high", "medium", "low")}
+    legacy_count = 0
+    for index, entry in enumerate(items):
+        if not isinstance(entry, Mapping):
+            continue
+        location = f"items[{index}]"
+        for field in (
+            "equivalence_id",
+            "confidence",
+            "source_kind",
+            "legacy_reference",
+            "notes",
+        ):
+            if field not in entry:
+                problems.append(f"missing_integral_field: {location}.{field}")
+
+        equivalence_id = entry.get("equivalence_id")
+        if (
+            not isinstance(equivalence_id, str)
+            or EQUIVALENCE_ID_PATTERN.fullmatch(equivalence_id) is None
+        ):
+            problems.append(f"invalid_equivalence_id: {location}: {equivalence_id!r}")
+            continue
+        confidence = entry.get("confidence")
+        if confidence not in CONFIDENCE_VALUES:
+            problems.append(f"invalid_confidence: {location}: {confidence!r}")
+        else:
+            confidence_counts[str(confidence)] += 1
+        source_kind = entry.get("source_kind")
+        if source_kind not in SOURCE_KIND_VALUES:
+            problems.append(f"invalid_source_kind: {location}: {source_kind!r}")
+        legacy_reference = entry.get("legacy_reference")
+        if type(legacy_reference) is not bool:
+            problems.append(f"invalid_legacy_reference: {location}: {legacy_reference!r}")
+        elif legacy_reference:
+            legacy_count += 1
+        notes = entry.get("notes")
+        if confidence == "low" and (
+            not isinstance(notes, str) or not notes.startswith("Hipótese congelada:")
+        ):
+            problems.append(f"low_confidence_without_hypothesis: {location}")
+
+        decision = json.dumps(
+            [
+                entry.get("expected_value"),
+                entry.get("accepted_alternatives", []),
+                confidence,
+                source_kind,
+            ],
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        previous = decisions.setdefault(equivalence_id, decision)
+        if previous != decision:
+            problems.append(f"equivalence_decision_mismatch: {equivalence_id}")
+
+    declared_confidence = metadata.get("confidence_counts")
+    if declared_confidence != confidence_counts:
+        problems.append(
+            "confidence_counts_mismatch: "
+            f"declared={declared_confidence!r}, actual={confidence_counts!r}"
+        )
+    if metadata.get("equivalence_class_count") != len(decisions):
+        problems.append(
+            "equivalence_class_count_mismatch: "
+            f"declared={metadata.get('equivalence_class_count')!r}, actual={len(decisions)}"
+        )
+    if metadata.get("legacy_reference_count") != legacy_count:
+        problems.append(
+            "legacy_reference_count_mismatch: "
+            f"declared={metadata.get('legacy_reference_count')!r}, actual={legacy_count}"
+        )
+    if metadata.get("total_diagnostic_issues") != len(items):
+        problems.append(
+            "integral_diagnostic_count_mismatch: "
+            f"declared={metadata.get('total_diagnostic_issues')!r}, actual={len(items)}"
+        )
+
+
 def sha256_file(path: str | Path) -> str:
     """Retorna o SHA-256 hexadecimal do arquivo imut\u00e1vel de entrada."""
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def canonical_legacy_items_sha256(items: Sequence[GroundTruthItem]) -> str:
+    """Hash semântico estável dos campos históricos que não podem sofrer drift."""
+    payload = [
+        {
+            "element_guid": item.element_guid,
+            "issue_type": item.issue_type,
+            "check_property": item.check_property,
+            "issue_id": item.issue_id,
+            "expected_value": item.expected_value,
+            "accepted_alternatives": item.accepted_alternatives,
+        }
+        for item in sorted(
+            items,
+            key=lambda entry: (
+                entry.element_guid or "",
+                entry.issue_type or "",
+                entry.check_property,
+                entry.issue_id or "",
+            ),
+        )
+    ]
+    encoded = json.dumps(
+        payload,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def validate_legacy_reference_lock(
+    document: Mapping[str, Any],
+    lock_path: str | Path = LEGACY_REFERENCE_LOCK_PATH,
+) -> None:
+    """Confere count/hash do subconjunto histórico declarado no YAML integral."""
+    metadata = document.get("metadata")
+    dataset = metadata.get("source_dataset") if isinstance(metadata, Mapping) else None
+    if not isinstance(dataset, str) or not dataset:
+        raise GroundTruthValidationError("legacy_reference_dataset_missing")
+    try:
+        lock = json.loads(Path(lock_path).read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        raise GroundTruthValidationError(f"legacy_reference_lock_invalid: {error}") from error
+    try:
+        record = lock["datasets"][dataset]
+        expected_count = record["count"]
+        expected_sha256 = record["semantic_sha256"]
+    except (KeyError, TypeError) as error:
+        raise GroundTruthValidationError(
+            f"legacy_reference_lock_missing_dataset: {dataset}"
+        ) from error
+    raw_items = document.get("items")
+    if not isinstance(raw_items, list):
+        raise GroundTruthValidationError("legacy_reference_items_invalid")
+    try:
+        items = [
+            GroundTruthItem.model_validate(item)
+            for item in raw_items
+            if isinstance(item, Mapping) and item.get("legacy_reference") is True
+        ]
+    except Exception as error:
+        raise GroundTruthValidationError(f"legacy_reference_items_invalid: {error}") from error
+    actual_sha256 = canonical_legacy_items_sha256(items)
+    if expected_count != len(items) or expected_sha256 != actual_sha256:
+        raise GroundTruthValidationError(
+            "legacy_reference_semantic_drift: "
+            f"expected count/hash={expected_count}/{expected_sha256}, "
+            f"actual={len(items)}/{actual_sha256}"
+        )
 
 
 def validate_ground_truth_against_issues(
@@ -155,6 +341,7 @@ def validate_ground_truth_against_issues(
     *,
     ifc_path: str | Path,
     ids_path: str | Path,
+    legacy_lock_path: str | Path = LEGACY_REFERENCE_LOCK_PATH,
 ) -> GroundTruthValidationReport:
     """Confere que GT can\u00f4nico cobre o diagn\u00f3stico e seus artefatos congelados."""
     report = validate_ground_truth_document(path)
@@ -169,6 +356,11 @@ def validate_ground_truth_against_issues(
     _validate_diagnostic_coverage(items, skipped, issues, report, metadata, problems)
     _validate_item_semantics(items, issues, problems)
     _validate_skip_reasons(skipped, problems)
+    if metadata.get("protocol") == "full-coverage-equivalent-v1":
+        try:
+            validate_legacy_reference_lock(document, legacy_lock_path)
+        except GroundTruthValidationError as error:
+            problems.append(str(error))
 
     if problems:
         ordered = "\n".join(f"- {problem}" for problem in sorted(problems))
@@ -323,7 +515,12 @@ def _validate_item_value(
         if "W/(m\u00b2\u00b7K)" not in notes:
             problems.append(f"thermal_notes_missing_unit: {location}")
         return
-    if property_name in {"LoadBearing", "IsLoadBearing"}:
+    if property_name in {
+        "LoadBearing",
+        "IsLoadBearing",
+        "IsExternal",
+        "HasNonSkidSurface",
+    }:
         if type(value) is not bool:
             problems.append(f"invalid_boolean_value: {location}: {value!r}")
         return
@@ -334,6 +531,23 @@ def _validate_item_value(
     if property_name == "FireRating":
         if not isinstance(value, str) or FIRE_RATING_PATTERN.fullmatch(value) is None:
             problems.append(f"invalid_fire_rating: {location}: {value!r}")
+        return
+    if property_name == "AcousticRating":
+        if not isinstance(value, str) or ACOUSTIC_RATING_PATTERN.fullmatch(value) is None:
+            problems.append(f"invalid_acoustic_rating: {location}: {value!r}")
+        return
+    if property_name == "SolarHeatGainCoefficient":
+        if (
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not math.isfinite(value)
+            or not 0 <= value <= 1
+        ):
+            problems.append(f"invalid_solar_heat_gain_coefficient: {location}: {value!r}")
+        return
+    if issue_type == "relation_broken":
+        if not isinstance(value, str) or IFC_RELATION_PATTERN.fullmatch(value) is None:
+            problems.append(f"invalid_ifc_relation: {location}: {value!r}")
         return
     problems.append(f"unsupported_item_property: {location}: {property_name!r}")
 

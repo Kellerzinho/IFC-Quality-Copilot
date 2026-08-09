@@ -3,17 +3,20 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from copy import deepcopy
 from typing import Any
 
 import pytest
 import yaml
 
-from src.experiment.evaluator import GroundTruth
+from src.experiment.evaluator import GroundTruth, GroundTruthItem
 from src.experiment.ground_truth_validation import (
     GroundTruthValidationError,
+    canonical_legacy_items_sha256,
     validate_ground_truth_against_issues,
     validate_ground_truth_document,
+    validate_legacy_reference_lock,
 )
 from src.models import Issue
 
@@ -52,10 +55,214 @@ def _valid_document() -> dict[str, Any]:
     }
 
 
+def test_legacy_semantic_hash_is_order_independent_and_value_sensitive():
+    first = GroundTruthItem(
+        element_guid="GUID-B",
+        issue_type="pset_missing",
+        check_property="FireRating",
+        issue_id="issue-b",
+        expected_value="REI 60",
+        accepted_alternatives=["REI 90"],
+    )
+    second = GroundTruthItem(
+        element_guid="GUID-A",
+        issue_type="pset_missing",
+        check_property="LoadBearing",
+        issue_id="issue-a",
+        expected_value=False,
+    )
+
+    digest = canonical_legacy_items_sha256([first, second])
+
+    assert digest == canonical_legacy_items_sha256([second, first])
+    assert digest != canonical_legacy_items_sha256(
+        [first.model_copy(update={"expected_value": "REI 120"}), second]
+    )
+    assert len(digest) == 64
+
+
 def _write_document(tmp_path, document: dict[str, Any]):
     path = tmp_path / "ground_truth.yaml"
     path.write_text(yaml.safe_dump(document, sort_keys=False), encoding="utf-8")
     return path
+
+
+def _integral_document() -> dict[str, Any]:
+    return {
+        "metadata": {
+            "protocol": "full-coverage-equivalent-v1",
+            "policy_version": "full-coverage-equivalent-v1",
+            "source_dataset": "casa",
+            "total_diagnostic_issues": 2,
+            "total_items": 2,
+            "total_skipped": 0,
+            "equivalence_class_count": 1,
+            "confidence_counts": {"high": 2, "medium": 0, "low": 0},
+            "legacy_reference_count": 1,
+        },
+        "items": [
+            {
+                "element_guid": "GUID-A",
+                "issue_type": "pset_missing",
+                "check_property": "LoadBearing",
+                "issue_id": "issue-a",
+                "expected_value": False,
+                "accepted_alternatives": [],
+                "verified": True,
+                "notes": "Alias IFC LoadBearing=false.",
+                "equivalence_id": "eq-aabbccddeeff0011",
+                "confidence": "high",
+                "source_kind": "ifc_alias",
+                "legacy_reference": True,
+            },
+            {
+                "element_guid": "GUID-B",
+                "issue_type": "pset_missing",
+                "check_property": "LoadBearing",
+                "issue_id": "issue-b",
+                "expected_value": False,
+                "accepted_alternatives": [],
+                "verified": True,
+                "notes": "Alias IFC LoadBearing=false.",
+                "equivalence_id": "eq-aabbccddeeff0011",
+                "confidence": "high",
+                "source_kind": "ifc_alias",
+                "legacy_reference": False,
+            },
+        ],
+        "skipped": [],
+    }
+
+
+def test_accepts_integral_document_with_one_decision_per_equivalence(tmp_path):
+    report = validate_ground_truth_document(_write_document(tmp_path, _integral_document()))
+
+    assert report.total_items == 2
+    assert report.total_skipped == 0
+
+
+@pytest.mark.parametrize(
+    "field",
+    ["equivalence_id", "confidence", "source_kind", "legacy_reference", "notes"],
+)
+def test_integral_document_requires_scientific_item_fields(tmp_path, field: str):
+    document = _integral_document()
+    del document["items"][0][field]
+
+    _assert_invariant(
+        _write_document(tmp_path, document),
+        f"missing_integral_field: items[0].{field}",
+    )
+
+
+def test_integral_document_rejects_skipped_entries(tmp_path):
+    document = _integral_document()
+    document["skipped"] = [
+        {
+            "element_guid": "GUID-C",
+            "issue_type": "pset_missing",
+            "check_property": "FireRating",
+            "issue_id": "issue-c",
+            "reason": "abstenção proibida",
+        }
+    ]
+    document["metadata"]["total_skipped"] = 1
+
+    _assert_invariant(_write_document(tmp_path, document), "integral_protocol_requires_zero_skips")
+
+
+def test_integral_document_rejects_divergent_decision_inside_equivalence(tmp_path):
+    document = _integral_document()
+    document["items"][1]["expected_value"] = True
+
+    _assert_invariant(_write_document(tmp_path, document), "equivalence_decision_mismatch")
+
+
+def test_integral_document_rejects_low_confidence_without_hypothesis(tmp_path):
+    document = _integral_document()
+    for item in document["items"]:
+        item["confidence"] = "low"
+        item["source_kind"] = "probable"
+        item["notes"] = "Valor provável sem hipótese explícita."
+    document["metadata"]["confidence_counts"] = {"high": 0, "medium": 0, "low": 2}
+
+    _assert_invariant(_write_document(tmp_path, document), "low_confidence_without_hypothesis")
+
+
+def test_legacy_lock_rejects_semantic_value_drift(tmp_path):
+    document = _integral_document()
+    legacy_items = [
+        GroundTruthItem.model_validate(item)
+        for item in document["items"]
+        if item["legacy_reference"]
+    ]
+    lock_path = tmp_path / "legacy-reference.lock.json"
+    lock_path.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "datasets": {
+                    "casa": {
+                        "count": 1,
+                        "semantic_sha256": canonical_legacy_items_sha256(legacy_items),
+                    }
+                },
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+    validate_legacy_reference_lock(document, lock_path)
+    document["items"][0]["expected_value"] = True
+
+    with pytest.raises(GroundTruthValidationError, match="legacy_reference_semantic_drift"):
+        validate_legacy_reference_lock(document, lock_path)
+
+
+def test_integral_external_validation_enforces_legacy_lock(tmp_path):
+    document = _integral_document()
+    issues = [
+        _diagnostic_issue("issue-a", "GUID-A", "pset_missing", "LoadBearing"),
+        _diagnostic_issue("issue-b", "GUID-B", "pset_missing", "LoadBearing"),
+    ]
+    legacy_items = [GroundTruthItem.model_validate(document["items"][0])]
+    lock_path = tmp_path / "legacy-reference.lock.json"
+    lock_path.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "datasets": {
+                    "casa": {
+                        "count": 1,
+                        "semantic_sha256": canonical_legacy_items_sha256(legacy_items),
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    path, ifc_path, ids_path = _write_external_document(tmp_path, document)
+
+    validate_ground_truth_against_issues(
+        path,
+        issues,
+        ifc_path=ifc_path,
+        ids_path=ids_path,
+        legacy_lock_path=lock_path,
+    )
+    document["items"][0]["expected_value"] = True
+    document["items"][1]["expected_value"] = True
+    path, ifc_path, ids_path = _write_external_document(tmp_path, document)
+
+    with pytest.raises(GroundTruthValidationError, match="legacy_reference_semantic_drift"):
+        validate_ground_truth_against_issues(
+            path,
+            issues,
+            ifc_path=ifc_path,
+            ids_path=ids_path,
+            legacy_lock_path=lock_path,
+        )
 
 
 def _assert_invariant(path, invariant: str) -> None:
@@ -339,6 +546,11 @@ def test_rejects_blank_notes(tmp_path):
         ("pset_missing", "IsLoadBearing", "IfcSlab", False),
         ("pset_missing", "Category", "IfcSpace", "KITCHEN"),
         ("pset_missing", "FireRating", "IfcWall", "REI 120"),
+        ("pset_missing", "IsExternal", "IfcWall", False),
+        ("pset_missing", "AcousticRating", "IfcWall", "Rw 40 dB"),
+        ("pset_missing", "SolarHeatGainCoefficient", "IfcWindow", 0.87),
+        ("pset_missing", "HasNonSkidSurface", "IfcStair", True),
+        ("relation_broken", "", "IfcDoor", "IfcRelFillsElement"),
         ("system_unclassified", "", "IfcSlab", "Piso vin\u00edlico / laminado"),
         ("system_unclassified", "", "IfcSlabStandardCase", "Laje maci\u00e7a de concreto armado"),
         ("system_unclassified", "", "IfcWall", "Drywall / Steel frame"),
@@ -506,14 +718,14 @@ def test_rejects_skipped_system_issue_with_property(tmp_path):
 
 def test_rejects_item_with_unsupported_property(tmp_path):
     """Impede ampliar silenciosamente o protocolo para propriedades sem regra sem\u00e2ntica."""
-    issue = _diagnostic_issue("issue-other", "GUID_OTHER", "pset_missing", "IsExternal")
+    issue = _diagnostic_issue("issue-other", "GUID_OTHER", "pset_missing", "Reference")
     document = {
         "metadata": {"total_items": 1, "total_skipped": 0, "total_diagnostic_issues": 1},
         "items": [
             {
                 "element_guid": "GUID_OTHER",
                 "issue_type": "pset_missing",
-                "check_property": "IsExternal",
+                "check_property": "Reference",
                 "issue_id": "issue-other",
                 "expected_value": True,
                 "notes": "Evid\u00eancia da propriedade n\u00e3o suportada.",
