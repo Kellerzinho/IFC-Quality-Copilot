@@ -100,11 +100,19 @@ def _write_ground_truth(path: Path, element_guid: str) -> None:
         "\n".join(
             (
                 "metadata:",
+                "  protocol: full-coverage-equivalent-v1",
+                "  total_items: 1",
+                "  equivalence_class_count: 1",
+                "  confidence_counts: {high: 1, medium: 0, low: 0}",
                 "  source: portable-core-smoke",
                 "items:",
                 f'  - element_guid: "{element_guid}"',
                 "    issue_type: space_unnamed",
                 '    expected_value: "Sala de Estar"',
+                "    equivalence_id: eq-1111111111111111",
+                "    confidence: high",
+                "    source_kind: ifc_literal",
+                "    legacy_reference: true",
                 "    verified: true",
                 "",
             )
@@ -206,6 +214,10 @@ def test_portable_core_runs_exact_matrix_and_publishes_private_evidence(tmp_path
                 ground_truth_sha256=_sha256(gt_path),
                 ids_sha256=_sha256(ids_path),
                 building_context=tuple(sorted(context.items())),
+                ground_truth_policy_version="full-coverage-equivalent-v1",
+                ground_truth_items=1,
+                equivalence_classes=1,
+                confidence_counts=(("high", 1), ("medium", 0), ("low", 0)),
             )
         )
 
@@ -311,6 +323,18 @@ def test_portable_core_runs_exact_matrix_and_publishes_private_evidence(tmp_path
     assert all(run["metadata"]["reuse_equivalent"] is True for run in runs)
     assert all(run["metadata"]["cache_enabled"] is False for run in runs)
     assert all(run["metadata"]["replica_index"] == 0 for run in runs)
+    assert all(
+        run["metadata"]["ground_truth_policy_version"]
+        == "full-coverage-equivalent-v1"
+        for run in runs
+    )
+    assert all(run["metadata"]["ground_truth_items"] == 1 for run in runs)
+    assert all(run["metadata"]["ground_truth_equivalence_classes"] == 1 for run in runs)
+    assert all(run["evaluation"]["accuracy_all"]["top1"] == 1.0 for run in runs)
+    assert all(
+        run["evaluation"]["accuracy_equivalence"]["top1"] == 1.0 for run in runs
+    )
+    assert all(run["evaluation"]["accuracy_legacy"]["top1"] == 1.0 for run in runs)
     assert all(run["issue_counts"]["total_issues"] == 1 for run in runs)
     assert all(run["metadata"]["building_context"]["bioclimatic_zone"] == "4A" for run in runs)
     assert all(

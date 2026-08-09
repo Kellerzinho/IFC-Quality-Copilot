@@ -1,6 +1,6 @@
 # Definição das métricas de avaliação (Fase 0.3 / F10+F11)
 
-**Data:** 2026-06-28
+**Data da revisão integral:** 2026-08-09
 **Implementação:** `src/experiment/evaluator.py` (`Evaluator`, `EvaluationMetrics`).
 
 Este documento formaliza como o experimento mede a qualidade das sugestões do LLM
@@ -75,6 +75,37 @@ ground truth. "Casa GT" usa a comparação normalizada da seção 1.
 | `recall` | \|{i ∈ G : top-1 casa}\| / \|GT\| | **cobertura** sobre todo o GT |
 | `f1` | média harmônica de `precision` e `recall` | — |
 
+### 3.1 Cortes científicos do protocolo integral
+
+O protocolo `full-coverage-equivalent-v1` publica quatro visões simultâneas:
+
+| Campo | Unidade de análise | Definição |
+|---|---|---|
+| `accuracy_all` | ocorrência | microacurácia sobre cada diagnóstico; reproduz `accuracy_top1/top3` |
+| `accuracy_equivalence` | classe estrutural | calcula top-k dentro de cada `equivalence_id` e tira a média simples das classes |
+| `accuracy_by_confidence` | ocorrência | microacurácia separada em `high`, `medium` e `low` |
+| `accuracy_legacy` | ocorrência preservada | microacurácia somente onde `legacy_reference=true` |
+
+Formalmente, para classes de equivalência `E` e ocorrências `G_e` de cada
+classe, a principal métrica do artigo é:
+
+`accuracy_equivalence_top1 = (1 / |E|) · Σ_e (acertos_top1(G_e) / |G_e|)`.
+
+Assim, uma parede repetida 651 vezes não vale 651 vezes mais que uma classe rara.
+`accuracy_all` continua sendo reportada para mostrar o comportamento por elemento,
+mas não deve ser usada sozinha para ranquear modelos neste dataset.
+
+Confiança tem significado de proveniência, não probabilidade estatística:
+
+- `high`: literal/alias IFC ou base autoral preservada;
+- `medium`: cálculo reproduzível ou regra tipológica determinística;
+- `low`: hipótese autoral congelada para completar a referência experimental.
+
+Um valor `low` não é requisito normativo, conformidade ou desempenho certificado.
+Resultados com `ground_truth_sha256` ou `ground_truth_policy_version` diferentes
+não são diretamente comparáveis. Uma tabela conjunta deve estratificar esses
+runs ou recalculá-los contra exatamente o mesmo GT congelado.
+
 ### Nota honesta sobre "precision" (F11)
 
 Cada issue produz uma **lista ranqueada** de sugestões, não um conjunto de predições
@@ -124,25 +155,22 @@ com o orientador (mesma seed em todos os modelos) ou runs completos.
 
 ---
 
-## Adendo (2026-07-03): geração por instância no benchmark (decisão de desenho)
+## Adendo (2026-08-09): benchmark oficial com reuso equivalente
 
-O fluxo de produção (Streamlit) usa deduplicação com reuso: issues
-estruturalmente equivalentes recebem **uma** chamada de LLM e as demais copiam
-o resultado da primária (`IssueDeduplicator.build_reuse_map`). O benchmark,
-deliberadamente, **não** usa o reuso (decisão do autor em 2026-07-03): cada
-instância gera a sua própria chamada, com cache desligado.
+O benchmark portátil oficial usa `reuse_equivalent=true` e cache persistente
+desligado. Issues estruturalmente equivalentes recebem uma chamada de LLM e as
+demais reutilizam o resultado da primária. Essa condição faz parte de
+`ExecutionIdentity`; mudar a flag invalida a retomada.
 
-**Justificativa:** cada instância carrega variações reais de contexto
-(dimensões, pavimento, vizinhança) e a geração por instância mede a
-estabilidade do modelo sobre essas variações — o comportamento que o
-engenheiro observaria ao processar o modelo inteiro sem otimizações.
+O desenho reduz custo e torna o tempo executável em hardware local, sem esconder a
+estrutura do dataset:
 
-**Implicações reconhecidas:**
-- as ~2792 amostras por run contêm grupos de instâncias quase idênticas
-  (3 tipos de parede, 13 de laje...); as amostras são **correlacionadas
-  dentro de grupos** e o n efetivo para acurácia é menor que o nominal —
-  reportar isso na análise (ou agregar por grupo em análise de sensibilidade);
-- o custo computacional por réplica é ~20–50× maior que com reuso
-  (~7–8 h/modelo vs ~20 min) — assumido como custo do desenho;
-- o reuso permanece como otimização de produção, fora do escopo das métricas
-  do benchmark.
+- `accuracy_all` ainda mede todas as 4.983 ocorrências;
+- `accuracy_equivalence` impede que classes muito repetidas dominem o ranking;
+- o JSONL preserva um desfecho por issue;
+- latência mede estímulos efetivamente enviados, e deve ser interpretada junto da
+  contagem de equivalências e de `reuse_equivalent`.
+
+Resultados históricos gerados por instância continuam úteis como análise de
+sensibilidade, mas não devem ser misturados ao ranking oficial sem marcar a diferença
+de identidade experimental.

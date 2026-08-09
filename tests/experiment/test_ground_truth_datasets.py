@@ -31,7 +31,7 @@ def _skip_when_large_ifc_is_missing() -> None:
 @pytest.mark.integration
 @pytest.mark.parametrize("dataset", ["casa", "predio"])
 def test_frozen_ground_truth_covers_real_diagnostics(dataset: str) -> None:
-    """Cada diagnóstico do IFC instalado pertence a exatamente um lado do GT."""
+    """Cada diagnóstico do IFC instalado recebe um valor no GT integral."""
     _skip_when_large_ifc_is_missing()
     spec = builder.DATASETS[dataset]
 
@@ -65,12 +65,13 @@ def test_frozen_ground_truth_covers_real_diagnostics(dataset: str) -> None:
     }
     assert report.item_keys.isdisjoint(report.skipped_keys)
     assert report.item_keys | report.skipped_keys == diagnostic_keys
+    assert report.skipped_keys == set()
+    assert document["skipped"] == []
+    assert len(ground_truth.items) == {"casa": 263, "predio": 4720}[dataset]
 
     if dataset == "casa":
-        assert all(
-            item.check_property not in {"AcousticRating", "SolarHeatGainCoefficient"}
-            for item in ground_truth.items
-        )
+        properties = {item.check_property for item in ground_truth.items}
+        assert {"AcousticRating", "SolarHeatGainCoefficient"} <= properties
     else:
         assert document["metadata"]["previous_gt_sha256"] == builder.RATIFIED_LEGACY_SHA256
 

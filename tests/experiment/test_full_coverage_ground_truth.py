@@ -10,7 +10,7 @@ from typing import Any
 import pytest
 import yaml
 
-from src.experiment.evaluator import GroundTruth, GroundTruthItem
+from src.experiment.evaluator import Evaluator, GroundTruth, GroundTruthItem
 from src.experiment.ground_truth_validation import (
     ACOUSTIC_RATING_PATTERN,
     CATEGORY_VALUES,
@@ -21,6 +21,7 @@ from src.experiment.ground_truth_validation import (
     validate_ground_truth_document,
     validate_legacy_reference_lock,
 )
+from src.models import Issue, Suggestion, SuggestionSet
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATASET_CONTRACTS = {
@@ -131,3 +132,42 @@ def test_all_685_declared_load_bearing_aliases_are_preserved_as_false_high_confi
 
     assert len(aliases) == 685
     assert all(item.expected_value is False and item.confidence == "high" for item in aliases)
+
+
+@pytest.mark.parametrize("dataset", DATASET_CONTRACTS)
+def test_exact_oracle_scores_one_in_every_nonempty_scientific_slice(dataset: str):
+    _, ground_truth = _load(dataset)
+    results: list[tuple[Issue, SuggestionSet]] = []
+    for item in ground_truth.items:
+        issue = Issue(
+            id=item.issue_id,
+            element_guid=item.element_guid,
+            element_class="IfcWall",
+            issue_type=item.issue_type,
+            severity="medium",
+            description="oracle integral",
+            context={"check_property": item.check_property},
+        )
+        suggestion = Suggestion(
+            label="oracle",
+            value=item.expected_value,
+            justification="valor exato do ground truth congelado",
+            confidence="alta",
+        )
+        results.append(
+            (
+                issue,
+                SuggestionSet(issue_id=issue.id, suggestions=[suggestion]),
+            )
+        )
+
+    metrics = Evaluator().evaluate(results, ground_truth)
+
+    assert metrics.accuracy_all.top1 == 1.0
+    assert metrics.accuracy_all.top3 == 1.0
+    assert metrics.accuracy_equivalence.top1 == 1.0
+    assert metrics.accuracy_equivalence.top3 == 1.0
+    assert metrics.accuracy_legacy.top1 == 1.0
+    for confidence in ("high", "medium", "low"):
+        assert metrics.accuracy_by_confidence[confidence].total > 0
+        assert metrics.accuracy_by_confidence[confidence].top1 == 1.0
