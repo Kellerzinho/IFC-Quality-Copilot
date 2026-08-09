@@ -10,10 +10,12 @@ com o snapshot fornecido pelo instalador portátil.
 from __future__ import annotations
 
 import argparse
+import errno
 import hashlib
 import json
 import os
 import re
+import stat
 import sys
 import time
 from contextlib import suppress
@@ -72,6 +74,7 @@ DATASETS: list[dict[str, Any]] = [
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _STAGE_JSON_RE = re.compile(r"^run_\d+\.json$")
 _STAGE_JSONL_RE = re.compile(r"^run_\d+_issues\.jsonl$")
+_WINDOWS_REPARSE_POINT = 0x400
 
 
 @dataclass(frozen=True)
@@ -251,8 +254,12 @@ def _load_and_validate_execution_identity(path: Path) -> ExecutionIdentity:
     """Carrega o snapshot e recalcula todas as entradas disponíveis localmente."""
     raw = json.loads(path.read_text(encoding="utf-8"))
     identity = _parse_execution_identity(raw)
+    if identity.replica_count != 1:
+        raise ValueError("replica_count oficial deve ser 1")
     if identity.cache_enabled:
         raise ValueError("a execução oficial exige cache desabilitado")
+    if not identity.reuse_equivalent:
+        raise ValueError("a execução oficial exige reuse_equivalent")
     if identity.prompt_version != PROMPT_VERSION:
         raise ValueError("prompt_version diverge do projeto")
 
@@ -301,8 +308,8 @@ def _stage_done(json_path: Path, expectation: StageExpectation) -> bool:
     """Valida integralmente agregado, metadata congelado e JSONL por issue."""
     try:
         aggregate_path, issues_path = _stage_artifact_paths(json_path)
-        if aggregate_path.is_symlink() or issues_path.is_symlink():
-            raise ValueError("membro de estágio não pode ser symlink")
+        _validate_contained_path(json_path.parent, aggregate_path)
+        _validate_contained_path(json_path.parent, issues_path)
         aggregate = json.loads(aggregate_path.read_text(encoding="utf-8", errors="strict"))
         if not isinstance(aggregate, dict):
             raise ValueError("agregado não é objeto")
@@ -339,7 +346,14 @@ def _stage_done(json_path: Path, expectation: StageExpectation) -> bool:
         if len(lines) != total:
             raise ValueError("contagem JSONL diverge do agregado")
         return True
-    except (OSError, UnicodeError, ValueError, TypeError, json.JSONDecodeError) as exc:
+    except (
+        OSError,
+        UnicodeError,
+        ValueError,
+        TypeError,
+        json.JSONDecodeError,
+        QuarantineRecoveryError,
+    ) as exc:
         logger.debug("STAGE_INVALID {}: {}", json_path.name, exc)
         return False
 
@@ -374,12 +388,17 @@ def _invalid_matrix_stages(
     models: list[tuple[str, str]],
 ) -> list[str]:
     """Revalida a matriz e rejeita stems de estágio esperados a mais ou a menos."""
+    if identity.replica_count != 1:
+        raise RuntimeError("replica_count oficial deve ser 1")
+    _validate_contained_path(results_root.parent, results_root)
     invalid: list[str] = []
     expected_physical: set[str] = set()
     for dataset in identity.datasets:
         for model_name, model_digest in models:
             for replica in range(identity.replica_count):
                 path = _stage_path(results_root, dataset.key, model_name, replica)
+                _validate_contained_path(results_root, path)
+                _validate_contained_path(results_root, _stage_artifact_paths(path)[1])
                 expected_physical.add(path.relative_to(results_root).as_posix()[:-5])
                 expectation = _stage_expectation(
                     identity, dataset, model_name, model_digest, replica
@@ -409,6 +428,59 @@ def _relative_to_base(path: Path, base: Path) -> str:
         raise QuarantineRecoveryError("recovery_required: path escape") from exc
 
 
+def _path_is_reparse(path: Path) -> bool:
+    """Detecta links e reparse points sem seguir o alvo."""
+    try:
+        info = os.lstat(path)
+    except FileNotFoundError:
+        info = None
+    if info is not None:
+        if stat.S_ISLNK(info.st_mode):
+            return True
+        attributes = getattr(info, "st_file_attributes", 0)
+        if attributes & _WINDOWS_REPARSE_POINT:
+            return True
+    if path.is_symlink():
+        return True
+    is_junction = getattr(path, "is_junction", None)
+    return bool(is_junction is not None and is_junction())
+
+
+def _validate_contained_path(base: Path, candidate: Path) -> Path:
+    """Valida contenção sem atravessar symlink, junction ou reparse point."""
+    base_absolute = Path(os.path.abspath(base))
+    candidate_absolute = Path(os.path.abspath(candidate))
+    try:
+        relative = candidate_absolute.relative_to(base_absolute)
+    except ValueError as exc:
+        raise QuarantineRecoveryError("recovery_required: path escape") from exc
+
+    chain = [base_absolute]
+    current = base_absolute
+    for part in relative.parts:
+        current = current / part
+        chain.append(current)
+    for index, component in enumerate(chain):
+        if _path_is_reparse(component):
+            raise QuarantineRecoveryError(
+                "recovery_required: symlink, junction ou reparse point proibido"
+            )
+        try:
+            info = os.lstat(component)
+        except FileNotFoundError:
+            continue
+        if index < len(chain) - 1 and not stat.S_ISDIR(info.st_mode):
+            raise QuarantineRecoveryError("recovery_required: ancestral de path não é diretório")
+
+    base_resolved = base_absolute.resolve(strict=False)
+    candidate_resolved = candidate_absolute.resolve(strict=False)
+    try:
+        candidate_resolved.relative_to(base_resolved)
+    except ValueError as exc:
+        raise QuarantineRecoveryError("recovery_required: alvo resolvido fora da raiz") from exc
+    return candidate_absolute
+
+
 def _safe_relative(base: Path, value: str) -> Path:
     pure = PurePosixPath(value)
     if (
@@ -418,16 +490,7 @@ def _safe_relative(base: Path, value: str) -> Path:
     ):
         raise QuarantineRecoveryError("recovery_required: path relativo inválido")
     candidate = base.joinpath(*pure.parts)
-    try:
-        candidate.absolute().relative_to(base.absolute())
-    except ValueError as exc:
-        raise QuarantineRecoveryError("recovery_required: path escape") from exc
-    current = base
-    for part in pure.parts:
-        current = current / part
-        if current.is_symlink():
-            raise QuarantineRecoveryError("recovery_required: symlink proibido")
-    return candidate
+    return _validate_contained_path(base, candidate)
 
 
 def _write_json_atomic(path: Path, payload: dict[str, object]) -> None:
@@ -456,6 +519,31 @@ def _write_json_atomic(path: Path, payload: dict[str, object]) -> None:
         if descriptor is not None:
             os.close(descriptor)
         temporary.unlink(missing_ok=True)
+
+
+def _move_no_replace(source: Path, destination: Path) -> None:
+    """Renomeia no mesmo volume sem jamais substituir o destino."""
+    if os.name != "nt":
+        raise OSError(
+            errno.ENOTSUP,
+            "movimento no-replace oficial requer o runtime Windows",
+        )
+    for attempt in range(5):
+        try:
+            os.rename(source, destination)
+            return
+        except FileExistsError:
+            raise
+        except PermissionError:
+            if attempt == 4:
+                raise
+            time.sleep(0.01)
+
+
+def _move_transaction_member(paths: _TransactionPaths, source: Path, destination: Path) -> None:
+    _validate_contained_path(paths.base, source)
+    _validate_contained_path(paths.base, destination)
+    _move_no_replace(source, destination)
 
 
 def _persist_journal(path: Path, journal: QuarantineJournal) -> None:
@@ -595,7 +683,7 @@ def _finalize_forward(
             raise QuarantineRecoveryError("recovery_required: conjunto ainda dividido")
         _validate_member_file(staged, member)
     paths.final.parent.mkdir(parents=True, exist_ok=True)
-    os.replace(paths.staging, paths.final)
+    _move_transaction_member(paths, paths.staging, paths.final)
     for member in journal.members:
         _, _, final = _member_paths(paths, member)
         _validate_member_file(final, member)
@@ -619,7 +707,7 @@ def _attempt_forward(paths: _TransactionPaths, journal: QuarantineJournal) -> bo
                     return False
                 continue
             _validate_member_file(source, member)
-            os.replace(source, staged)
+            _move_transaction_member(paths, source, staged)
             _validate_member_file(staged, member)
         _finalize_forward(paths, journal)
         return True
@@ -641,7 +729,7 @@ def _attempt_rollback(paths: _TransactionPaths, journal: QuarantineJournal) -> b
                 continue
             _validate_member_file(staged, member)
             source.parent.mkdir(parents=True, exist_ok=True)
-            os.replace(staged, source)
+            _move_transaction_member(paths, staged, source)
             _validate_member_file(source, member)
         if any(_member_location(paths, member) != "source" for member in journal.members):
             return False
@@ -654,6 +742,10 @@ def _attempt_rollback(paths: _TransactionPaths, journal: QuarantineJournal) -> b
 def _quarantine_invalid_stage_pair(json_path: Path, results_root: Path) -> Path | None:
     """Move, transacionalmente, os membros existentes de um par inválido."""
     aggregate, issues = _stage_artifact_paths(json_path)
+    base = results_root.parent
+    _validate_contained_path(base, results_root)
+    _validate_contained_path(results_root, aggregate)
+    _validate_contained_path(results_root, issues)
     existing = [
         ("aggregate", aggregate),
         ("issues", issues),
@@ -661,7 +753,6 @@ def _quarantine_invalid_stage_pair(json_path: Path, results_root: Path) -> Path 
     existing = [(kind, path) for kind, path in existing if path.exists()]
     if not existing:
         return None
-    base = results_root.parent
     for _, source in existing:
         try:
             source.absolute().relative_to(results_root.absolute())
@@ -675,6 +766,9 @@ def _quarantine_invalid_stage_pair(json_path: Path, results_root: Path) -> Path 
     journal_path = root / ".transactions" / f"{transaction_id}.journal.json"
     staging = root / ".transactions" / f"{transaction_id}.partial"
     final = root / "quarantine" / str(transaction_id)
+    _validate_contained_path(base, journal_path)
+    _validate_contained_path(base, staging)
+    _validate_contained_path(base, final)
     members = tuple(
         QuarantineMember(
             kind=kind,
@@ -704,7 +798,7 @@ def _quarantine_invalid_stage_pair(json_path: Path, results_root: Path) -> Path 
             source, staged, _ = _member_paths(paths, member)
             if staged.exists() or staged.is_symlink():
                 raise OSError("destino de staging já existe")
-            os.replace(source, staged)
+            _move_transaction_member(paths, source, staged)
             _validate_member_file(staged, member)
         return _finalize_forward(paths, journal)
     except (OSError, QuarantineRecoveryError) as exc:
@@ -771,11 +865,22 @@ def _load_journal(path: Path) -> QuarantineJournal:
 def _reconcile_quarantine_transactions(results_root: Path) -> None:
     """Reconcilia journals lexicograficamente antes de qualquer estágio."""
     transaction_root = results_root.parent / ".invalid-stage-artifacts" / ".transactions"
-    if not transaction_root.is_dir():
-        return
-    for journal_path in sorted(transaction_root.glob("*.journal.json")):
+    try:
+        _validate_contained_path(results_root.parent, results_root)
+        _validate_contained_path(results_root.parent, transaction_root)
+        if not transaction_root.is_dir():
+            return
+        journal_paths = sorted(transaction_root.glob("*.journal.json"))
+    except QuarantineRecoveryError:
+        raise
+    except OSError as exc:
+        raise QuarantineRecoveryError(
+            "recovery_required: erro de I/O durante reconciliação"
+        ) from exc
+    for journal_path in journal_paths:
         journal: QuarantineJournal | None = None
         try:
+            _validate_contained_path(transaction_root, journal_path)
             journal = _load_journal(journal_path)
             paths = _validated_transaction_paths(results_root, journal_path, journal)
             locations = [_member_location(paths, member) for member in journal.members]
@@ -793,12 +898,16 @@ def _reconcile_quarantine_transactions(results_root: Path) -> None:
             journal.state = "recovery_required"
             _persist_journal(journal_path, journal)
             raise QuarantineRecoveryError("recovery_required: transação não reconciliada")
-        except QuarantineRecoveryError:
+        except (OSError, QuarantineRecoveryError) as exc:
             if journal is not None:
                 journal.state = "recovery_required"
                 with suppress(OSError):
                     _persist_journal(journal_path, journal)
-            raise
+            if isinstance(exc, QuarantineRecoveryError):
+                raise
+            raise QuarantineRecoveryError(
+                "recovery_required: erro de I/O durante reconciliação"
+            ) from exc
 
 
 def _pid_record_is_live(record: object) -> bool:
@@ -832,20 +941,25 @@ def _lease_payload(lease: PidLease) -> bytes:
 
 
 def _create_lease_exclusive(path: Path, lease: PidLease) -> bool:
+    """Publica um registro completo por hard link, sem janela de JSON parcial."""
+    temporary = path.with_name(f".{path.name}.{lease.token}.partial")
     descriptor: int | None = None
     try:
-        descriptor = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+        descriptor = os.open(temporary, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
         with os.fdopen(descriptor, "wb") as stream:
             descriptor = None
             stream.write(_lease_payload(lease))
             stream.flush()
             os.fsync(stream.fileno())
+        os.link(temporary, path)
         return True
     except FileExistsError:
         return False
     finally:
         if descriptor is not None:
             os.close(descriptor)
+        with suppress(OSError):
+            temporary.unlink(missing_ok=True)
 
 
 def _read_pid_record(path: Path) -> tuple[object, bytes, os.stat_result] | None:
@@ -853,11 +967,52 @@ def _read_pid_record(path: Path) -> tuple[object, bytes, os.stat_result] | None:
         before = path.stat()
         payload = path.read_bytes()
         after = path.stat()
-        if before.st_mtime_ns != after.st_mtime_ns or before.st_size != after.st_size:
-            return None
-        return json.loads(payload.decode("utf-8")), payload, after
-    except (OSError, UnicodeError, json.JSONDecodeError):
+    except FileNotFoundError:
         return None
+    if before.st_mtime_ns != after.st_mtime_ns or before.st_size != after.st_size:
+        raise OSError(errno.EAGAIN, "pidfile mudou durante a leitura")
+    try:
+        record: object = json.loads(payload.decode("utf-8"))
+    except (UnicodeError, json.JSONDecodeError):
+        record = None
+    return record, payload, after
+
+
+def _restore_pidfile_claim(claimed: Path, path: Path) -> None:
+    """Restaura bytes que não pertenciam ao chamador, sem sobrescrever terceiros."""
+    try:
+        _move_no_replace(claimed, path)
+    except FileExistsError:
+        # Outro lease já ocupa o nome canônico; o claim permanece preservado.
+        return
+
+
+def _remove_stale_pidfile(path: Path, expected_payload: bytes | None) -> bool:
+    """Remove somente o registro morto observado, após reivindicá-lo atomicamente."""
+    claimed = path.with_name(f".{path.name}.{uuid4().hex}.stale")
+    try:
+        _move_no_replace(path, claimed)
+    except FileNotFoundError:
+        return True
+
+    try:
+        observed = _read_pid_record(claimed)
+        if observed is None:
+            raise OSError(errno.ENOENT, "claim de pidfile desapareceu")
+        record, payload, _ = observed
+        if expected_payload is not None and payload != expected_payload:
+            _restore_pidfile_claim(claimed, path)
+            return False
+        if _pid_record_is_live(record):
+            _restore_pidfile_claim(claimed, path)
+            return False
+        claimed.unlink()
+        return True
+    except Exception:
+        if claimed.exists() or claimed.is_symlink():
+            with suppress(OSError):
+                _restore_pidfile_claim(claimed, path)
+        raise
 
 
 def _acquire_pidfile(path: Path) -> PidLease | None:
@@ -877,49 +1032,45 @@ def _acquire_pidfile(path: Path) -> PidLease | None:
     reap_path = path.with_name(f"{path.name}.reap")
     reap_lease = PidLease(lease.pid, lease.create_time, str(uuid4()))
     if not _create_lease_exclusive(reap_path, reap_lease):
-        return None
+        observed_reap = _read_pid_record(reap_path)
+        if observed_reap is not None and _pid_record_is_live(observed_reap[0]):
+            return None
+        expected_reap = observed_reap[1] if observed_reap is not None else None
+        if not _remove_stale_pidfile(reap_path, expected_reap):
+            return None
+        if not _create_lease_exclusive(reap_path, reap_lease):
+            return None
     try:
         current = _read_pid_record(path)
         if current is not None and _pid_record_is_live(current[0]):
             return None
-        if observed is not None and current is not None:
-            _, old_bytes, old_stat = observed
-            _, new_bytes, new_stat = current
-            unchanged = (
-                old_bytes == new_bytes
-                and old_stat.st_mtime_ns == new_stat.st_mtime_ns
-                and old_stat.st_size == new_stat.st_size
-            )
-            if not unchanged:
-                return None
-        path.unlink(missing_ok=True)
+        expected_current = current[1] if current is not None else None
+        if current is not None and not _remove_stale_pidfile(path, expected_current):
+            return None
+        return lease if _create_lease_exclusive(path, lease) else None
     finally:
         _release_pidfile(reap_path, reap_lease)
-    return lease if _create_lease_exclusive(path, lease) else None
 
 
 def _release_pidfile(path: Path, lease: PidLease) -> None:
-    """Remove o pidfile somente quando PID e token ainda pertencem ao chamador."""
-    observed = _read_pid_record(path)
-    if observed is None:
+    """Remove apenas o lease do chamador por move-validate, sem check/unlink."""
+    claimed = path.with_name(f".{path.name}.{uuid4().hex}.release")
+    try:
+        _move_no_replace(path, claimed)
+    except FileNotFoundError:
         return
-    record, payload, stat = observed
-    if (
-        not isinstance(record, dict)
-        or record.get("pid") != lease.pid
-        or record.get("token") != lease.token
-    ):
-        return
-    current = _read_pid_record(path)
-    if current is None:
-        return
-    _, current_payload, current_stat = current
-    if (
-        current_payload == payload
-        and current_stat.st_mtime_ns == stat.st_mtime_ns
-        and current_stat.st_size == stat.st_size
-    ):
-        path.unlink(missing_ok=True)
+
+    try:
+        observed = _read_pid_record(claimed)
+        if observed is not None and observed[1] == _lease_payload(lease):
+            claimed.unlink()
+            return
+        _restore_pidfile_claim(claimed, path)
+    except Exception:
+        if claimed.exists() or claimed.is_symlink():
+            with suppress(OSError):
+                _restore_pidfile_claim(claimed, path)
+        raise
 
 
 def _capture_stop_baseline(path: Path) -> StopBaseline:
@@ -980,11 +1131,18 @@ def _build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     """Executa a fila; 0=matriz íntegra, 1=falha, 130=interrupção."""
     args = _build_parser().parse_args(argv)
-    if args.replicas < 1:
-        logger.error("--replicas deve ser positivo")
+    if args.replicas != 1:
+        logger.error("--replicas oficial deve ser 1")
+        return 1
+    if not args.reuse_equivalent:
+        logger.error("--reuse-equivalent é obrigatório no modo oficial")
         return 1
     stop_baseline = _capture_stop_baseline(STOP_FILE)
-    lease = _acquire_pidfile(PID_FILE)
+    try:
+        lease = _acquire_pidfile(PID_FILE)
+    except OSError as exc:
+        logger.error("PID_LEASE_FAILED: {}", type(exc).__name__)
+        return 1
     if lease is None:
         logger.error("BENCHMARK_ALREADY_RUNNING")
         return 1
@@ -1001,12 +1159,17 @@ def main(argv: list[str] | None = None) -> int:
             / f"{datetime.now():%Y-%m-%d}-benchmark"
         )
         try:
+            _validate_contained_path(results_root.parent, results_root)
             _reconcile_quarantine_transactions(results_root)
         except QuarantineRecoveryError:
             logger.error("QUARANTINE_RECOVERY_REQUIRED")
             return 1
 
         identity = _load_and_validate_execution_identity(args.execution_identity)
+        if identity.replica_count != 1:
+            raise RuntimeError("replica_count oficial deve ser 1")
+        if identity.reuse_equivalent is not True:
+            raise RuntimeError("reuse_equivalent oficial deve ser true")
         if identity.replica_count != args.replicas:
             raise RuntimeError("replica_count diverge de --replicas")
         if identity.cache_enabled is not False:
@@ -1045,6 +1208,8 @@ def main(argv: list[str] | None = None) -> int:
                         identity, frozen_dataset, model, expected_digest, replica
                     )
                     json_path = _stage_path(results_root, dataset["key"], model, replica)
+                    _validate_contained_path(results_root, json_path)
+                    _validate_contained_path(results_root, _stage_artifact_paths(json_path)[1])
                     if _stage_done(json_path, expectation):
                         skipped += 1
                         logger.info("STAGE SKIP: {}", stage)
@@ -1080,6 +1245,10 @@ def main(argv: list[str] | None = None) -> int:
                             dataset_key=dataset["key"],
                             execution_identity=identity,
                         )
+                        json_path.parent.mkdir(parents=True, exist_ok=True)
+                        _validate_contained_path(results_root, json_path.parent)
+                        _validate_contained_path(results_root, json_path)
+                        _validate_contained_path(results_root, _stage_artifact_paths(json_path)[1])
                         ExperimentRunner._export(result, str(results_root / dataset["key"]))
                         if not _stage_done(json_path, expectation):
                             raise RuntimeError("par exportado não passou na revalidação")
@@ -1116,7 +1285,10 @@ def main(argv: list[str] | None = None) -> int:
     finally:
         if resident_model is not None:
             _unload_model(resident_model)
-        _release_pidfile(PID_FILE, lease)
+        try:
+            _release_pidfile(PID_FILE, lease)
+        except OSError as exc:
+            logger.error("PID_LEASE_RELEASE_FAILED: {}", type(exc).__name__)
 
 
 if __name__ == "__main__":

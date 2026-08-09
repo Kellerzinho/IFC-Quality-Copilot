@@ -321,6 +321,43 @@ def test_main_revalidates_pair_immediately_after_export(monkeypatch, tmp_path):
     assert calls
 
 
+def test_official_main_rejects_two_replicas_before_any_stage(monkeypatch, tmp_path):
+    calls = install_fake_runner(monkeypatch, tmp_path)
+    monkeypatch.setattr(
+        module,
+        "_load_and_validate_execution_identity",
+        lambda path: official_identity(replica_count=2),
+    )
+    args = _main_args(tmp_path)
+    args.extend(["--replicas", "2"])
+
+    assert module.main(args) == 1
+    assert calls == []
+
+
+def test_official_main_rejects_reuse_disabled_in_identity_and_cli(monkeypatch, tmp_path):
+    calls = install_fake_runner(monkeypatch, tmp_path)
+    monkeypatch.setattr(
+        module,
+        "_load_and_validate_execution_identity",
+        lambda path: official_identity(reuse_equivalent=False),
+    )
+    args = _main_args(tmp_path)
+    args.remove("--reuse-equivalent")
+
+    assert module.main(args) == 1
+    assert calls == []
+
+
+def test_matrix_validator_rejects_nonofficial_replica_count(tmp_path):
+    identity = official_identity(replica_count=2)
+    models = [(f"model:{index}", f"{index:064x}") for index in range(10)]
+    write_valid_matrix(tmp_path, identity, models)
+
+    with pytest.raises(RuntimeError, match="replica"):
+        module._invalid_matrix_stages(tmp_path, identity, models)
+
+
 def test_only_model_limits_execution_but_final_gate_still_uses_full_lock(monkeypatch, tmp_path):
     calls = install_fake_runner(monkeypatch, tmp_path)
     monkeypatch.setattr(module, "_locked_models", lambda: ["m:test", "m:other"])
@@ -398,6 +435,93 @@ def test_stage_done_rejects_symlink_member_without_windows_privilege(monkeypatch
     monkeypatch.setattr(Path, "is_symlink", report_issues_as_symlink)
 
     assert not module._stage_done(path, expectation)
+
+
+def test_containment_rejects_base_symlink_without_following(monkeypatch, tmp_path):
+    base = tmp_path / "base"
+    base.mkdir()
+    candidate = base / "child" / "run_0.json"
+    real_is_symlink = Path.is_symlink
+    monkeypatch.setattr(
+        Path,
+        "is_symlink",
+        lambda self: self == base or real_is_symlink(self),
+    )
+
+    with pytest.raises(module.QuarantineRecoveryError, match="recovery_required"):
+        module._validate_contained_path(base, candidate)
+
+
+def test_containment_rejects_parent_junction_without_privilege(monkeypatch, tmp_path):
+    base = tmp_path / "base"
+    parent = base / "dataset"
+    parent.mkdir(parents=True)
+    candidate = parent / "run_0.json"
+    real_is_junction = getattr(Path, "is_junction", lambda self: False)
+    monkeypatch.setattr(
+        Path,
+        "is_junction",
+        lambda self: self == parent or real_is_junction(self),
+        raising=False,
+    )
+
+    with pytest.raises(module.QuarantineRecoveryError, match="recovery_required"):
+        module._validate_contained_path(base, candidate)
+
+
+def test_containment_rejects_windows_reparse_attribute(monkeypatch, tmp_path):
+    base = tmp_path / "base"
+    parent = base / "dataset"
+    parent.mkdir(parents=True)
+    candidate = parent / "run_0.json"
+    real_lstat = os.lstat
+
+    def reparse_lstat(path):
+        result = real_lstat(path)
+        if Path(path) == parent:
+            return SimpleNamespace(
+                st_mode=result.st_mode,
+                st_file_attributes=0x400,
+            )
+        return result
+
+    monkeypatch.setattr(os, "lstat", reparse_lstat)
+
+    with pytest.raises(module.QuarantineRecoveryError, match="recovery_required"):
+        module._validate_contained_path(base, candidate)
+
+
+def test_containment_rejects_resolved_target_outside_base(monkeypatch, tmp_path):
+    base = tmp_path / "base"
+    base.mkdir()
+    candidate = base / "missing" / "run_0.json"
+    outside = tmp_path / "outside" / "run_0.json"
+    real_resolve = Path.resolve
+
+    def escape_resolve(self, *args, **kwargs):
+        if self == candidate:
+            return outside
+        return real_resolve(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "resolve", escape_resolve)
+
+    with pytest.raises(module.QuarantineRecoveryError, match="recovery_required"):
+        module._validate_contained_path(base, candidate)
+
+
+def test_main_rejects_reparse_results_root_before_run_single(monkeypatch, tmp_path):
+    calls = install_fake_runner(monkeypatch, tmp_path)
+    results_root = tmp_path / "results"
+    real_is_junction = getattr(Path, "is_junction", lambda self: False)
+    monkeypatch.setattr(
+        Path,
+        "is_junction",
+        lambda self: self == results_root or real_is_junction(self),
+        raising=False,
+    )
+
+    assert module.main(_main_args(tmp_path)) == 1
+    assert calls == []
 
 
 @pytest.mark.parametrize(
@@ -526,18 +650,18 @@ def test_unregistered_file_injected_during_move_blocks_transaction(monkeypatch, 
     results_root = tmp_path / "results"
     path = results_root / "casa" / "m_test" / "run_0.json"
     _write_stage_pair(path, asdict(_expectation()))
-    real_replace = os.replace
+    real_rename = os.rename
     injected = False
 
     def inject_after_first_member_move(source, destination):
         nonlocal injected
-        result = real_replace(source, destination)
+        result = real_rename(source, destination)
         if Path(source) == path and not injected:
             injected = True
             (Path(destination).parent / "surprise.bin").write_bytes(b"foreign")
         return result
 
-    monkeypatch.setattr(os, "replace", inject_after_first_member_move)
+    monkeypatch.setattr(os, "rename", inject_after_first_member_move)
 
     with pytest.raises(module.QuarantineRecoveryError, match="recovery_required"):
         module._quarantine_invalid_stage_pair(path, results_root)
@@ -573,7 +697,7 @@ def test_first_move_failure_keeps_pair_co_located_active(monkeypatch, tmp_path):
     _write_stage_pair(path, asdict(_expectation()))
     _, issues_path = module._stage_artifact_paths(path)
     before = (path.read_bytes(), issues_path.read_bytes())
-    real_replace = os.replace
+    real_rename = os.rename
     failed = False
 
     def fail_first_active_move_once(source, destination):
@@ -581,9 +705,9 @@ def test_first_move_failure_keeps_pair_co_located_active(monkeypatch, tmp_path):
         if Path(source) == path and not failed:
             failed = True
             raise OSError("busy")
-        return real_replace(source, destination)
+        return real_rename(source, destination)
 
-    monkeypatch.setattr(os, "replace", fail_first_active_move_once)
+    monkeypatch.setattr(os, "rename", fail_first_active_move_once)
     with pytest.raises(RuntimeError, match="quarentena"):
         module._quarantine_invalid_stage_pair(path, results_root)
 
@@ -598,7 +722,7 @@ def test_second_move_failure_rolls_back_pair_to_active_paths(monkeypatch, tmp_pa
     _write_stage_pair(path, asdict(_expectation()))
     _, issues_path = module._stage_artifact_paths(path)
     before = (path.read_bytes(), issues_path.read_bytes())
-    real_replace = os.replace
+    real_rename = os.rename
     failed_second_move = False
 
     def fail_second_active_move_once(source, destination):
@@ -606,9 +730,9 @@ def test_second_move_failure_rolls_back_pair_to_active_paths(monkeypatch, tmp_pa
         if Path(source) == issues_path and not failed_second_move:
             failed_second_move = True
             raise OSError("busy")
-        return real_replace(source, destination)
+        return real_rename(source, destination)
 
-    monkeypatch.setattr(os, "replace", fail_second_active_move_once)
+    monkeypatch.setattr(os, "rename", fail_second_active_move_once)
     with pytest.raises(RuntimeError, match="quarentena"):
         module._quarantine_invalid_stage_pair(path, results_root)
 
@@ -619,6 +743,32 @@ def test_second_move_failure_rolls_back_pair_to_active_paths(monkeypatch, tmp_pa
     assert not list(quarantine_root.rglob("*.journal.json"))
 
 
+def test_destination_collision_during_member_move_preserves_both_files(monkeypatch, tmp_path):
+    results_root = tmp_path / "results"
+    path = results_root / "casa" / "m_test" / "run_0.json"
+    _write_stage_pair(path, asdict(_expectation()))
+    source_before = path.read_bytes()
+    collision = b"collision-must-survive"
+    real_rename = os.rename
+    collision_path: Path | None = None
+
+    def collide_immediately_before_rename(source, destination):
+        nonlocal collision_path
+        if Path(source) == path and collision_path is None:
+            collision_path = Path(destination)
+            collision_path.write_bytes(collision)
+        return real_rename(source, destination)
+
+    monkeypatch.setattr(os, "rename", collide_immediately_before_rename)
+
+    with pytest.raises(module.QuarantineRecoveryError, match="recovery_required"):
+        module._quarantine_invalid_stage_pair(path, results_root)
+
+    assert path.read_bytes() == source_before
+    assert collision_path is not None
+    assert collision_path.read_bytes() == collision
+
+
 def test_rollback_failure_finishes_quarantine_before_raising(monkeypatch, tmp_path):
     results_root = tmp_path / "results"
     path = results_root / "casa" / "m_test" / "run_0.json"
@@ -626,7 +776,7 @@ def test_rollback_failure_finishes_quarantine_before_raising(monkeypatch, tmp_pa
     _, issues_path = module._stage_artifact_paths(path)
     before = (path.read_bytes(), issues_path.read_bytes())
     before_sha256 = tuple(hashlib.sha256(payload).hexdigest() for payload in before)
-    real_replace = os.replace
+    real_rename = os.rename
     failed = {"second_move": False, "rollback": False}
 
     def fail_once_then_allow_forward_recovery(source, destination):
@@ -638,9 +788,9 @@ def test_rollback_failure_finishes_quarantine_before_raising(monkeypatch, tmp_pa
         if destination == path and not failed["rollback"]:
             failed["rollback"] = True
             raise OSError("rollback")
-        return real_replace(source, destination)
+        return real_rename(source, destination)
 
-    monkeypatch.setattr(os, "replace", fail_once_then_allow_forward_recovery)
+    monkeypatch.setattr(os, "rename", fail_once_then_allow_forward_recovery)
     with pytest.raises(RuntimeError, match="quarentena"):
         module._quarantine_invalid_stage_pair(path, results_root)
 
@@ -661,16 +811,16 @@ def test_rollback_failure_finishes_quarantine_before_raising(monkeypatch, tmp_pa
 
 def _leave_unresolved_split_transaction(monkeypatch, path, results_root):
     _, issues_path = module._stage_artifact_paths(path)
-    real_replace = os.replace
+    real_rename = os.rename
 
     def fail_second_move_and_rollback(source, destination):
         source = Path(source)
         destination = Path(destination)
         if source == issues_path or destination == path:
             raise OSError("locked")
-        return real_replace(source, destination)
+        return real_rename(source, destination)
 
-    monkeypatch.setattr(os, "replace", fail_second_move_and_rollback)
+    monkeypatch.setattr(os, "rename", fail_second_move_and_rollback)
     with pytest.raises(module.QuarantineRecoveryError, match="recovery_required"):
         module._quarantine_invalid_stage_pair(path, results_root)
     return issues_path
@@ -755,6 +905,66 @@ def test_reconcile_rejects_coerced_journal_scalar_type(tmp_path):
         module._reconcile_quarantine_transactions(results_root)
 
     assert journal_path.exists()
+
+
+def test_reconcile_normalizes_permission_error_to_recovery_required(monkeypatch, tmp_path):
+    from uuid import uuid4
+
+    results_root = tmp_path / "results"
+    aggregate = results_root / "casa" / "m_test" / "run_0.json"
+    aggregate.parent.mkdir(parents=True)
+    aggregate.write_text("{}\n", encoding="utf-8")
+    journal_path, _, _ = _journal_for_sources(results_root, uuid4(), [("aggregate", aggregate)])
+    monkeypatch.setattr(
+        module,
+        "_member_location",
+        lambda *args: (_ for _ in ()).throw(PermissionError("locked")),
+    )
+
+    with pytest.raises(module.QuarantineRecoveryError, match="recovery_required"):
+        module._reconcile_quarantine_transactions(results_root)
+
+    assert journal_path.exists()
+
+
+def test_reconcile_normalizes_initial_path_io_error(monkeypatch, tmp_path):
+    monkeypatch.setattr(
+        module,
+        "_validate_contained_path",
+        lambda *args: (_ for _ in ()).throw(PermissionError("locked")),
+    )
+
+    with pytest.raises(module.QuarantineRecoveryError, match="recovery_required"):
+        module._reconcile_quarantine_transactions(tmp_path / "results")
+
+
+@pytest.mark.parametrize("reparse_target", ["transaction_root", "journal"])
+def test_reconcile_rejects_reparse_before_loading_journal(monkeypatch, tmp_path, reparse_target):
+    results_root = tmp_path / "results"
+    transaction_root = tmp_path / ".invalid-stage-artifacts" / ".transactions"
+    transaction_root.mkdir(parents=True)
+    journal_path = transaction_root / f"{'0' * 32}.journal.json"
+    journal_path.write_text("{}\n", encoding="utf-8")
+    target = transaction_root if reparse_target == "transaction_root" else journal_path
+    real_is_junction = getattr(Path, "is_junction", lambda self: False)
+    monkeypatch.setattr(
+        Path,
+        "is_junction",
+        lambda self: self == target or real_is_junction(self),
+        raising=False,
+    )
+    loaded: list[Path] = []
+
+    def forbid_load(path):
+        loaded.append(path)
+        raise AssertionError("journal lido antes da validação do reparse point")
+
+    monkeypatch.setattr(module, "_load_journal", forbid_load)
+
+    with pytest.raises(module.QuarantineRecoveryError, match="recovery_required"):
+        module._reconcile_quarantine_transactions(results_root)
+
+    assert loaded == []
 
 
 def test_quarantine_rejects_symlink_transaction_root(monkeypatch, tmp_path):
@@ -901,6 +1111,74 @@ def test_stale_pid_is_reaped_but_live_matching_pid_blocks(monkeypatch, tmp_path)
     assert lease.token != "old"
     monkeypatch.setattr(module, "_pid_record_is_live", lambda record: True)
     assert module._acquire_pidfile(path) is None
+
+
+def test_stale_reap_lease_is_recovered(monkeypatch, tmp_path):
+    path = tmp_path / "running.json"
+    reap = path.with_name(f"{path.name}.reap")
+    stale = '{"pid":7,"create_time":1.0,"token":"stale"}'
+    path.write_text(stale, encoding="utf-8")
+    reap.write_text(stale, encoding="utf-8")
+    monkeypatch.setattr(module, "_pid_record_is_live", lambda record: False)
+
+    lease = module._acquire_pidfile(path)
+
+    assert lease is not None
+    assert lease.token != "stale"
+
+
+def test_pid_record_is_published_only_after_owner_record_is_complete(monkeypatch, tmp_path):
+    path = tmp_path / "running.json"
+    real_link = os.link
+    published: list[dict[str, object]] = []
+
+    def inspect_complete_owner_before_publish(source, destination, *args, **kwargs):
+        if Path(destination) == path:
+            published.append(json.loads(Path(source).read_text(encoding="utf-8")))
+        return real_link(source, destination, *args, **kwargs)
+
+    monkeypatch.setattr(os, "link", inspect_complete_owner_before_publish)
+
+    lease = module._acquire_pidfile(path)
+
+    assert lease is not None
+    assert published == [asdict(lease)]
+
+
+def test_main_maps_pid_acquisition_io_error_to_failure(monkeypatch, tmp_path):
+    calls = install_fake_runner(monkeypatch, tmp_path)
+    monkeypatch.setattr(
+        module,
+        "_acquire_pidfile",
+        lambda path: (_ for _ in ()).throw(PermissionError("denied")),
+    )
+
+    assert module.main(_main_args(tmp_path)) == 1
+    assert calls == []
+
+
+def test_release_restores_foreign_record_replaced_at_cleanup_boundary(monkeypatch, tmp_path):
+    path = tmp_path / "running.json"
+    lease = module._acquire_pidfile(path)
+    assert lease is not None
+    foreign = {"pid": 999, "create_time": 2.0, "token": "foreign"}
+    real_move = module._move_no_replace
+    replaced = False
+
+    def replace_immediately_before_cleanup(source, destination):
+        nonlocal replaced
+        if Path(source) == path and not replaced:
+            replaced = True
+            path.unlink()
+            path.write_text(json.dumps(foreign), encoding="utf-8")
+        return real_move(source, destination)
+
+    monkeypatch.setattr(module, "_move_no_replace", replace_immediately_before_cleanup)
+
+    module._release_pidfile(path, lease)
+
+    assert replaced
+    assert json.loads(path.read_text(encoding="utf-8")) == foreign
 
 
 def test_release_pidfile_preserves_foreign_token(tmp_path):
