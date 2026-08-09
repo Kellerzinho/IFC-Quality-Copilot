@@ -68,6 +68,10 @@ def ground_truth_yaml(tmp_path, ifc_with_space) -> str:
     _, space_guid = ifc_with_space
     text = f"""
 metadata:
+  protocol: full-coverage-equivalent-v1
+  total_items: 1
+  equivalence_class_count: 1
+  confidence_counts: {{high: 1, medium: 0, low: 0}}
   source: teste
   verified_by: pytest
 items:
@@ -392,6 +396,10 @@ class TestHarnessEndToEnd:
                     ground_truth_sha256="4" * 64,
                     ids_sha256="5" * 64,
                     building_context=tuple(sorted(_BUILDING_CTX.items())),
+                    ground_truth_policy_version="full-coverage-equivalent-v1",
+                    ground_truth_items=1,
+                    equivalence_classes=1,
+                    confidence_counts=(("high", 1), ("medium", 0), ("low", 0)),
                 ),
                 DatasetIdentity(
                     key="casa",
@@ -402,6 +410,10 @@ class TestHarnessEndToEnd:
                         ("bioclimatic_zone", "4A"),
                         ("building_type", "Residencial unifamiliar"),
                     ),
+                    ground_truth_policy_version="full-coverage-equivalent-v1",
+                    ground_truth_items=1,
+                    equivalence_classes=1,
+                    confidence_counts=(("high", 1), ("medium", 0), ("low", 0)),
                 ),
             ),
             replica_count=2,
@@ -430,6 +442,20 @@ class TestHarnessEndToEnd:
         assert all(result.metadata.execution_identity for result in results)
         assert all(result.metadata.execution_identity_sha256 for result in results)
         assert all(result.metadata.reuse_equivalent is True for result in results)
+        assert all(
+            result.metadata.ground_truth_policy_version
+            == "full-coverage-equivalent-v1"
+            for result in results
+        )
+        assert all(result.metadata.ground_truth_items == 1 for result in results)
+        assert all(
+            result.metadata.ground_truth_equivalence_classes == 1 for result in results
+        )
+        assert all(
+            result.metadata.ground_truth_confidence_counts
+            == {"high": 1, "medium": 0, "low": 0}
+            for result in results
+        )
         for path in exported:
             metadata = json.loads(path.read_text(encoding="utf-8"))["metadata"]
             assert metadata["dataset_key"] == "predio"

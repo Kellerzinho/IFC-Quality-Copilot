@@ -44,6 +44,16 @@ def _record(root: Path, path: Path, *, key: str) -> dict[str, object]:
     }
 
 
+def _ground_truth_identity_fields(key: str) -> dict[str, object]:
+    items, equivalences = (4720, 202) if key == "predio" else (263, 101)
+    return {
+        "ground_truth_policy_version": "full-coverage-equivalent-v1",
+        "ground_truth_items": items,
+        "equivalence_classes": equivalences,
+        "confidence_counts": (("high", items - 2), ("medium", 1), ("low", 1)),
+    }
+
+
 def _identity(seed: str = "1") -> ExecutionIdentity:
     datasets = tuple(
         DatasetIdentity(
@@ -52,6 +62,7 @@ def _identity(seed: str = "1") -> ExecutionIdentity:
             ground_truth_sha256="2" * 64,
             ids_sha256="3" * 64,
             building_context=tuple(sorted(context.items())),
+            **_ground_truth_identity_fields(key),
         )
         for key, context in (
             (
@@ -163,6 +174,12 @@ class FakeServices:
                     ground_truth_sha256=row["ground_truth_sha256"],
                     ids_sha256=row["ids_sha256"],
                     building_context=tuple(tuple(item) for item in row["building_context"]),
+                    ground_truth_policy_version=row["ground_truth_policy_version"],
+                    ground_truth_items=row["ground_truth_items"],
+                    equivalence_classes=row["equivalence_classes"],
+                    confidence_counts=tuple(
+                        tuple(item) for item in row["confidence_counts"]
+                    ),
                 )
                 for row in raw["datasets"]
             ),
@@ -268,7 +285,20 @@ def release_fixture(tmp_path: Path) -> tuple[BenchmarkArgs, FakeServices]:
         local_ifc = evaluation / f"{key}_v1.ifc"
         local_ifc.write_bytes(package_ifc.read_bytes())
         ground_truth = evaluation / "ground_truth.yaml"
-        ground_truth.write_text("schema_version: 1\nissues: []\n", encoding="utf-8")
+        gt_metadata = _ground_truth_identity_fields(key)
+        counts = dict(gt_metadata["confidence_counts"])
+        ground_truth.write_text(
+            "metadata:\n"
+            "  protocol: full-coverage-equivalent-v1\n"
+            f"  total_items: {gt_metadata['ground_truth_items']}\n"
+            f"  equivalence_class_count: {gt_metadata['equivalence_classes']}\n"
+            "  confidence_counts:\n"
+            f"    high: {counts['high']}\n"
+            f"    medium: {counts['medium']}\n"
+            f"    low: {counts['low']}\n"
+            "items: []\nskipped: []\n",
+            encoding="utf-8",
+        )
         manifest_datasets[key] = _record(package, package_ifc, key="path")
         dataset_inputs[key] = {
             "ifc": dict(manifest_datasets[key]),

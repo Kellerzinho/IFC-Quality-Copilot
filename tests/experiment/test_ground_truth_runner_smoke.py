@@ -34,19 +34,33 @@ def _deterministic_batch(issues, _context, on_progress=None, **_kwargs):
 
 @pytest.mark.integration
 @pytest.mark.parametrize(
-    ("dataset", "relative_ifc", "relative_ground_truth", "building_context"),
+    (
+        "dataset",
+        "relative_ifc",
+        "relative_ground_truth",
+        "building_context",
+        "expected_items",
+        "expected_equivalences",
+        "expected_confidence",
+    ),
     [
         (
             "predio",
             Path("data/evaluation/predio/predio_v1.ifc"),
             Path("data/evaluation/predio/ground_truth.yaml"),
             {"building_type": "Residencial multifamiliar", "bioclimatic_zone": "4A"},
+            4720,
+            202,
+            {"high": 2307, "medium": 1365, "low": 1048},
         ),
         (
             "casa",
             Path("data/evaluation/casa/casa_v1.ifc"),
             Path("data/evaluation/casa/ground_truth.yaml"),
             {"building_type": "Residencial unifamiliar", "bioclimatic_zone": "4A"},
+            263,
+            101,
+            {"high": 52, "medium": 132, "low": 79},
         ),
     ],
 )
@@ -55,6 +69,9 @@ def test_runner_smoke_loads_frozen_ground_truth_without_mutating_ifc(
     relative_ifc: Path,
     relative_ground_truth: Path,
     building_context: dict[str, str],
+    expected_items: int,
+    expected_equivalences: int,
+    expected_confidence: dict[str, int],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Quebra se o runner deixar de respeitar o GT, a cópia ou o reuso pedido."""
@@ -89,5 +106,11 @@ def test_runner_smoke_loads_frozen_ground_truth_without_mutating_ifc(
         ground_truth_path.read_bytes()
     ).hexdigest()
     assert result.metadata.reuse_equivalent is True
+    assert result.metadata.ground_truth_policy_version == "full-coverage-equivalent-v1"
+    assert result.metadata.ground_truth_items == expected_items
+    assert result.metadata.ground_truth_equivalence_classes == expected_equivalences
+    assert result.metadata.ground_truth_confidence_counts == expected_confidence
+    assert result.evaluation.accuracy_all.total == 1
+    assert result.evaluation.accuracy_equivalence.total == 1
     assert result.metadata.hardware == SMOKE_HARDWARE
     assert hashlib.sha256(ifc_path.read_bytes()).hexdigest() == before

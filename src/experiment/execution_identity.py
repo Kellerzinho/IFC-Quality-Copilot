@@ -7,11 +7,17 @@ import json
 import re
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass, fields
+from pathlib import Path
+from typing import Any
+
+import yaml
 
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+GROUND_TRUTH_POLICY_VERSION = "full-coverage-equivalent-v1"
+CONFIDENCE_BUCKETS = ("high", "medium", "low")
 
 
-def _validate_sha_fields(value: object) -> None:
+def _validate_sha_fields(value: Any) -> None:
     """Valida todos os campos SHA-256 declarados em um dataclass."""
     for descriptor in fields(value):
         if descriptor.name.endswith("_sha256"):
@@ -21,7 +27,39 @@ def _validate_sha_fields(value: object) -> None:
 
 
 @dataclass(frozen=True)
-class DatasetIdentity:
+class GroundTruthIdentityMetadata:
+    """Metadados científicos que participam da identidade de execução."""
+
+    ground_truth_policy_version: str
+    ground_truth_items: int
+    equivalence_classes: int
+    confidence_counts: Sequence[tuple[str, int]]
+
+    def __post_init__(self) -> None:
+        if self.ground_truth_policy_version != GROUND_TRUTH_POLICY_VERSION:
+            raise ValueError("politica integral do ground truth invalida")
+        if type(self.ground_truth_items) is not int or self.ground_truth_items <= 0:
+            raise ValueError("ground_truth_items deve ser inteiro positivo")
+        if (
+            type(self.equivalence_classes) is not int
+            or self.equivalence_classes <= 0
+            or self.equivalence_classes > self.ground_truth_items
+        ):
+            raise ValueError("equivalence_classes deve estar entre 1 e ground_truth_items")
+        if not isinstance(self.confidence_counts, tuple):
+            raise TypeError("confidence_counts deve ser tuple")
+        names = tuple(name for name, _count in self.confidence_counts)
+        if names != CONFIDENCE_BUCKETS:
+            raise ValueError("confidence_counts deve conter high,medium,low nessa ordem")
+        counts = tuple(count for _name, count in self.confidence_counts)
+        if any(type(count) is not int or count < 0 for count in counts):
+            raise ValueError("confidence_counts deve conter inteiros nao negativos")
+        if sum(counts) != self.ground_truth_items:
+            raise ValueError("somatorio de confidence_counts diverge de ground_truth_items")
+
+
+@dataclass(frozen=True)
+class DatasetIdentity(GroundTruthIdentityMetadata):
     """Entradas congeladas de um dataset, incluindo seu contexto semântico."""
 
     key: str
@@ -29,13 +67,53 @@ class DatasetIdentity:
     ground_truth_sha256: str
     ids_sha256: str
     building_context: Sequence[tuple[str, str]]
+    ground_truth_policy_version: str
+    ground_truth_items: int
+    equivalence_classes: int
+    confidence_counts: Sequence[tuple[str, int]]
 
     def __post_init__(self) -> None:
+        super().__post_init__()
+        if self.key not in {"predio", "casa"}:
+            raise ValueError("dataset deve ser predio ou casa")
         if not isinstance(self.building_context, tuple):
             raise TypeError("building_context deve ser tuple")
         if tuple(sorted(self.building_context)) != self.building_context:
             raise ValueError("building_context deve estar ordenado")
         _validate_sha_fields(self)
+
+
+def load_ground_truth_identity_metadata(
+    path: str | Path,
+) -> GroundTruthIdentityMetadata:
+    """Lê somente o metadata integral de um YAML já validado por SHA-256."""
+    document_path = Path(path)
+    try:
+        document = yaml.safe_load(document_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, yaml.YAMLError) as error:
+        raise ValueError(f"ground truth invalido em {document_path}: {error}") from error
+    if not isinstance(document, dict) or not isinstance(document.get("metadata"), dict):
+        raise ValueError("ground truth deve conter metadata como mapeamento")
+    metadata = document["metadata"]
+    required = {
+        "protocol",
+        "total_items",
+        "equivalence_class_count",
+        "confidence_counts",
+    }
+    if not required.issubset(metadata):
+        raise ValueError("metadata integral possui campos ausentes")
+    raw_counts = metadata["confidence_counts"]
+    if not isinstance(raw_counts, dict) or set(raw_counts) != set(CONFIDENCE_BUCKETS):
+        raise ValueError("confidence_counts deve conter somente high,medium,low")
+    return GroundTruthIdentityMetadata(
+        ground_truth_policy_version=metadata["protocol"],
+        ground_truth_items=metadata["total_items"],
+        equivalence_classes=metadata["equivalence_class_count"],
+        confidence_counts=tuple(
+            (name, raw_counts[name]) for name in CONFIDENCE_BUCKETS
+        ),
+    )
 
 
 @dataclass(frozen=True)

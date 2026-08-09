@@ -46,6 +46,7 @@ from src.experiment.evaluator import Evaluator, GroundTruth
 from src.experiment.execution_identity import (
     ExecutionIdentity,
     canonical_identity_sha256,
+    load_ground_truth_identity_metadata,
 )
 from src.experiment.metrics import (
     ExperimentResult,
@@ -299,6 +300,34 @@ class ExperimentRunner:
                 telemetria de latência passa a medir estímulos, não issues.
         """
         ground_truth = GroundTruth.from_yaml(ground_truth_path)
+        try:
+            ground_truth_identity = load_ground_truth_identity_metadata(ground_truth_path)
+        except ValueError:
+            if execution_identity is not None:
+                raise
+            ground_truth_identity = None
+        if execution_identity is not None:
+            assert ground_truth_identity is not None
+            frozen_dataset = next(
+                (item for item in execution_identity.datasets if item.key == dataset_key),
+                None,
+            )
+            if frozen_dataset is None:
+                raise ValueError(f"dataset {dataset_key!r} ausente da execution_identity")
+            expected_ground_truth_metadata = (
+                frozen_dataset.ground_truth_policy_version,
+                frozen_dataset.ground_truth_items,
+                frozen_dataset.equivalence_classes,
+                frozen_dataset.confidence_counts,
+            )
+            actual_ground_truth_metadata = (
+                ground_truth_identity.ground_truth_policy_version,
+                ground_truth_identity.ground_truth_items,
+                ground_truth_identity.equivalence_classes,
+                ground_truth_identity.confidence_counts,
+            )
+            if actual_ground_truth_metadata != expected_ground_truth_metadata:
+                raise ValueError("metadata integral do ground truth diverge da identidade")
         evaluator = Evaluator()
 
         ifc_hash = sha256_of(ifc_path)
@@ -407,6 +436,26 @@ class ExperimentRunner:
                         ifc_sha256=ifc_hash or "",
                         ids_sha256=sha256_of(ids_path),
                         ground_truth_sha256=sha256_of(ground_truth_path),
+                        ground_truth_policy_version=(
+                            ground_truth_identity.ground_truth_policy_version
+                            if ground_truth_identity is not None
+                            else ""
+                        ),
+                        ground_truth_items=(
+                            ground_truth_identity.ground_truth_items
+                            if ground_truth_identity is not None
+                            else 0
+                        ),
+                        ground_truth_equivalence_classes=(
+                            ground_truth_identity.equivalence_classes
+                            if ground_truth_identity is not None
+                            else 0
+                        ),
+                        ground_truth_confidence_counts=(
+                            dict(ground_truth_identity.confidence_counts)
+                            if ground_truth_identity is not None
+                            else {}
+                        ),
                         building_context={
                             str(key): str(value) for key, value in building_context.items()
                         },

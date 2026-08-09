@@ -45,6 +45,7 @@ from src.experiment.execution_identity import (
     DatasetIdentity,
     ExecutionIdentity,
     canonical_identity_sha256,
+    load_ground_truth_identity_metadata,
 )
 from src.experiment.model_lock import (
     ModelMatrixLock,
@@ -368,13 +369,14 @@ def build_execution_identity(args: BenchmarkArgs | argparse.Namespace) -> Execut
             raise ValueError(f"SHA-256 divergente no IFC local {key}")
 
         gt_record = _mapping(dataset.get("ground_truth"), f"{key}.ground_truth")
-        _, gt_sha = _validate_record(
+        gt_path, gt_sha = _validate_record(
             resolved.project_root,
             gt_record,
             field="project_path",
             expected=f"data/evaluation/{key}/ground_truth.yaml",
             label=f"ground truth {key}",
         )
+        gt_metadata = load_ground_truth_identity_metadata(gt_path)
         ids_record = _mapping(dataset.get("ids"), f"{key}.ids")
         _, ids_sha = _validate_record(
             resolved.project_root,
@@ -390,6 +392,12 @@ def build_execution_identity(args: BenchmarkArgs | argparse.Namespace) -> Execut
                 ground_truth_sha256=gt_sha,
                 ids_sha256=ids_sha,
                 building_context=tuple(sorted(contexts[key].items())),
+                ground_truth_policy_version=(
+                    gt_metadata.ground_truth_policy_version
+                ),
+                ground_truth_items=gt_metadata.ground_truth_items,
+                equivalence_classes=gt_metadata.equivalence_classes,
+                confidence_counts=gt_metadata.confidence_counts,
             )
         )
 

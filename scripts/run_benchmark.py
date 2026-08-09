@@ -28,7 +28,7 @@ from uuid import UUID, uuid4
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-import psutil  # type: ignore[import-untyped]
+import psutil
 from loguru import logger
 from pydantic import BaseModel, ConfigDict
 
@@ -36,6 +36,7 @@ from src.experiment.execution_identity import (
     DatasetIdentity,
     ExecutionIdentity,
     canonical_identity_sha256,
+    load_ground_truth_identity_metadata,
 )
 from src.experiment.model_lock import load_model_lock
 from src.experiment.runner import ExperimentRunner, _sanitize
@@ -94,6 +95,10 @@ class StageExpectation:
     cache_enabled: bool
     reuse_equivalent: bool
     building_context: dict[str, str]
+    ground_truth_policy_version: str
+    ground_truth_items: int
+    ground_truth_equivalence_classes: int
+    ground_truth_confidence_counts: dict[str, int]
 
 
 @dataclass(frozen=True)
@@ -207,6 +212,10 @@ def _parse_execution_identity(raw: object) -> ExecutionIdentity:
                 "ground_truth_sha256",
                 "ids_sha256",
                 "building_context",
+                "ground_truth_policy_version",
+                "ground_truth_items",
+                "equivalence_classes",
+                "confidence_counts",
             },
             f"datasets[{index}]",
         )
@@ -225,6 +234,19 @@ def _parse_execution_identity(raw: object) -> ExecutionIdentity:
         context_keys = [key for key, _ in context]
         if len(context_keys) != len(set(context_keys)):
             raise ValueError("building_context contém chave duplicada")
+        raw_confidence = dataset_data["confidence_counts"]
+        if not isinstance(raw_confidence, list):
+            raise ValueError("confidence_counts deve ser uma lista JSON")
+        confidence_counts: list[tuple[str, int]] = []
+        for pair in raw_confidence:
+            if (
+                not isinstance(pair, list)
+                or len(pair) != 2
+                or not isinstance(pair[0], str)
+                or type(pair[1]) is not int
+            ):
+                raise ValueError("confidence_counts contém par inválido")
+            confidence_counts.append((pair[0], pair[1]))
         datasets.append(
             DatasetIdentity(
                 key=dataset_data["key"],
@@ -232,6 +254,12 @@ def _parse_execution_identity(raw: object) -> ExecutionIdentity:
                 ground_truth_sha256=dataset_data["ground_truth_sha256"],
                 ids_sha256=dataset_data["ids_sha256"],
                 building_context=tuple(context),
+                ground_truth_policy_version=dataset_data[
+                    "ground_truth_policy_version"
+                ],
+                ground_truth_items=dataset_data["ground_truth_items"],
+                equivalence_classes=dataset_data["equivalence_classes"],
+                confidence_counts=tuple(confidence_counts),
             )
         )
     identity = ExecutionIdentity(
@@ -284,6 +312,15 @@ def _load_and_validate_execution_identity(path: Path) -> ExecutionIdentity:
                 raise ValueError(f"{frozen.key}.{field} diverge do arquivo local")
         if dict(frozen.building_context) != local["building_context"]:
             raise ValueError(f"{frozen.key}.building_context diverge do registro local")
+        metadata = load_ground_truth_identity_metadata(Path(local["gt"]))
+        if (
+            metadata.ground_truth_policy_version
+            != frozen.ground_truth_policy_version
+            or metadata.ground_truth_items != frozen.ground_truth_items
+            or metadata.equivalence_classes != frozen.equivalence_classes
+            or metadata.confidence_counts != frozen.confidence_counts
+        ):
+            raise ValueError(f"{frozen.key}.metadata integral diverge do arquivo local")
     return identity
 
 
@@ -379,6 +416,10 @@ def _stage_expectation(
         cache_enabled=identity.cache_enabled,
         reuse_equivalent=identity.reuse_equivalent,
         building_context=dict(dataset.building_context),
+        ground_truth_policy_version=dataset.ground_truth_policy_version,
+        ground_truth_items=dataset.ground_truth_items,
+        ground_truth_equivalence_classes=dataset.equivalence_classes,
+        ground_truth_confidence_counts=dict(dataset.confidence_counts),
     )
 
 

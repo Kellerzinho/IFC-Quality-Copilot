@@ -20,6 +20,16 @@ from src.experiment.execution_identity import (
 )
 
 
+def _ground_truth_identity_fields(key: str) -> dict[str, object]:
+    items, equivalences = (4720, 202) if key == "predio" else (263, 101)
+    return {
+        "ground_truth_policy_version": "full-coverage-equivalent-v1",
+        "ground_truth_items": items,
+        "equivalence_classes": equivalences,
+        "confidence_counts": (("high", items - 2), ("medium", 1), ("low", 1)),
+    }
+
+
 def official_identity(**overrides: object) -> ExecutionIdentity:
     values: dict[str, object] = {
         "release_id": "ifcqc-r1",
@@ -35,6 +45,7 @@ def official_identity(**overrides: object) -> ExecutionIdentity:
                     ("bioclimatic_zone", "4A"),
                     ("building_type", "Residencial multifamiliar"),
                 ),
+                **_ground_truth_identity_fields("predio"),
             ),
             DatasetIdentity(
                 key="casa",
@@ -45,6 +56,7 @@ def official_identity(**overrides: object) -> ExecutionIdentity:
                     ("bioclimatic_zone", "4A"),
                     ("building_type", "Residencial unifamiliar"),
                 ),
+                **_ground_truth_identity_fields("casa"),
             ),
         ),
         "replica_count": 1,
@@ -81,6 +93,10 @@ def _expectation(
         cache_enabled=identity.cache_enabled,
         reuse_equivalent=identity.reuse_equivalent,
         building_context=dict(dataset.building_context),
+        ground_truth_policy_version=dataset.ground_truth_policy_version,
+        ground_truth_items=dataset.ground_truth_items,
+        ground_truth_equivalence_classes=dataset.equivalence_classes,
+        ground_truth_confidence_counts=dict(dataset.confidence_counts),
     )
 
 
@@ -131,7 +147,20 @@ def install_fake_runner(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> list
         ifc = tmp_path / f"{key}.ifc"
         gt = tmp_path / f"{key}.yaml"
         ifc.write_bytes(key.encode())
-        gt.write_text("metadata: {}\nitems: []\nskipped: []\n", encoding="utf-8")
+        metadata = _ground_truth_identity_fields(key)
+        counts = dict(metadata["confidence_counts"])
+        gt.write_text(
+            "metadata:\n"
+            "  protocol: full-coverage-equivalent-v1\n"
+            f"  total_items: {metadata['ground_truth_items']}\n"
+            f"  equivalence_class_count: {metadata['equivalence_classes']}\n"
+            "  confidence_counts:\n"
+            f"    high: {counts['high']}\n"
+            f"    medium: {counts['medium']}\n"
+            f"    low: {counts['low']}\n"
+            "items: []\nskipped: []\n",
+            encoding="utf-8",
+        )
         datasets.append(
             {
                 "key": key,
@@ -248,7 +277,20 @@ def _install_identity_fixture(
         ifc = tmp_path / f"{key}.ifc"
         gt = tmp_path / f"{key}.yaml"
         ifc.write_bytes(key.encode("utf-8"))
-        gt.write_text("metadata: {}\nitems: []\nskipped: []\n", encoding="utf-8")
+        metadata = _ground_truth_identity_fields(key)
+        counts = dict(metadata["confidence_counts"])
+        gt.write_text(
+            "metadata:\n"
+            "  protocol: full-coverage-equivalent-v1\n"
+            f"  total_items: {metadata['ground_truth_items']}\n"
+            f"  equivalence_class_count: {metadata['equivalence_classes']}\n"
+            "  confidence_counts:\n"
+            f"    high: {counts['high']}\n"
+            f"    medium: {counts['medium']}\n"
+            f"    low: {counts['low']}\n"
+            "items: []\nskipped: []\n",
+            encoding="utf-8",
+        )
         context = {
             "building_type": building_type,
             "bioclimatic_zone": "4A",
@@ -269,6 +311,7 @@ def _install_identity_fixture(
                 ground_truth_sha256=hashlib.sha256(gt.read_bytes()).hexdigest(),
                 ids_sha256=hashlib.sha256(ids.read_bytes()).hexdigest(),
                 building_context=tuple(sorted(context.items())),
+                **_ground_truth_identity_fields(key),
             )
         )
     identity = ExecutionIdentity(
@@ -567,6 +610,10 @@ def test_stage_done_rejects_invalid_issues_jsonl(tmp_path, damage):
         ("dataset_key", "predio"),
         ("ifc_sha256", "e" * 64),
         ("ground_truth_sha256", "f" * 64),
+        ("ground_truth_policy_version", "full-coverage-equivalent-v0"),
+        ("ground_truth_items", 1),
+        ("ground_truth_equivalence_classes", 1),
+        ("ground_truth_confidence_counts", {"high": 1, "medium": 0, "low": 0}),
         ("ids_sha256", "0" * 64),
         ("model_name", "other"),
         ("model_digest", "f" * 64),

@@ -68,6 +68,10 @@ class RunMetadata(BaseModel):
     ifc_sha256: str = ""
     ids_sha256: str | None = None
     ground_truth_sha256: str | None = None
+    ground_truth_policy_version: str = ""
+    ground_truth_items: int = 0
+    ground_truth_equivalence_classes: int = 0
+    ground_truth_confidence_counts: dict[str, int] = Field(default_factory=dict)
     building_context: dict[str, str] = Field(default_factory=dict)
     dataset_key: str = ""
     execution_identity: dict[str, Any] = Field(default_factory=dict)

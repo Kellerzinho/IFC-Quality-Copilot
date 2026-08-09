@@ -8,7 +8,21 @@ from src.experiment.execution_identity import (
     DatasetIdentity,
     ExecutionIdentity,
     canonical_identity_sha256,
+    load_ground_truth_identity_metadata,
 )
+
+
+def dataset_metadata(*, items: int, equivalences: int):
+    return {
+        "ground_truth_policy_version": "full-coverage-equivalent-v1",
+        "ground_truth_items": items,
+        "equivalence_classes": equivalences,
+        "confidence_counts": (
+            ("high", items - 2),
+            ("medium", 1),
+            ("low", 1),
+        ),
+    }
 
 
 def identity(**overrides) -> ExecutionIdentity:
@@ -26,6 +40,7 @@ def identity(**overrides) -> ExecutionIdentity:
                     ("bioclimatic_zone", "4A"),
                     ("building_type", "Residencial multifamiliar"),
                 ),
+                **dataset_metadata(items=4720, equivalences=202),
             ),
             DatasetIdentity(
                 key="casa",
@@ -36,6 +51,7 @@ def identity(**overrides) -> ExecutionIdentity:
                     ("bioclimatic_zone", "4A"),
                     ("building_type", "Residencial unifamiliar"),
                 ),
+                **dataset_metadata(items=263, equivalences=101),
             ),
         ),
         "replica_count": 1,
@@ -73,6 +89,31 @@ def identity(**overrides) -> ExecutionIdentity:
         },
         {
             "datasets": (
+                replace(
+                    identity().datasets[0],
+                    ground_truth_items=4719,
+                    confidence_counts=(("high", 4717), ("medium", 1), ("low", 1)),
+                ),
+                identity().datasets[1],
+            )
+        },
+        {
+            "datasets": (
+                replace(identity().datasets[0], equivalence_classes=201),
+                identity().datasets[1],
+            )
+        },
+        {
+            "datasets": (
+                replace(
+                    identity().datasets[0],
+                    confidence_counts=(("high", 4716), ("medium", 3), ("low", 1)),
+                ),
+                identity().datasets[1],
+            )
+        },
+        {
+            "datasets": (
                 replace(identity().datasets[0], ids_sha256="e" * 64),
                 identity().datasets[1],
             )
@@ -100,7 +141,7 @@ def test_every_experimental_input_changes_identity_digest(replacement):
 def test_digest_is_independent_from_json_mapping_order():
     # Vetor dourado calculado sobre JSON UTF-8 compacto com chaves ordenadas.
     assert canonical_identity_sha256(identity()) == (
-        "43a25928ffebc431c047d45bcb420e2e086705d6adda8f33a5d6a7565fc66186"
+        "36cb1d2fa29f837679e1658630436b5244c747ae0b6cccaa80d59468a48f6768"
     )
 
 
@@ -136,3 +177,48 @@ def test_identity_requires_tuple_inputs_and_canonical_dataset_order():
 def test_replica_count_must_be_positive():
     with pytest.raises(ValueError, match="replica_count deve ser positivo"):
         identity(replica_count=0)
+
+
+def test_dataset_identity_rejects_non_integral_policy_and_invalid_counts():
+    dataset = identity().datasets[0]
+    with pytest.raises(ValueError, match="politica integral"):
+        replace(dataset, ground_truth_policy_version="evidence-audited-v1")
+    with pytest.raises(ValueError, match="confidence_counts"):
+        replace(
+            dataset,
+            confidence_counts=(("high", 1), ("medium", 1), ("unknown", 4718)),
+        )
+    with pytest.raises(ValueError, match="somatorio"):
+        replace(
+            dataset,
+            confidence_counts=(("high", 1), ("medium", 1), ("low", 1)),
+        )
+    with pytest.raises(ValueError, match="equivalence_classes"):
+        replace(dataset, equivalence_classes=4721)
+
+
+def test_load_ground_truth_identity_metadata_requires_exact_integral_metadata(tmp_path):
+    path = tmp_path / "ground_truth.yaml"
+    path.write_text(
+        """
+metadata:
+  protocol: full-coverage-equivalent-v1
+  total_items: 263
+  equivalence_class_count: 101
+  confidence_counts: {high: 52, medium: 132, low: 79}
+items: []
+skipped: []
+""",
+        encoding="utf-8",
+    )
+
+    metadata = load_ground_truth_identity_metadata(path)
+
+    assert metadata.ground_truth_policy_version == "full-coverage-equivalent-v1"
+    assert metadata.ground_truth_items == 263
+    assert metadata.equivalence_classes == 101
+    assert metadata.confidence_counts == (("high", 52), ("medium", 132), ("low", 79))
+
+    path.write_text(path.read_text(encoding="utf-8").replace("low: 79", "low: 78"))
+    with pytest.raises(ValueError, match="somatorio"):
+        load_ground_truth_identity_metadata(path)
