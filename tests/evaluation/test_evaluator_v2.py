@@ -12,7 +12,6 @@ from src.experiment.evaluator import (
 )
 from src.models import Issue, Suggestion, SuggestionSet
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -102,7 +101,9 @@ class TestComparacaoBooleanaNormalizada:
 class TestComparacaoTextualNormalizada:
     """Strings devem comparar insensível a acento/caixa/espaços."""
 
-    @pytest.mark.parametrize("candidate", ["Banheiro Social", "banheiro social", " BANHEIRO  SOCIAL "])
+    @pytest.mark.parametrize(
+        "candidate", ["Banheiro Social", "banheiro social", " BANHEIRO  SOCIAL "]
+    )
     def test_espaco_casefold_acentos(self, candidate):
         issue = _issue("space_unnamed", element_class="IfcSpace")
         assert values_match(issue, candidate, "Banheiro Social")
@@ -288,8 +289,16 @@ class TestMetricasFormalizadas:
                                 check_property="ThermalTransmittance", expected_value=2.5),
             ]
         )
-        i_hit = _issue("pset_missing", element_guid="W1" + "x" * 20, check_property="ThermalTransmittance")
-        i_abstain = _issue("pset_missing", element_guid="W2" + "x" * 20, check_property="ThermalTransmittance")
+        i_hit = _issue(
+            "pset_missing",
+            element_guid="W1" + "x" * 20,
+            check_property="ThermalTransmittance",
+        )
+        i_abstain = _issue(
+            "pset_missing",
+            element_guid="W2" + "x" * 20,
+            check_property="ThermalTransmittance",
+        )
         results = [_pair(i_hit, 2.5), _pair(i_abstain)]  # segunda sem sugestão
 
         metrics = Evaluator().evaluate(results, gt)
@@ -297,3 +306,76 @@ class TestMetricasFormalizadas:
         assert metrics.precision == pytest.approx(1.0)
         # 1 acerto entre 2 itens de GT → recall 0.5
         assert metrics.recall == pytest.approx(0.5)
+
+
+class TestMetricasPorEquivalenciaEConfianca:
+    def test_macro_equivalence_does_not_overweight_repeated_elements(self):
+        results: list[tuple[Issue, SuggestionSet]] = []
+        items: list[GroundTruthItem] = []
+        for index in range(101):
+            guid = f"{index:022d}"
+            issue = _issue(
+                "pset_missing",
+                element_guid=guid,
+                check_property="Category",
+                element_class="IfcSpace",
+            )
+            repeated = index < 100
+            items.append(
+                GroundTruthItem(
+                    element_guid=guid,
+                    issue_type="pset_missing",
+                    check_property="Category",
+                    expected_value="BEDROOM",
+                    equivalence_id=(
+                        "eq-1111111111111111" if repeated else "eq-2222222222222222"
+                    ),
+                    confidence="high" if repeated else "low",
+                    source_kind="existing_gt" if repeated else "probable",
+                    legacy_reference=repeated,
+                )
+            )
+            results.append(_pair(issue, "BEDROOM" if repeated else "KITCHEN"))
+
+        metrics = Evaluator().evaluate(results, GroundTruth(items=items))
+
+        assert metrics.accuracy_all.top1 == pytest.approx(100 / 101, abs=1e-4)
+        assert metrics.accuracy_all.top1 == metrics.accuracy_top1
+        assert metrics.accuracy_equivalence.top1 == pytest.approx(0.5)
+        assert metrics.accuracy_equivalence.total == 2
+        assert metrics.accuracy_by_confidence["high"].top1 == pytest.approx(1.0)
+        assert metrics.accuracy_by_confidence["low"].top1 == pytest.approx(0.0)
+        assert metrics.accuracy_by_confidence["medium"].total == 0
+        assert metrics.accuracy_legacy.top1 == pytest.approx(1.0)
+        assert metrics.accuracy_legacy.total == 100
+
+    def test_partial_class_top3_and_abstention_are_counted_once(self):
+        issues = [
+            _issue("pset_missing", element_guid=f"PARTIAL-{index:014d}", check_property="Category")
+            for index in range(3)
+        ]
+        items = [
+            GroundTruthItem(
+                element_guid=issue.element_guid,
+                issue_type=issue.issue_type,
+                check_property="Category",
+                expected_value="BEDROOM",
+                equivalence_id="eq-3333333333333333",
+                confidence="medium",
+                source_kind="typology",
+            )
+            for issue in issues
+        ]
+        results = [
+            _pair(issues[0], "BEDROOM"),
+            _pair(issues[1], "KITCHEN", "BEDROOM"),
+            _pair(issues[2]),
+        ]
+
+        metrics = Evaluator().evaluate(results, GroundTruth(items=items))
+
+        assert metrics.accuracy_equivalence.top1 == pytest.approx(1 / 3, abs=1e-4)
+        assert metrics.accuracy_equivalence.top3 == pytest.approx(2 / 3, abs=1e-4)
+        assert metrics.accuracy_equivalence.total == 1
+        assert metrics.accuracy_by_confidence["medium"].total == 3
+        assert metrics.accuracy_legacy.total == 0

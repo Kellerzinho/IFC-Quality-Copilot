@@ -16,7 +16,14 @@ from src.experiment.report import (
 )
 
 
-def _run_json(model: str, replica: int, top1: float, latency: float) -> dict:
+def _run_json(
+    model: str,
+    replica: int,
+    top1: float,
+    latency: float,
+    *,
+    equivalence_top1: float | None = None,
+) -> dict:
     """ExperimentResult mínimo com os campos que o report consome."""
     return {
         "metadata": {"model_name": model, "replica_index": replica},
@@ -25,6 +32,24 @@ def _run_json(model: str, replica: int, top1: float, latency: float) -> dict:
             "accuracy_top3": min(top1 + 0.1, 1.0),
             "precision": top1,
             "total_evaluated": 20,
+            **(
+                {
+                    "accuracy_all": {"top1": top1, "top3": min(top1 + 0.1, 1.0), "total": 20},
+                    "accuracy_equivalence": {
+                        "top1": equivalence_top1,
+                        "top3": min(equivalence_top1 + 0.1, 1.0),
+                        "total": 4,
+                    },
+                    "accuracy_by_confidence": {
+                        "high": {"top1": top1, "top3": top1, "total": 10},
+                        "medium": {"top1": top1, "top3": top1, "total": 5},
+                        "low": {"top1": top1, "top3": top1, "total": 5},
+                    },
+                    "accuracy_legacy": {"top1": top1, "top3": top1, "total": 3},
+                }
+                if equivalence_top1 is not None
+                else {}
+            ),
         },
         "review_proxy": {
             "ids_conformity_rate": 0.9,
@@ -79,6 +104,36 @@ class TestLoadAndAggregate:
         qwen = agg.iloc[0]
         assert qwen["accuracy_top1_mean"] == pytest.approx(0.41)
         assert qwen["replicas"] == 2
+
+    def test_ranking_prefers_equivalence_and_marks_legacy_fallback(self, tmp_path: Path):
+        for model, occurrence, equivalence in [
+            ("repeated-winner", 0.95, 0.20),
+            ("class-winner", 0.60, 0.80),
+        ]:
+            directory = tmp_path / model
+            directory.mkdir()
+            payload = _run_json(
+                model,
+                0,
+                occurrence,
+                1000.0,
+                equivalence_top1=equivalence,
+            )
+            (directory / "run_0.json").write_text(json.dumps(payload), encoding="utf-8")
+
+        ranked = aggregate(load_results(tmp_path))
+
+        assert list(ranked["model"]) == ["class-winner", "repeated-winner"]
+        assert set(ranked["metric_basis"]) == {"equivalence"}
+
+        legacy_dir = tmp_path / "legacy"
+        legacy_dir.mkdir()
+        legacy = _run_json("legacy", 0, 0.70, 1000.0)
+        (legacy_dir / "run_0.json").write_text(json.dumps(legacy), encoding="utf-8")
+        loaded = load_results(legacy_dir.parent)
+        legacy_row = loaded.loc[loaded["model"] == "legacy"].iloc[0]
+        assert legacy_row["accuracy_equivalence_top1"] == pytest.approx(0.70)
+        assert legacy_row["metric_basis"] == "legacy_occurrence"
 
 
 class TestTables:

@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 import pandas as pd
 import pytest
 
+from src.experiment.evaluator import Evaluator, GroundTruth
 from src.models import (
     Issue,
     ProfileRegistry,
@@ -13,8 +14,6 @@ from src.models import (
     Suggestion,
     SuggestionSet,
 )
-from src.experiment.evaluator import Evaluator, GroundTruth
-
 
 # ---------------------------------------------------------------------------
 # Helpers de fixture
@@ -314,7 +313,16 @@ class TestEvaluateAllProfiles:
             mock_pipeline, ground_truth_all, registry_two_profiles
         )
 
-        expected_keys = {"accuracy_top1", "accuracy_top3", "precision", "recall", "f1", "readiness_improvement"}
+        expected_keys = {
+            "accuracy_top1",
+            "accuracy_top3",
+            "accuracy_equivalence_top1",
+            "accuracy_equivalence_top3",
+            "precision",
+            "recall",
+            "f1",
+            "readiness_improvement",
+        }
         for metrics in all_metrics.values():
             for summary in metrics.by_profile.values():
                 assert expected_keys == set(summary.keys())
@@ -359,6 +367,9 @@ class TestCompareProfilesDataFrame:
         df = evaluator.compare_profiles(multi_profile_metrics)
         expected = {
             "profile", "accuracy_top1", "accuracy_top3",
+            "accuracy_equivalence_top1", "accuracy_equivalence_top3",
+            "accuracy_high_top1", "accuracy_medium_top1", "accuracy_low_top1",
+            "accuracy_legacy_top1", "occurrence_count", "equivalence_count",
             "precision", "recall", "f1",
             "readiness_before", "readiness_after", "improvement",
         }
@@ -395,7 +406,8 @@ class TestCompareProfilesDataFrame:
         df = evaluator.compare_profiles({"empty": metrics})
 
         # Sem issues filtradas, readiness_before.score_percent == 100 (0 falhas / 1 check)
-        assert df.loc[df["profile"] == "empty", "readiness_before"].iloc[0] == pytest.approx(100.0, abs=1e-1)
+        actual = df.loc[df["profile"] == "empty", "readiness_before"].iloc[0]
+        assert actual == pytest.approx(100.0, abs=1e-1)
 
     def test_dataframe_vazio_com_dict_vazio(self):
         """Dict vazio retorna DataFrame vazio com colunas corretas."""

@@ -18,6 +18,8 @@ As definições de métricas estão nas docstrings de :class:`EvaluationMetrics`
 
 from __future__ import annotations
 
+from collections import defaultdict
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -128,15 +130,18 @@ def _compare_normalized(
     expected: Any,
     tolerance: float = DEFAULT_FLOAT_TOLERANCE,
 ) -> bool:
-    """Compara dois valores já normalizados: numérico → tolerância; bool → igualdade; texto → chave."""
+    """Compara normalizados: número por tolerância; bool/texto por igualdade."""
     # Booleanos primeiro: "true"/"1" devem casar com True, não cair no ramo numérico.
     cand_bool = _coerce_bool(candidate)
     exp_bool = _coerce_bool(expected)
-    if cand_bool is not None and exp_bool is not None:
-        # Só trata como booleano se algum dos lados for genuinamente booleano
-        # (evita que "1" vs "1.0" numéricos caiam aqui de forma indevida).
-        if isinstance(candidate, bool) or isinstance(expected, bool):
-            return cand_bool == exp_bool
+    # Só trata como booleano se algum dos lados for genuinamente booleano
+    # (evita que "1" vs "1.0" numéricos caiam aqui de forma indevida).
+    if (
+        cand_bool is not None
+        and exp_bool is not None
+        and (isinstance(candidate, bool) or isinstance(expected, bool))
+    ):
+        return cand_bool == exp_bool
 
     # Comparacao numerica so quando os DOIS lados sao mesmo numeros: string com
     # numero embutido ("REI 60") e categoria, e comparar categorias pelo numero
@@ -269,7 +274,7 @@ class GroundTruth(BaseModel):
         }
 
     @classmethod
-    def from_yaml(cls, path: str | Path) -> "GroundTruth":
+    def from_yaml(cls, path: str | Path) -> GroundTruth:
         """Carrega e valida um ground truth de arquivo YAML.
 
         Estrutura esperada::
@@ -292,6 +297,26 @@ class GroundTruth(BaseModel):
 # ---------------------------------------------------------------------------
 # Métricas de avaliação
 # ---------------------------------------------------------------------------
+
+
+class AccuracySlice(BaseModel):
+    """Acurácia top-k e contagens de um corte do ground truth."""
+
+    top1: float = 0.0
+    top3: float = 0.0
+    total: int = 0
+    top1_hits: int = 0
+    top3_hits: int = 0
+
+
+@dataclass(frozen=True)
+class _AccuracyObservation:
+    equivalence_id: str
+    confidence: str
+    legacy_reference: bool
+    top1_hit: bool
+    top3_hit: bool
+    has_suggestion: bool
 
 
 class EvaluationMetrics(BaseModel):
@@ -329,6 +354,18 @@ class EvaluationMetrics(BaseModel):
 
     total_evaluated: int = 0
     """Número de issues avaliadas (presentes no ground truth, após filtro de perfil)."""
+
+    accuracy_all: AccuracySlice = Field(default_factory=AccuracySlice)
+    """Microacurácia sobre todas as ocorrências; reproduz os campos legados."""
+
+    accuracy_equivalence: AccuracySlice = Field(default_factory=AccuracySlice)
+    """Macroacurácia: média simples da acurácia interna de cada equivalência."""
+
+    accuracy_by_confidence: dict[str, AccuracySlice] = Field(default_factory=dict)
+    """Microacurácia separada em high, medium e low."""
+
+    accuracy_legacy: AccuracySlice = Field(default_factory=AccuracySlice)
+    """Microacurácia restrita aos itens preservados da base anterior."""
 
     profile_id: str | None = None
     """ID do perfil usado para filtragem, ou None se avaliação global."""
@@ -382,8 +419,17 @@ class Evaluator:
         """
         filtered = self._filter_by_profile(results, profile)
 
-        acc1, acc3, precision, recall, f1, total_evaluated = self._compute_accuracy(
-            filtered, ground_truth
+        observations, precision, recall, f1 = self._compute_accuracy(filtered, ground_truth)
+        accuracy_all = self._micro_accuracy(observations)
+        accuracy_equivalence = self._equivalence_accuracy(observations)
+        accuracy_by_confidence = {
+            confidence: self._micro_accuracy(
+                [item for item in observations if item.confidence == confidence]
+            )
+            for confidence in ("high", "medium", "low")
+        }
+        accuracy_legacy = self._micro_accuracy(
+            [item for item in observations if item.legacy_reference]
         )
 
         readiness_before, readiness_after, improvement = self._compute_readiness(
@@ -391,12 +437,16 @@ class Evaluator:
         )
 
         return EvaluationMetrics(
-            accuracy_top1=round(acc1, 4),
-            accuracy_top3=round(acc3, 4),
+            accuracy_top1=accuracy_all.top1,
+            accuracy_top3=accuracy_all.top3,
             precision=round(precision, 4),
             recall=round(recall, 4),
             f1=round(f1, 4),
-            total_evaluated=total_evaluated,
+            total_evaluated=accuracy_all.total,
+            accuracy_all=accuracy_all,
+            accuracy_equivalence=accuracy_equivalence,
+            accuracy_by_confidence=accuracy_by_confidence,
+            accuracy_legacy=accuracy_legacy,
             profile_id=profile.id if profile else None,
             readiness_before=readiness_before,
             readiness_after=readiness_after,
@@ -409,7 +459,7 @@ class Evaluator:
 
     def evaluate_all_profiles(
         self,
-        pipeline: "QualityPipeline",
+        pipeline: QualityPipeline,
         ground_truth: GroundTruth,
         registry: ProfileRegistry,
     ) -> dict[str, EvaluationMetrics]:
@@ -438,6 +488,8 @@ class Evaluator:
             pid: {
                 "accuracy_top1": m.accuracy_top1,
                 "accuracy_top3": m.accuracy_top3,
+                "accuracy_equivalence_top1": m.accuracy_equivalence.top1,
+                "accuracy_equivalence_top3": m.accuracy_equivalence.top3,
                 "precision": m.precision,
                 "recall": m.recall,
                 "f1": m.f1,
@@ -473,6 +525,14 @@ class Evaluator:
             "profile",
             "accuracy_top1",
             "accuracy_top3",
+            "accuracy_equivalence_top1",
+            "accuracy_equivalence_top3",
+            "accuracy_high_top1",
+            "accuracy_medium_top1",
+            "accuracy_low_top1",
+            "accuracy_legacy_top1",
+            "occurrence_count",
+            "equivalence_count",
             "precision",
             "recall",
             "f1",
@@ -491,6 +551,14 @@ class Evaluator:
                     "profile": profile_id,
                     "accuracy_top1": metrics.accuracy_top1,
                     "accuracy_top3": metrics.accuracy_top3,
+                    "accuracy_equivalence_top1": metrics.accuracy_equivalence.top1,
+                    "accuracy_equivalence_top3": metrics.accuracy_equivalence.top3,
+                    "accuracy_high_top1": metrics.accuracy_by_confidence["high"].top1,
+                    "accuracy_medium_top1": metrics.accuracy_by_confidence["medium"].top1,
+                    "accuracy_low_top1": metrics.accuracy_by_confidence["low"].top1,
+                    "accuracy_legacy_top1": metrics.accuracy_legacy.top1,
+                    "occurrence_count": metrics.accuracy_all.total,
+                    "equivalence_count": metrics.accuracy_equivalence.total,
                     "precision": metrics.precision,
                     "recall": metrics.recall,
                     "f1": metrics.f1,
@@ -547,7 +615,7 @@ class Evaluator:
         self,
         filtered: list[tuple[Issue, SuggestionSet]],
         ground_truth: GroundTruth,
-    ) -> tuple[float, float, float, float, float, int]:
+    ) -> tuple[list[_AccuracyObservation], float, float, float]:
         """Calcula acurácia top-1, top-3, precision, recall e f1 (comparação normalizada).
 
         Ver :class:`EvaluationMetrics` para as definições formais.
@@ -555,9 +623,7 @@ class Evaluator:
         Returns:
             (accuracy_top1, accuracy_top3, precision, recall, f1, total_evaluated)
         """
-        top1_hits = 0
-        top3_hits = 0
-        total_with_gt = 0
+        observations: list[_AccuracyObservation] = []
         total_with_suggestion = 0
 
         for issue, suggestion_set in filtered:
@@ -565,22 +631,34 @@ class Evaluator:
             if item is None:
                 continue
 
-            total_with_gt += 1
             suggestions = suggestion_set.suggestions
+            top1_hit = False
 
             if suggestions:
                 total_with_suggestion += 1
                 if self._suggestion_matches(issue, suggestions[0].value, item):
-                    top1_hits += 1
+                    top1_hit = True
 
             top3 = suggestions[:3]
-            if any(self._suggestion_matches(issue, s.value, item) for s in top3):
-                top3_hits += 1
+            top3_hit = any(self._suggestion_matches(issue, s.value, item) for s in top3)
+            equivalence_id = (
+                item.equivalence_id
+                or item.issue_id
+                or "legacy:" + "|".join(item.natural_key or (issue.id, "", ""))
+            )
+            observations.append(
+                _AccuracyObservation(
+                    equivalence_id=equivalence_id,
+                    confidence=item.confidence or "",
+                    legacy_reference=item.legacy_reference,
+                    top1_hit=top1_hit,
+                    top3_hit=top3_hit,
+                    has_suggestion=bool(suggestions),
+                )
+            )
 
         total_gt_items = len(ground_truth.items)
-
-        acc1 = top1_hits / total_with_gt if total_with_gt > 0 else 0.0
-        acc3 = top3_hits / total_with_gt if total_with_gt > 0 else 0.0
+        top1_hits = sum(item.top1_hit for item in observations)
         precision = top1_hits / total_with_suggestion if total_with_suggestion > 0 else 0.0
         recall = top1_hits / total_gt_items if total_gt_items > 0 else 0.0
         f1 = (
@@ -589,7 +667,43 @@ class Evaluator:
             else 0.0
         )
 
-        return acc1, acc3, precision, recall, f1, total_with_gt
+        return observations, precision, recall, f1
+
+    @staticmethod
+    def _micro_accuracy(observations: list[_AccuracyObservation]) -> AccuracySlice:
+        total = len(observations)
+        top1_hits = sum(item.top1_hit for item in observations)
+        top3_hits = sum(item.top3_hit for item in observations)
+        return AccuracySlice(
+            top1=round(top1_hits / total, 4) if total else 0.0,
+            top3=round(top3_hits / total, 4) if total else 0.0,
+            total=total,
+            top1_hits=top1_hits,
+            top3_hits=top3_hits,
+        )
+
+    @staticmethod
+    def _equivalence_accuracy(observations: list[_AccuracyObservation]) -> AccuracySlice:
+        grouped: dict[str, list[_AccuracyObservation]] = defaultdict(list)
+        for item in observations:
+            grouped[item.equivalence_id].append(item)
+        if not grouped:
+            return AccuracySlice()
+        top1 = sum(
+            sum(item.top1_hit for item in members) / len(members)
+            for members in grouped.values()
+        ) / len(grouped)
+        top3 = sum(
+            sum(item.top3_hit for item in members) / len(members)
+            for members in grouped.values()
+        ) / len(grouped)
+        return AccuracySlice(
+            top1=round(top1, 4),
+            top3=round(top3, 4),
+            total=len(grouped),
+            top1_hits=sum(item.top1_hit for item in observations),
+            top3_hits=sum(item.top3_hit for item in observations),
+        )
 
     @staticmethod
     def _compute_readiness(

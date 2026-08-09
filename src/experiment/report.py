@@ -36,8 +36,16 @@ _INK_MUTED = "#898781"
 _GRID = "#e1e0d9"
 
 _METRIC_COLUMNS = [
-    ("accuracy_top1", "Top-1"),
-    ("accuracy_top3", "Top-3"),
+    ("accuracy_top1", "Top-1 ocorr."),
+    ("accuracy_top3", "Top-3 ocorr."),
+    ("accuracy_equivalence_top1", "Top-1 equival."),
+    ("accuracy_equivalence_top3", "Top-3 equival."),
+    ("accuracy_high_top1", "Top-1 high"),
+    ("accuracy_medium_top1", "Top-1 medium"),
+    ("accuracy_low_top1", "Top-1 low"),
+    ("accuracy_legacy_top1", "Top-1 legado"),
+    ("occurrence_count", "Ocorrências"),
+    ("equivalence_count", "Equivalências"),
     ("precision", "Precisão"),
     ("ids_conformity_rate", "Conform. IDS"),
     ("json_valid_first_try_rate", "JSON 1ª tent."),
@@ -58,12 +66,37 @@ def load_results(results_dir: str | Path) -> pd.DataFrame:
     rows: list[dict] = []
     for path in sorted(Path(results_dir).glob("*/run_*.json")):
         data = json.loads(path.read_text(encoding="utf-8"))
+        evaluation = data["evaluation"]
+        equivalence = evaluation.get("accuracy_equivalence")
+        has_equivalence = isinstance(equivalence, dict)
+        if not has_equivalence:
+            equivalence = {
+                "top1": evaluation["accuracy_top1"],
+                "top3": evaluation["accuracy_top3"],
+                "total": evaluation.get("total_evaluated", 0),
+            }
+        confidence = evaluation.get("accuracy_by_confidence", {})
+        legacy = evaluation.get("accuracy_legacy", {})
+        accuracy_all = evaluation.get("accuracy_all", {})
         rows.append(
             {
                 "model": data["metadata"]["model_name"],
                 "replica": data["metadata"]["replica_index"],
                 "accuracy_top1": data["evaluation"]["accuracy_top1"],
                 "accuracy_top3": data["evaluation"]["accuracy_top3"],
+                "accuracy_equivalence_top1": equivalence["top1"],
+                "accuracy_equivalence_top3": equivalence["top3"],
+                "accuracy_high_top1": confidence.get("high", {}).get("top1", 0.0),
+                "accuracy_medium_top1": confidence.get("medium", {}).get("top1", 0.0),
+                "accuracy_low_top1": confidence.get("low", {}).get("top1", 0.0),
+                "accuracy_legacy_top1": legacy.get("top1", 0.0),
+                "occurrence_count": accuracy_all.get(
+                    "total", evaluation.get("total_evaluated", 0)
+                ),
+                "equivalence_count": equivalence["total"],
+                "metric_basis": (
+                    "equivalence" if has_equivalence else "legacy_occurrence"
+                ),
                 "precision": data["evaluation"]["precision"],
                 "total_evaluated": data["evaluation"]["total_evaluated"],
                 "ids_conformity_rate": data["review_proxy"]["ids_conformity_rate"],
@@ -93,7 +126,14 @@ def aggregate(df: pd.DataFrame) -> pd.DataFrame:
     grouped = df.groupby("model")[metrics].agg(["mean", "std"])
     grouped.columns = [f"{col}_{stat}" for col, stat in grouped.columns]
     grouped["replicas"] = df.groupby("model")["replica"].count()
-    return grouped.sort_values("accuracy_top1_mean", ascending=False).reset_index()
+    grouped["metric_basis"] = df.groupby("model")["metric_basis"].agg(
+        lambda values: (
+            "equivalence" if set(values) == {"equivalence"} else "legacy_occurrence"
+        )
+    )
+    return grouped.sort_values(
+        "accuracy_equivalence_top1_mean", ascending=False
+    ).reset_index()
 
 
 def _fmt(mean: float, std: float, pct: bool) -> str:
@@ -114,7 +154,7 @@ def to_markdown(agg: pd.DataFrame) -> str:
     for _, row in agg.iterrows():
         cells = [str(row["model"]), str(int(row["replicas"]))]
         for col, _label in _METRIC_COLUMNS:
-            pct = not col.startswith(("latency", "avg_"))
+            pct = not col.startswith(("latency", "avg_")) and not col.endswith("_count")
             cells.append(_fmt(row[f"{col}_mean"], row[f"{col}_std"], pct))
         lines.append("| " + " | ".join(cells) + " |")
     return "\n".join(lines)
@@ -132,7 +172,7 @@ def to_latex(agg: pd.DataFrame) -> str:
     for _, row in agg.iterrows():
         cells = [str(row["model"]).replace("_", "\\_"), str(int(row["replicas"]))]
         for col, _label in _METRIC_COLUMNS:
-            pct = not col.startswith(("latency", "avg_"))
+            pct = not col.startswith(("latency", "avg_")) and not col.endswith("_count")
             cells.append(_fmt(row[f"{col}_mean"], row[f"{col}_std"], pct).replace("%", "\\%"))
         lines.append(" & ".join(cells) + " \\\\")
     lines += ["\\bottomrule", "\\end{tabular}"]
@@ -187,7 +227,7 @@ def figure_quality_latency(agg: pd.DataFrame) -> go.Figure:
     for idx, (_, row) in enumerate(agg.iterrows()):
         fig.add_scatter(
             x=[row["latency_ms_p50_mean"] / 1000.0],
-            y=[row["accuracy_top1_mean"]],
+            y=[row["accuracy_equivalence_top1_mean"]],
             mode="markers+text",
             name=str(row["model"]),
             text=[str(row["model"])],
@@ -200,7 +240,10 @@ def figure_quality_latency(agg: pd.DataFrame) -> go.Figure:
         "text": "Latência p50 por sugestão (s)",
         "font": {"color": _INK_MUTED},
     }
-    layout["yaxis"]["title"] = {"text": "Acurácia top-1", "font": {"color": _INK_MUTED}}
+    layout["yaxis"]["title"] = {
+        "text": "Acurácia top-1 por equivalência",
+        "font": {"color": _INK_MUTED},
+    }
     layout["yaxis"]["tickformat"] = ".0%"
     layout["showlegend"] = False  # rótulos diretos nos pontos
     fig.update_layout(**layout)
