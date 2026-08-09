@@ -20,7 +20,7 @@ from typing import Any, cast
 
 RELEASE_DATE = "2026-08-09"
 RELEASE_DIRECTORY_PREFIX = "IFCQC-Benchmark-Windows-x64"
-PROMPT_VERSION = "v7.2"
+PROMPT_VERSION = "v7.3"
 TEMPLATE_PATH = "windows/release-manifest.template.json"
 
 PROJECT_PATTERNS = (

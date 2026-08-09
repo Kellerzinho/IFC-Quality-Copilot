@@ -119,7 +119,7 @@ def release_fixture(tmp_path: Path) -> Path:
             "prompt_templates": {
                 **internal,
                 "project_path": "src/suggestion_engine/prompt_templates.py",
-                "version": "v7.2",
+                "version": "v7.3",
             },
             "datasets": {
                 dataset: {

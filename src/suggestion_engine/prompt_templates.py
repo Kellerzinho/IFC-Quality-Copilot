@@ -44,7 +44,10 @@ if TYPE_CHECKING:
 # v7.2 (2026-08-04): desambigua a RESTRICAO do template de fogo. Correcao de
 # FORMATO, nao de raciocinio — o defeito sempre existiu e so ficou visivel
 # quando o P0 tirou o ruido do schema duplicado.
-PROMPT_VERSION = "v7.2"
+# v7.3 (2026-08-09): remove limites numericos do template termico que passaram
+# a colidir com hipoteses congeladas no ground truth integral. O criterio
+# normativo permanece descrito, sem entregar ao modelo um valor de referencia.
+PROMPT_VERSION = "v7.3"
 
 _MEMORIA_ESTRUTURADA_BR = (
     "MEMÓRIA ESTRUTURADA (obrigatória): declare no campo memoria_calculo as camadas "
@@ -655,9 +658,10 @@ TEMPLATES: dict[str, str] = {
         "  Vazio de laje nervurada ou entre perfis: câmara de ar não ventilada, R ≈ 0,16.\n"
         "  Só há isolamento se as camadas citarem EPS, XPS, lã ou poliuretano.\n"
         "ATENÇÃO — LIMITE NORMATIVO NÃO É O VALOR DO ELEMENTO: a NBR 15575-5 exige "
-        "cobertura ≤ 2,30 e piso ≤ 2,00 W/(m²·K), mas isso é o critério de APROVAÇÃO, "
-        "não uma estimativa. Um elemento pode perfeitamente REPROVAR no limite — apontar "
-        "essa não-conformidade é a finalidade da análise. Calcule o valor a partir das "
+        "Os limites normativos dependem do tipo de elemento e das condições de aplicação, "
+        "mas são critérios de APROVAÇÃO, não estimativas do valor. Um elemento pode "
+        "perfeitamente REPROVAR no limite — apontar essa não-conformidade é a finalidade "
+        "da análise. Calcule o valor a partir das "
         "camadas e devolva o resultado do cálculo, seja ele conforme ou não.\n" +
         # v7: idem ao template de parede — a estrutura é do LLM, a soma é do código.
         _MEMORIA_ESTRUTURADA_BR +
