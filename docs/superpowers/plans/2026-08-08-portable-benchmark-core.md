@@ -32,6 +32,9 @@
 - `BENCHMARK_STOP` criado ou regravado depois do início e `Ctrl+C` encerram com código
   130 e estado `interrupted`; um STOP preexistente permanece inerte.
 - Evidências não podem conter usuário, hostname, IP, MAC, seriais, tokens, chaves Ollama ou conteúdo de `.env`.
+- ZIP principal e parcial são determinísticos e aceitam somente a allowlist
+  textual `.json`, `.jsonl`, `.txt`, `.log`, `.yaml`, `.yml`, `.csv` e `.md`;
+  qualquer symlink, path escape ou formato desconhecido falha fechado.
 - Nenhuma mudança desta fase abre, modifica ou redistribui os dois IFCs.
 
 ---
@@ -1323,15 +1326,46 @@ git commit -m "feat: executar benchmark de predio e casa"
 **Interfaces:**
 
 - Consumes: diretório de evidências, valores sensíveis conhecidos, JSON bruto do llmfit e nomes do lock.
-- Produces: `RemovedField`, `PrivacyFinding`, `FailureCode`, `EvidencePrivacyError`,
-  `redact_sensitive`, `sanitize_text_files`, `scan_sensitive_text`,
+- Produces: `RemovedField`, `PrivacyFinding`, `FailureCode`,
+  `EvidencePrivacyError`, `EvidenceManifestError`, `collect_forbidden_values`,
+  `failure_code_for_exception`, `redact_sensitive`, `sanitize_text_files`, `scan_sensitive_text`,
   `parse_llmfit_recommendations`, `filter_llmfit_recommendations`,
   `build_file_manifest`, `write_manifest`, `validate_manifest`,
+  `validate_evidence_archive`,
   `create_evidence_zip` e `create_partial_evidence_zip`.
 
 - [ ] **Step 1: Escrever testes de privacidade que falham**
 
 ```python
+import hashlib
+import json
+import os
+from pathlib import Path
+import zipfile
+
+import pytest
+
+from src.experiment import evidence_bundle as module
+from src.experiment.evidence_bundle import (
+    EvidenceManifestError,
+    EvidencePrivacyError,
+    FailureCode,
+    build_file_manifest,
+    collect_forbidden_values,
+    create_evidence_zip,
+    create_partial_evidence_zip,
+    failure_code_for_exception,
+    filter_llmfit_recommendations,
+    parse_llmfit_recommendations,
+    redact_sensitive,
+    sanitize_text_files,
+    scan_sensitive_text,
+    validate_evidence_archive,
+    validate_manifest,
+    write_manifest,
+)
+
+
 def test_redacts_sensitive_keys_and_known_values():
     raw = {"hostname": "PC-KELLER", "nested": {"serial_number": "ABC", "cpu": "Ryzen"}}
     clean, removed = redact_sensitive(raw, forbidden_values={"PC-KELLER"})
@@ -1366,6 +1400,101 @@ def test_sanitizer_redacts_all_patterns_before_scanner_but_allows_loopback(tmp_p
                ["Keller", "10.0.0.4", "2001:db8::7", "aa-bb-cc-dd-ee-ff", "segredo", "valor"])
     assert "127.0.0.1" in clean and "::1" in clean
     assert not scan_sensitive_text(tmp_path, forbidden_values={"Keller"})
+
+
+def test_json_and_jsonl_scanner_find_unknown_sensitive_keys_even_with_null_value(tmp_path):
+    (tmp_path / "legacy.json").write_text(
+        '{"hostname":"NEVER-SEEN-PC"}\n', encoding="utf-8"
+    )
+    (tmp_path / "legacy.jsonl").write_text(
+        '{"safe":1}\n{"api_key":null}\n{"serial_number":42}\n', encoding="utf-8"
+    )
+    findings = scan_sensitive_text(tmp_path, forbidden_values=set())
+    assert {(item.path, item.kind, item.line) for item in findings} >= {
+        ("legacy.json", "sensitive-key", 1),
+        ("legacy.jsonl", "sensitive-key", 2),
+        ("legacy.jsonl", "sensitive-key", 3),
+    }
+
+
+def test_json_scanner_is_fail_closed_when_structured_payload_is_invalid(tmp_path):
+    (tmp_path / "broken.json").write_text('{"hostname":', encoding="utf-8")
+    with pytest.raises(EvidencePrivacyError, match="JSON invalido"):
+        scan_sensitive_text(tmp_path, forbidden_values=set())
+
+
+def test_ipv6_candidates_are_validated_so_times_and_versions_survive(tmp_path):
+    path = tmp_path / "versions.log"
+    path.write_text(
+        "clock=12:34:56 version=1:2:3 address=2001:db8::7 "
+        "compressed=fe80::1 short=::2 mapped=::ffff:192.0.2.1 loop=::1\n",
+        encoding="utf-8",
+    )
+    findings = scan_sensitive_text(tmp_path, forbidden_values=set())
+    ipv6 = [item for item in findings if item.kind == "ipv6"]
+    assert len(ipv6) == 4
+    sanitize_text_files(tmp_path, forbidden_values=set())
+    clean = path.read_text(encoding="utf-8")
+    assert "12:34:56" in clean and "1:2:3" in clean
+    assert all(address not in clean for address in (
+        "2001:db8::7", "fe80::1", "::2", "::ffff:192.0.2.1",
+    ))
+    assert "::1" in clean
+
+
+def test_collects_nonempty_secret_and_dotenv_values_without_output(
+        tmp_path, caplog, capsys):
+    dotenv = tmp_path / ".env"
+    dotenv.write_text(
+        "TOKEN=dotenv-secret\nEMPTY=\nQUOTED='quoted-secret'\n", encoding="utf-8"
+    )
+    values = collect_forbidden_values(
+        {"OPENAI_API_KEY": "process-secret", "EMPTY_SECRET": "", "PATH": "safe-path"},
+        dotenv_paths=(dotenv,),
+        base_values={"PC-01", ""},
+    )
+    assert values == {"PC-01", "process-secret", "dotenv-secret", "quoted-secret"}
+    assert not caplog.records
+    assert capsys.readouterr() == ("", "")
+
+
+@pytest.mark.parametrize("bad_name", ["weights.gguf", "payload.bin", "helper.exe", ".env"])
+def test_unknown_binary_and_forbidden_names_are_rejected(tmp_path, bad_name):
+    (tmp_path / bad_name).write_bytes(b"not evidence")
+    with pytest.raises(EvidencePrivacyError, match="nao permitido"):
+        build_file_manifest(tmp_path)
+
+
+@pytest.mark.parametrize("payload", [b"\xff\xfe\x00\x01", b"valid utf8\x00binary"])
+def test_allowed_suffix_still_rejects_non_utf8_or_nul_binary(tmp_path, payload):
+    (tmp_path / "renamed.txt").write_bytes(payload)
+    with pytest.raises(EvidencePrivacyError, match="texto UTF-8 invalido"):
+        scan_sensitive_text(tmp_path, forbidden_values=set())
+
+
+def test_symlink_is_rejected_without_requiring_windows_symlink_privilege(tmp_path, monkeypatch):
+    linked = tmp_path / "linked.txt"
+    linked.write_text("safe", encoding="utf-8")
+    original = Path.is_symlink
+    monkeypatch.setattr(
+        Path, "is_symlink", lambda self: self == linked or original(self)
+    )
+    with pytest.raises(EvidencePrivacyError, match="symlink"):
+        build_file_manifest(tmp_path)
+
+
+def test_resolved_path_escape_is_rejected(tmp_path, monkeypatch):
+    escaped = tmp_path / "escaped.txt"
+    escaped.write_text("safe", encoding="utf-8")
+    outside = tmp_path.parent / "outside.txt"
+    original = Path.resolve
+
+    def fake_resolve(self, *args, **kwargs):
+        return outside if self == escaped else original(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "resolve", fake_resolve)
+    with pytest.raises(EvidencePrivacyError, match="fora da raiz"):
+        build_file_manifest(tmp_path)
 ```
 
 - [ ] **Step 2: Escrever testes de recomendações, manifesto e ZIP**
@@ -1392,6 +1521,20 @@ def test_manifest_is_sorted_and_hashes_every_payload_file(tmp_path):
     assert validate_manifest(tmp_path / "manifest.json", tmp_path) == []
 
 
+@pytest.mark.parametrize("damage", ["altered", "missing", "extra"])
+def test_manifest_rejects_altered_missing_and_extra_payload(tmp_path, damage):
+    payload = tmp_path / "payload.txt"
+    payload.write_text("original", encoding="utf-8")
+    write_manifest(tmp_path / "manifest.json", build_file_manifest(tmp_path))
+    if damage == "altered":
+        payload.write_text("tampered", encoding="utf-8")
+    elif damage == "missing":
+        payload.unlink()
+    else:
+        (tmp_path / "extra.txt").write_text("extra", encoding="utf-8")
+    assert validate_manifest(tmp_path / "manifest.json", tmp_path)
+
+
 def test_zip_rejects_privacy_findings_that_remain_after_sanitizer(tmp_path, monkeypatch):
     evidence = tmp_path / "evidence"
     evidence.mkdir()
@@ -1403,12 +1546,25 @@ def test_zip_rejects_privacy_findings_that_remain_after_sanitizer(tmp_path, monk
         )
 
 
-def test_zip_excludes_itself_and_forbidden_file_types(tmp_path):
+def test_zip_fails_closed_on_unknown_hostname_if_sanitizer_misses_it(
+        tmp_path, monkeypatch):
+    evidence = tmp_path / "legacy"
+    evidence.mkdir()
+    (evidence / "hardware.json").write_text(
+        '{"hostname":"UNSEEN-LEGACY-HOST"}\n', encoding="utf-8"
+    )
+    monkeypatch.setattr(module, "sanitize_text_files", lambda *args, **kwargs: [])
+    with pytest.raises(EvidencePrivacyError, match="sensitive-key"):
+        create_evidence_zip(evidence, tmp_path / "result.zip", forbidden_values=set())
+
+
+def test_zip_explicitly_excludes_existing_output_and_stale_partial(tmp_path):
     evidence = tmp_path / "evidence"
     evidence.mkdir()
     (evidence / "public.txt").write_text("ok", encoding="utf-8")
-    (evidence / ".env").write_text("TOKEN=x", encoding="utf-8")
     output = evidence / "result.zip"
+    output.write_bytes(b"old output")
+    output.with_suffix(".zip.partial").write_bytes(b"stale partial")
     create_evidence_zip(evidence, output, forbidden_values=set())
     with zipfile.ZipFile(output) as archive:
         assert archive.namelist() == ["manifest.json", "public.txt"]
@@ -1420,14 +1576,67 @@ def test_zip_excludes_itself_and_forbidden_file_types(tmp_path):
             assert row["sha256"] == hashlib.sha256(payload).hexdigest()
 
 
+def test_main_zip_bytes_ignore_source_mtime_and_use_fixed_metadata(tmp_path, monkeypatch):
+    monkeypatch.setattr(module, "sanitize_text_files", lambda *args, **kwargs: [])
+    roots = [tmp_path / "first", tmp_path / "second"]
+    outputs = [tmp_path / "first.zip", tmp_path / "second.zip"]
+    expected_mtimes = [1_600_000_000, 1_600_010_000]
+    for index, root in enumerate(roots):
+        root.mkdir()
+        payload = root / "payload.json"
+        payload.write_text('{"safe":true}\n', encoding="utf-8")
+        os.utime(payload, (expected_mtimes[index],) * 2)
+        create_evidence_zip(root, outputs[index], forbidden_values=set())
+        assert payload.stat().st_mtime == expected_mtimes[index]
+    assert outputs[0].read_bytes() == outputs[1].read_bytes()
+    with zipfile.ZipFile(outputs[0]) as archive:
+        for info in archive.infolist():
+            assert info.date_time == (1980, 1, 1, 0, 0, 0)
+            assert (info.external_attr >> 16) & 0o777 == 0o644
+
+
+def make_valid_evidence_archive(tmp_path):
+    source = tmp_path / "archive-source"
+    source.mkdir()
+    (source / "payload.txt").write_text("original", encoding="utf-8")
+    output = tmp_path / "valid.zip"
+    return create_evidence_zip(source, output, forbidden_values=set())
+
+
+def rewrite_archive_with_damage(path, damage):
+    with zipfile.ZipFile(path) as archive:
+        members = {name: archive.read(name) for name in archive.namelist()}
+    if damage == "altered":
+        members["payload.txt"] = b"tampered"
+    elif damage == "missing":
+        members.pop("payload.txt")
+    else:
+        members["extra.txt"] = b"extra"
+    with zipfile.ZipFile(path, "w") as archive:
+        for name, payload in members.items():
+            archive.writestr(name, payload)
+
+
+@pytest.mark.parametrize("damage", ["altered", "missing", "extra"])
+def test_archive_manifest_rejects_altered_missing_and_extra_members(tmp_path, damage):
+    archive_path = make_valid_evidence_archive(tmp_path)
+    rewrite_archive_with_damage(archive_path, damage)
+    assert validate_evidence_archive(archive_path)
+
+
 def test_partial_zip_uses_only_generated_safe_documents(tmp_path, monkeypatch):
-    monkeypatch.setattr(module, "scan_sensitive_text",
-                        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError()))
-    output = create_partial_evidence_zip(
-        tmp_path / "partial.zip", status="failed",
-        reason_code=FailureCode.UV_DOWNLOAD_FAILED,
-    )
-    with zipfile.ZipFile(output) as archive:
+    for name in ("_evidence_files", "sanitize_text_files", "scan_sensitive_text"):
+        monkeypatch.setattr(
+            module, name, lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError())
+        )
+    outputs = [tmp_path / "partial-a.zip", tmp_path / "partial-b.zip"]
+    outputs[0].with_suffix(".zip.partial").write_bytes(b"stale")
+    for output in outputs:
+        create_partial_evidence_zip(
+            output, status="failed", reason_code=FailureCode.UV_DOWNLOAD_FAILED,
+        )
+    assert outputs[0].read_bytes() == outputs[1].read_bytes()
+    with zipfile.ZipFile(outputs[0]) as archive:
         assert set(archive.namelist()) == {
             "README.txt", "status.json", "privacy-report.json", "manifest.json"
         }
@@ -1435,6 +1644,59 @@ def test_partial_zip_uses_only_generated_safe_documents(tmp_path, monkeypatch):
         assert status == {
             "partial": True, "reason_code": "UV_DOWNLOAD_FAILED", "status": "failed"
         }
+        assert validate_evidence_archive(outputs[0]) == []
+        assert all(info.date_time == (1980, 1, 1, 0, 0, 0)
+                   for info in archive.infolist())
+        assert all((info.external_attr >> 16) & 0o777 == 0o644
+                   for info in archive.infolist())
+
+
+@pytest.mark.parametrize("status", ["complete", "running", "", None])
+def test_partial_rejects_invalid_status(tmp_path, status):
+    with pytest.raises(ValueError, match="status parcial invalido"):
+        create_partial_evidence_zip(
+            tmp_path / "partial.zip", status=status,
+            reason_code=FailureCode.UV_DOWNLOAD_FAILED,
+        )
+
+
+def test_partial_requires_failure_code_enum_and_verifies_reopened_archive(
+        tmp_path, monkeypatch):
+    with pytest.raises(TypeError, match="FailureCode"):
+        create_partial_evidence_zip(
+            tmp_path / "wrong.zip", status="failed", reason_code="UV_DOWNLOAD_FAILED"
+        )
+    monkeypatch.setattr(module, "validate_evidence_archive", lambda path: ["hash mismatch"])
+    with pytest.raises(EvidenceManifestError, match="hash mismatch"):
+        create_partial_evidence_zip(
+            tmp_path / "invalid.zip", status="failed",
+            reason_code=FailureCode.UV_DOWNLOAD_FAILED,
+        )
+
+
+def test_archive_reopen_io_error_is_not_reclassified_as_manifest(tmp_path, monkeypatch):
+    def raise_io(_path):
+        raise OSError("disk read")
+
+    monkeypatch.setattr(module, "validate_evidence_archive", raise_io)
+    with pytest.raises(OSError, match="disk read"):
+        create_partial_evidence_zip(
+            tmp_path / "io.zip", status="failed",
+            reason_code=FailureCode.UV_DOWNLOAD_FAILED,
+        )
+
+
+@pytest.mark.parametrize(
+    ("error", "expected"),
+    [
+        (EvidencePrivacyError("privacy"), FailureCode.PRIVACY_SCAN_FAILED),
+        (EvidenceManifestError("manifest"), FailureCode.EVIDENCE_MANIFEST_FAILED),
+        (OSError("disk"), FailureCode.EVIDENCE_IO_FAILED),
+        (RuntimeError("other"), FailureCode.UNKNOWN_FAILED),
+    ],
+)
+def test_evidence_failure_code_mapping_is_total_and_ordered(error, expected):
+    assert failure_code_for_exception(error) is expected
 ```
 
 - [ ] **Step 3: Confirmar RED**
@@ -1446,6 +1708,21 @@ Expected: FAIL por módulo ausente.
 - [ ] **Step 4: Implementar APIs puras e determinísticas**
 
 ```python
+from collections.abc import Iterable, Mapping
+from dataclasses import dataclass
+from enum import Enum
+import hashlib
+import ipaddress
+import json
+import os
+from pathlib import Path, PurePosixPath
+import re
+from typing import Any, Literal
+import zipfile
+
+from src.experiment.ground_truth_validation import sha256_file
+
+
 @dataclass(frozen=True)
 class RemovedField:
     path: str
@@ -1463,6 +1740,10 @@ class EvidencePrivacyError(ValueError):
     pass
 
 
+class EvidenceManifestError(ValueError):
+    pass
+
+
 class FailureCode(str, Enum):
     OFFLINE_PREFLIGHT_FAILED = "OFFLINE_PREFLIGHT_FAILED"
     UV_DOWNLOAD_FAILED = "UV_DOWNLOAD_FAILED"
@@ -1472,20 +1753,25 @@ class FailureCode(str, Enum):
     MODEL_PULL_FAILED = "MODEL_PULL_FAILED"
     RUNNER_FAILED = "RUNNER_FAILED"
     PRIVACY_SCAN_FAILED = "PRIVACY_SCAN_FAILED"
+    EVIDENCE_MANIFEST_FAILED = "EVIDENCE_MANIFEST_FAILED"
+    EVIDENCE_IO_FAILED = "EVIDENCE_IO_FAILED"
     INTERRUPTED = "INTERRUPTED"
     UNKNOWN_FAILED = "UNKNOWN_FAILED"
 
 
 SENSITIVE_KEYS = re.compile(
-    r"(?:user(?:name)?|host(?:name)?|serial|mac|ip_address|token|secret|password|ollama_key)",
+    r"(?:user(?:name)?|host(?:name)?|serial|mac|ip_address|api[_-]?key|token|secret|password|ollama_key)",
     re.IGNORECASE,
+)
+SECRET_ENV_KEYS = re.compile(
+    r"(?:TOKEN|SECRET|PASSWORD|API[_-]?KEY|OLLAMA[_-]?KEY)", re.IGNORECASE
 )
 
 SENSITIVE_TEXT_PATTERNS = {
-    "ipv4": re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b"),
     "ipv6": re.compile(
-        r"(?<![\w:])(?:[0-9a-f]{1,4}:){2,7}[0-9a-f:]{0,4}(?![\w:])", re.I
+        r"(?<![\w:.])\[?[0-9a-f:.]*:[0-9a-f:.]+\]?(?![\w:.])", re.I
     ),
+    "ipv4": re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b"),
     "mac": re.compile(r"\b(?:[0-9a-f]{2}[:-]){5}[0-9a-f]{2}\b", re.I),
     "bearer-token": re.compile(r"\bBearer\s+[A-Za-z0-9._~+/=-]+", re.I),
     "assigned-secret": re.compile(
@@ -1495,14 +1781,57 @@ SENSITIVE_TEXT_PATTERNS = {
 }
 
 
-def _allowed_local_ip(kind: str, raw: str) -> bool:
+def _parsed_ip_candidate(kind: str, raw: str) -> ipaddress.IPv4Address \
+        | ipaddress.IPv6Address | None:
     if kind not in {"ipv4", "ipv6"}:
-        return False
+        return None
     try:
-        address = ipaddress.ip_address(raw)
+        address = ipaddress.ip_address(raw.strip("[]"))
     except ValueError:
-        return False
-    return address.is_loopback or address.is_unspecified
+        return None
+    if (kind == "ipv4") != isinstance(address, ipaddress.IPv4Address):
+        return None
+    return address
+
+
+def _allowed_local_ip(kind: str, raw: str) -> bool:
+    address = _parsed_ip_candidate(kind, raw)
+    return bool(address and (address.is_loopback or address.is_unspecified))
+
+
+def collect_forbidden_values(
+    environment: Mapping[str, str], *, dotenv_paths: Iterable[Path] = (),
+    base_values: Iterable[str] = (),
+) -> set[str]:
+    values = {str(value) for value in base_values if str(value)}
+    values.update(
+        value for key, value in environment.items()
+        if SECRET_ENV_KEYS.search(key) and value
+    )
+    for dotenv in dotenv_paths:
+        if not dotenv.is_file():
+            continue
+        for raw_line in dotenv.read_text(encoding="utf-8").splitlines():
+            line = raw_line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            _, raw_value = line.removeprefix("export ").split("=", 1)
+            value = raw_value.strip()
+            if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+                value = value[1:-1]
+            if value:
+                values.add(value)
+    return values
+
+
+def failure_code_for_exception(error: BaseException) -> FailureCode:
+    if isinstance(error, EvidencePrivacyError):
+        return FailureCode.PRIVACY_SCAN_FAILED
+    if isinstance(error, EvidenceManifestError):
+        return FailureCode.EVIDENCE_MANIFEST_FAILED
+    if isinstance(error, OSError):
+        return FailureCode.EVIDENCE_IO_FAILED
+    return FailureCode.UNKNOWN_FAILED
 
 
 def build_file_manifest(root: Path) -> list[dict[str, object]]:
@@ -1514,42 +1843,87 @@ def build_file_manifest(root: Path) -> list[dict[str, object]]:
 
 
 def write_manifest(path: Path, entries: list[dict[str, object]]) -> None:
-    path.write_text(
-        json.dumps({"files": entries}, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
+    path.write_bytes(
+        (json.dumps(
+            {"files": entries}, ensure_ascii=False, indent=2, sort_keys=True,
+        ) + "\n").encode("utf-8")
     )
 ```
 
-`create_evidence_zip` deve rodar a sanitização e depois o scanner antes de escrever, criar
-`manifest.json`, usar caminhos relativos e recusar symlinks ou arquivos fora da
-raiz. Não incluir `.env`, chaves Ollama, blobs/modelos, IFCs nem executáveis.
-`write_manifest` usa JSON UTF-8 indentado com chaves ordenadas;
+`create_evidence_zip` deve rodar a sanitização e depois o scanner antes de
+escrever, criar `manifest.json`, usar caminhos relativos e recusar
+symlinks/junctions, arquivos fora da raiz e qualquer tipo que não pertença à
+allowlist textual. Em vez de ignorar silenciosamente `.env`, blobs/modelos, IFCs,
+executáveis ou binários desconhecidos, falhar fechado com
+`EvidencePrivacyError`. `write_manifest` usa JSON UTF-8 indentado com chaves
+ordenadas. A extensão permitida não basta: `_read_text_strict` exige UTF-8 sem
+substituição, NUL ou controles C0 além de tab/CR/LF antes de manifestar, sanitizar
+ou escanear qualquer membro;
 `validate_manifest(path, root)` recalcula tamanho/hash e retorna uma lista de
 erros vazia somente quando não há arquivo ausente, extra ou divergente.
 
 Implementar as funções com as regras literais e os corpos abaixo:
 
 ```python
-TEXT_SUFFIXES = {".json", ".jsonl", ".txt", ".log", ".yaml", ".yml", ".csv", ".md"}
+SAFE_TEXT_SUFFIXES = {
+    ".json", ".jsonl", ".txt", ".log", ".yaml", ".yml", ".csv", ".md",
+}
 FORBIDDEN_NAMES = {".env", "id_ed25519", "id_ed25519.pub"}
-FORBIDDEN_SUFFIXES = {".ifc", ".ifczip", ".exe", ".dll", ".bin", ".zip"}
+DETERMINISTIC_ZIP_TIME = (1980, 1, 1, 0, 0, 0)
 
 
-def _evidence_files(root: Path) -> list[Path]:
+def _read_text_strict(path: Path) -> str:
+    try:
+        text = path.read_bytes().decode("utf-8", errors="strict")
+    except UnicodeDecodeError as error:
+        raise EvidencePrivacyError(f"texto UTF-8 invalido: {path.name}") from error
+    if "\x00" in text or any(
+            ord(character) < 32 and character not in "\t\r\n" for character in text):
+        raise EvidencePrivacyError(f"texto UTF-8 invalido: {path.name}")
+    return text
+
+
+def _evidence_files(root: Path, *, excluded_paths: Iterable[Path] = ()) -> list[Path]:
     root_resolved = root.resolve(strict=True)
+    excluded = {path.resolve(strict=False) for path in excluded_paths}
+    excluded.add((root / "manifest.json").resolve(strict=False))
     files: list[Path] = []
-    for candidate in sorted(root.rglob("*")):
-        if candidate.is_symlink():
-            raise EvidencePrivacyError(f"symlink proibido: {candidate}")
-        if not candidate.is_file() or candidate.name == "manifest.json":
+    for candidate in sorted(root.rglob("*"), key=lambda item: item.as_posix()):
+        relative = candidate.relative_to(root).as_posix()
+        is_junction = getattr(candidate, "is_junction", lambda: False)()
+        if candidate.is_symlink() or is_junction:
+            raise EvidencePrivacyError(f"symlink proibido: {relative}")
+        if not candidate.is_file():
             continue
         resolved = candidate.resolve(strict=True)
-        if os.path.commonpath((str(root_resolved), str(resolved))) != str(root_resolved):
-            raise EvidencePrivacyError(f"arquivo fora da raiz: {candidate}")
-        if candidate.name.lower() in FORBIDDEN_NAMES or candidate.suffix.lower() in FORBIDDEN_SUFFIXES:
+        try:
+            contained = os.path.commonpath(
+                (str(root_resolved), str(resolved)),
+            ) == str(root_resolved)
+        except ValueError:
+            contained = False
+        if not contained:
+            raise EvidencePrivacyError(f"arquivo fora da raiz: {relative}")
+        if resolved in excluded:
             continue
+        if (candidate.name.lower() in FORBIDDEN_NAMES
+                or candidate.suffix.lower() not in SAFE_TEXT_SUFFIXES):
+            raise EvidencePrivacyError(f"arquivo nao permitido: {relative}")
+        _read_text_strict(candidate)
         files.append(candidate)
     return files
+
+
+def _write_deterministic_member(
+    archive: zipfile.ZipFile, name: str, payload: bytes,
+) -> None:
+    info = zipfile.ZipInfo(name, date_time=DETERMINISTIC_ZIP_TIME)
+    info.compress_type = zipfile.ZIP_DEFLATED
+    info.create_system = 3
+    info.external_attr = 0o100644 << 16
+    archive.writestr(
+        info, payload, compress_type=zipfile.ZIP_DEFLATED, compresslevel=9,
+    )
 
 
 def redact_sensitive(value: Any, *, forbidden_values: set[str], path: str = "") \
@@ -1587,21 +1961,61 @@ def redact_sensitive(value: Any, *, forbidden_values: set[str], path: str = "") 
     return value, removed
 
 
-def scan_sensitive_text(root: Path, *, forbidden_values: set[str]) \
+def _sensitive_key_paths(value: Any, *, prefix: str = "") -> list[str]:
+    paths: list[str] = []
+    if isinstance(value, dict):
+        for key, child in value.items():
+            child_path = f"{prefix}.{key}".strip(".")
+            if SENSITIVE_KEYS.search(str(key)):
+                paths.append(child_path)
+            paths.extend(_sensitive_key_paths(child, prefix=child_path))
+    elif isinstance(value, list):
+        for index, child in enumerate(value):
+            paths.extend(_sensitive_key_paths(child, prefix=f"{prefix}[{index}]"))
+    return paths
+
+
+def _structured_documents(path: Path) -> list[tuple[int, Any]]:
+    try:
+        if path.suffix.lower() == ".json":
+            return [(1, json.loads(_read_text_strict(path)))]
+        return [
+            (line_number, json.loads(line))
+            for line_number, line in enumerate(
+                _read_text_strict(path).splitlines(), 1
+            )
+            if line.strip()
+        ]
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise EvidencePrivacyError(f"JSON invalido: {path.name}") from error
+
+
+def scan_sensitive_text(
+    root: Path, *, forbidden_values: set[str], excluded_paths: Iterable[Path] = (),
+) \
         -> list[PrivacyFinding]:
     findings: list[PrivacyFinding] = []
-    for candidate in _evidence_files(root):
-        if candidate.suffix.lower() not in TEXT_SUFFIXES:
-            continue
-        for number, line in enumerate(candidate.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+    for candidate in _evidence_files(root, excluded_paths=excluded_paths):
+        relative = candidate.relative_to(root).as_posix()
+        if candidate.suffix.lower() in {".json", ".jsonl"}:
+            for line_number, document in _structured_documents(candidate):
+                findings.extend(
+                    PrivacyFinding(relative, "sensitive-key", line_number)
+                    for _ in _sensitive_key_paths(document)
+                )
+        lines = _read_text_strict(candidate).splitlines()
+        for number, line in enumerate(lines, 1):
             for forbidden in (item for item in forbidden_values if item):
                 if forbidden.casefold() in line.casefold():
-                    findings.append(PrivacyFinding(candidate.relative_to(root).as_posix(), "known-value", number))
+                    findings.append(PrivacyFinding(relative, "known-value", number))
             for kind, pattern in SENSITIVE_TEXT_PATTERNS.items():
                 for match in pattern.finditer(line):
+                    if kind in {"ipv4", "ipv6"} and _parsed_ip_candidate(
+                            kind, match.group()) is None:
+                        continue
                     if _allowed_local_ip(kind, match.group()):
                         continue
-                    findings.append(PrivacyFinding(candidate.relative_to(root).as_posix(), kind, number))
+                    findings.append(PrivacyFinding(relative, kind, number))
     return sorted(findings, key=lambda item: (item.path, item.line, item.kind))
 
 
@@ -1623,12 +2037,32 @@ def filter_llmfit_recommendations(rows: list[dict[str, Any]], locked: set[str]) 
     ]
 
 
-def sanitize_text_files(root: Path, *, forbidden_values: set[str]) -> list[RemovedField]:
+def sanitize_text_files(
+    root: Path, *, forbidden_values: set[str], excluded_paths: Iterable[Path] = (),
+) -> list[RemovedField]:
     removed: list[RemovedField] = []
-    for candidate in _evidence_files(root):
-        if candidate.suffix.lower() not in TEXT_SUFFIXES:
-            continue
-        text = candidate.read_text(encoding="utf-8", errors="replace")
+    for candidate in _evidence_files(root, excluded_paths=excluded_paths):
+        suffix = candidate.suffix.lower()
+        if suffix in {".json", ".jsonl"}:
+            sanitized_documents: list[Any] = []
+            for line_number, document in _structured_documents(candidate):
+                clean, document_removed = redact_sensitive(
+                    document, forbidden_values=forbidden_values,
+                    path=f"{candidate.relative_to(root).as_posix()}:{line_number}",
+                )
+                sanitized_documents.append(clean)
+                removed.extend(document_removed)
+            if suffix == ".json":
+                serialized = json.dumps(
+                    sanitized_documents[0], ensure_ascii=False, indent=2, sort_keys=True,
+                ) + "\n"
+            else:
+                serialized = "".join(
+                    json.dumps(item, ensure_ascii=False, sort_keys=True) + "\n"
+                    for item in sanitized_documents
+                )
+            candidate.write_bytes(serialized.encode("utf-8"))
+        text = _read_text_strict(candidate)
         for forbidden in sorted((item for item in forbidden_values if item), key=len, reverse=True):
             matches = len(re.findall(re.escape(forbidden), text, flags=re.I))
             if matches:
@@ -1640,6 +2074,9 @@ def sanitize_text_files(root: Path, *, forbidden_values: set[str]) -> list[Remov
 
             def replace_match(match: re.Match[str], pattern_kind: str = kind) -> str:
                 nonlocal replacements
+                if pattern_kind in {"ipv4", "ipv6"} and _parsed_ip_candidate(
+                        pattern_kind, match.group()) is None:
+                    return match.group()
                 if _allowed_local_ip(pattern_kind, match.group()):
                     return match.group()
                 replacements += 1
@@ -1650,54 +2087,108 @@ def sanitize_text_files(root: Path, *, forbidden_values: set[str]) -> list[Remov
                 removed.append(RemovedField(
                     candidate.relative_to(root).as_posix(), f"{kind}:{replacements}"
                 ))
-        candidate.write_text(text, encoding="utf-8")
+        candidate.write_bytes(text.encode("utf-8"))
     return removed
 
 
+def _manifest_map(raw: bytes) -> dict[str, tuple[int, str]]:
+    try:
+        document = json.loads(raw.decode("utf-8"))
+        if set(document) != {"files"} or not isinstance(document["files"], list):
+            raise ValueError("schema")
+        result: dict[str, tuple[int, str]] = {}
+        for row in document["files"]:
+            if set(row) != {"path", "size_bytes", "sha256"}:
+                raise ValueError("entry schema")
+            name = str(row["path"])
+            pure = PurePosixPath(name)
+            if (not name or pure.is_absolute() or ".." in pure.parts or "\\" in name
+                    or pure.as_posix() != name or name == "manifest.json"):
+                raise ValueError("unsafe path")
+            size = row["size_bytes"]
+            digest = row["sha256"]
+            if (not isinstance(size, int) or isinstance(size, bool) or size < 0
+                    or not isinstance(digest, str)
+                    or re.fullmatch(r"[0-9a-f]{64}", digest) is None
+                    or name in result):
+                raise ValueError("invalid entry")
+            result[name] = (size, digest)
+        if list(result) != sorted(result):
+            raise ValueError("unsorted entries")
+        return result
+    except (KeyError, TypeError, UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
+        raise EvidenceManifestError("manifesto invalido") from error
+
+
 def validate_manifest(path: Path, root: Path) -> list[str]:
-    expected = {
-        str(item["path"]): (int(item["size_bytes"]), str(item["sha256"]))
-        for item in json.loads(path.read_text(encoding="utf-8"))["files"]
-    }
-    actual = {
-        str(item["path"]): (int(item["size_bytes"]), str(item["sha256"]))
-        for item in build_file_manifest(root)
-    }
-    errors = [f"manifest mismatch: {key}" for key in sorted(expected.keys() | actual.keys())
-              if expected.get(key) != actual.get(key)]
-    return errors
+    try:
+        expected = _manifest_map(path.read_bytes())
+        actual = {
+            str(item["path"]): (int(item["size_bytes"]), str(item["sha256"]))
+            for item in build_file_manifest(root)
+        }
+    except (OSError, EvidenceManifestError, EvidencePrivacyError) as error:
+        return [f"manifest invalid: {type(error).__name__}"]
+    return [
+        f"manifest mismatch: {name}"
+        for name in sorted(expected.keys() | actual.keys())
+        if expected.get(name) != actual.get(name)
+    ]
+
+
+def validate_evidence_archive(path: Path) -> list[str]:
+    try:
+        with zipfile.ZipFile(path) as archive:
+            names = archive.namelist()
+            if names.count("manifest.json") != 1 or len(names) != len(set(names)):
+                return ["duplicate or missing manifest/member"]
+            expected = _manifest_map(archive.read("manifest.json"))
+            if set(names) != {"manifest.json", *expected.keys()}:
+                return ["archive tree differs from manifest"]
+            errors: list[str] = []
+            for name, (size, digest) in expected.items():
+                payload = archive.read(name)
+                if len(payload) != size or hashlib.sha256(payload).hexdigest() != digest:
+                    errors.append(f"archive payload mismatch: {name}")
+            return errors
+    except OSError:
+        raise
+    except (KeyError, zipfile.BadZipFile, EvidenceManifestError) as error:
+        return [f"archive invalid: {type(error).__name__}"]
 
 
 def create_evidence_zip(root: Path, output: Path, *, forbidden_values: set[str]) -> Path:
-    sanitize_text_files(root, forbidden_values=forbidden_values)
-    findings = scan_sensitive_text(root, forbidden_values=forbidden_values)
+    temporary = output.with_suffix(output.suffix + ".partial")
+    excluded = (output, temporary)
+    sanitize_text_files(
+        root, forbidden_values=forbidden_values, excluded_paths=excluded,
+    )
+    findings = scan_sensitive_text(
+        root, forbidden_values=forbidden_values, excluded_paths=excluded,
+    )
     if findings:
         raise EvidencePrivacyError(
             "; ".join(f"{item.kind}:{item.path}:{item.line}" for item in findings)
         )
-    payload_files = _evidence_files(root)
+    payload_files = _evidence_files(root, excluded_paths=excluded)
     manifest_path = root / "manifest.json"
     write_manifest(manifest_path, [
         {"path": candidate.relative_to(root).as_posix(),
          "size_bytes": candidate.stat().st_size, "sha256": sha256_file(candidate)}
         for candidate in payload_files
     ])
-    temporary = output.with_suffix(output.suffix + ".partial")
     try:
-        with zipfile.ZipFile(temporary, "w", compression=zipfile.ZIP_DEFLATED) as archive:
-            archive.write(manifest_path, "manifest.json")
+        with zipfile.ZipFile(temporary, "w") as archive:
+            _write_deterministic_member(
+                archive, "manifest.json", manifest_path.read_bytes(),
+            )
             for candidate in payload_files:
-                archive.write(candidate, candidate.relative_to(root).as_posix())
-        with zipfile.ZipFile(temporary) as archive:
-            packed_manifest = json.loads(archive.read("manifest.json"))["files"]
-            expected_names = {"manifest.json"} | {row["path"] for row in packed_manifest}
-            if set(archive.namelist()) != expected_names:
-                raise EvidencePrivacyError("arvore ZIP diverge do manifesto")
-            for row in packed_manifest:
-                payload = archive.read(row["path"])
-                digest = hashlib.sha256(payload).hexdigest()
-                if len(payload) != row["size_bytes"] or digest != row["sha256"]:
-                    raise EvidencePrivacyError(f"hash ZIP diverge: {row['path']}")
+                _write_deterministic_member(
+                    archive, candidate.relative_to(root).as_posix(), candidate.read_bytes(),
+                )
+        validation_errors = validate_evidence_archive(temporary)
+        if validation_errors:
+            raise EvidenceManifestError("; ".join(validation_errors))
         temporary.replace(output)
     finally:
         temporary.unlink(missing_ok=True)
@@ -1710,14 +2201,16 @@ não sejam loopback nem unspecified; substituir o match inteiro de MAC, Bearer e
 atribuição de segredo por `[REDACTED]`. O scanner é uma verificação posterior,
 não o mecanismo primário de remoção.
 
-`create_partial_evidence_zip(output, *, status, reason_code)` aceita somente
-`status in {"failed", "interrupted"}` e `reason_code` em uma enum interna de
-códigos sem mensagem/caminho livre. Ele monta em memória apenas `README.txt`,
+`create_partial_evidence_zip(output, *, status, reason_code)` valida em runtime
+`status in {"failed", "interrupted"}` e exige uma instância real de
+`FailureCode`, nunca string arbitrária. Ele monta em memória apenas `README.txt`,
 `status.json` e `privacy-report.json` controlados pelo programa, calcula um
-`manifest.json` para esses três membros e faz replace atômico do ZIP. Não lê o
-diretório bruto, não chama parser/scanner e, portanto, continua disponível quando
-a coleta, a sanitização ou o bundle principal falha. Erro de E/S ao criar esse
-último recurso é exibido no console sem afirmar que existe um ZIP.
+`manifest.json` para esses três membros e faz replace atômico do ZIP. Usa o mesmo
+writer determinístico do bundle principal, reabre o `.partial` e exige árvore,
+tamanho e SHA-256 idênticos ao manifesto antes do replace. Não lê o diretório
+bruto, não chama `_evidence_files`, sanitizador ou scanner e, portanto, continua
+disponível quando a coleta, a sanitização ou o bundle principal falha. Erro de E/S
+ao criar esse último recurso é exibido no console sem afirmar que existe um ZIP.
 
 Implementar o fallback somente com bytes gerados:
 
@@ -1725,6 +2218,10 @@ Implementar o fallback somente com bytes gerados:
 def create_partial_evidence_zip(
     output: Path, *, status: Literal["failed", "interrupted"], reason_code: FailureCode
 ) -> Path:
+    if status not in {"failed", "interrupted"}:
+        raise ValueError("status parcial invalido")
+    if not isinstance(reason_code, FailureCode):
+        raise TypeError("reason_code deve ser FailureCode")
     members = {
         "README.txt": b"Pacote parcial: o benchmark nao foi concluido.\n",
         "status.json": (
@@ -1742,20 +2239,46 @@ def create_partial_evidence_zip(
         json.dumps({"files": manifest}, sort_keys=True, indent=2) + "\n"
     ).encode("utf-8")
     temporary = output.with_suffix(output.suffix + ".partial")
-    with zipfile.ZipFile(temporary, "w", zipfile.ZIP_DEFLATED) as archive:
-        for name, payload in sorted(members.items()):
-            archive.writestr(name, payload)
-    temporary.replace(output)
+    try:
+        with zipfile.ZipFile(temporary, "w") as archive:
+            for name, payload in sorted(members.items()):
+                _write_deterministic_member(archive, name, payload)
+        validation_errors = validate_evidence_archive(temporary)
+        if validation_errors:
+            raise EvidenceManifestError("; ".join(validation_errors))
+        temporary.replace(output)
+    finally:
+        temporary.unlink(missing_ok=True)
     return output
 ```
 
 Para `sha256_file`, importar a implementação streaming já testada de
-`src.experiment.ground_truth_validation`. Strings sensíveis encontradas em campos
-não removidos são substituídas por `[REDACTED]` antes de serem gravadas. Antes de
-`create_evidence_zip`, o orquestrador chama `sanitize_text_files` com usuário,
-hostname e caminho do perfil; qualquer ocorrência restante no scanner impede a
-criação do ZIP. IPv4 loopback/unspecified é permitido porque identifica somente o
-serviço local, não a máquina; a mesma exceção vale para IPv6 `::1` e `::`.
+`src.experiment.ground_truth_validation`. JSON e cada linha JSONL são parseados:
+`sanitize_text_files` aplica `redact_sensitive` estruturalmente antes dos padrões
+textuais, e `scan_sensitive_text` falha fechado se qualquer chave casar
+`SENSITIVE_KEYS`, mesmo que o valor seja desconhecido, nulo ou numérico. JSON/JSONL
+inválido também é falha de privacidade, não texto aceito por tolerância.
+
+Antes de `create_evidence_zip`, o orquestrador constrói `forbidden_values` apenas
+em memória com usuário, hostname, caminhos de perfil, valores não vazios de
+variáveis cujo nome seja segredo e valores não vazios dos `.env` explícitos. O
+conjunto nunca é serializado, registrado em log nem incluído em exceção/relatório;
+`privacy-report.json` guarda somente categorias e contagens. Qualquer ocorrência
+restante impede o ZIP. Candidatos de IPv4/IPv6 só são classificados ou substituídos
+depois que `ipaddress.ip_address` os valida; assim timestamps e versões com `:`
+permanecem. A regex deliberadamente ampla candidata formas completas,
+comprimidas, entre colchetes e IPv4-mapped (`2001:db8::7`, `fe80::1`, `::2`,
+`[::1]`, `::ffff:192.0.2.1`); `ipaddress`, e não a regex, decide se o token é um
+endereço. Loopback/unspecified é permitido porque identifica somente o serviço
+local: `127.0.0.0/8`, `0.0.0.0`, `::1` e `::`.
+
+`failure_code_for_exception` é a única tradução de falha do empacotador:
+`EvidencePrivacyError -> PRIVACY_SCAN_FAILED`, `EvidenceManifestError ->
+EVIDENCE_MANIFEST_FAILED`, `OSError -> EVIDENCE_IO_FAILED` e qualquer outra
+exceção -> `UNKNOWN_FAILED`. A ordem é literal para impedir que uma classe mais
+genérica masque uma categoria específica. Tanto o ZIP principal quanto o parcial
+removem seu `.partial` em `finally`; um `.partial` antigo é truncado pelo modo `w`,
+nunca lido nem incluído como evidência.
 
 - [ ] **Step 5: Rodar testes e lint**
 
@@ -1793,6 +2316,9 @@ O teste cria IFC/GT/IDS mínimos ou usa doubles, executa a matriz com
 `reuse_equivalent=True`, exporta resultados, retém o caminho agregado e o
 `StageExpectation` de cada estágio em `expectations_by_path` e os dez pares
 `(nome, digest)` em `locked_model_pairs`, passa os artefatos pelo empacotador e
+cria um `.env` fixture com `TOKEN=dotenv-secret`, constrói
+`forbidden_values = collect_forbidden_values({"OPENAI_API_KEY":
+"process-secret"}, dotenv_paths=(dotenv,), base_values=(username, hostname))` e
 afirma:
 
 ```python
@@ -1805,7 +2331,8 @@ assert all(_stage_done(path, expectation)
            for path, expectation in expectations_by_path.items())
 assert _invalid_matrix_stages(results_root, identity, locked_model_pairs) == []
 assert len({run["metadata"]["execution_identity_sha256"] for run in runs}) == 1
-assert not scan_sensitive_text(evidence_root, forbidden_values={username, hostname})
+assert {"process-secret", "dotenv-secret", username, hostname} <= forbidden_values
+assert not scan_sensitive_text(evidence_root, forbidden_values=forbidden_values)
 assert validate_manifest(evidence_root / "manifest.json", evidence_root) == []
 ```
 

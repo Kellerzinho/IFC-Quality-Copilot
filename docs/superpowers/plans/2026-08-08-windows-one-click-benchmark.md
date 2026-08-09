@@ -31,6 +31,8 @@
   payload e escrita antes de qualquer rede; a fase Python valida ambiente,
   ground truths, locks, drivers e espaço antes de ferramentas/modelos pesados.
 - ZIP final nunca contém IFC, modelos, executáveis, `.env`, usuário, hostname, IP/MAC, seriais, tokens ou chaves.
+- ZIP principal e parcial usam a allowlist textual e o writer determinístico do
+  núcleo; saída/`.partial` são exclusões explícitas, não arquivos de evidência.
 - llmfit é auxiliar não impeditivo; incompatibilidade de OS/payload/digest/modelo/espaço é impeditiva.
 - As normas ABNT são link-only; nenhum PDF protegido entra no pacote.
 - SHA-256 sem assinatura detecta divergência em relação ao manifesto congelado,
@@ -820,9 +822,10 @@ git commit -m "feat: preparar Ollama e modelos no Windows"
 
 **Interfaces:**
 
-- Consumes: comandos PowerShell/nvidia-smi/dxdiag/llmfit por runner injetável.
+- Consumes: comandos PowerShell/nvidia-smi/dxdiag/llmfit por runner injetável e
+  `parse_llmfit_recommendations`/`filter_llmfit_recommendations` do núcleo.
 - Produces: `collect_windows_inventory`, `parse_nvidia_smi`, `parse_dxdiag`,
-  `parse_llmfit_recommendations`, `run_llmfit_inventory` e JSONs anônimos.
+  `run_llmfit_inventory` e JSONs anônimos; não define parser/filtro llmfit local.
 
 - [ ] **Step 1: Escrever testes de inventário e privacidade**
 
@@ -849,6 +852,9 @@ def test_optional_sources_become_unavailable_instead_of_failing(failing_runner):
 - [ ] **Step 2: Escrever testes de llmfit**
 
 ```python
+from src.experiment import evidence_bundle, windows_inventory
+
+
 def test_llmfit_runs_system_two_contexts_and_doctor(fake_llmfit, tmp_path):
     result = run_llmfit_inventory(fake_llmfit.exe, tmp_path, runner=fake_llmfit)
     assert fake_llmfit.commands == [
@@ -873,6 +879,15 @@ def test_parser_matches_llmfit_1_1_8_models_name_envelope():
     assert rows[0]["name"] == "Orion-zhen/Qwen2.5-Coder-7B-Instruct-AWQ"
     assert rows[0]["best_quant"] == "AWQ-4bit"
     assert rows[0]["effective_context_length"] == 2048
+
+
+def test_windows_inventory_uses_core_llmfit_parser_and_filter_as_single_source():
+    assert windows_inventory.parse_llmfit_recommendations is (
+        evidence_bundle.parse_llmfit_recommendations
+    )
+    assert windows_inventory.filter_llmfit_recommendations is (
+        evidence_bundle.filter_llmfit_recommendations
+    )
 
 
 @pytest.mark.parametrize("failed_key", ["system", "recommend_2048", "recommend_8192", "doctor"])
@@ -966,12 +981,21 @@ para JSON ou a mesma linha para `doctor.txt`. Uma falha não pula os comandos
 seguintes. O status agregado é `ok` para quatro sucessos, `partial` para um a três
 e `unavailable` para zero; nenhum deles levanta para o orquestrador.
 
-`parse_llmfit_recommendations` exige objeto raiz, `models` como lista e `name`
-string não vazia em cada item. Nunca procura uma chave raiz/lista chamada
+Importar literalmente, sem wrapper ou cópia, para manter uma única fonte:
+
+```python
+from src.experiment.evidence_bundle import (
+    filter_llmfit_recommendations,
+    parse_llmfit_recommendations,
+)
+```
+
+O parser do núcleo exige objeto raiz, `models` como lista e `name` string não
+vazia em cada item. Nunca procurar uma chave raiz/lista chamada
 `recommendations` nem campo `model`. `recommend-extra-models.json` combina as
 linhas válidas de 2048 e 8192, adiciona `recommended_context` a cada linha,
-deduplica por `(name, ollama_name, recommended_context)` e filtra os dez locks
-comparando tanto `name` quanto `ollama_name`.
+deduplica por `(name, ollama_name, recommended_context)` e chama o filtro importado
+para remover os dez locks comparando tanto `name` quanto `ollama_name`.
 
 - [ ] **Step 6: Rodar testes, parser PowerShell e lint**
 
@@ -1002,7 +1026,9 @@ git commit -m "feat: coletar hardware e modelos adicionais"
 **Interfaces:**
 
 - Consumes: manifesto, `ExecutionIdentity`, runtime/model lock, inventário,
-  evidence bundle e runner por subprocesso injetável.
+  runner por subprocesso injetável e, do evidence bundle,
+  `collect_forbidden_values`, `failure_code_for_exception`,
+  `create_evidence_zip` e `create_partial_evidence_zip`.
 - Produces: `RunState`, `Phase2Result`, `RemainingBudget`,
   `select_or_create_run`, `run_preflight_phase2`, `remaining_auxiliary_bytes`,
   `build_child_env`, `run_benchmark_release(args) -> int` e ZIP final/partial
@@ -1128,6 +1154,9 @@ quarenta nomes artificiais sem relação entre si ou com a identidade. Manter o
 - [ ] **Step 3: Escrever testes de falha com evidência**
 
 ```python
+from src.experiment.evidence_bundle import EvidenceManifestError, EvidencePrivacyError
+
+
 @pytest.mark.parametrize("failure", ["space", "tool_hash", "model_digest", "runner"])
 def test_failures_still_create_failed_bundle_without_destroying_cache(
         orchestrator_fixture, failure):
@@ -1282,15 +1311,52 @@ def test_insufficient_exact_budget_aborts_before_pull(
                    for event in orchestrator_fixture.services.trace)
 
 
-def test_primary_bundle_failure_falls_back_to_safe_partial(orchestrator_fixture):
-    orchestrator_fixture.services.bundle_error = EvidencePrivacyError("scanner")
+@pytest.mark.parametrize(
+    ("bundle_error", "reason_code"),
+    [
+        (EvidencePrivacyError("scanner"), "PRIVACY_SCAN_FAILED"),
+        (EvidenceManifestError("manifest"), "EVIDENCE_MANIFEST_FAILED"),
+        (OSError("disk"), "EVIDENCE_IO_FAILED"),
+    ],
+)
+def test_primary_bundle_failure_maps_code_and_falls_back_to_safe_partial(
+        orchestrator_fixture, bundle_error, reason_code):
+    orchestrator_fixture.services.bundle_error = bundle_error
     assert run_benchmark_release(orchestrator_fixture.args,
                                  services=orchestrator_fixture.services) == 1
     with zipfile.ZipFile(orchestrator_fixture.zip_path) as archive:
         assert set(archive.namelist()) == {
             "README.txt", "status.json", "privacy-report.json", "manifest.json"
         }
-        assert json.loads(archive.read("status.json"))["partial"] is True
+        status = json.loads(archive.read("status.json"))
+        assert status["partial"] is True
+        assert status["reason_code"] == reason_code
+
+
+def test_secret_and_dotenv_values_are_ephemeral_bundle_inputs(
+        orchestrator_fixture, monkeypatch, caplog, capsys):
+    monkeypatch.setenv("OPENAI_API_KEY", "process-secret")
+    monkeypatch.setenv("EMPTY_SECRET", "")
+    (orchestrator_fixture.project / ".env").write_text(
+        "TOKEN=dotenv-secret\nEMPTY=\n", encoding="utf-8"
+    )
+    assert run_benchmark_release(
+        orchestrator_fixture.args, services=orchestrator_fixture.services
+    ) == 0
+    assert orchestrator_fixture.services.bundle_forbidden_values >= {
+        "process-secret", "dotenv-secret",
+    }
+    with zipfile.ZipFile(orchestrator_fixture.zip_path) as archive:
+        packed = b"\n".join(archive.read(name) for name in archive.namelist())
+    assert b"process-secret" not in packed and b"dotenv-secret" not in packed
+    assert all(
+        value not in record.getMessage()
+        for record in caplog.records
+        for value in ("process-secret", "dotenv-secret")
+    )
+    captured = capsys.readouterr()
+    assert "process-secret" not in captured.out + captured.err
+    assert "dotenv-secret" not in captured.out + captured.err
 ```
 
 Para esses testes, `orchestrator_fixture.services.non_model_required_bytes` é a
@@ -1475,11 +1541,14 @@ válidos e nenhum stem extra/órfão, nunca apenas vinte agregados ou duas conta
 independentes de nomes.
 
 No `finally`, atualizar status, copiar/organizar resultados, versões, hashes e
-logs sob evidence root; chamar `redact_sensitive` para JSON e
-`sanitize_text_files` para logs usando `getpass.getuser()`, `platform.node()`,
-`Path.home()` e `%USERPROFILE%`; gravar `privacy-report.json` apenas com
-categorias/contagens; chamar `create_evidence_zip`. Não incluir os valores
-removidos no relatório.
+logs sob evidence root. Antes de limpar o ambiente filho, chamar
+`collect_forbidden_values(os.environ, dotenv_paths=(project / ".env",),
+base_values=(getpass.getuser(), platform.node(), str(Path.home()),
+os.environ.get("USERPROFILE", "")))`. Esse conjunto vive somente na memória do
+processo: passá-lo a `redact_sensitive`, `sanitize_text_files` e
+`create_evidence_zip`, mas nunca colocá-lo no state, receipt, exceção, console ou
+arquivo. Gravar `privacy-report.json` apenas com categorias/contagens, sem nomes de
+variável, caminhos ou valores removidos.
 
 Materializar sempre a árvore fixa listada no teste: fonte indisponível recebe JSON
 `{"status":"unavailable","error_type":"ParseError"}` ou linha equivalente, nunca
@@ -1490,10 +1559,24 @@ preservados com seus nomes relativos. O
 ZIP; ele não lista a si mesmo porque auto-hash seria recursivo. Antes de aceitar o
 ZIP, reabrir e recalcular cada entrada contra o manifesto.
 
-Se sanitização, scanner, manifesto ou criação do bundle principal falhar, chamar
-`create_partial_evidence_zip` com código enumerado e sem arquivos brutos. Em ambos
-os casos gravar `--bootstrap-receipt` por temporário+replace com status, código de
-saída e caminho do ZIP; não gravar valores sensíveis no receipt.
+O orquestrador não adiciona arquivos diretamente com `ZipFile.write`: delega
+sempre ao núcleo, cuja allowlist admite apenas JSON, JSONL, TXT, LOG, YAML/YML,
+CSV e Markdown e ainda exige decode UTF-8 estrito sem NUL/controles proibidos;
+sufixo textual não torna bytes arbitrários seguros. Saída final e o
+`.zip.partial` exato são exclusões explícitas do scan; qualquer outro binário,
+ZIP, `.env`, symlink/junction ou path escape aborta.
+ZIP principal e parcial usam membros ordenados, timestamp DOS fixo, permissão
+`0644` e nível de compressão fixo, de modo que bytes iguais gerem o mesmo ZIP
+mesmo se os mtimes de origem mudarem.
+
+Se sanitização, scanner, manifesto ou criação do bundle principal falhar, usar
+`failure_code_for_exception` e chamar `create_partial_evidence_zip` com o código
+enumerado e sem arquivos brutos. O mapeamento obrigatório é privacidade ->
+`PRIVACY_SCAN_FAILED`, manifesto/árvore/hash -> `EVIDENCE_MANIFEST_FAILED`, E/S ->
+`EVIDENCE_IO_FAILED`; falha desconhecida -> `UNKNOWN_FAILED`. Não transformar erro
+de manifesto em privacidade nem todo `OSError` em desconhecido. Em ambos os casos
+gravar `--bootstrap-receipt` por temporário+replace com status, código de saída e
+caminho do ZIP; não gravar valores sensíveis no receipt.
 
 Nome: `RESULTADO_IFCQC_<UTC-basic>_<run-id>.zip`. Copiar atomicamente para
 `launch_dir` se gravável; senão manter em `run_root` e imprimir o caminho. Retorno
