@@ -28,12 +28,15 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from collections.abc import Callable
 from contextlib import contextmanager
 from dataclasses import asdict
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+import httpx
 from loguru import logger
 
 from src.config import get_settings
@@ -80,12 +83,39 @@ def sha256_of(path: str | Path | None) -> str | None:
     return digest.hexdigest()
 
 
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+
 def _repo_commit() -> str | None:
-    """Retorna o commit HEAD do repositório (best-effort), ou None."""
+    """Commit HEAD do repositório DESTE projeto (best-effort), ou None.
+
+    A checagem de ``--show-toplevel`` não é zelo excessivo: ``C:\\Users\\Keller_``
+    é um repositório git acidental que contém o projeto, então sem ela o
+    ``rev-parse HEAD`` devolve o HEAD da home — um commit que não descreve o
+    código executado, o que é pior que ``None``. Na release não há ``.git``
+    nenhum (o builder proíbe), e aí o commit vem de ``source_commit`` na
+    identidade de execução, que o manifesto já carrega.
+    """
     try:
+        toplevel = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            cwd=_PROJECT_ROOT,
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=False,
+        )
+        raiz = (toplevel.stdout or "").strip()
+        if not raiz or Path(raiz).resolve() != _PROJECT_ROOT:
+            logger.debug(
+                "git toplevel {} nao e a raiz do projeto {}; commit local ignorado",
+                raiz or "(vazio)",
+                _PROJECT_ROOT,
+            )
+            return None
         out = subprocess.run(
             ["git", "rev-parse", "HEAD"],
-            cwd=Path(__file__).resolve().parent,
+            cwd=_PROJECT_ROOT,
             capture_output=True,
             text=True,
             timeout=5,
@@ -107,8 +137,24 @@ depois de o processo iniciar.
 """
 
 
-def _ollama_version() -> str | None:
-    """Retorna a versão do Ollama instalado (best-effort), ou None."""
+def _ollama_version(base_url: str | None = None) -> str | None:
+    """Versão do servidor Ollama que atendeu o run (best-effort), ou None.
+
+    Pergunta ao servidor, não ao PATH: a release usa um binário privado em
+    ``tools/ollama/<versão>/`` e o ``ollama --version`` do PATH ou não existe ou
+    descreve outra instalação. Foi por isso que os 20 estágios da rodada v7.5
+    saíram com ``ollama_version: null`` numa máquina onde o servidor estava
+    rodando e respondendo.
+    """
+    if base_url:
+        try:
+            resposta = httpx.get(f"{base_url}/api/version", timeout=5)
+            resposta.raise_for_status()
+            versao = str(resposta.json().get("version") or "").strip()
+            if versao:
+                return versao
+        except Exception as exc:
+            logger.debug("Versao do Ollama via API indisponivel: {}", exc)
     try:
         out = subprocess.run(
             ["ollama", "--version"],
@@ -335,6 +381,12 @@ class ExperimentRunner:
         copy_path = os.path.join(tmp_dir, Path(ifc_path).name)
         shutil.copy2(ifc_path, copy_path)
 
+        # ``timestamp`` e carimbado pela fila e vale para os 20 estagios juntos:
+        # na rodada v7.5 os 20 run_0.json trouxeram o MESMO instante, e nao havia
+        # como saber quando cada estagio comecou ou quanto durou.
+        stage_started = datetime.now(UTC)
+        stage_monotonic = time.perf_counter()
+
         try:
             with _settings_override(model_name, cache_enabled) as settings:
                 pipeline = QualityPipeline(
@@ -351,6 +403,12 @@ class ExperimentRunner:
                     total_diagnosed = len(report.issues)
                     if issue_types:
                         report.issues = filter_issues_by_type(report.issues, issue_types)
+                        logger.info(
+                            "Filtro issue_types {} (dedup por guid): {}/{} issues",
+                            sorted(issue_types),
+                            len(report.issues),
+                            total_diagnosed,
+                        )
                     if check_properties:
                         antes = len(report.issues)
                         report.issues = filter_issues_by_property(
@@ -361,12 +419,6 @@ class ExperimentRunner:
                             sorted(check_properties),
                             len(report.issues),
                             antes,
-                        )
-                        logger.info(
-                            "Filtro issue_types {} (dedup por guid): {}/{} issues",
-                            sorted(issue_types),
-                            len(report.issues),
-                            total_diagnosed,
                         )
                     if max_issues is not None and len(report.issues) > max_issues:
                         sampled = stratified_sample(report.issues, max_issues, sample_seed)
@@ -426,11 +478,18 @@ class ExperimentRunner:
                         model_digest=ollama_model_digest(
                             settings.ollama_model, settings.ollama_url
                         ),
-                        ollama_version=_ollama_version(),
+                        ollama_version=_ollama_version(settings.ollama_url),
                         seed=settings.ollama_seed,
                         temperature=settings.ollama_temperature,
                         top_p=settings.ollama_top_p,
-                        num_ctx=settings.ollama_num_ctx,
+                        # Politica declarada + valor efetivo. Antes gravava-se o
+                        # teto (8192), que a politica 'fit' jamais alcancou.
+                        num_ctx=(
+                            settings.ollama_num_ctx_fixed
+                            if settings.ollama_num_ctx_policy == "fixed"
+                            else settings.ollama_num_ctx
+                        ),
+                        num_ctx_policy=settings.ollama_num_ctx_policy,
                         num_predict=settings.ollama_num_predict,
                         repeat_penalty=settings.ollama_repeat_penalty,
                         ifc_sha256=ifc_hash or "",
@@ -469,7 +528,16 @@ class ExperimentRunner:
                             else ""
                         ),
                         prompt_version=PROMPT_VERSION,
-                        repo_commit=_REPO_COMMIT_AT_IMPORT,
+                        # Na release nao ha .git; o commit vem da identidade de
+                        # execucao, que o manifesto ja carrega em source_commit.
+                        repo_commit=(
+                            _REPO_COMMIT_AT_IMPORT
+                            or (
+                                getattr(execution_identity, "source_commit", None)
+                                if execution_identity
+                                else None
+                            )
+                        ),
                         cache_enabled=cache_enabled,
                         reuse_equivalent=reuse_equivalent,
                         bsdd_cache_sha256=sha256_of(settings.bsdd_cache_path),
@@ -477,6 +545,9 @@ class ExperimentRunner:
                         gpu_residency=residency,
                         replica_index=replica_index,
                         timestamp=timestamp,
+                        stage_started_utc=stage_started.isoformat(),
+                        stage_finished_utc=datetime.now(UTC).isoformat(),
+                        stage_duration_s=round(time.perf_counter() - stage_monotonic, 3),
                     )
 
                     return ExperimentResult(

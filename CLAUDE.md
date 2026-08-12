@@ -205,14 +205,26 @@ ifc-quality-copilot/
   testes ao vivo só via `scripts/test_bsdd_live.py`
 
 ### Sugestões (LLM)
+- **`PROMPT_VERSION` vigente: `v7.6`** (fonte única em `prompt_templates.py`).
+  Estado do instrumento e do gabarito declarados em
+  `docs/condicao-v7-6-2026-08-12.md` e `docs/emenda-gt-2026-08-12.md` — **leia os
+  dois antes de mexer em prompt, ground truth ou comparador**
 - O LLM **apenas sugere**; a aplicação é sempre mediada por aprovação humana
 - **Aritmética não é tarefa de LLM** (medido em 2026-08-02): onde houver conta,
   o LLM declara os termos e o código executa — ver `thermal_recompute.py` e
   `docs/condicao-v7-2026-08-04.md`
-- **Mudança de prompt é mudança de instrumento:** bumpe `PROMPT_VERSION`, meça o
-  delta com `scripts/dump_prompts_spy.py` + `diff_prompts.py` (sem GPU) e declare
-  a condição num doc datado. Evidência do arquivo tende a ajudar; roteiro de como
-  raciocinar tende a atrapalhar (+31,2 pp × −12,5 pp, matriz v6)
+- **Mudança de prompt é mudança de instrumento:** bumpe `PROMPT_VERSION` (e o pino
+  em `scripts/build_windows_release.py`), meça o delta com
+  `scripts/dump_prompts_spy.py` + `diff_prompts.py` (sem GPU) e declare a condição
+  num doc datado. Evidência do arquivo tende a ajudar; roteiro de como raciocinar
+  tende a atrapalhar (+31,2 pp × −12,5 pp, matriz v6)
+- **Três naturezas legítimas de mudança de estímulo**, e nenhuma outra:
+  evidência do arquivo IFC, vocabulário genérico (tipologia de literatura ou
+  classe de schema) e formato. Colisão numérica entre prompt e gabarito precisa
+  estar declarada em `tests/test_prompt_nao_vaza_ground_truth.py`
+- **O comparador também é instrumento**: presumir a parte difícil da resposta
+  (era o caso da classe de fogo a partir de uma duração solta) é vazamento tanto
+  quanto entregá-la no prompt
 - Sugestões devem ser **estruturadas** (parseáveis) e normalizadas em `normalization.py`
 - Usar `grounding.py` para injetar contexto IDS/bSDD nos prompts
 - Cachear sugestões (`suggestion_cache.py`) para reprodutibilidade e custo

@@ -86,7 +86,7 @@ def test_runner_smoke_loads_frozen_ground_truth_without_mutating_ifc(
 
     monkeypatch.setattr(runner_module, "gpu_residency", lambda *_args: None)
     monkeypatch.setattr(runner_module, "ollama_model_digest", lambda *_args: None)
-    monkeypatch.setattr(runner_module, "_ollama_version", lambda: None)
+    monkeypatch.setattr(runner_module, "_ollama_version", lambda *_: None)
     monkeypatch.setattr(runner_module, "hardware_snapshot", lambda: SMOKE_HARDWARE)
 
     before = hashlib.sha256(ifc_path.read_bytes()).hexdigest()

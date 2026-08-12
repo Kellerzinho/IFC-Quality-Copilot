@@ -34,6 +34,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from scripts.run_benchmark import _invalid_matrix_stages
+from src.config import get_settings
 from src.experiment.evidence_bundle import (
     FailureCode,
     collect_forbidden_values,
@@ -403,6 +404,11 @@ def build_execution_identity(args: BenchmarkArgs | argparse.Namespace) -> Execut
 
     if frozen[0].ids_sha256 != frozen[1].ids_sha256:
         raise ValueError("IDS deve ser identico para predio e casa")
+    # Parametros de geracao entram na identidade desde 2026-08-12: sem eles, dois
+    # runs com janela de contexto ou seed diferentes tinham o mesmo hash canonico.
+    # A fonte e o settings do proprio processo que vai executar a fila.
+    settings = get_settings()
+    source_commit = manifest.get("source_commit")
     return ExecutionIdentity(
         release_id=release_id,
         project_sha256=project_sha,
@@ -413,6 +419,18 @@ def build_execution_identity(args: BenchmarkArgs | argparse.Namespace) -> Execut
         prompt_version=prompt_version,
         prompt_sha256=prompt_sha,
         reuse_equivalent=True,
+        source_commit=source_commit if isinstance(source_commit, str) else "",
+        num_ctx_policy=settings.ollama_num_ctx_policy,
+        num_ctx=(
+            settings.ollama_num_ctx_fixed
+            if settings.ollama_num_ctx_policy == "fixed"
+            else settings.ollama_num_ctx
+        ),
+        num_predict=settings.ollama_num_predict,
+        seed=settings.ollama_seed,
+        temperature=settings.ollama_temperature,
+        top_p=settings.ollama_top_p,
+        repeat_penalty=settings.ollama_repeat_penalty,
     )
 
 
@@ -798,6 +816,35 @@ def _run_llmfit(
     )
 
 
+def _last_completed_stage(results_root: Path) -> str | None:
+    """Identificador do estágio concluído mais recente, lido do disco."""
+    candidatos = [caminho for caminho in results_root.rglob("run_*.json") if caminho.is_file()]
+    if not candidatos:
+        return None
+    mais_recente = max(candidatos, key=lambda caminho: caminho.stat().st_mtime)
+    relativo = mais_recente.relative_to(results_root)
+    return PurePosixPath(*relativo.parts).with_suffix("").as_posix()
+
+
+def _resolve_llmfit_executable(destination: Path) -> Path:
+    """Localiza ``llmfit.exe`` sob o diretório de extração.
+
+    O caminho era montado como ``destination / "llmfit.exe"``, plano. Quando o
+    ZIP upstream aninha o binário num subdiretório a extração "sucede" e a
+    execução falha com ``CommandNotFound`` — foi o que aconteceu na rodada
+    v7.5, cujo pacote saiu sem nenhuma evidência de llmfit. O instalador já
+    resolve o ``uv.exe`` por busca recursiva (``windows/install.ps1``); aqui
+    passa a valer a mesma regra.
+    """
+    direto = destination / "llmfit.exe"
+    if direto.is_file():
+        return direto
+    for candidato in sorted(destination.rglob("llmfit.exe")):
+        if candidato.is_file():
+            return candidato
+    return direto
+
+
 def _write_unavailable_llmfit(output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     unavailable = {"status": "unavailable", "error_type": "ParseError"}
@@ -880,6 +927,62 @@ def _copy_complete_results(
             shutil.copyfile(issues, target.with_name("run_0_issues.jsonl"))
 
 
+def _observed_llmfit(llmfit_source: Path) -> dict[str, object]:
+    """Lê das sondas o que o llmfit realmente reportou nesta máquina.
+
+    O ``versions.json`` publicava a constante ``LLMFIT_VERSION`` sem olhar para
+    nada. Na rodada v7.5 o pacote saiu afirmando ``"llmfit": "1.1.8"`` ao lado de
+    um ``llmfit/doctor.txt`` que dizia ``status=unavailable
+    error_type=CommandNotFound`` — dois artefatos do mesmo ZIP em contradição
+    direta. O pino continua declarado; o que muda é passar a declarar também o
+    observado.
+    """
+    observado: dict[str, object] = {"pinned": LLMFIT_VERSION, "observed": None}
+    probe = llmfit_source / "system.json"
+    if not probe.is_file():
+        observado["status"] = "not_probed"
+        return observado
+    try:
+        payload = json.loads(probe.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        observado["status"] = "unreadable"
+        return observado
+    if not isinstance(payload, dict):
+        observado["status"] = "unreadable"
+        return observado
+    status = payload.get("status")
+    observado["status"] = status if isinstance(status, str) else "unknown"
+    if status == "unavailable":
+        error_type = payload.get("error_type")
+        if isinstance(error_type, str):
+            observado["error_type"] = error_type
+        return observado
+    versao = payload.get("llmfit_version") or payload.get("version")
+    observado["observed"] = versao if isinstance(versao, str) else None
+    return observado
+
+
+def _observed_ollama(results_root: Path) -> dict[str, object]:
+    """Versão do servidor Ollama registrada pelos estágios que rodaram.
+
+    A partir de 2026-08-12 o runner lê ``/api/version`` do servidor que atendeu
+    o run, em vez do ``ollama --version`` do PATH — que na release não existe,
+    porque o binário é privado do pacote.
+    """
+    observado: dict[str, object] = {"pinned": OLLAMA_VERSION, "observed": None}
+    for run_json in sorted(results_root.rglob("run_*.json")):
+        try:
+            payload = json.loads(run_json.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        versao = (payload.get("metadata") or {}).get("ollama_version")
+        if isinstance(versao, str) and versao.strip():
+            observado["observed"] = versao.strip()
+            break
+    observado["matches_pin"] = observado["observed"] == OLLAMA_VERSION
+    return observado
+
+
 def _materialize_evidence(
     *,
     evidence_root: Path,
@@ -928,8 +1031,8 @@ def _materialize_evidence(
     _write_json_atomic(
         software / "versions.json",
         {
-            "ollama": OLLAMA_VERSION,
-            "llmfit": LLMFIT_VERSION,
+            "ollama": _observed_ollama(results_root),
+            "llmfit": _observed_llmfit(llmfit_source),
             "python": platform.python_version(),
             "release_id": identity.release_id,
         },
@@ -1142,7 +1245,7 @@ def run_benchmark_release(
                 )
                 _run_llmfit(
                     active_services,
-                    llmfit_destination / "llmfit.exe",
+                    _resolve_llmfit_executable(llmfit_destination),
                     llmfit_root,
                     locked_names={model.name for model in lock.models},
                     forbidden_values=forbidden_values,
@@ -1206,7 +1309,10 @@ def run_benchmark_release(
                 f"{failure_code.value}: {type(error).__name__}: {error}\n",
             )
     finally:
-        last_stage = "casa/qwen3.5:9b/run_0" if status == "complete" else None
+        # Derivado do que realmente foi gravado. A string fixa
+        # "casa/qwen3.5:9b/run_0" mentia em silencio assim que a ordem do lock
+        # mudasse — e o lock e justamente o que se espera variar entre estudos.
+        last_stage = _last_completed_stage(results_root) if status == "complete" else None
         state = state.model_copy(
             update={
                 "status": status,

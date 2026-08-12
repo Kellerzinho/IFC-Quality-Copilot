@@ -188,6 +188,16 @@ class FakeServices:
             prompt_version=raw["prompt_version"],
             prompt_sha256=raw["prompt_sha256"],
             reuse_equivalent=raw["reuse_equivalent"],
+            # Campos de 2026-08-12: reconstruir sem eles daria outro hash
+            # canonico e todo estagio seria recusado como divergente.
+            source_commit=raw["source_commit"],
+            num_ctx_policy=raw["num_ctx_policy"],
+            num_ctx=raw["num_ctx"],
+            num_predict=raw["num_predict"],
+            seed=raw["seed"],
+            temperature=raw["temperature"],
+            top_p=raw["top_p"],
+            repeat_penalty=raw["repeat_penalty"],
         )
         for dataset in identity.datasets:
             for model in self.lock.models:

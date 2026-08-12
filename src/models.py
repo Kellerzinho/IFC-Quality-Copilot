@@ -244,6 +244,13 @@ class SuggestionMetrics(BaseModel):
     """True quando o prompt recebeu lista fechada de candidatos oficiais."""
     thermal_recomputed: bool = False
     """True quando a camada determinística refez a soma de U (condição v7)."""
+    num_ctx_effective: int = 0
+    """Janela de contexto realmente enviada ao Ollama nesta issue (0 em reuso puro).
+
+    O metadata do run registrava só o teto configurado. Na rodada v7.5 esse teto
+    (8192) não foi usado em nenhuma chamada — a janela real alternava entre 2048
+    e 4096 —, e sem este campo a distribuição efetiva não era auditável.
+    """
 
 
 class SuggestionSet(BaseModel):
@@ -305,6 +312,39 @@ class BSDDClassCandidate(BSDDClassification):
     properties: list[BSDDProperty] = Field(default_factory=list)
 
 
+_DEFINITION_MAX_CHARS = 320
+"""Corte das definições do bSDD no prompt.
+
+As definições do dicionário IFC chegam a vários parágrafos e trazem marcação
+``[[Entidade]]``; o que serve de grounding é a frase que define o termo.
+"""
+
+
+_BSDD_BOILERPLATE_PREFIX = "technical note:"
+"""Rodapé genérico do bSDD, sem conteúdo semântico.
+
+Medido em 2026-08-12 sobre o cache do experimento: **todas** as propriedades
+avaliadas (FireRating, AcousticRating, ThermalTransmittance, LoadBearing,
+IsExternal, HasNonSkidSurface) trazem a mesma nota — "in IFC this property takes
+'IfcLabel' as value…" — que não define a propriedade e só ocuparia contexto.
+"""
+
+
+def _is_boilerplate(texto: str) -> bool:
+    """True quando a descrição é o rodapé técnico genérico do bSDD."""
+    return texto.strip().casefold().startswith(_BSDD_BOILERPLATE_PREFIX)
+
+
+def _truncate_definition(texto: str) -> str:
+    """Limpa a marcação do bSDD e corta a definição na primeira frase longa."""
+    limpo = " ".join(texto.replace("[[", "").replace("]]", "").split())
+    if len(limpo) <= _DEFINITION_MAX_CHARS:
+        return limpo
+    corte = limpo[:_DEFINITION_MAX_CHARS]
+    ponto = corte.rfind(". ")
+    return (corte[: ponto + 1] if ponto > 0 else corte.rstrip() + "…")
+
+
 class BSDDContext(BaseModel):
     """Contexto semântico do bSDD para uma issue."""
 
@@ -312,6 +352,20 @@ class BSDDContext(BaseModel):
 
     class_name: str | None = None
     class_uri: str | None = None
+    class_description: str | None = None
+    """Definição oficial da entidade no dicionário IFC do bSDD.
+
+    Nas propriedades do experimento o bSDD não publica ``allowed_values`` (medido
+    em 2026-08-04: nulo em 100% delas), então o que o dicionário tem de
+    substantivo a oferecer é a definição — e ela era descartada antes de chegar
+    ao prompt.
+    """
+    property_absent_from_dictionary: bool = False
+    """A classe resolveu, mas a propriedade pedida não existe no dicionário.
+
+    Distingue "não consultei" de "consultei e o dicionário não cobre" — sem essa
+    marca, o silêncio depois de ``source_status: live`` era lido como aval.
+    """
     domain_name: str | None = Field(default=None, validation_alias=AliasChoices("domain_name", "domain"))
     related_properties: list[BSDDProperty] = Field(
         default_factory=list,
@@ -329,10 +383,24 @@ class BSDDContext(BaseModel):
 
     def as_prompt_block(self) -> str:
         """Serializa o contexto bSDD como texto estruturado para o prompt."""
-        if not self.classification_suggestions and not self.related_properties:
+        classe_def = (
+            self.class_description
+            if self.class_description and not _is_boilerplate(self.class_description)
+            else None
+        )
+        tem_conteudo = (
+            self.classification_suggestions
+            or self.related_properties
+            or classe_def
+            or self.property_absent_from_dictionary
+        )
+        if not tem_conteudo:
             return "bSDD: sem resultados."
 
         lines = [f"bSDD source_status: {self.source_status}"]
+        if classe_def:
+            lines.append(f"Definição oficial de {self.class_name or 'classe'}:")
+            lines.append(f"  {_truncate_definition(classe_def)}")
         if self.classification_suggestions:
             lines.append("Classes candidatas:")
             for cls in self.classification_suggestions:
@@ -350,6 +418,14 @@ class BSDDContext(BaseModel):
                     meta.append(f"unidade: {prop.unit}")
                 suffix = f" ({'; '.join(meta)})" if meta else ""
                 lines.append(f"- {prop.name}: {values}{suffix}")
+                if prop.description and not _is_boilerplate(prop.description):
+                    lines.append(f"    definição: {_truncate_definition(prop.description)}")
+        elif self.property_absent_from_dictionary:
+            lines.append(
+                "Propriedade pedida: ausente do dicionário IFC 4.3 — o bSDD foi "
+                "consultado e não define esta propriedade para esta classe. "
+                "Não há vocabulário oficial a seguir aqui."
+            )
         return "\n".join(lines)
 
     @property

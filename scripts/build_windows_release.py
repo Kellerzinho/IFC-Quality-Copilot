@@ -18,9 +18,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, cast
 
-RELEASE_DATE = "2026-08-09"
+# Data da release, fixada de proposito: o release_id precisa ser deterministico
+# para o mesmo conteudo. Bumpe junto com PROMPT_VERSION ou ao republicar.
+RELEASE_DATE = "2026-08-12"
 RELEASE_DIRECTORY_PREFIX = "IFCQC-Benchmark-Windows-x64"
-PROMPT_VERSION = "v7.3"
+PROMPT_VERSION = "v7.6"
 TEMPLATE_PATH = "windows/release-manifest.template.json"
 
 PROJECT_PATTERNS = (

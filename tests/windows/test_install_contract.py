@@ -119,7 +119,7 @@ def release_fixture(tmp_path: Path) -> Path:
             "prompt_templates": {
                 **internal,
                 "project_path": "src/suggestion_engine/prompt_templates.py",
-                "version": "v7.3",
+                "version": "v7.6",
             },
             "datasets": {
                 dataset: {
@@ -380,4 +380,61 @@ def test_cmd_propagates_install_failure_from_path_with_spaces(
     )
 
     assert result.returncode != 0
+    # A falha tem de ser a adulteracao do payload. Sem esta assercao o teste
+    # fica verde tambem quando o .cmd nem consegue entregar um caminho valido
+    # ao install.ps1 — passando pelo motivo errado.
+    assert "SHA-256" in result.stdout + result.stderr
     assert not sentinel.exists()
+
+
+_PACKAGE_ROOT_PROBE_PS1 = """\
+[CmdletBinding()]
+param(
+    [string]$PackageRoot = $PSScriptRoot,
+    [string]$AppRoot = '',
+    [switch]$ValidateOnly,
+    [switch]$PlanOnly,
+    [string]$TestProbeJson = ''
+)
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+$resolved = [IO.Path]::GetFullPath($PackageRoot)
+[IO.File]::WriteAllText(
+    (Join-Path $resolved 'package-root-recebido.txt'), $resolved, [Text.UTF8Encoding]::new($false)
+)
+exit 0
+"""
+
+
+@pytest.mark.parametrize(
+    "folder",
+    ["PacoteSimples", "Pacote com espacos", "Projetos FC - Pesquisa (2026)"],
+)
+def test_cmd_entrega_package_root_utilizavel(tmp_path: Path, folder: str) -> None:
+    """O duplo clique precisa entregar ao install.ps1 um PackageRoot resolvivel.
+
+    Regressao de 2026-08-10: ``-PackageRoot "%~dp0"`` termina em barra
+    invertida, entao a sequencia ``\\"`` vira aspa literal e o parametro chega
+    com aspa no fim — ``GetFullPath`` estoura antes de qualquer validacao.
+    """
+    package = tmp_path / folder
+    package.mkdir()
+    shutil.copyfile(ENTRYPOINT_CMD, package / "EXECUTAR_BENCHMARK.cmd")
+    (package / "install.ps1").write_text(_PACKAGE_ROOT_PROBE_PS1, encoding="utf-8")
+    env = os.environ.copy()
+    env["IFCQC_NO_PAUSE"] = "1"
+
+    result = subprocess.run(
+        ["cmd.exe", "/d", "/c", str(package / "EXECUTAR_BENCHMARK.cmd")],
+        text=True,
+        capture_output=True,
+        check=False,
+        timeout=60,
+        cwd=tmp_path,
+        env=env,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    recebido = package / "package-root-recebido.txt"
+    assert recebido.exists(), result.stdout + result.stderr
+    assert Path(recebido.read_text(encoding="utf-8")) == package

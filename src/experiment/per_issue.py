@@ -88,6 +88,13 @@ class IssueOutcome(BaseModel):
 
     Separa "o modelo acertou" de "o modelo montou os termos e o código somou".
     """
+    num_ctx_effective: int = 0
+    """Janela de contexto realmente enviada ao Ollama nesta issue.
+
+    O metadata do run registra a política e o valor configurado; este campo
+    registra o que de fato foi usado, por chamada. Sem ele, a rodada v7.5
+    publicou ``num_ctx: 8192`` — um valor que nenhuma chamada usou.
+    """
 
 
 def stratum_of(issue: Issue) -> str:
@@ -154,6 +161,7 @@ def build_issue_outcomes(
                     metrics.has_official_candidates if metrics else False
                 ),
                 thermal_recomputed=metrics.thermal_recomputed if metrics else False,
+                num_ctx_effective=metrics.num_ctx_effective if metrics else 0,
                 error_pct=(
                     _relative_error_pct(suggestions[0].value, item.expected_value)
                     if suggestions

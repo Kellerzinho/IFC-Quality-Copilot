@@ -121,8 +121,8 @@ function Assert-InternalRecord {
     Assert-Integer -Value $Record.size_bytes -Label "$Label.size_bytes" -Minimum 1
     Assert-LowerSha256 -Value $Record.sha256 -Label "$Label.sha256"
     if ($PromptRecord -and
-        (($Record.version -isnot [string]) -or ([string]$Record.version -cne 'v7.3')) ) {
-        throw 'Versao de prompt fixada divergente; esperado v7.3.'
+        (($Record.version -isnot [string]) -or ([string]$Record.version -cne 'v7.6')) ) {
+        throw 'Versao de prompt fixada divergente; esperado v7.6.'
     }
 }
 

@@ -7,6 +7,7 @@ import ifcopenshell.util.element
 from loguru import logger
 
 from src.ifc_analyzer.material_reader import read_material_layers
+from src.ifc_analyzer.model_evidence import build_model_evidence
 from src.models import Issue
 from src.ifc_analyzer.space_diagnostics import (
     _extract_contained_elements,
@@ -247,6 +248,8 @@ def diagnose_psets(
         required_psets = DEFAULT_REQUIRED_PSETS
 
     issues: list[Issue] = []
+    # Uma varredura por diagnóstico, não uma por issue.
+    model_evidence = build_model_evidence(ifc_file)
 
     for ifc_class, psets_spec in required_psets.items():
         elements = ifc_file.by_type(ifc_class)
@@ -256,7 +259,7 @@ def diagnose_psets(
 
         for element in elements:
             try:
-                _check_element(element, psets_spec, ifc_file, issues)
+                _check_element(element, psets_spec, ifc_file, issues, model_evidence)
             except Exception as exc:
                 logger.warning(
                     f"Erro inesperado ao verificar {element.GlobalId}: {exc}"
@@ -270,6 +273,7 @@ def _check_element(
     psets_spec: dict[str, list[str]],
     ifc_file: ifcopenshell.file,
     issues: list[Issue],
+    model_evidence: dict[str, Any] | None = None,
 ) -> None:
     """Verifica um único elemento contra todos os Psets requeridos e acumula Issues."""
     existing_psets = ifcopenshell.util.element.get_psets(element)
@@ -311,6 +315,9 @@ def _check_element(
                 "load_bearing": load_bearing,
                 "predefined_type": predefined_type,
                 "existing_psets": existing_summary,
+                # Contexto estrutural do arquivo (pórtico declarado): decide
+                # vedação vs portante sem revelar o alias do próprio elemento.
+                **(model_evidence or {}),
             }
 
             # Para IfcSpace.Category, enriquecer com elementos contidos e adjacências

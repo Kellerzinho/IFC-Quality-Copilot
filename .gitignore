@@ -50,3 +50,11 @@ uploads/
 data/cache/suggestion_cache.db
 data/cache/suggestion_cache.db-shm
 data/cache/suggestion_cache.db-wal
+
+# Artefatos de execucao do benchmark (3+ GB): a evidencia publicavel e o ZIP
+# sanitizado em dist/, nao a arvore bruta. Os poucos run_0.json de smoke que ja
+# estavam versionados seguem rastreados por excecao explicita abaixo.
+src/experiment/results/*
+!src/experiment/results/models.lock.json
+!src/experiment/results/2026-07-02-smoke/
+!src/experiment/results/2026-07-02-smoke-matriz/

@@ -2,6 +2,7 @@
 
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -23,7 +24,27 @@ class Settings(BaseSettings):
     ollama_url: str = Field(default="http://localhost:11434", description="URL base do servidor Ollama")
     ollama_model: str = Field(default="qwen3.5:9b", description="Modelo LLM usado no Ollama")
     ollama_temperature: float = Field(default=0.1, description="Temperatura de geracao")
-    ollama_num_ctx: int = Field(default=8192, description="Janela de contexto em tokens")
+    ollama_num_ctx: int = Field(
+        default=8192,
+        description="Teto da janela de contexto; só governa a política 'fit'",
+    )
+    ollama_num_ctx_policy: Literal["fit", "fixed"] = Field(
+        default="fixed",
+        description=(
+            "Como a janela de contexto e escolhida. 'fixed' usa ollama_num_ctx_fixed "
+            "em toda chamada; 'fit' dimensiona ao prompt, com ollama_num_ctx como teto."
+        ),
+    )
+    ollama_num_ctx_fixed: int = Field(
+        default=4096,
+        description=(
+            "Janela usada quando a politica e 'fixed'. Medido em 2026-08-12 sobre a "
+            "rodada v7.5: a politica 'fit' alternava entre 2048 e 4096 ao longo da fila "
+            "e o Ollama realoca o KV cache a cada troca — 400 recargas forcadas, "
+            "+2,3 a +4,0 s de mediana cada, ~7% do tempo de fila. 4096 cobre o maior "
+            "prompt do corpus (4.721 chars ~ 1.951 tokens) com folga."
+        ),
+    )
     ollama_num_predict: int = Field(
         default=768,
         description=(

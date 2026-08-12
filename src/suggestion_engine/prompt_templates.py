@@ -47,7 +47,53 @@ if TYPE_CHECKING:
 # v7.3 (2026-08-09): remove limites numericos do template termico que passaram
 # a colidir com hipoteses congeladas no ground truth integral. O criterio
 # normativo permanece descrito, sem entregar ao modelo um valor de referencia.
-PROMPT_VERSION = "v7.3"
+# v7.4 (2026-08-10): duas correcoes do que o v7.3 deixou pela metade. (1) A
+# edicao do template de laje amputou o objeto do verbo e o estimulo passou a
+# dizer "a NBR 15575-5 exige Os limites normativos dependem..." em 18 estimulos;
+# frase reescrita. (2) O exemplar JSON do template solar trazia "valor": 0.87,
+# que e o valor esperado em 100% dos 134 itens de SolarHeatGainCoefficient —
+# trocado por placeholder, como ja faziam os demais templates. A tabela
+# tipologica de vidros FICA: e a unica evidencia do estimulo (o IFC nao declara
+# o vidro). Ver docs/condicao-v7-4-2026-08-10.md.
+# v7.5 (2026-08-10): o template acustico ensinava a letra da classe de
+# desempenho ("'D' ou '35 dB'") e o ground truth so pontua "Rw NN dB" — o
+# gemma2 respondeu 'D' em 18/18 estimulos e o estrato zerou por incompatibilidade
+# de contrato, nao por erro de decisao. O prompt passa a cobrar a notacao que o
+# GT pontua, com a classe D/M/S explicitamente marcada como raciocinio e nao
+# resposta. Do outro lado, o GT ganhou banda de equivalencia de +/-5 dB.
+# Ver docs/condicao-gt-equivalencias-2026-08-10.md.
+# v7.6 (2026-08-12): fechamento do instrumento apos a rodada oficial v7.5. Todas
+# as mudancas sao de EVIDENCIA (dado que ja estava no IFC e nao chegava ao
+# modelo), VOCABULARIO GENERICO (tipologia de literatura ou classe de schema,
+# independente do elemento avaliado) ou FORMATO. Nenhuma entrega resposta.
+#   (1) Acustico: o estrato media "desafiar a tabela injetada". As 3 linhas
+#       cobriam so parede macica, e porta — 214 itens — nao tinha nenhuma linha:
+#       o menor valor ofertado era Rw 35 e a banda do GT para porta termina em
+#       30, entao acertar exigia contrariar o estimulo. Entram duas linhas
+#       tipologicas de literatura (porta de madeira, drywall simples) e a
+#       evidencia que faltava (camadas e PredefinedType) — era o template mais
+#       pobre em dado de arquivo do conjunto.
+#   (2) relation_broken: os dois templates pediam ACOES DE CORRECAO em prosa
+#       enquanto o GT pontua o nome da classe de relacao; o de porta ainda
+#       semeava a resposta no exemplar, e o ramo de space boundary afirmava o
+#       nome ERRADO da relacao ausente. 0,00 em 10/10 modelos era artefato de
+#       contrato. Passa a haver um template unico que descreve o sintoma e cobra
+#       a classe, com vocabulario fechado do schema IFC.
+#   (3) HasNonSkidSurface saiu do template de funcao portante — recebia a tabela
+#       de LoadBearing (FLOOR->True, ROOF->False) numa pergunta sobre piso
+#       antiderrapante. Ganha template proprio, sem mapa de escada->valor.
+#   (4) IsLoadBearing/LoadBearing e system_unclassified recebem evidencia
+#       agregada do modelo (quantos pilares e vigas o arquivo declara): permite
+#       distinguir portico de alvenaria portante sem expor o alias do elemento,
+#       que e a resposta. O template de sistema tambem passa a receber a funcao
+#       estrutural que os demais ja recebiam — a omissao explica o erro de
+#       vedacao->estrutural em 262 itens.
+#   (5) Formato: espessura de camada era arredondada para centimetro inteiro
+#       (1,5 cm virava "2cm"), o que contradizia a espessura total no mesmo
+#       prompt e consumia a banda de 10% do termico antes de qualquer erro do
+#       modelo; floats crus de espessura e area chegavam com ruido binario.
+# Ver docs/condicao-v7-6-2026-08-12.md.
+PROMPT_VERSION = "v7.6"
 
 _MEMORIA_ESTRUTURADA_BR = (
     "MEMÓRIA ESTRUTURADA (obrigatória): declare no campo memoria_calculo as camadas "
@@ -327,6 +373,29 @@ _LLM_OUTPUT_RULES = (
 
 _HEADER_BR = "CONTEXTO: {building_type}, zona bioclimática {bioclimatic_zone}.\n"
 
+# Sintoma observado no arquivo, por ramo de relation_broken. Descreve o que a
+# verificacao encontrou — nunca o nome da relacao ausente, que e a resposta.
+# O fallback cobre ramos futuros do diagnostico sem nomear relacao nenhuma.
+_RELATION_SINTOMAS: dict[str, str] = {
+    "IfcRelFillsElement": (
+        "o elemento é um componente de esquadria, mas não está vinculado a nenhuma "
+        "abertura de elemento hospedeiro — está posicionado no modelo sem preencher vão"
+    ),
+    "IfcRelContainedInSpatialStructure": (
+        "o elemento não está ancorado em nenhum pavimento ou espaço da hierarquia "
+        "espacial do modelo"
+    ),
+    "IfcRelSpaceBoundary": (
+        "varrendo o modelo inteiro, praticamente nenhum espaço declara fronteira com os "
+        "elementos construtivos que o delimitam; a issue está ancorada no elemento raiz "
+        "porque a lacuna é do arquivo como um todo, não de um elemento isolado"
+    ),
+}
+
+_RELATION_SINTOMA_FALLBACK = (
+    "uma entidade de relacionamento exigida para este elemento não foi encontrada no arquivo"
+)
+
 TEMPLATES: dict[str, str] = {
     "space_unnamed": (
         _HEADER_BR +
@@ -539,11 +608,19 @@ TEMPLATES: dict[str, str] = {
         "- Tipo de elemento: {element_class}\n"
         "- Espessura total: {thickness_m} m\n"
         "- Camadas de material: {material_layers}\n"
+        # v7.6: os templates de pset ja recebiam a funcao estrutural do elemento;
+        # este nao, e o rotulo "vedacao" vs "estrutural" e exatamente o que ela
+        # decide. Sem ela, 3 modelos erraram os 262 itens da maior classe.
+        "- Função estrutural declarada (LoadBearing): {load_bearing}\n"
+        "- Sistema estrutural declarado no modelo: {structural_inventory}\n"
         "SISTEMAS CONSTRUTIVOS COMUNS DE PAREDE (Brasil): "
         "Alvenaria de vedação em bloco cerâmico, "
         "Alvenaria estrutural em bloco cerâmico, Concreto armado moldado in loco, "
         "Concreto pré-moldado, Drywall / Steel frame, Alvenaria em bloco de concreto, "
         "Estrutura metálica, Painel de EPS\n"
+        "VEDAÇÃO OU ESTRUTURAL: o rótulo declara a função da parede no sistema, não só o "
+        "material. Alvenaria estrutural é aquela que sustenta a edificação; quando o modelo "
+        "declara pórtico de pilares e vigas, a alvenaria entre eles é de vedação.\n"
         "TAREFA: Classifique o sistema construtivo desta parede com 3 opções "
         "ordenadas por probabilidade, considerando o material e espessura informados.\n"
         "VOCABULÁRIO FECHADO: o campo sistema deve reproduzir EXATAMENTE um dos rótulos "
@@ -590,53 +667,75 @@ TEMPLATES: dict[str, str] = {
         "Formato JSON (o rótulo abaixo é PLACEHOLDER, não uma sugestão):\n"
         '{{"opcoes": [{{"sistema": "<ROTULO_DA_LISTA>", "justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
     ),
-    "relation_fills_missing": (
+    # v7.6: um unico template para relation_broken. Os dois anteriores pediam
+    # "3 acoes de diagnostico e correcao" em prosa, enquanto o ground truth
+    # pontua o NOME da classe de relacao ausente — 0,00 em 10/10 modelos era
+    # incompatibilidade de contrato, nao erro de decisao. O sintoma varia por
+    # ramo ({sintoma}, montado em build_prompt a partir de expected_relation) e
+    # NUNCA nomeia a relacao esperada; o vocabulario e a lista de classes de
+    # relacionamento do schema, que existe independentemente deste modelo.
+    "relation_missing": (
         _HEADER_BR +
-        "ISSUE: {element_class} #{guid} (\"{element_name}\") não possui IfcRelFillsElement — "
-        "não está inserido em nenhuma abertura de parede no modelo IFC.\n"
+        "ISSUE: {element_class} #{guid} (\"{element_name}\") — relacionamento ausente no modelo IFC.\n"
         "DADOS:\n"
         "- Elemento: {element_class} \"{element_name}\"\n"
         "- Espaços no mesmo pavimento: {nearby_spaces}\n"
-        "NORMA: ISO 16739-1 — IfcRelFillsElement vincula porta/janela à abertura (IfcOpeningElement) na parede\n"
-        "TAREFA: Sugira 3 ações de diagnóstico e correção que o engenheiro deve executar "
-        "no software BIM (Revit, ArchiCAD, etc.) para resolver este problema. "
-        "Seja específico sobre o que verificar. Cada ação deve ser diferente.\n"
-        "Formato JSON:\n"
-        '{{"opcoes": [{{"valor": "Verificar se o elemento foi inserido diretamente na parede '
-        'ou apenas posicionado no modelo sem hospedeiro", '
-        '"justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
-    ),
-    "relation_orphan": (
-        _HEADER_BR +
-        "ISSUE: {element_class} #{guid} (\"{element_name}\") não possui "
-        "IfcRelContainedInSpatialStructure — não está associado a nenhum espaço ou pavimento.\n"
-        "DADOS:\n"
-        "- Elemento: {element_class} \"{element_name}\"\n"
-        "- Espaços no mesmo pavimento: {nearby_spaces}\n"
-        "NORMA: ISO 16739-1 — Todo elemento deve estar contido em uma estrutura espacial IFC\n"
-        "TAREFA: Sugira 3 ações para associar este elemento ao espaço correto. "
-        "Priorize os espaços listados acima se houver.\n"
-        "Formato JSON:\n"
-        '{{"opcoes": [{{"valor": "...", "justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
+        "SINTOMA VERIFICADO NO ARQUIVO: {sintoma}\n"
+        "NORMA: ISO 16739-1 — o schema IFC representa vínculos entre elementos por "
+        "entidades de relacionamento objetivadas (subtipos de IfcRelationship).\n"
+        "CLASSES DE RELACIONAMENTO DO SCHEMA (vocabulário fechado):\n"
+        "  IfcRelFillsElement — preenche uma abertura (porta/janela na abertura da parede)\n"
+        "  IfcRelVoidsElement — abre um vão no elemento hospedeiro\n"
+        "  IfcRelContainedInSpatialStructure — ancora o elemento num pavimento ou espaço\n"
+        "  IfcRelSpaceBoundary — fronteira entre um espaço e o elemento que o delimita\n"
+        "  IfcRelAggregates — composição todo/parte na hierarquia espacial\n"
+        "  IfcRelConnectsElements — conexão física entre dois elementos\n"
+        "  IfcRelDefinesByProperties — associa conjunto de propriedades ao elemento\n"
+        "  IfcRelAssociatesMaterial — associa material ao elemento\n"
+        "TAREFA: identifique QUAL classe de relacionamento está ausente neste caso e "
+        "retorne 3 opções ordenadas por probabilidade.\n"
+        "VOCABULÁRIO FECHADO: o campo valor é EXATAMENTE o nome de uma das classes "
+        "listadas acima, copiado caractere por caractere, com o prefixo Ifc e a mesma "
+        "caixa. Não descreva a correção, não cite software BIM, não invente nome de "
+        "classe e não devolva URI.\n"
+        "Formato JSON (o token abaixo é PLACEHOLDER, não uma sugestão):\n"
+        '{{"opcoes": [{{"valor": "<NOME_DA_CLASSE_DA_LISTA>", '
+        '"justificativa": "...", "ref": "ISO 16739-1", "confianca": "alta/media/baixa"}}]}}'
     ),
     "pset_missing_acoustic": (
         _HEADER_BR +
         "ISSUE: {element_class} #{guid} (\"{element_name}\"), propriedade {check_property} ausente\n"
         "DADOS:\n"
-        "- Tipo de elemento: {element_class}\n"
+        "- Tipo de elemento: {element_class} (PredefinedType: {predefined_type})\n"
         "- Material: {material_name}\n"
+        "- Camadas de material: {material_layers}\n"
         "- Espessura total: {thickness_m} m\n"
         "- Externo: {is_external}\n"
         "NORMA: NBR 15575-4/5 — Desempenho acústico de vedações e lajes\n"
-        "CLASSES DE DESEMPENHO (NBR 15575): D (mínimo) | M (intermediário) | S (superior)\n"
-        "EXEMPLOS DE VALORES IFC para AcousticRating:\n"
-        "  - Alvenaria 14cm: 'D' ou '35 dB'\n"
-        "  - Concreto 12cm: 'M' ou '42 dB'\n"
-        "  - Drywall duplo: 'S' ou '50 dB'\n"
+        # v7.6: a tabela cobria apenas vedação maciça de parede. Componente de
+        # esquadria (porta/janela) e vedação leve de chapa única não tinham
+        # nenhuma linha, e o menor valor ofertado era Rw 35 — acima de qualquer
+        # valor plausível para porta. As duas linhas novas são tipologia de
+        # literatura, na mesma natureza das três originais: descrevem a
+        # construção, não o elemento avaliado.
+        "REFERÊNCIAS TÍPICAS de índice de redução sonora ponderado (Rw):\n"
+        "  - Porta interna de madeira (folha leve, sem vedação de fresta): Rw 20 a 25 dB\n"
+        "  - Drywall simples (uma chapa por face): Rw 35 a 40 dB\n"
+        "  - Alvenaria 14cm: Rw 35 dB\n"
+        "  - Concreto 12cm: Rw 42 dB\n"
+        "  - Drywall duplo: Rw 50 dB\n"
+        "A tabela descreve TIPOLOGIAS construtivas: escolha a linha pela composição do\n"
+        "  elemento (classe IFC, camadas e espessura acima), não pela primeira da lista.\n"
+        "  Componente de esquadria isola muito menos que a vedação em que se insere.\n"
+        "FORMATO OBRIGATÓRIO DO VALOR: exatamente \"Rw NN dB\" (índice em decibéis). "
+        "A classe de desempenho da NBR 15575 (D mínimo / M intermediário / S superior) "
+        "serve para raciocinar, mas NÃO é resposta válida aqui: devolva o Rw.\n"
         "TAREFA: Sugira 3 valores de {check_property} para este elemento, "
-        "do mais provável ao menos provável. Use a classe de desempenho (D/M/S) ou valor em dB.\n"
-        "Formato JSON:\n"
-        '{{"opcoes": [{{"valor": "...", "justificativa": "...", '
+        "do mais provável ao menos provável, cada um no formato \"Rw NN dB\".\n"
+        # v7.6: o exemplar trazia literalmente "Rw NN dB" e um modelo o devolveu
+        # como resposta na rodada v7.5. Placeholder explicito remove a ambiguidade.
+        "Formato JSON (o valor abaixo é PLACEHOLDER, não uma sugestão):\n"
+        '{{"opcoes": [{{"valor": "Rw <numero> dB", "justificativa": "...", '
         '"ref": "NBR 15575", "confianca": "alta/media/baixa"}}]}}'
     ),
     "pset_missing_u_value_slab": (
@@ -657,11 +756,11 @@ TEMPLATES: dict[str, str] = {
         "               aço/metal 55 (CONDUZ calor; metal NÃO isola)\n"
         "  Vazio de laje nervurada ou entre perfis: câmara de ar não ventilada, R ≈ 0,16.\n"
         "  Só há isolamento se as camadas citarem EPS, XPS, lã ou poliuretano.\n"
-        "ATENÇÃO — LIMITE NORMATIVO NÃO É O VALOR DO ELEMENTO: a NBR 15575-5 exige "
-        "Os limites normativos dependem do tipo de elemento e das condições de aplicação, "
-        "mas são critérios de APROVAÇÃO, não estimativas do valor. Um elemento pode "
-        "perfeitamente REPROVAR no limite — apontar essa não-conformidade é a finalidade "
-        "da análise. Calcule o valor a partir das "
+        "ATENÇÃO — LIMITE NORMATIVO NÃO É O VALOR DO ELEMENTO: a NBR 15575-5 fixa "
+        "limites de transmitância que dependem do tipo de elemento e das condições de "
+        "aplicação, mas esses limites são critérios de APROVAÇÃO, não estimativas do "
+        "valor. Um elemento pode perfeitamente REPROVAR no limite — apontar essa "
+        "não-conformidade é a finalidade da análise. Calcule o valor a partir das "
         "camadas e devolva o resultado do cálculo, seja ele conforme ou não.\n" +
         # v7: idem ao template de parede — a estrutura é do LLM, a soma é do código.
         _MEMORIA_ESTRUTURADA_BR +
@@ -678,8 +777,12 @@ TEMPLATES: dict[str, str] = {
         "ISSUE: IfcWindow #{guid} (\"{element_name}\"), propriedade {check_property} ausente\n"
         "DADOS:\n"
         "- Material/tipo de vidro: {material_name}\n"
+        "- Camadas de material: {material_layers}\n"
         "- Externo: {is_external}\n"
-        "- ThermalTransmittance (U): {existing_psets}\n"
+        # v7.6: a linha dizia "ThermalTransmittance (U)" e renderizava o resumo
+        # de Psets do elemento — um dict cru, com rotulo que nao descrevia o
+        # conteudo. Rotulo corrigido; o dado permanece.
+        "- Conjuntos de propriedades já presentes no elemento: {existing_psets}\n"
         "REFERÊNCIAS TÍPICAS:\n"
         "  SolarHeatGainCoefficient (SHGC / Fator Solar):\n"
         "    Vidro simples incolor 6mm: 0,87\n"
@@ -691,8 +794,8 @@ TEMPLATES: dict[str, str] = {
         "NORMA: NBR 15575-4, RTQ-C, ASHRAE 90.1\n"
         "TAREFA: Sugira 3 valores para {check_property} (adimensional, 0–1), "
         "do mais provável ao menos provável, com base no tipo de vidro.\n"
-        "Formato JSON:\n"
-        '{{"opcoes": [{{"valor": 0.87, "justificativa": "...", '
+        "Formato JSON (os números abaixo são PLACEHOLDER, não uma sugestão):\n"
+        '{{"opcoes": [{{"valor": <numero>, "justificativa": "...", '
         '"ref": "NBR 15575-4", "confianca": "alta/media/baixa"}}]}}'
     ),
     "pset_missing_structural": (
@@ -705,6 +808,11 @@ TEMPLATES: dict[str, str] = {
         "- Camadas de material: {material_layers}\n"
         "- Espessura/seção: {thickness_m} m\n"
         "- Externo: {is_external}\n"
+        # v7.6: o arquivo declara quantos pilares e vigas existem; sem esse
+        # agregado o modelo nao consegue distinguir edificio em portico (onde a
+        # parede e vedacao) de alvenaria portante. E evidencia do arquivo, e nao
+        # o alias LoadBearing do proprio elemento, que seria a resposta.
+        "- Sistema estrutural declarado no modelo: {structural_inventory}\n"
         "INTERPRETAÇÃO (o PredefinedType manda mais que a classe):\n"
         "  IfcBeam/IfcColumn em concreto armado → normalmente True\n"
         "  IfcSlab PredefinedType=FLOOR (laje entre pavimentos) → normalmente True\n"
@@ -715,9 +823,40 @@ TEMPLATES: dict[str, str] = {
         "  IfcWall fina (< 10 cm), drywall ou divisória de vedação → False\n"
         "REGRA: telha, forro, revestimento e elemento apoiado não sustentam carga de "
         "outros elementos — respondem False mesmo quando a classe IFC é IfcSlab.\n"
+        "PAREDE EM EDIFICAÇÃO COM PÓRTICO: quando o modelo declara pilares e vigas em "
+        "quantidade compatível com a estrutura da edificação, a carga corre por eles e as "
+        "paredes tendem a ser vedação; alvenaria portante é o caso em que a parede substitui "
+        "o pórtico. Decida pelo inventário acima, não pela espessura isolada.\n"
         "TAREFA: determine {check_property} para este elemento e sugira 3 valores booleanos "
         "(true/false) ordenados por probabilidade, com justificativa baseada no "
         "PredefinedType, no material e na espessura.\n"
+        "Formato JSON (o valor abaixo é PLACEHOLDER, não uma sugestão):\n"
+        '{{"opcoes": [{{"valor": <true|false>, "justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
+    ),
+    # v7.6: HasNonSkidSurface saiu de pset_missing_structural. Recebia a tabela
+    # de interpretacao de funcao portante (FLOOR->True, ROOF->False), que nao
+    # tem relacao com superficie antiderrapante — 7 de 10 modelos responderam
+    # False. Aqui nao ha mapa de classe->valor: so a evidencia do arquivo e o
+    # criterio normativo de onde a norma exige a superficie.
+    "pset_missing_nonskid": (
+        _HEADER_BR +
+        "ISSUE: {element_class} #{guid} (\"{element_name}\"), propriedade {check_property} ausente\n"
+        "DADOS:\n"
+        "- Tipo de elemento: {element_class} (PredefinedType: {predefined_type})\n"
+        "- Nome: {element_name}\n"
+        "- Material: {material_name}\n"
+        "- Camadas de material (a última é a face de uso): {material_layers}\n"
+        "- Externo: {is_external}\n"
+        "NORMA: ABNT NBR 9050 (acessibilidade) e NBR 15575-3 (pisos) — a propriedade "
+        "declara se a superfície de uso do elemento é antiderrapante.\n"
+        "CRITÉRIO: a exigência decorre do RISCO DE ESCORREGAMENTO da superfície onde se "
+        "pisa — piso sujeito a molhamento, rampa e degrau são as situações que a norma "
+        "trata. Decida pelo acabamento declarado nas camadas e pela exposição do elemento; "
+        "concreto desempenado, pedra polida e porcelanato esmaltado comum não são "
+        "antiderrapantes por si.\n"
+        "TAREFA: determine {check_property} para este elemento e sugira 3 valores booleanos "
+        "(true/false) ordenados por probabilidade, justificando pelo acabamento e pela "
+        "exposição do elemento.\n"
         "Formato JSON (o valor abaixo é PLACEHOLDER, não uma sugestão):\n"
         '{{"opcoes": [{{"valor": <true|false>, "justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
     ),
@@ -736,8 +875,14 @@ TEMPLATES: dict[str, str] = {
         "Pilar metálico tubular, Pilar metálico perfil I/H, Pilar de madeira\n"
         "TAREFA: Classifique o sistema estrutural deste elemento com 3 opções "
         "ordenadas por probabilidade.\n"
-        "Formato JSON:\n"
-        '{{"opcoes": [{{"sistema": "Viga de concreto armado moldada in loco", '
+        # v7.6: era o unico dos tres templates de sistema sem o bloco de
+        # vocabulario fechado, e o exemplar trazia um rotulo concreto no lugar
+        # do placeholder — ancorava a resposta.
+        "VOCABULÁRIO FECHADO: o campo sistema deve reproduzir EXATAMENTE um dos rótulos "
+        "listados acima para a classe deste elemento, com a mesma grafia e acentuação. "
+        "Não abrevie, não use snake_case, não prefixe com 'Ifc' e não invente rótulo novo.\n"
+        "Formato JSON (o rótulo abaixo é PLACEHOLDER, não uma sugestão):\n"
+        '{{"opcoes": [{{"sistema": "<ROTULO_DA_LISTA>", '
         '"justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
     ),
     "quantity_missing": (
@@ -775,8 +920,11 @@ TEMPLATES: dict[str, str] = {
         "  OmniClass — Mesa 13 (Produtos) ou Mesa 21 (Elementos)\n"
         "TAREFA: Sugira 3 classificações para este elemento, com código e descrição, "
         "priorizando SINAPI e NBR 15965 para o contexto brasileiro.\n"
-        "Formato JSON:\n"
-        '{{"opcoes": [{{"codigo": "74209/001", "sistema": "SINAPI", "descricao": "...", '
+        # v7.6: o exemplar trazia um codigo SINAPI concreto ("74209/001") no
+        # campo que carrega a resposta. Estrato fora do escopo do benchmark
+        # atual, mas e a mesma ancora textual que o guarda passou a barrar.
+        "Formato JSON (os valores abaixo são PLACEHOLDER, não uma sugestão):\n"
+        '{{"opcoes": [{{"codigo": "<codigo>", "sistema": "<SISTEMA_DA_LISTA>", "descricao": "...", '
         '"justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
     ),
     "thermal_incomplete": (
@@ -948,8 +1096,12 @@ def _specialized_pset_template_key(issue: Issue) -> str | None:
         return "pset_missing_acoustic"
     if prop in ("SolarHeatGainCoefficient", "VisibleTransmittance"):
         return "pset_missing_solar"
-    if prop in ("LoadBearing", "IsLoadBearing", "HasNonSkidSurface"):
+    if prop in ("LoadBearing", "IsLoadBearing"):
         return "pset_missing_structural"
+    # v7.6: superficie antiderrapante nao e funcao portante — recebia a tabela
+    # de LoadBearing e 7 de 10 modelos responderam False por causa dela.
+    if prop == "HasNonSkidSurface":
+        return "pset_missing_nonskid"
     return None
 
 
@@ -989,10 +1141,10 @@ def _select_template(issue: Issue) -> str:
             return TEMPLATES[key]
         return TEMPLATES["pset_missing_generic"]
     if issue.issue_type == "relation_broken":
-        expected = issue.context.get("expected_relation", "")
-        if expected == "IfcRelFillsElement":
-            return TEMPLATES["relation_fills_missing"]
-        return TEMPLATES["relation_orphan"]
+        # v7.6: template unico. O ramo so escolhe o texto do SINTOMA (montado em
+        # build_prompt); a pergunta e o vocabulario sao os mesmos, e nenhum dos
+        # dois nomeia a relacao esperada.
+        return TEMPLATES["relation_missing"]
     if issue.issue_type == "system_unclassified":
         if issue.element_class in ("IfcSlab", "IfcSlabStandardCase"):
             return TEMPLATES["system_unclassified_slab"]
@@ -1157,6 +1309,27 @@ def _is_stud_cavity(layers: list[dict], index: int) -> bool:
     return any(token in nome for token in _METAL_TOKENS)
 
 
+def _format_medida(valor: float, casas: int) -> str:
+    """Arredonda medida do IFC para exibição, sem zeros e sem ruído binário."""
+    texto = f"{valor:.{casas}f}".rstrip("0").rstrip(".")
+    return texto or "0"
+
+
+def _format_thickness_cm(thickness_m: float) -> str:
+    """Formata espessura de camada em cm, preservando o milímetro.
+
+    O arredondamento para centímetro inteiro transformava a chapa de gesso de
+    1,5 cm em "2cm": o modelo que declarasse fielmente o que leu calculava
+    U = 2,20 contra 2,35 do ground truth — 6,4% de erro embutido pelo próprio
+    prompt, dentro de uma banda de tolerância de 10%. Também contradizia a
+    espessura total exibida no mesmo estímulo (2+7+2 = 11 cm num pacote de
+    10 cm).
+    """
+    cm = thickness_m * 100
+    texto = f"{cm:.1f}".rstrip("0").rstrip(".")
+    return f"{texto or '0'}cm"
+
+
 def _format_material_layers(layers: list[dict] | Any) -> str:
     """Formata lista de camadas de material para texto legível.
 
@@ -1174,7 +1347,7 @@ def _format_material_layers(layers: list[dict] | Any) -> str:
             continue
         name = lay.get("name") or "?"
         thick = lay.get("thickness_m")
-        texto = f"{name} ({thick * 100:.0f}cm)" if thick is not None else str(name)
+        texto = f"{name} ({_format_thickness_cm(thick)})" if thick is not None else str(name)
         if todas_dicts and _is_stud_cavity(layers, posicao):
             texto += " [montante: vão entre perfis = câmara de ar não ventilada, R = 0,17 m²K/W]"
         parts.append(texto)
@@ -1184,6 +1357,27 @@ def _format_material_layers(layers: list[dict] | Any) -> str:
 def _select_profile_template(profile_id: str, issue: Issue) -> str | None:
     """Retorna o template de perfil para (profile_id, issue_type) ou None se não existir."""
     return PROFILE_TEMPLATES.get((profile_id, issue.issue_type))
+
+
+def _format_psets(psets: Any) -> str:
+    """Formata o resumo de Psets do elemento como texto legível.
+
+    Chegava ao prompt como ``repr`` de dict Python — chaves entre aspas simples,
+    chaves vazias e floats com ruído binário (``1.4999999999999998``). É
+    evidência do arquivo; o formato é que era ruído.
+    """
+    if not isinstance(psets, dict) or not psets:
+        return "nenhum"
+    partes: list[str] = []
+    for nome, props in psets.items():
+        if not isinstance(props, dict) or not props:
+            continue
+        campos = ", ".join(
+            f"{chave}={_format_medida(valor, 3) if isinstance(valor, float) else valor}"
+            for chave, valor in props.items()
+        )
+        partes.append(f"{nome} ({campos})")
+    return "; ".join(partes) if partes else "nenhum"
 
 
 def _format_context_value(value: Any) -> str:
@@ -1283,6 +1477,21 @@ def build_prompt(
     if "nearby_spaces" in fill_ctx:
         fill_ctx["nearby_spaces"] = _format_spaces(fill_ctx["nearby_spaces"])
 
+    # relation_broken: o template é único e o ramo só escolhe o texto do sintoma.
+    if issue.issue_type == "relation_broken":
+        esperada = str(issue.context.get("expected_relation") or "")
+        fill_ctx["sintoma"] = _RELATION_SINTOMAS.get(esperada, _RELATION_SINTOMA_FALLBACK)
+
+    # Medidas de ponto flutuante do IFC chegam com ruído binário
+    # (0.19999999999999998 m, 9.240000000001922 m²) e poluem o estímulo.
+    for chave, casas in (("thickness_m", 3), ("area_m2", 2), ("height_m", 2)):
+        valor = fill_ctx.get(chave)
+        if isinstance(valor, float):
+            fill_ctx[chave] = _format_medida(valor, casas)
+
+    if isinstance(fill_ctx.get("existing_psets"), dict):
+        fill_ctx["existing_psets"] = _format_psets(fill_ctx["existing_psets"])
+
     # Geometria em planta: o template decide corredor pela largura, mas Perimeter
     # vem None em 82 de 82 espacos do predio — o bounding_box esta em 82/82.
     if issue.issue_type in ("space_unnamed", "pset_missing"):
@@ -1370,6 +1579,12 @@ def _scoped_bsdd_context(issue: Issue, bsdd_context: BSDDContext | None) -> BSDD
             "properties": [],
             "classification_suggestions": classes_dominio,
             "classes": classes_dominio,
+            # v7.6: a definicao oficial da entidade IFC e o aviso de propriedade
+            # ausente pertencem ao preenchimento de propriedade. Classificar
+            # sistema construtivo nao e nomear a entidade — foi essa confusao
+            # que zerou o estrato em 2026-07-27.
+            "class_description": None,
+            "property_absent_from_dictionary": False,
         }
     )
 

@@ -26,7 +26,12 @@ items:
   check_property: FireRating
   issue_id: ea37b4dd972e
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
     ensaio e especificação completos ausentes.'
@@ -52,7 +57,17 @@ items:
   check_property: AcousticRating
   issue_id: 1c981dcad3ad
   expected_value: Rw 25 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 20 dB
+  - Rw 21 dB
+  - Rw 22 dB
+  - Rw 23 dB
+  - Rw 24 dB
+  - Rw 26 dB
+  - Rw 27 dB
+  - Rw 28 dB
+  - Rw 29 dB
+  - Rw 30 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -65,7 +80,15 @@ items:
   check_property: FireRating
   issue_id: 902ad787ba18
   expected_value: EI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 90
+  - EI 120
+  - REI 60
+  - REI 90
+  - REI 120
+  - P-CF 60
+  - P-CF 90
+  - P-CF 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcDoor residencial; função,
     ensaio e especificação completos ausentes.'
@@ -78,7 +101,17 @@ items:
   check_property: AcousticRating
   issue_id: 683d020f1ec0
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -91,7 +124,13 @@ items:
   check_property: FireRating
   issue_id: d64e52813df1
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
+  - EI 30
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -169,7 +208,12 @@ items:
   check_property: FireRating
   issue_id: 3874e26f27af
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcRoof residencial; função,
     ensaio e especificação completos ausentes.'
@@ -196,7 +240,17 @@ items:
   check_property: AcousticRating
   issue_id: 1187f275bdbc
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -209,7 +263,12 @@ items:
   check_property: FireRating
   issue_id: 84cc3f84af3d
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -234,7 +293,12 @@ items:
   check_property: FireRating
   issue_id: a9b06412c193
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcRoof residencial; função,
     ensaio e especificação completos ausentes.'
@@ -260,7 +324,12 @@ items:
   check_property: FireRating
   issue_id: eedd8ff7bdf5
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
     ensaio e especificação completos ausentes.'
@@ -288,7 +357,12 @@ items:
   check_property: FireRating
   issue_id: 8dafd88def30
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
     ensaio e especificação completos ausentes.'
@@ -316,7 +390,12 @@ items:
   check_property: FireRating
   issue_id: cb83f02b34d6
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
     ensaio e especificação completos ausentes.'
@@ -343,7 +422,12 @@ items:
   check_property: FireRating
   issue_id: 7bcbce13da2d
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
     ensaio e especificação completos ausentes.'
@@ -370,7 +454,12 @@ items:
   check_property: FireRating
   issue_id: 2cacebaf613e
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
     ensaio e especificação completos ausentes.'
@@ -397,7 +486,12 @@ items:
   check_property: FireRating
   issue_id: e72dd88e5ea0
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
     ensaio e especificação completos ausentes.'
@@ -425,7 +519,17 @@ items:
   check_property: AcousticRating
   issue_id: 3ad51bcba20a
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -438,7 +542,12 @@ items:
   check_property: FireRating
   issue_id: 473f58b8160c
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -463,7 +572,17 @@ items:
   check_property: AcousticRating
   issue_id: 1f4c0cbf94c1
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -476,7 +595,12 @@ items:
   check_property: FireRating
   issue_id: 7f0dc60a6b63
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -501,7 +625,17 @@ items:
   check_property: AcousticRating
   issue_id: 47a5f88118c4
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -514,7 +648,12 @@ items:
   check_property: FireRating
   issue_id: d9801e6438f0
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -539,7 +678,17 @@ items:
   check_property: AcousticRating
   issue_id: ec1f56446ef6
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -552,7 +701,12 @@ items:
   check_property: FireRating
   issue_id: 0336de2c4d5b
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -577,7 +731,17 @@ items:
   check_property: AcousticRating
   issue_id: 66db54378322
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -590,7 +754,12 @@ items:
   check_property: FireRating
   issue_id: 98bca37a921f
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -615,7 +784,17 @@ items:
   check_property: AcousticRating
   issue_id: 903631968d51
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -628,7 +807,12 @@ items:
   check_property: FireRating
   issue_id: ef25f0d492ec
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -653,7 +837,17 @@ items:
   check_property: AcousticRating
   issue_id: f02892c06a76
   expected_value: Rw 25 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 20 dB
+  - Rw 21 dB
+  - Rw 22 dB
+  - Rw 23 dB
+  - Rw 24 dB
+  - Rw 26 dB
+  - Rw 27 dB
+  - Rw 28 dB
+  - Rw 29 dB
+  - Rw 30 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -666,7 +860,15 @@ items:
   check_property: FireRating
   issue_id: e936ef56afbe
   expected_value: EI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 90
+  - EI 120
+  - REI 60
+  - REI 90
+  - REI 120
+  - P-CF 60
+  - P-CF 90
+  - P-CF 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcDoor residencial; função,
     ensaio e especificação completos ausentes.'
@@ -679,7 +881,17 @@ items:
   check_property: AcousticRating
   issue_id: 9844f10a3e0d
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -692,7 +904,12 @@ items:
   check_property: FireRating
   issue_id: 185c3a2908ff
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -717,7 +934,12 @@ items:
   check_property: FireRating
   issue_id: a1c502997afb
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
     ensaio e especificação completos ausentes.'
@@ -745,7 +967,12 @@ items:
   check_property: FireRating
   issue_id: 7a0dd2194ecc
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
     ensaio e especificação completos ausentes.'
@@ -773,7 +1000,12 @@ items:
   check_property: FireRating
   issue_id: 277154c1aa4a
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
     ensaio e especificação completos ausentes.'
@@ -801,7 +1033,12 @@ items:
   check_property: FireRating
   issue_id: aefa12019092
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
     ensaio e especificação completos ausentes.'
@@ -829,7 +1066,12 @@ items:
   check_property: FireRating
   issue_id: 660759098f96
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcRoof residencial; função,
     ensaio e especificação completos ausentes.'
@@ -841,12 +1083,14 @@ items:
   issue_type: pset_missing
   check_property: ThermalTransmittance
   issue_id: 2b3056e1bbe9
-  expected_value: 2.0
+  expected_value: 4.6
   accepted_alternatives: []
   verified: true
   notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
-    U=2.00 W/(m²·K): telhado basico:normadom - telhado fibrocimento ondulado telhado basico:normadom -
-    telhado fibrocimento ondulado cro5 - telha fibrocimento ondulada.'
+    U=4.60 W/(m²·K): telhado basico:normadom - telhado fibrocimento ondulado:1121646 telhado basico:normadom
+    - telhado fibrocimento ondulado telhado basico:normadom - telhado fibrocimento ondulado cro5 - telha
+    fibrocimento ondulada. Emenda de 2026-08-12: telha fina sem forro não se comporta como laje de cobertura;
+    restaurado o valor da revisão autoral.'
   equivalence_id: eq-7d4be0ba8eefa710
   confidence: medium
   source_kind: typology
@@ -856,7 +1100,12 @@ items:
   check_property: FireRating
   issue_id: 91f0d43dd121
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcRoof residencial; função,
     ensaio e especificação completos ausentes.'
@@ -909,7 +1158,17 @@ items:
   check_property: AcousticRating
   issue_id: cec3ee72c94e
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -922,7 +1181,12 @@ items:
   check_property: FireRating
   issue_id: 5375f6c2f842
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -947,7 +1211,12 @@ items:
   check_property: FireRating
   issue_id: 2ae9aba6251c
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
     ensaio e especificação completos ausentes.'
@@ -974,7 +1243,17 @@ items:
   check_property: AcousticRating
   issue_id: f8df9e93dcf9
   expected_value: Rw 25 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 20 dB
+  - Rw 21 dB
+  - Rw 22 dB
+  - Rw 23 dB
+  - Rw 24 dB
+  - Rw 26 dB
+  - Rw 27 dB
+  - Rw 28 dB
+  - Rw 29 dB
+  - Rw 30 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -987,7 +1266,15 @@ items:
   check_property: FireRating
   issue_id: 4975cb2e07e1
   expected_value: EI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 90
+  - EI 120
+  - REI 60
+  - REI 90
+  - REI 120
+  - P-CF 60
+  - P-CF 90
+  - P-CF 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcDoor residencial; função,
     ensaio e especificação completos ausentes.'
@@ -1000,7 +1287,17 @@ items:
   check_property: AcousticRating
   issue_id: 6d50bd0c6567
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -1013,7 +1310,12 @@ items:
   check_property: FireRating
   issue_id: 477990e1fc80
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -1038,7 +1340,17 @@ items:
   check_property: AcousticRating
   issue_id: 472314ec33bd
   expected_value: Rw 25 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 20 dB
+  - Rw 21 dB
+  - Rw 22 dB
+  - Rw 23 dB
+  - Rw 24 dB
+  - Rw 26 dB
+  - Rw 27 dB
+  - Rw 28 dB
+  - Rw 29 dB
+  - Rw 30 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -1051,7 +1363,15 @@ items:
   check_property: FireRating
   issue_id: 17f036fd36ef
   expected_value: EI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 90
+  - EI 120
+  - REI 60
+  - REI 90
+  - REI 120
+  - P-CF 60
+  - P-CF 90
+  - P-CF 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcDoor residencial; função,
     ensaio e especificação completos ausentes.'
@@ -1064,7 +1384,17 @@ items:
   check_property: AcousticRating
   issue_id: fea539269490
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -1077,7 +1407,12 @@ items:
   check_property: FireRating
   issue_id: 969bdca4cdc8
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -1116,7 +1451,17 @@ items:
   check_property: AcousticRating
   issue_id: 08f0ce245b82
   expected_value: Rw 25 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 20 dB
+  - Rw 21 dB
+  - Rw 22 dB
+  - Rw 23 dB
+  - Rw 24 dB
+  - Rw 26 dB
+  - Rw 27 dB
+  - Rw 28 dB
+  - Rw 29 dB
+  - Rw 30 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -1129,7 +1474,15 @@ items:
   check_property: FireRating
   issue_id: fba388bfdf0b
   expected_value: EI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 90
+  - EI 120
+  - REI 60
+  - REI 90
+  - REI 120
+  - P-CF 60
+  - P-CF 90
+  - P-CF 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcDoor residencial; função,
     ensaio e especificação completos ausentes.'
@@ -1142,7 +1495,12 @@ items:
   check_property: FireRating
   issue_id: 8b4fbf1f6adf
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
     ensaio e especificação completos ausentes.'
@@ -1168,7 +1526,17 @@ items:
   check_property: AcousticRating
   issue_id: 14e3de203cde
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -1181,7 +1549,12 @@ items:
   check_property: FireRating
   issue_id: ee56edc4e7ed
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -1206,7 +1579,17 @@ items:
   check_property: AcousticRating
   issue_id: f2b31914c664
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -1219,7 +1602,12 @@ items:
   check_property: FireRating
   issue_id: d0b0109f8660
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -1244,7 +1632,17 @@ items:
   check_property: AcousticRating
   issue_id: c9fdd32c026a
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -1257,7 +1655,12 @@ items:
   check_property: FireRating
   issue_id: 40d256040614
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -1282,7 +1685,17 @@ items:
   check_property: AcousticRating
   issue_id: 08ded9f35158
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -1295,7 +1708,12 @@ items:
   check_property: FireRating
   issue_id: 4512d356fd8a
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -1320,7 +1738,17 @@ items:
   check_property: AcousticRating
   issue_id: 885b11aa91a7
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -1333,7 +1761,12 @@ items:
   check_property: FireRating
   issue_id: 072b0f39ca5a
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -1372,7 +1805,17 @@ items:
   check_property: AcousticRating
   issue_id: 7d5b45eaa899
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -1385,7 +1828,12 @@ items:
   check_property: FireRating
   issue_id: 43a7f355fb7f
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -1424,7 +1872,17 @@ items:
   check_property: AcousticRating
   issue_id: 97016c1ece8e
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -1437,7 +1895,12 @@ items:
   check_property: FireRating
   issue_id: 1fb16aa144b4
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -1476,7 +1939,17 @@ items:
   check_property: AcousticRating
   issue_id: 2face7fc3078
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -1489,7 +1962,12 @@ items:
   check_property: FireRating
   issue_id: cfa4bccf9729
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -1514,7 +1992,12 @@ items:
   check_property: FireRating
   issue_id: 77c2c54411d2
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
     ensaio e especificação completos ausentes.'
@@ -1541,7 +2024,12 @@ items:
   check_property: FireRating
   issue_id: b9d451a35200
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
     ensaio e especificação completos ausentes.'
@@ -1567,7 +2055,17 @@ items:
   check_property: AcousticRating
   issue_id: 0d35f64ca999
   expected_value: Rw 25 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 20 dB
+  - Rw 21 dB
+  - Rw 22 dB
+  - Rw 23 dB
+  - Rw 24 dB
+  - Rw 26 dB
+  - Rw 27 dB
+  - Rw 28 dB
+  - Rw 29 dB
+  - Rw 30 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -1580,7 +2078,15 @@ items:
   check_property: FireRating
   issue_id: 5221c804a96e
   expected_value: EI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 90
+  - EI 120
+  - REI 60
+  - REI 90
+  - REI 120
+  - P-CF 60
+  - P-CF 90
+  - P-CF 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcDoor residencial; função,
     ensaio e especificação completos ausentes.'
@@ -1593,7 +2099,17 @@ items:
   check_property: AcousticRating
   issue_id: c6432f16f5f6
   expected_value: Rw 25 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 20 dB
+  - Rw 21 dB
+  - Rw 22 dB
+  - Rw 23 dB
+  - Rw 24 dB
+  - Rw 26 dB
+  - Rw 27 dB
+  - Rw 28 dB
+  - Rw 29 dB
+  - Rw 30 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -1606,7 +2122,15 @@ items:
   check_property: FireRating
   issue_id: 9709a5abe1ef
   expected_value: EI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 90
+  - EI 120
+  - REI 60
+  - REI 90
+  - REI 120
+  - P-CF 60
+  - P-CF 90
+  - P-CF 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcDoor residencial; função,
     ensaio e especificação completos ausentes.'
@@ -1619,7 +2143,17 @@ items:
   check_property: AcousticRating
   issue_id: 9f96d3a53119
   expected_value: Rw 25 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 20 dB
+  - Rw 21 dB
+  - Rw 22 dB
+  - Rw 23 dB
+  - Rw 24 dB
+  - Rw 26 dB
+  - Rw 27 dB
+  - Rw 28 dB
+  - Rw 29 dB
+  - Rw 30 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -1632,7 +2166,15 @@ items:
   check_property: FireRating
   issue_id: fe20bbd4e776
   expected_value: EI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 90
+  - EI 120
+  - REI 60
+  - REI 90
+  - REI 120
+  - P-CF 60
+  - P-CF 90
+  - P-CF 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcDoor residencial; função,
     ensaio e especificação completos ausentes.'
@@ -1695,7 +2237,12 @@ items:
   check_property: FireRating
   issue_id: 1ef48ad130f3
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcRoof residencial; função,
     ensaio e especificação completos ausentes.'
@@ -1707,12 +2254,14 @@ items:
   issue_type: pset_missing
   check_property: ThermalTransmittance
   issue_id: c615bc9cdadf
-  expected_value: 2.0
+  expected_value: 4.6
   accepted_alternatives: []
   verified: true
   notes: 'Referência tipológica congelada por classe/material; composição insuficiente para cálculo integral;
-    U=2.00 W/(m²·K): telhado basico:normadom - telhado fibrocimento ondulado telhado basico:normadom -
-    telhado fibrocimento ondulado cro5 - telha fibrocimento ondulada.'
+    U=4.60 W/(m²·K): telhado basico:normadom - telhado fibrocimento ondulado:1121646 telhado basico:normadom
+    - telhado fibrocimento ondulado telhado basico:normadom - telhado fibrocimento ondulado cro5 - telha
+    fibrocimento ondulada. Emenda de 2026-08-12: telha fina sem forro não se comporta como laje de cobertura;
+    restaurado o valor da revisão autoral.'
   equivalence_id: eq-7d4be0ba8eefa710
   confidence: medium
   source_kind: typology
@@ -1722,7 +2271,17 @@ items:
   check_property: AcousticRating
   issue_id: e222f947f8d4
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -1735,7 +2294,12 @@ items:
   check_property: FireRating
   issue_id: 6c5246c263b8
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -1760,7 +2324,12 @@ items:
   check_property: FireRating
   issue_id: 008b74e0c174
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
     ensaio e especificação completos ausentes.'
@@ -1923,7 +2492,12 @@ items:
   check_property: FireRating
   issue_id: f6aee2ddc907
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcRoof residencial; função,
     ensaio e especificação completos ausentes.'
@@ -1950,7 +2524,12 @@ items:
   check_property: FireRating
   issue_id: fa57ca3b1506
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcRoof residencial; função,
     ensaio e especificação completos ausentes.'
@@ -1977,7 +2556,17 @@ items:
   check_property: AcousticRating
   issue_id: 86b093ec64bd
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -1990,7 +2579,12 @@ items:
   check_property: FireRating
   issue_id: e0adc6fcff79
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -2015,7 +2609,17 @@ items:
   check_property: AcousticRating
   issue_id: 79ac5c8842ab
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -2028,7 +2632,12 @@ items:
   check_property: FireRating
   issue_id: 8f0126fb9536
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -2053,7 +2662,17 @@ items:
   check_property: AcousticRating
   issue_id: 13d9cbb2344a
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -2066,7 +2685,12 @@ items:
   check_property: FireRating
   issue_id: dbdeef1b15fc
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -2091,7 +2715,17 @@ items:
   check_property: AcousticRating
   issue_id: 397e6cbe93fa
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -2104,7 +2738,12 @@ items:
   check_property: FireRating
   issue_id: beff0183c9c8
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -2129,7 +2768,17 @@ items:
   check_property: AcousticRating
   issue_id: 2945941ee99e
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -2142,7 +2791,12 @@ items:
   check_property: FireRating
   issue_id: 9197fd26b282
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -2167,7 +2821,17 @@ items:
   check_property: AcousticRating
   issue_id: 7f2396eaf69f
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -2180,7 +2844,12 @@ items:
   check_property: FireRating
   issue_id: 6be73ce4d5a4
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -2205,7 +2874,12 @@ items:
   check_property: FireRating
   issue_id: 834fe62043ce
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
     ensaio e especificação completos ausentes.'
@@ -2231,7 +2905,12 @@ items:
   check_property: FireRating
   issue_id: 48a00b150e5d
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
     ensaio e especificação completos ausentes.'
@@ -2258,7 +2937,12 @@ items:
   check_property: FireRating
   issue_id: 6dab115293a4
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcSlab residencial; função,
     ensaio e especificação completos ausentes.'
@@ -2298,7 +2982,12 @@ items:
   check_property: FireRating
   issue_id: 4f66bbc42c9a
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcRoof residencial; função,
     ensaio e especificação completos ausentes.'
@@ -2324,7 +3013,17 @@ items:
   check_property: AcousticRating
   issue_id: cc54d4f8dfd0
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -2337,7 +3036,12 @@ items:
   check_property: FireRating
   issue_id: 4db4701963ef
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -2362,7 +3066,17 @@ items:
   check_property: AcousticRating
   issue_id: e4ac5c0a5e82
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -2375,7 +3089,12 @@ items:
   check_property: FireRating
   issue_id: 166c976834f2
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -2400,7 +3119,17 @@ items:
   check_property: AcousticRating
   issue_id: 99e8c77ede83
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -2413,7 +3142,12 @@ items:
   check_property: FireRating
   issue_id: 32c03323f51c
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -2438,7 +3172,17 @@ items:
   check_property: AcousticRating
   issue_id: 885d9a9e21a3
   expected_value: Rw 25 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 20 dB
+  - Rw 21 dB
+  - Rw 22 dB
+  - Rw 23 dB
+  - Rw 24 dB
+  - Rw 26 dB
+  - Rw 27 dB
+  - Rw 28 dB
+  - Rw 29 dB
+  - Rw 30 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -2451,7 +3195,15 @@ items:
   check_property: FireRating
   issue_id: 6e1364373fee
   expected_value: EI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 90
+  - EI 120
+  - REI 60
+  - REI 90
+  - REI 120
+  - P-CF 60
+  - P-CF 90
+  - P-CF 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcDoor residencial; função,
     ensaio e especificação completos ausentes.'
@@ -2464,7 +3216,12 @@ items:
   check_property: FireRating
   issue_id: fcf92d16d1fa
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcCurtainWall residencial;
     função, ensaio e especificação completos ausentes.'
@@ -2490,7 +3247,17 @@ items:
   check_property: AcousticRating
   issue_id: 68280d56b978
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -2503,7 +3270,12 @@ items:
   check_property: FireRating
   issue_id: c8c8fa46f2aa
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -2542,7 +3314,17 @@ items:
   check_property: AcousticRating
   issue_id: b88b43a9a123
   expected_value: Rw 25 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 20 dB
+  - Rw 21 dB
+  - Rw 22 dB
+  - Rw 23 dB
+  - Rw 24 dB
+  - Rw 26 dB
+  - Rw 27 dB
+  - Rw 28 dB
+  - Rw 29 dB
+  - Rw 30 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -2555,7 +3337,15 @@ items:
   check_property: FireRating
   issue_id: 69e521630e9e
   expected_value: EI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 90
+  - EI 120
+  - REI 60
+  - REI 90
+  - REI 120
+  - P-CF 60
+  - P-CF 90
+  - P-CF 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcDoor residencial; função,
     ensaio e especificação completos ausentes.'
@@ -2568,7 +3358,17 @@ items:
   check_property: AcousticRating
   issue_id: e7db592c3eab
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -2581,7 +3381,12 @@ items:
   check_property: FireRating
   issue_id: 441d9b8e3385
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -2606,7 +3411,17 @@ items:
   check_property: AcousticRating
   issue_id: 6e324784471e
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -2619,7 +3434,12 @@ items:
   check_property: FireRating
   issue_id: f7b0180b07b9
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'
@@ -2644,7 +3464,17 @@ items:
   check_property: AcousticRating
   issue_id: df0047d35a1d
   expected_value: Rw 25 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 20 dB
+  - Rw 21 dB
+  - Rw 22 dB
+  - Rw 23 dB
+  - Rw 24 dB
+  - Rw 26 dB
+  - Rw 27 dB
+  - Rw 28 dB
+  - Rw 29 dB
+  - Rw 30 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -2657,7 +3487,15 @@ items:
   check_property: FireRating
   issue_id: b5295670b961
   expected_value: EI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 90
+  - EI 120
+  - REI 60
+  - REI 90
+  - REI 120
+  - P-CF 60
+  - P-CF 90
+  - P-CF 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcDoor residencial; função,
     ensaio e especificação completos ausentes.'
@@ -2670,7 +3508,17 @@ items:
   check_property: AcousticRating
   issue_id: 387fe79f7210
   expected_value: Rw 40 dB
-  accepted_alternatives: []
+  accepted_alternatives:
+  - Rw 35 dB
+  - Rw 36 dB
+  - Rw 37 dB
+  - Rw 38 dB
+  - Rw 39 dB
+  - Rw 41 dB
+  - Rw 42 dB
+  - Rw 43 dB
+  - Rw 44 dB
+  - Rw 45 dB
   verified: true
   notes: Referência tipológica congelada de isolamento aéreo por classe de elemento; não representa ensaio
     do sistema construído.
@@ -2683,7 +3531,12 @@ items:
   check_property: FireRating
   issue_id: fc093be9ac44
   expected_value: REI 60
-  accepted_alternatives: []
+  accepted_alternatives:
+  - EI 60
+  - EI 90
+  - EI 120
+  - REI 90
+  - REI 120
   verified: true
   notes: 'Hipótese congelada: classe de resistência ao fogo mais provável para IfcWallStandardCase residencial;
     função, ensaio e especificação completos ausentes.'

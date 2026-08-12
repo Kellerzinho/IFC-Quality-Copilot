@@ -260,7 +260,7 @@ def test_portable_core_runs_exact_matrix_and_publishes_private_evidence(tmp_path
     monkeypatch.setattr(
         runner_module, "ollama_model_digest", lambda model, _url: installed_digests[model]
     )
-    monkeypatch.setattr(runner_module, "_ollama_version", lambda: "0.32.5")
+    monkeypatch.setattr(runner_module, "_ollama_version", lambda *_: "0.32.5")
     monkeypatch.setattr(
         runner_module,
         "hardware_snapshot",

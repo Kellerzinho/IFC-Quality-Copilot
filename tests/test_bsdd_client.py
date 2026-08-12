@@ -28,6 +28,7 @@ def test_search_class_returns_results(tmp_path) -> None:
                         "name": "Wall",
                         "uri": "https://example.org/classes/ifcwall",
                         "dictionaryName": "IFC",
+                        "definition": "A wall bounds or subdivides spaces.",
                     }
                 ]
             }
@@ -37,11 +38,15 @@ def test_search_class_returns_results(tmp_path) -> None:
 
     result = client.search_class("IfcWall")
 
+    # v7.6: a definicao oficial da entidade passa a ser repassada ao contexto —
+    # nas propriedades do experimento o bSDD nao publica allowed_values, e a
+    # definicao e o grounding substantivo que sobra.
     assert result == [
         {
             "name": "IfcWall",
             "uri": "https://example.org/classes/ifcwall",
             "domain": "IFC",
+            "description": "A wall bounds or subdivides spaces.",
         }
     ]
     client._client.get.assert_called_once_with(

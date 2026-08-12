@@ -61,9 +61,19 @@ def official_identity(**overrides: object) -> ExecutionIdentity:
         ),
         "replica_count": 1,
         "cache_enabled": False,
-        "prompt_version": "v7.3",
+        "prompt_version": "v7.6",
         "prompt_sha256": "8" * 64,
         "reuse_equivalent": True,
+        # Parametros de geracao entraram na identidade em 2026-08-12: dois runs
+        # com janela de contexto ou seed diferentes tinham o mesmo hash canonico.
+        "source_commit": "tree-" + "9" * 64,
+        "num_ctx_policy": "fixed",
+        "num_ctx": 4096,
+        "num_predict": 768,
+        "seed": 42,
+        "temperature": 0.1,
+        "top_p": 0.9,
+        "repeat_penalty": 1.1,
     }
     values.update(overrides)
     return ExecutionIdentity(**values)  # type: ignore[arg-type]
@@ -266,7 +276,7 @@ def _install_identity_fixture(
     prompt = tmp_path / "prompt_templates.py"
     ids = tmp_path / "profile.ids"
     shutil.copyfile(module.LOCK_FILE, lock)
-    prompt.write_text('PROMPT_VERSION = "v7.3"\n', encoding="utf-8")
+    prompt.write_text('PROMPT_VERSION = "v7.6"\n', encoding="utf-8")
     ids.write_text("<ids/>\n", encoding="utf-8")
     datasets = []
     identities = []
@@ -321,7 +331,7 @@ def _install_identity_fixture(
         datasets=tuple(identities),
         replica_count=1,
         cache_enabled=False,
-        prompt_version="v7.3",
+        prompt_version="v7.6",
         prompt_sha256=hashlib.sha256(prompt.read_bytes()).hexdigest(),
         reuse_equivalent=True,
     )

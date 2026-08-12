@@ -1,1 +1,23 @@
 data/evaluation/*/ground_truth.yaml text eol=lf
+
+# O builder da release normaliza todo membro do projeto para LF antes de hashear
+# (scripts/build_windows_release.py::_normalized_utf8_lf), e a identidade de
+# execução fixa esse hash normalizado. Sem esta regra o checkout no Windows
+# grava CRLF, o SHA bruto do arquivo local diverge do pino e
+# `scripts/run_benchmark.py` aborta com "prompt_sha256 diverge do arquivo local"
+# — a identidade oficial só validava de dentro da release extraída.
+*.py text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.ids text eol=lf
+*.toml text eol=lf
+
+# Scripts do Windows precisam de CRLF para o interpretador nativo.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+*.ifc -text
+*.zip -text

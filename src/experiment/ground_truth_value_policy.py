@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import math
+import re
 import unicodedata
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 
 from pydantic import BaseModel, ConfigDict
 
@@ -22,6 +23,15 @@ THERMAL_FALLBACK = {
     "IfcWindow": 5.70,
     "IfcCurtainWall": 5.70,
 }
+# Referências térmicas específicas por material, dentro de uma classe IFC.
+# A constante única de THERMAL_FALLBACK vale para o caso usual da classe; quando
+# o arquivo declara uma construção de comportamento térmico distinto, a
+# referência dessa construção prevalece. Registrado em docs/pontos-de-calculo.md.
+_THERMAL_FALLBACK_BY_MATERIAL: dict[str, dict[str, float]] = {
+    # Telha de fibrocimento sem forro: valor consagrado da revisão autoral
+    # (REVISAO_GT.md). O genérico 2,00 descreve laje de cobertura, não telha.
+    "IfcRoof": {"fibrocimento": 4.60},
+}
 ACOUSTIC_FALLBACK_DB = {
     "IfcWall": 40,
     "IfcWallStandardCase": 40,
@@ -34,6 +44,61 @@ ACOUSTIC_FALLBACK_DB = {
 FIRE_FALLBACK = {"IfcDoor": "EI 60", "IfcWindow": "EI 60"}
 FIRE_FALLBACK_DEFAULT = "REI 60"
 SHGC_GENERIC_CLEAR_GLASS = 0.87
+
+# ---------------------------------------------------------------------------
+# Equivalências de decisão — critério de avaliação declarado (2026-08-10)
+# ---------------------------------------------------------------------------
+# O comparador trata classe de fogo e rótulo acústico como TEXTO de propósito
+# (``evaluator._as_scalar_number``): "EI 60" não pode casar com "REI 60" por
+# acidente numérico. Toda equivalência entre respostas que representam a MESMA
+# decisão técnica entra aqui, como ``accepted_alternatives`` por item — dado
+# declarado e auditável, nunca regra embutida no comparador.
+#
+# Princípio: **a severidade da equivalência acompanha a confiança da
+# referência.** Onde o GT é hipótese congelada (`low`/`probable`), ele não tem
+# autoridade para discriminar a duração — o TRRF depende de altura e ocupação,
+# que o IFC não carrega; mede-se a classe (estanqueidade + isolamento) e a
+# plausibilidade da duração. Onde a referência foi verificada pelo autor
+# (`high`), vale a tabela ratificada em 2026-08-04
+# (``data/evaluation/predio/REVISAO_GT.md``, "Emendas pós-aprovação").
+_FIRE_DURATIONS = ("30", "60", "90", "120")
+_FIRE_PROTECTIVE_PREFIXES = ("EI", "REI")
+# Emenda ratificada em 2026-08-04: em vedação que o IFC declara não portante,
+# EI de duração ≥ à exigida é alternativa aceita ao REI da compartimentação —
+# "um modelo que responde EI está seguindo a evidência dada pelo arquivo e não
+# deve ser penalizado".
+_FIRE_RATIFIED_NON_LOAD_BEARING = ("REI 90", "REI 120", "EI 60", "EI 90", "EI 120")
+
+# Emenda de 2026-08-12 (decisão editorial após o benchmark v7.5). A base autoral
+# registrou "EI 30" para as 222 paredes de drywall do prédio
+# (``REVISAO_GT.md``), mas a nota terminava em "ATENÇÃO ... conferir": o
+# protocolo de 2026-08-08 leu o marcador de incerteza, descartou o item legado e
+# caiu no genérico "REI 60"/low, cujas alternativas cortam duração < 60 min. O
+# resultado é que a resposta MAIS aderente ao estímulo era contada como erro —
+# o próprio template ensina "EI = não portante, só compartimenta (ex.: divisória
+# leve, drywall)" e autoriza 30 minutos.
+#
+# A emenda não muda o valor esperado (segue REI 60, hipótese congelada): amplia
+# o conjunto aceito para incluir a duração autoral em vedação leve. Fora desse
+# recorte o piso de 60 min continua valendo — aceitar 30 min em qualquer vedação
+# faria o estrato parar de discriminar (medido em 2026-08-10).
+_FIRE_LIGHT_PARTITION_MIN_DURATION = "EI 30"
+_LIGHT_PARTITION_TOKENS = (
+    "drywall",
+    "dry wall",
+    "dry-wall",
+    "gesso acartonado",
+    "steel frame",
+    "placa cimenticia",
+    "divisoria leve",
+)
+
+# A referência acústica é uma constante tipológica por classe de elemento, não
+# um ensaio (a própria nota do item diz isso). Exigir 2% dela mede notação, não
+# decisão — mesmo motivo pelo qual o térmico ganhou banda de 10%. O passo entre
+# classes de desempenho é ~5 dB, então a concordância é medida nessa
+# granularidade.
+_ACOUSTIC_BAND_DB = 5
 
 _CATEGORY_ALIASES = {
     "quarto": "BEDROOM",
@@ -67,6 +132,15 @@ _LAMBDA_BY_TOKEN = {
     "madeira": 0.15,
     "vidro": 1.00,
 }
+# Em laje e cobertura, "ceramica/ceramico" designa piso ceramico ou porcelanato
+# (1,05), nao bloco ceramico de vedacao (0,90). docs/pontos-de-calculo.md trata
+# as duas tabelas como complementares e os templates de prompt ja declaram os
+# dois valores separadamente; so este resolvedor as havia achatado numa unica.
+_LAMBDA_BY_TOKEN_HORIZONTAL = {
+    "ceramica": 1.05,
+    "ceramico": 1.05,
+}
+_HORIZONTAL_CLASSES = frozenset({"IfcRoof", "IfcSlab", "IfcSlabStandardCase"})
 
 
 class UnsupportedGroundTruthFamily(ValueError):
@@ -96,6 +170,83 @@ class ElementEvidence(BaseModel):
     is_external: bool | None = None
     load_bearing_alias: bool | None = None
     expected_relation: str | None = None
+
+
+def _element_hint(issue: Issue | None, evidence: ElementEvidence | None) -> str:
+    """Texto normalizado com o que o arquivo diz sobre a construção do elemento."""
+    partes = [
+        (issue.element_name if issue else "") or "",
+        evidence.material_name if evidence else "",
+        evidence.element_type_name if evidence else "",
+        evidence.element_long_name if evidence else "",
+    ]
+    if evidence is not None:
+        partes.extend(layer.material for layer in evidence.layers)
+    return _normalise(" ".join(partes))
+
+
+def _is_light_partition(issue: Issue | None, evidence: ElementEvidence | None) -> bool:
+    """True para vedação leve (drywall/steel frame) declarada no arquivo."""
+    if evidence is not None and evidence.load_bearing_alias is True:
+        return False
+    hint = _element_hint(issue, evidence)
+    return any(token in hint for token in _LIGHT_PARTITION_TOKENS)
+
+
+def _fire_alternatives(
+    expected: str, *, ratified: bool, light_partition: bool = False
+) -> list[str]:
+    """Classes de fogo que representam a mesma decisão do ``expected``.
+
+    ``ratified=True`` aplica exatamente a tabela que o autor ratificou em
+    2026-08-04 para vedação não portante.
+
+    ``ratified=False`` vale onde a referência é hipótese congelada. Aceita a
+    família estanqueidade+isolamento — porque a referência não tem autoridade
+    para exigir a capacidade estrutural (R) que o IFC não declara — **mas só em
+    duração igual ou superior à exigida**. Aceitar duração inferior seria dar
+    por boa uma decisão menos segura que a referência, o que contraria o
+    precedente do projeto de aceitar apenas classes superiores (REI 90/120
+    acima de REI 60). Medido em 2026-08-10: sem essa restrição o estrato de
+    fogo ia a 40/40 no gemma2 e parava de discriminar qualquer modelo.
+    """
+    if ratified:
+        aceitos = list(_FIRE_RATIFIED_NON_LOAD_BEARING)
+        if light_partition:
+            aceitos.append(_FIRE_LIGHT_PARTITION_MIN_DURATION)
+        return [alt for alt in aceitos if alt != expected]
+    match = re.search(r"(\d+)", expected)
+    minimo = int(match.group(1)) if match else 0
+    duracoes = [d for d in _FIRE_DURATIONS if int(d) >= minimo]
+    aceitos = [
+        f"{prefixo} {duracao}" for prefixo in _FIRE_PROTECTIVE_PREFIXES for duracao in duracoes
+    ]
+    if expected.startswith("EI"):
+        # Porta e janela corta-fogo também são especificadas como P-CF.
+        aceitos.extend(f"P-CF {duracao}" for duracao in duracoes)
+    if light_partition:
+        # Emenda 2026-08-12: restaura a duração autoral da vedação leve, que o
+        # piso genérico de 60 min havia descartado junto com o item legado.
+        aceitos.append(_FIRE_LIGHT_PARTITION_MIN_DURATION)
+    return [alt for alt in aceitos if alt != expected]
+
+
+def _acoustic_alternatives(reference_db: int) -> list[object]:
+    """Valores de Rw que representam a mesma decisão de isolamento acústico.
+
+    Só a notação canônica ``"Rw NN dB"``: o schema do próprio ground truth a
+    exige (``ground_truth_validation.ACOUSTIC_RATING_PATTERN``), e vocabulário
+    de referência normalizado é o que torna a comparação auditável. O que
+    precisou mudar do outro lado foi o **prompt**, que ensinava a letra da
+    classe e cobrava um formato que o GT não pontuava — corrigido no v7.5.
+    """
+    return [
+        f"Rw {valor} dB"
+        for valor in range(
+            reference_db - _ACOUSTIC_BAND_DB, reference_db + _ACOUSTIC_BAND_DB + 1
+        )
+        if valor != reference_db and 10 <= valor <= 99
+    ]
 
 
 def _normalise(value: object) -> str:
@@ -128,17 +279,139 @@ def _frozen_item_decision(
     *,
     source_kind: str,
     legacy_reference: bool,
+    issue: Issue | None = None,
+    evidence: ElementEvidence | None = None,
 ) -> GroundTruthDecision:
     if not item.verified or item.expected_value is None:
         raise ValueError("frozen donor must be verified and concrete")
+    alternativas = list(item.accepted_alternatives)
+    alternativas.extend(
+        alt
+        for alt in _ratified_fire_amendment(item, issue, evidence)
+        if alt not in alternativas
+    )
     return _decision(
         item.expected_value,
         "high",
         source_kind,
         item.notes or "Referência congelada e identificada pela mesma equivalência.",
-        alternatives=list(item.accepted_alternatives),
+        alternatives=alternativas,
         legacy_reference=legacy_reference,
     )
+
+
+def _ratified_fire_amendment(
+    item: GroundTruthItem,
+    issue: Issue | None,
+    evidence: ElementEvidence | None,
+) -> list[str]:
+    """Emenda EI/REI ratificada pelo autor em 2026-08-04, restaurada em 2026-08-10.
+
+    O protocolo de cobertura integral de 2026-08-08 tratou a emenda como pendente
+    e a removeu dos itens legados, contra o registro autoral. O escopo é o
+    declarado na ratificação: vedação cujo IFC declara ``LoadBearing = false``,
+    com ``REI`` como valor esperado.
+    """
+    if issue is None or evidence is None:
+        return []
+    if str(issue.context.get("check_property") or "") != "FireRating":
+        return []
+    if evidence.load_bearing_alias is not False:
+        return []
+    expected = str(item.expected_value or "")
+    if not expected.upper().startswith("REI"):
+        return []
+    return _fire_alternatives(
+        expected, ratified=True, light_partition=_is_light_partition(issue, evidence)
+    )
+
+
+def amended_value_for_frozen_item(
+    issue: Issue,
+    evidence: ElementEvidence,
+    expected_value: object,
+    confidence: str,
+    notes: str,
+) -> tuple[object, str, str] | None:
+    """Emenda de VALOR sobre item já congelado; ``None`` quando nada muda.
+
+    O protocolo de cobertura integral preserva ``expected_value`` byte a byte, o
+    que é o certo por padrão: o GT não deve mudar de valor a cada rodada. Mas ele
+    também torna irreversível, por construção, qualquer inversão que o próprio
+    protocolo tenha introduzido — foi o caso da telha de fibrocimento, cuja
+    referência autoral (4,6) o filtro de 2026-08-08 substituiu pelo genérico de
+    cobertura (2,00), −56% no sentido oposto ao da revisão do autor.
+
+    Cada emenda aqui é um recorte nominal, com a decisão editorial registrada em
+    doc datado — nunca uma regra que reabre o valor de famílias inteiras.
+    Devolve ``(valor, confiança, nota)``.
+    """
+    if str(issue.context.get("check_property") or "") != "ThermalTransmittance":
+        return None
+    if issue.element_class != "IfcRoof" or expected_value != 2.00:
+        return None
+    especifico = _THERMAL_FALLBACK_BY_MATERIAL.get("IfcRoof", {})
+    hint = _element_hint(issue, evidence)
+    for token, valor in especifico.items():
+        if token in hint:
+            return (
+                valor,
+                confidence,
+                (
+                    "Referência tipológica congelada por classe/material; composição "
+                    f"insuficiente para cálculo integral; U={valor:.2f} W/(m²·K): {hint}. "
+                    "Emenda de 2026-08-12: telha fina sem forro não se comporta como laje "
+                    "de cobertura; restaurado o valor da revisão autoral."
+                ),
+            )
+    return None
+
+
+def accepted_alternatives_for_frozen_value(
+    issue: Issue,
+    evidence: ElementEvidence,
+    expected_value: object,
+    confidence: str,
+    current: Sequence[object] = (),
+) -> list[object]:
+    """Conjunto **completo** de respostas aceitas para um valor já congelado.
+
+    Serve à emenda de 2026-08-10: o valor esperado, a confiança e a proveniência
+    do GT integral são preservados byte a byte, e só o conjunto de respostas
+    aceitas é recalculado pela política vigente. É o mesmo movimento da emenda
+    EI/REI de 2026-08-04 — critério de avaliação declarado, recalculável sobre
+    coletas já gravadas, sem exigir nova anotação.
+
+    Devolve o conjunto **inteiro**, nunca um acréscimo: o chamador substitui. Se
+    fosse aditivo, a política só saberia alargar — um estreitamento como o de
+    2026-08-10 no fogo jamais teria efeito sobre um GT já emitido. Para as
+    famílias que a emenda não governa, devolve ``current`` inalterado.
+    """
+    property_name = str(issue.context.get("check_property") or "")
+    expected = str(expected_value or "")
+
+    if property_name == "FireRating":
+        leve = _is_light_partition(issue, evidence)
+        if confidence == "high":
+            # Referência verificada pelo autor: as alternativas dela mandam, e a
+            # emenda ratificada só acrescenta onde o escopo aprovado alcança.
+            aceitos = list(current)
+            if evidence.load_bearing_alias is False and expected.upper().startswith("REI"):
+                aceitos.extend(
+                    alt
+                    for alt in _fire_alternatives(expected, ratified=True, light_partition=leve)
+                    if alt not in aceitos
+                )
+            return aceitos
+        return list(_fire_alternatives(expected, ratified=False, light_partition=leve))
+
+    if property_name == "AcousticRating":
+        match = re.search(r"(\d+)", expected)
+        if match is None:
+            return list(current)
+        return list(_acoustic_alternatives(int(match.group(1))))
+
+    return list(current)
 
 
 def _thermal_surface_resistance(element_class: str) -> tuple[float, float, str]:
@@ -149,18 +422,26 @@ def _thermal_surface_resistance(element_class: str) -> tuple[float, float, str]:
     return 0.13, 0.04, "fluxo horizontal"
 
 
-def _lambda_for(material: str) -> float | None:
+def _lambda_for(material: str, element_class: str) -> float | None:
+    """Condutividade da camada, com a tabela da familia do elemento.
+
+    ``element_class`` decide entre a tabela de parede e a de laje/cobertura nos
+    materiais cujo termo designa produtos diferentes em cada familia.
+    """
     normalised = _normalise(material)
+    overrides = (
+        _LAMBDA_BY_TOKEN_HORIZONTAL if element_class in _HORIZONTAL_CLASSES else {}
+    )
     for token, value in _LAMBDA_BY_TOKEN.items():
         if token in normalised:
-            return value
+            return overrides.get(token, value)
     return None
 
 
 def _thermal_decision(issue: Issue, evidence: ElementEvidence) -> GroundTruthDecision:
     layer_terms: list[tuple[LayerEvidence, float]] = []
     for layer in evidence.layers:
-        conductivity = _lambda_for(layer.material)
+        conductivity = _lambda_for(layer.material, issue.element_class)
         if (
             conductivity is None
             or layer.thickness_m is None
@@ -212,6 +493,16 @@ def _thermal_decision(issue: Issue, evidence: ElementEvidence) -> GroundTruthDec
             ]
         )
     )
+    # Emenda de 2026-08-12: a constante única por classe tratava toda cobertura
+    # como laje de terraço. Telha fina sem forro nem câmara é outro elemento
+    # térmico — a referência autoral (4,6) está registrada em REVISAO_GT.md e é
+    # a que a casa também precisa, por não ter base autoral própria. O cálculo
+    # por camadas não alcança este caso: fibrocimento não está em _LAMBDA_BY_TOKEN.
+    especifico = _THERMAL_FALLBACK_BY_MATERIAL.get(issue.element_class, {})
+    for token, valor in especifico.items():
+        if token in material_hint:
+            fallback = valor
+            break
     if material_hint:
         return _decision(
             fallback,
@@ -351,12 +642,16 @@ def resolve_ground_truth_decision(
             prior_item,
             source_kind="existing_gt",
             legacy_reference=True,
+            issue=issue,
+            evidence=evidence,
         )
     if equivalent_donor is not None:
         return _frozen_item_decision(
             equivalent_donor,
             source_kind="equivalent_donor",
             legacy_reference=False,
+            issue=issue,
+            evidence=evidence,
         )
     if issue.issue_type == "relation_broken":
         return _relation_decision(issue, evidence)
@@ -405,6 +700,13 @@ def resolve_ground_truth_decision(
         return _thermal_decision(issue, evidence)
     if property_name == "FireRating":
         value = FIRE_FALLBACK.get(issue.element_class, FIRE_FALLBACK_DEFAULT)
+        leve = _is_light_partition(issue, evidence)
+        nota_leve = (
+            " Vedação leve declarada no arquivo: a duração de 30 min registrada na "
+            "revisão autoral entra no conjunto aceito (emenda de 2026-08-12)."
+            if leve
+            else ""
+        )
         return _decision(
             value,
             "low",
@@ -412,7 +714,11 @@ def resolve_ground_truth_decision(
             (
                 "Hipótese congelada: classe de resistência ao fogo mais provável para "
                 f"{issue.element_class} residencial; função, ensaio e especificação "
-                "completos ausentes."
+                "completos ausentes. A referência não fixa o TRRF: a avaliação aceita "
+                "a família estanqueidade+isolamento em duração normalizada." + nota_leve
+            ),
+            alternatives=list(
+                _fire_alternatives(str(value), ratified=False, light_partition=leve)
             ),
         )
     if property_name == "AcousticRating":
@@ -427,8 +733,11 @@ def resolve_ground_truth_decision(
             "typology",
             (
                 "Referência tipológica congelada de isolamento aéreo por classe de elemento; "
-                "não representa ensaio do sistema construído."
+                "não representa ensaio do sistema construído. Concordância medida na "
+                f"granularidade da classe de desempenho (±{_ACOUSTIC_BAND_DB} dB), aceitando "
+                "a letra da classe que o template autoriza."
             ),
+            alternatives=list(_acoustic_alternatives(int(rating))),
         )
     if property_name == "SolarHeatGainCoefficient":
         hint = _normalise(

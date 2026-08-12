@@ -23,9 +23,9 @@ from __future__ import annotations
 from src.suggestion_engine.prompt_templates import PROMPT_VERSION, TEMPLATES
 
 
-def test_prompt_version_is_v7_3():
-    """v7.3: v7.2 sem limites numéricos que colidam com o ground truth."""
-    assert PROMPT_VERSION == "v7.3"
+def test_prompt_version_is_v7_6():
+    """v7.6: fechamento do instrumento apos a rodada oficial v7.5."""
+    assert PROMPT_VERSION == "v7.6"
 
 
 # ---------------------------------------------------------------------------

@@ -311,6 +311,7 @@ class SuggestionGenerator:
             metrics.ollama_eval_ms = _ns_to_ms(ollama_metrics.get("eval_duration", 0))
             metrics.prompt_tokens = int(ollama_metrics.get("prompt_eval_count", 0) or 0)
             metrics.output_tokens = int(ollama_metrics.get("eval_count", 0) or 0)
+            metrics.num_ctx_effective = int(ollama_metrics.get("num_ctx_effective", 0) or 0)
 
         # ----- Salvar no cache em sucesso -----
         if suggestions and self.cache is not None and signature is not None:
@@ -526,6 +527,12 @@ class SuggestionGenerator:
                     # tambem, senao a cobertura da camada e subcontada 50x.
                     thermal_recomputed=(
                         primary_metrics.thermal_recomputed if primary_metrics else False
+                    ),
+                    # Mesma razao: a copia veio do estimulo da primaria, entao
+                    # descreve a mesma janela. Sem herdar, 95,7% das issues do
+                    # predio ficariam com 0 e a distribuicao seria ilegivel.
+                    num_ctx_effective=(
+                        primary_metrics.num_ctx_effective if primary_metrics else 0
                     ),
                 )
                 result = SuggestionSet(

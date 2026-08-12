@@ -3,7 +3,9 @@
   "datasets": {
     "predio": {
       "count": 1654,
-      "semantic_sha256": "f1aac68fec38253faba30ce634bf42bf24a742dd83acd5d04a549497463f4552"
+      "semantic_sha256": "4efc089aae14ca3fa9dfc6c5e152fa6d04a099fd32875cf6df80f08b8f85fa7c",
+      "amended_at": "2026-08-10",
+      "amendment": "Restaura a emenda EI/REI ratificada pelo autor em 2026-08-04 (data/evaluation/predio/REVISAO_GT.md, 'Emendas pos-aprovacao'), que o protocolo de cobertura integral de 2026-08-08 removeu por tratar como pendente. Nenhum expected_value mudou: os 167 itens de vedacao nao portante com REI 60 voltam a aceitar EI 60/90/120 em accepted_alternatives. Hash anterior: f1aac68fec38253faba30ce634bf42bf24a742dd83acd5d04a549497463f4552. Ver docs/condicao-gt-equivalencias-2026-08-10.md."
     },
     "casa": {
       "count": 12,

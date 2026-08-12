@@ -386,11 +386,20 @@ def _is_supported_legacy_value(issue: Issue, property_name: str, value: Any) -> 
 
 
 def _is_unratified_thermal_reference(issue: Issue, property_name: str, value: Any) -> bool:
+    """Referências térmicas genéricas que o autor não ratificou como do elemento.
+
+    Emenda de 2026-08-12: ``IfcRoof == 4.6`` saiu desta lista. A rejeição
+    substituía a referência autoral da telha de fibrocimento sem forro (4,6, com
+    justificativa registrada em ``REVISAO_GT.md``) pelo genérico 2,00 — uma
+    inversão de −56% contra a revisão do autor, e no sentido oposto ao da
+    própria física do elemento (telha fina sem câmara isola muito pouco). O
+    ``IfcWindow == 5.7`` permanece: ali a rejeição era inócua, porque o fallback
+    tipológico devolve exatamente o mesmo número, e a proveniência declarada
+    (``typology`` em vez de ``existing_gt``) é a leitura honesta do caso.
+    """
     if property_name != "ThermalTransmittance" or isinstance(value, bool):
         return False
-    if issue.element_class == "IfcWindow" and value == 5.7:
-        return True
-    return issue.element_class == "IfcRoof" and value == 4.6
+    return issue.element_class == "IfcWindow" and value == 5.7
 
 
 def _contains_uncertainty(notes: str | None) -> bool:

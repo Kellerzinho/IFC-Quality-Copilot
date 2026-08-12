@@ -13,9 +13,9 @@ conformidade.
 | Localidade | Deodoro, Rio de Janeiro/RJ |
 | Tipologia | Residencial multifamiliar |
 | Contexto bioclimático | ZB 4A, fonte técnica pública LabEEE/UFSC; sem valor de declaração formal |
-| Data do freeze | 2026-08-09 |
+| Data do freeze | 2026-08-09; emendado em 2026-08-10 e 2026-08-12 |
 | `conformity_claim` | `false` |
-| `ground_truth.yaml` | SHA-256 `f92057437c8b5f6a7c098e818f6936e01c868afd82500b14d3844a1e10940c9d` |
+| `ground_truth.yaml` | SHA-256 `040c871f1797f4237bc7c7bd94c03870b1b7c2d7ea1ccabc318b044cae6d56fe` |
 | `predio_v1.ifc` | SHA-256 `a71c8be30d82760218f5b3f3a1c476b49e3f30e608b0065916b9d5206a1a6dd0`; entrada local não versionada pelo Git |
 | IDS | SHA-256 `f698f2c020d79140bb314f077f8de680f492fd7ba42867e4000a4cead5d20905` |
 | Cobertura | 4.720 diagnósticos; 4.720 itens; zero `skipped`; 202 classes de equivalência |
@@ -25,6 +25,16 @@ conformidade.
 O hash do GT histórico anterior,
 `7d1b1dc8b4756e5a48cd28925d3dceb53a83ab401c31ae0fcf80914ddf85bccb`,
 permanece em `metadata.previous_gt_sha256` apenas para rastreabilidade.
+
+Cadeia de hashes do artefato congelado (o pino vigente vive em
+`scripts/build_ground_truths.py::EXPECTED_GROUND_TRUTH_SHA256`, e `--check`
+prova a não-deriva):
+
+| Emenda | SHA-256 | O que mudou |
+| --- | --- | --- |
+| Freeze de 2026-08-09 | `f92057437c8b…10940c9d` | protocolo `full-coverage-equivalent-v1` |
+| 2026-08-10 (equivalências) | `853ff6040254…78dc58b` | só `accepted_alternatives` de fogo e acústica |
+| 2026-08-12 (emenda editorial) | `040c871f1797…ae6d56fe` | drywall aceita `EI 30`; telha de fibrocimento volta a U=4,6 |
 
 ## Como interpretar os valores
 

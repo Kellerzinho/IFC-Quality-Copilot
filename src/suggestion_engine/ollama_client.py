@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import time
+from typing import Any
 
 import httpx
 from loguru import logger
@@ -62,6 +63,38 @@ class OllamaClient:
             janela *= 2
         return min(janela, ceiling)
 
+    @classmethod
+    def resolve_num_ctx(
+        cls, prompt: str, system: str | None, num_predict: int, settings: Any
+    ) -> int:
+        """Janela de contexto desta chamada, segundo a política configurada.
+
+        A política ``fixed`` existe porque ``fit`` tem um custo que só aparece na
+        fila: como a janela varia por estímulo, o Ollama realoca o KV cache toda
+        vez que o valor muda entre duas chamadas consecutivas. Medido sobre a
+        rodada v7.5 (2026-08-12): 400 recargas forçadas nas 20 execuções, +2,3 a
+        +4,0 s de mediana cada — consistente nos 10 modelos —, cerca de 7% do
+        tempo de fila. Numa placa que comporta a janela maior, dimensionar não
+        economiza nada e só introduz variância.
+
+        A guarda anti-truncamento vale nas duas políticas: a janela nunca fica
+        menor que prompt + resposta, porque truncar cortaria o contrato de saída.
+        """
+        if getattr(settings, "ollama_num_ctx_policy", "fit") != "fixed":
+            return cls._fit_num_ctx(prompt, system, num_predict, settings.ollama_num_ctx)
+
+        fixa = int(settings.ollama_num_ctx_fixed)
+        minimo = cls._fit_num_ctx(prompt, system, num_predict, max(fixa, settings.ollama_num_ctx))
+        if minimo > fixa:
+            logger.warning(
+                "Prompt de {} chars nao cabe na janela fixa de {}; usando {} para nao truncar",
+                len(prompt) + len(system or ""),
+                fixa,
+                minimo,
+            )
+            return minimo
+        return fixa
+
     def __init__(self, base_url: str | None = None, model: str | None = None) -> None:
         settings = get_settings()
         self.base_url = base_url or settings.ollama_url
@@ -86,11 +119,11 @@ class OllamaClient:
         settings = get_settings()
         options: dict = {
             "temperature": temperature if temperature is not None else settings.ollama_temperature,
-            "num_ctx": self._fit_num_ctx(
+            "num_ctx": self.resolve_num_ctx(
                 prompt,
                 system,
                 settings.ollama_num_predict,
-                settings.ollama_num_ctx,
+                settings,
             ),
             "num_predict": settings.ollama_num_predict,
             "repeat_penalty": settings.ollama_repeat_penalty,
@@ -219,6 +252,11 @@ class OllamaClient:
             "eval_duration": body.get("eval_duration", 0),
             "prompt_eval_count": body.get("prompt_eval_count", 0),
             "eval_count": body.get("eval_count", 0),
+            # A janela REALMENTE enviada, por chamada. O metadata do run só
+            # registrava o teto configurado (8192), que nunca foi usado em
+            # nenhuma chamada da rodada v7.5 — telemetria que contradizia a
+            # própria evidência do run (gpu_residency.context_length = 2048).
+            "num_ctx_effective": int(options.get("num_ctx") or 0),
         }
         return self._extract_response_text(body), metrics
 

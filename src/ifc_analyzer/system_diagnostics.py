@@ -7,6 +7,7 @@ import ifcopenshell.util.element
 from loguru import logger
 
 from src.ifc_analyzer.material_reader import read_material_layers
+from src.ifc_analyzer.model_evidence import build_model_evidence
 from src.models import Issue
 
 # ---------------------------------------------------------------------------
@@ -174,6 +175,23 @@ def _detect_custom_material_pset(
 # ---------------------------------------------------------------------------
 
 
+def _get_load_bearing(element_psets: dict[str, Any]) -> bool | None:
+    """Lê a função estrutural declarada nos Psets do elemento.
+
+    O rótulo de sistema construtivo distingue "vedação" de "estrutural", e essa
+    é a propriedade que decide — os templates de pset já a recebiam; o de
+    sistema, não.
+    """
+    for pset in element_psets.values():
+        if not isinstance(pset, dict):
+            continue
+        for chave in ("LoadBearing", "IsLoadBearing"):
+            valor = pset.get(chave)
+            if isinstance(valor, bool):
+                return valor
+    return None
+
+
 def _build_context(
     element: ifcopenshell.entity_instance,
     layers: list[dict[str, Any]],
@@ -181,6 +199,8 @@ def _build_context(
     classification_current: str | None,
     has_standard_material_pset: bool,
     has_custom_pset_material: bool,
+    load_bearing: bool | None = None,
+    model_evidence: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Monta o dicionário de contexto para o issue."""
     ctx: dict[str, Any] = {
@@ -191,6 +211,8 @@ def _build_context(
         "classification_current": classification_current,
         "has_standard_material_pset": has_standard_material_pset,
         "has_custom_pset_material": has_custom_pset_material,
+        "load_bearing": load_bearing,
+        **(model_evidence or {}),
     }
 
     # Para IfcSlab: enriquecer com PredefinedType e ObjectType
@@ -237,6 +259,7 @@ def _make_system_issue(
 def diagnose_systems(ifc_file: ifcopenshell.file) -> list[Issue]:
     """Diagnostica paredes e lajes sem classificação de sistema construtivo."""
     issues: list[Issue] = []
+    model_evidence = build_model_evidence(ifc_file)
 
     for ifc_class in _TARGET_CLASSES:
         elements = ifc_file.by_type(ifc_class)
@@ -244,7 +267,7 @@ def diagnose_systems(ifc_file: ifcopenshell.file) -> list[Issue]:
 
         for element in elements:
             try:
-                _check_element_system(element, ifc_file, issues)
+                _check_element_system(element, ifc_file, issues, model_evidence)
             except Exception as exc:
                 logger.warning(
                     f"Erro inesperado ao verificar sistema de {element.GlobalId}: {exc}"
@@ -257,6 +280,7 @@ def _check_element_system(
     element: ifcopenshell.entity_instance,
     ifc_file: ifcopenshell.file,
     issues: list[Issue],
+    model_evidence: dict[str, Any] | None = None,
 ) -> None:
     """Verifica um elemento e adiciona issue se não possuir classificação de sistema."""
     has_classification, classification_current = _get_classification(element, ifc_file)
@@ -281,6 +305,8 @@ def _check_element_system(
         classification_current=classification_current,
         has_standard_material_pset=has_std_pset,
         has_custom_pset_material=has_custom,
+        load_bearing=_get_load_bearing(element_psets),
+        model_evidence=model_evidence,
     )
 
     issues.append(_make_system_issue(element, context))

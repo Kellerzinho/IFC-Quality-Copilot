@@ -13,10 +13,17 @@ from src.semantic_registry.registry import DEFAULT_SOURCE_POLICY
 
 _FLOAT_RE = re.compile(r"[-+]?\d+(?:[.,]\d+)?")
 _FIRE_RATING_RE = re.compile(r"\b(REI|EI|E|R)\s*[-:]?\s*(\d+)\b", re.IGNORECASE)
-_FIRE_MIN_RE = re.compile(r"\b(\d+)\s*(?:min|mins|minute|minutes)\b", re.IGNORECASE)
+_FIRE_MIN_RE = re.compile(r"\b(\d+)\s*(?:min|mins|minuto|minutos|minute|minutes)\b", re.IGNORECASE)
+"""``minutos`` incluído: o prompt é em português e pedia minutos, mas a lista só
+tinha as formas em inglês — ``"REI de 60 minutos"`` não era reconhecido."""
 _FIRE_HOUR_RE = re.compile(r"\b(\d+(?:[.,]\d+)?)\s*h\b", re.IGNORECASE)
 _CANONICAL_FIRE_RE = re.compile(r"^(?:REI|EI|E|R)\s+\d+$")
+_FIRE_CLASS_TOKEN_RE = re.compile(r"\b(REI|RE|EI|E|R)\b")
+"""Classe declarada longe do número ("REI de 60 minutos")."""
 _COMMON_FIRE_RATING_MINUTES = {15, 20, 30, 45, 60, 90, 120, 180, 240}
+_ACOUSTIC_MARKER_RE = re.compile(r"rw|db", re.IGNORECASE)
+"""Sem fronteira de palavra: ``"RW40DB"`` também é notação acústica."""
+_ACOUSTIC_VALUE_RE = re.compile(r"(\d{1,3})")
 _WALL_SYSTEM_ALIASES: dict[str, str] = {
     "alvenaria de vedacao em bloco ceramico": "Alvenaria de veda\u00e7\u00e3o em bloco cer\u00e2mico",
     "alvenaria vedacao bloco ceramico": "Alvenaria de veda\u00e7\u00e3o em bloco cer\u00e2mico",
@@ -138,6 +145,8 @@ def normalize_value_for_issue(issue: Issue, raw_value: Any) -> Any | None:
             return parse_numeric_value(raw_value)
         if prop == "FireRating":
             return normalize_fire_rating(raw_value)
+        if prop in ("AcousticRating", "SoundTransmissionLoss"):
+            return normalize_acoustic_rating(raw_value)
         if prop == "Category":
             return normalize_text(raw_value)
         return _normalize_generic_pset_value(raw_value)
@@ -179,7 +188,19 @@ def parse_numeric_value(raw_value: Any) -> float | None:
 
 
 def normalize_fire_rating(raw_value: Any) -> str | None:
-    """Canonicaliza FireRating para o formato CLASSE n, ex.: REI 60 ou EI 30."""
+    """Canonicaliza FireRating para o formato CLASSE n, ex.: REI 60 ou EI 30.
+
+    A **classe** é a substância da resposta neste estrato: R, EI e REI dependem
+    da função do elemento (portante, compartimentação ou ambas), e é exatamente
+    isso que o benchmark mede. Até 2026-08-12 a normalização preenchia a classe
+    ausente com ``REI`` — o valor esperado mais frequente do ground truth —, o
+    que dava de graça a parte difícil da decisão. Medido no log da rodada v7.5:
+    **108 respostas cruas eram duração pura** ("60", "120", "30", "90") e
+    entravam na avaliação como ``REI n``.
+
+    Agora a duração sozinha não vira resposta: a classe precisa estar declarada
+    no texto, ainda que separada do número ("REI de 60 minutos").
+    """
     if raw_value is None or isinstance(raw_value, bool):
         return None
 
@@ -193,10 +214,14 @@ def normalize_fire_rating(raw_value: Any) -> str | None:
         minutes = int(canonical_match.group(2))
         return _render_fire_rating(rating_class, minutes)
 
+    declared_class = _FIRE_CLASS_TOKEN_RE.search(text)
+    if declared_class is None:
+        return None
+    rating_class = declared_class.group(1).upper()
+
     min_match = _FIRE_MIN_RE.search(text)
     if min_match:
-        minutes = int(min_match.group(1))
-        return _render_fire_rating("REI", minutes)
+        return _render_fire_rating(rating_class, int(min_match.group(1)))
 
     hour_match = _FIRE_HOUR_RE.search(text)
     if hour_match:
@@ -205,14 +230,41 @@ def normalize_fire_rating(raw_value: Any) -> str | None:
             minutes = int(round(float(hours_text) * 60))
         except ValueError:
             return None
-        return _render_fire_rating("REI", minutes)
-
-    stripped = text.strip().upper()
-    if re.fullmatch(r"\d+", stripped):
-        minutes = int(stripped)
-        return _render_fire_rating("REI", minutes)
+        return _render_fire_rating(rating_class, minutes)
 
     return None
+
+
+def normalize_acoustic_rating(raw_value: Any) -> str | None:
+    """Canonicaliza AcousticRating para ``Rw NN dB``.
+
+    O comparador tratava o rótulo acústico como texto cru (só ``strip``), então
+    ``"Rw 40dB"`` sem espaço não casava com ``"Rw 40 dB"``. Notação não é
+    decisão de engenharia. Exige marcador acústico explícito — o prefixo ``Rw``
+    ou a unidade ``dB`` —, para que um número solto não vire índice por acidente.
+    """
+    if raw_value is None or isinstance(raw_value, bool):
+        return None
+    if isinstance(raw_value, (int, float)):
+        return _render_acoustic_rating(int(raw_value))
+
+    text = str(raw_value).strip()
+    if not text:
+        return None
+    if not _ACOUSTIC_MARKER_RE.search(text):
+        return None
+    match = _ACOUSTIC_VALUE_RE.search(text)
+    if match is None:
+        # Cobre o eco do placeholder do template ("Rw NN dB"), que não é valor.
+        return None
+    return _render_acoustic_rating(int(match.group(1)))
+
+
+def _render_acoustic_rating(decibels: int) -> str | None:
+    """Formato canônico do ground truth; fora da faixa física devolve None."""
+    if not 10 <= decibels <= 99:
+        return None
+    return f"Rw {decibels} dB"
 
 
 def _render_fire_rating(rating_class: str, minutes: int) -> str | None:

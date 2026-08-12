@@ -11,6 +11,7 @@ import pytest
 
 import scripts.build_windows_release as release_builder
 from scripts.build_windows_release import (
+    RELEASE_DATE,
     ReleaseBuildError,
     build_project_zip,
     build_release,
@@ -96,7 +97,7 @@ def project_fixture(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> ProjectF
         "src/experiment/results/models.lock.json": (
             '{"schema_version":2,"runtime":{"name":"ollama"},"models":[]}\n'
         ),
-        "src/suggestion_engine/prompt_templates.py": b'PROMPT_VERSION = "v7.3"\r\n',
+        "src/suggestion_engine/prompt_templates.py": b'PROMPT_VERSION = "v7.6"\r\n',
         "scripts/run_benchmark.py": "print('runner')\n",
         "scripts/windows_benchmark.py": "print('windows')\n",
         "scripts/build_ground_truths.py": "print('gt')\n",
@@ -192,7 +193,7 @@ def test_project_archive_is_deterministic_allowlisted_and_portable(
         assert archive.read("src/core.py") == b"VALUE = 1\n"
         assert (
             archive.read("src/suggestion_engine/prompt_templates.py")
-            == b'PROMPT_VERSION = "v7.3"\n'
+            == b'PROMPT_VERSION = "v7.6"\n'
         )
         assert not any(
             forbidden in name.casefold()
@@ -255,7 +256,11 @@ def test_release_contains_exact_public_shape_and_canonical_manifest(
         "datasets",
         "inputs",
     }
-    assert re.fullmatch(r"ifcqc-2026-08-09-[0-9a-f]{12}", manifest["release_id"])
+    # Derivado da constante, nao fixado: RELEASE_DATE e bumpado a cada
+    # republicacao e o teste nao deve quebrar por isso.
+    assert re.fullmatch(
+        rf"ifcqc-{re.escape(RELEASE_DATE)}-[0-9a-f]{{12}}", manifest["release_id"]
+    )
     assert release.name == f"IFCQC-Benchmark-Windows-x64-{manifest['release_id']}"
     # O fixture vive sob um Git externo; esse commit não pode vazar para a release.
     assert re.fullmatch(r"tree-[0-9a-f]{64}", manifest["source_commit"])
@@ -278,7 +283,7 @@ def test_manifest_hashes_every_local_payload_and_internal_input(
     with zipfile.ZipFile(release / manifest["project"]["path"]) as archive:
         model_lock = manifest["inputs"]["models_lock"]
         prompt = manifest["inputs"]["prompt_templates"]
-        assert prompt["version"] == "v7.3"
+        assert prompt["version"] == "v7.6"
         for record in (model_lock, prompt):
             payload = archive.read(record["project_path"])
             assert record["size_bytes"] == len(payload)
@@ -351,11 +356,11 @@ def test_builder_rejects_nonempty_release_destination(
     assert (first / "extra.txt").read_text(encoding="utf-8") == "do not overwrite\n"
 
 
-def test_builder_rejects_prompt_version_other_than_v73(
+def test_builder_rejects_prompt_version_other_than_pinned(
     project_fixture: ProjectFixture, tmp_path: Path
 ) -> None:
     prompt = project_fixture.root / "src/suggestion_engine/prompt_templates.py"
     prompt.write_text('PROMPT_VERSION = "v7.2"\n', encoding="utf-8", newline="\n")
 
-    with pytest.raises(ReleaseBuildError, match=r"PROMPT_VERSION.*v7\.3"):
+    with pytest.raises(ReleaseBuildError, match=r"PROMPT_VERSION.*v7.6"):
         build_release(project_fixture.root, tmp_path / "dist")

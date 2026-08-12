@@ -196,6 +196,11 @@ class BSDDClient:
                 "name": item.code or item.display_name,
                 "uri": item.class_uri or item.canonical_uri,
                 "domain": item.dictionary_name or domain,
+                # A definicao oficial da entidade ja vinha do dicionario e era
+                # descartada aqui: e o grounding que o bSDD tem de fato para
+                # oferecer nas propriedades do experimento, onde allowed_values
+                # e nulo em 100% dos casos.
+                "description": item.description,
             }
             for item in self.search_classes_text(query, domain=domain)
         ]

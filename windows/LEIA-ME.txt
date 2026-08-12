@@ -39,8 +39,12 @@ O que será executado
 Interromper e continuar
 -----------------------
 
-- Para uma parada controlada, crie um arquivo vazio chamado BENCHMARK_STOP na
-  pasta onde iniciou o CMD, ou pressione Ctrl+C uma vez.
+- Para uma parada controlada, pressione Ctrl+C uma vez na janela e aguarde.
+  Alternativa: crie um arquivo vazio chamado BENCHMARK_STOP dentro da pasta da
+  release instalada, em
+  %LOCALAPPDATA%\IFCQualityCopilot\releases\<id-da-release>\
+  (o caminho completo aparece no log). Nao adianta criar o arquivo na pasta do
+  pacote: o programa observa somente a pasta instalada.
 - O programa tenta gerar um RESULTADO_IFCQC_*_interrupted.zip e encerra com o
   código 130. Não desligue o computador durante a gravação desse ZIP.
 - Execute o mesmo EXECUTAR_BENCHMARK.cmd novamente para continuar. Etapas que

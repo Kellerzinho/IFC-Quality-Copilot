@@ -129,6 +129,20 @@ class ExecutionIdentity:
     prompt_version: str
     prompt_sha256: str
     reuse_equivalent: bool
+    # Acrescentados em 2026-08-12. Todos alteram o resultado e nenhum estava na
+    # identidade: dois runs com janela de contexto ou seed diferentes tinham o
+    # mesmo canonical_identity_sha256 e eram tratados como a mesma condição.
+    source_commit: str = ""
+    """Commit (ou hash determinístico da árvore) do código empacotado."""
+    num_ctx_policy: str = ""
+    """``fixed`` ou ``fit`` — muda latência, VRAM e o número de recargas."""
+    num_ctx: int = 0
+    """Janela efetiva da política ``fixed``, ou o teto da política ``fit``."""
+    num_predict: int = 0
+    seed: int | None = None
+    temperature: float = 0.0
+    top_p: float = 0.0
+    repeat_penalty: float = 0.0
 
     def __post_init__(self) -> None:
         if not isinstance(self.datasets, tuple):
@@ -137,6 +151,8 @@ class ExecutionIdentity:
             raise ValueError("datasets devem estar na ordem predio,casa")
         if self.replica_count < 1:
             raise ValueError("replica_count deve ser positivo")
+        if self.num_ctx_policy not in ("", "fixed", "fit"):
+            raise ValueError("num_ctx_policy deve ser 'fixed' ou 'fit'")
         _validate_sha_fields(self)
 
 

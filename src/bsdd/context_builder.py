@@ -156,6 +156,7 @@ class BSDDContextBuilder:
                 primary_match.get("uri"),
                 context.domain_name,
             )
+            context.class_description = primary_match.get("description")
             if not context.domain_name:
                 context.domain_name = primary_match.get("domain")
 
@@ -171,6 +172,14 @@ class BSDDContextBuilder:
             properties = self._canonicalize_properties(properties, context.domain_name)
             relevant = self._filter_properties(issue, ids_context, properties)
             context.related_properties = self._enrich_allowed_values(relevant)
+            # A classe existe no dicionario e a propriedade pedida nao: e o caso
+            # de Category em IfcSpace e de SolarHeatGainCoefficient em IfcWindow.
+            # Marcar permite o prompt dizer isso, em vez de calar.
+            context.property_absent_from_dictionary = bool(
+                properties
+                and not relevant
+                and self._target_property_name(issue, ids_context)
+            )
             context.source_uris = self._collect_source_uris(
                 class_uri=context.class_uri,
                 properties=context.related_properties,

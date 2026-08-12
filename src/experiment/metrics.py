@@ -63,6 +63,14 @@ class RunMetadata(BaseModel):
     temperature: float = 0.0
     top_p: float = 0.0
     num_ctx: int = 0
+    """Janela de contexto configurada para o run, já resolvida pela política.
+
+    Registrar o teto aqui foi um defeito de telemetria da rodada v7.5: o JSON
+    publicava 8192 enquanto nenhuma chamada usava esse valor. O que de fato
+    entrou em cada chamada está em ``num_ctx_effective``, no JSONL por issue.
+    """
+    num_ctx_policy: str = "fit"
+    """``fixed`` (mesma janela em toda chamada) ou ``fit`` (dimensionada ao prompt)."""
     num_predict: int = 0
     repeat_penalty: float = 0.0
     ifc_sha256: str = ""
@@ -97,7 +105,17 @@ class RunMetadata(BaseModel):
     """
     replica_index: int = 0
     timestamp: str | None = None
-    """ISO-8601; carimbado externamente (Date.now indisponível no harness)."""
+    """ISO-8601 do lançamento da FILA; carimbado externamente.
+
+    É o mesmo instante nos 20 estágios de uma matriz — por isso não serve para
+    situar um estágio no tempo. Use ``stage_started_utc``/``stage_finished_utc``.
+    """
+    stage_started_utc: str | None = None
+    """ISO-8601 do início deste estágio, medido dentro de ``run_single``."""
+    stage_finished_utc: str | None = None
+    """ISO-8601 do fim deste estágio."""
+    stage_duration_s: float | None = None
+    """Duração do estágio em segundos (relógio monotônico)."""
 
 
 # ---------------------------------------------------------------------------

@@ -149,7 +149,6 @@ def test_predio_preserves_verified_legacy_item():
     [
         ("IfcWall", 2.35, "Estimativa preliminar — CONFERIR composição."),
         ("IfcWindow", 5.7, "Referência genérica para vidro simples."),
-        ("IfcRoof", 4.6, "Referência genérica para cobertura."),
     ],
 )
 def test_predio_skips_legacy_item_marked_conferir(element_class, expected_value, notes):
@@ -170,6 +169,32 @@ def test_predio_skips_legacy_item_marked_conferir(element_class, expected_value,
 
     _assert_skipped(decision)
     assert any(word in decision.skip_reason.lower() for word in ("incerteza", "não ratificada"))
+
+
+def test_roof_thermal_reference_of_4_6_is_ratified():
+    """Emenda de 2026-08-12: a referência autoral da telha volta a ser aceita.
+
+    A rejeição de ``IfcRoof == 4.6`` substituía o valor consagrado da telha de
+    fibrocimento sem forro pelo genérico de cobertura (2,00) — 56% abaixo, e no
+    sentido oposto ao da física do elemento. Ver docs/emenda-gt-2026-08-12.md.
+    A rejeição de ``IfcWindow == 5.7`` permanece (testada acima).
+    """
+    issue = _issue(property_name="ThermalTransmittance", element_class="IfcRoof")
+    legacy = _legacy_item(
+        issue,
+        expected_value=4.6,
+        verified=True,
+        notes="Referência genérica para cobertura.",
+    )
+
+    decision = _audit_legacy(
+        issue,
+        legacy,
+        legacy_source_sha256=_RATIFIED_LEGACY_SHA256,
+    )
+
+    assert decision.skip_reason is None
+    assert decision.expected_value == 4.6
 
 
 @pytest.mark.parametrize(

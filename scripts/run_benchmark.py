@@ -186,6 +186,16 @@ def _parse_execution_identity(raw: object) -> ExecutionIdentity:
             "prompt_version",
             "prompt_sha256",
             "reuse_equivalent",
+            # Acrescentados em 2026-08-12: parametros de geracao e politica de
+            # janela entram na identidade, porque mudam o resultado.
+            "source_commit",
+            "num_ctx_policy",
+            "num_ctx",
+            "num_predict",
+            "seed",
+            "temperature",
+            "top_p",
+            "repeat_penalty",
         },
         "execution_identity",
     )
@@ -199,6 +209,19 @@ def _parse_execution_identity(raw: object) -> ExecutionIdentity:
         raise TypeError("reuse_equivalent deve ser booleano")
     if not isinstance(identity_data["prompt_version"], str):
         raise TypeError("prompt_version deve ser string")
+    for chave in ("source_commit", "num_ctx_policy"):
+        if not isinstance(identity_data[chave], str):
+            raise TypeError(f"{chave} deve ser string")
+    for chave in ("num_ctx", "num_predict"):
+        if type(identity_data[chave]) is not int:
+            raise TypeError(f"{chave} deve ser inteiro")
+    if identity_data["seed"] is not None and type(identity_data["seed"]) is not int:
+        raise TypeError("seed deve ser inteiro ou nulo")
+    for chave in ("temperature", "top_p", "repeat_penalty"):
+        if type(identity_data[chave]) not in (int, float) or isinstance(
+            identity_data[chave], bool
+        ):
+            raise TypeError(f"{chave} deve ser numerico")
     raw_datasets = identity_data["datasets"]
     if not isinstance(raw_datasets, list):
         raise ValueError("datasets deve ser uma lista JSON")
@@ -272,6 +295,14 @@ def _parse_execution_identity(raw: object) -> ExecutionIdentity:
         prompt_version=identity_data["prompt_version"],
         prompt_sha256=identity_data["prompt_sha256"],
         reuse_equivalent=identity_data["reuse_equivalent"],
+        source_commit=identity_data["source_commit"],
+        num_ctx_policy=identity_data["num_ctx_policy"],
+        num_ctx=identity_data["num_ctx"],
+        num_predict=identity_data["num_predict"],
+        seed=identity_data["seed"],
+        temperature=float(identity_data["temperature"]),
+        top_p=float(identity_data["top_p"]),
+        repeat_penalty=float(identity_data["repeat_penalty"]),
     )
     if not identity.release_id:
         raise ValueError("release_id vazio")

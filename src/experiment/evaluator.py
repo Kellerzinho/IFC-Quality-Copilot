@@ -18,6 +18,7 @@ As definições de métricas estão nas docstrings de :class:`EvaluationMetrics`
 
 from __future__ import annotations
 
+import unicodedata
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -80,11 +81,17 @@ _FALSE_TOKENS = {"false", "falso", "nao", "no", "n", "0"}
 
 
 def _coerce_bool(value: Any) -> bool | None:
-    """Converte valores booleanos textuais/numéricos para bool, ou None se não for."""
+    """Converte valores booleanos textuais/numéricos para bool, ou None se não for.
+
+    Remove acento antes de comparar: os tokens são escritos sem acento e o
+    modelo que respondia ``"não"`` — a grafia correta em português, num prompt
+    inteiramente em português — não casava com nada.
+    """
     if isinstance(value, bool):
         return value
     if isinstance(value, str):
-        token = value.strip().casefold()
+        decomposed = unicodedata.normalize("NFKD", value.strip().casefold())
+        token = "".join(char for char in decomposed if not unicodedata.combining(char))
         if token in _TRUE_TOKENS:
             return True
         if token in _FALSE_TOKENS:

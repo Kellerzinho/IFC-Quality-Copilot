@@ -45,6 +45,8 @@ from src.experiment.ground_truth_validation import (
 from src.experiment.ground_truth_value_policy import (
     ElementEvidence,
     LayerEvidence,
+    accepted_alternatives_for_frozen_value,
+    amended_value_for_frozen_item,
     resolve_ground_truth_decision,
 )
 from src.experiment.gt_extractor import GTExtractionResult, SkippedIssue
@@ -68,9 +70,16 @@ THERMAL_UNIT = (
 )
 
 # SHA-256 dos artefatos canônicos revisados na Task 5; necessário para reuso fechado.
+# Emenda de 2026-08-10 (docs/condicao-gt-equivalencias-2026-08-10.md): nenhum
+# expected_value mudou; só accepted_alternatives de FireRating e AcousticRating.
+# Emenda de 2026-08-12 (docs/emenda-gt-2026-08-12.md), decisão editorial após o
+# benchmark v7.5: 223 itens de drywall passam a aceitar "EI 30" (a duração da
+# revisão autoral, descartada junto com o item legado pelo marcador de
+# incerteza) e 7 itens de telha de fibrocimento voltam ao U autoral de 4,6.
+# Anteriores: predio 853ff604…78dc58b, casa c98fdd5e…58bb2d1d.
 EXPECTED_GROUND_TRUTH_SHA256: dict[str, str] = {
-    "predio": "f92057437c8b5f6a7c098e818f6936e01c868afd82500b14d3844a1e10940c9d",
-    "casa": "60f87a079d2a9dccb7cfaedf43f3193b887f8606a1001d630a11321a6f8cfee5",
+    "predio": "040c871f1797f4237bc7c7bd94c03870b1b7c2d7ea1ccabc318b044cae6d56fe",
+    "casa": "e72b344f5b1bd30ac73a02db77868322fae1458e3d4d050f2ccd667f66f6138b",
 }
 EXPECTED_INTEGRAL_ITEM_COUNTS: dict[str, int] = {
     "predio": 4720,
@@ -591,12 +600,42 @@ def _complete_ground_truth(
         if source_is_integral and prior is not None:
             if prior.confidence is None or prior.source_kind is None or not prior.notes:
                 raise ValueError(f"item integral sem metadados cientificos: {prior.issue_id}")
+            # Emenda de 2026-08-10: o valor esperado, a confianca e a proveniencia
+            # do GT integral sao preservados; so o conjunto de respostas aceitas e
+            # recalculado pela politica vigente, para que a avaliacao meca a decisao
+            # tecnica e nao a notacao. Ver docs/condicao-gt-equivalencias-2026-08-10.md.
+            # A politica devolve o conjunto COMPLETO e aqui ele SUBSTITUI o anterior:
+            # se fosse acrescimo, o GT so saberia alargar e um estreitamento nunca
+            # teria efeito sobre um artefato ja emitido.
+            evidencia = _element_evidence(representative, model)
+            # Emenda de 2026-08-12: preservar o valor byte a byte tambem tornava
+            # irreversivel uma inversao introduzida pelo proprio protocolo. O hook
+            # abaixo cobre recortes nominais com decisao editorial registrada.
+            emenda = amended_value_for_frozen_item(
+                representative,
+                evidencia,
+                prior.expected_value,
+                prior.confidence,
+                prior.notes,
+            )
+            valor, confianca, notas = emenda or (
+                prior.expected_value,
+                prior.confidence,
+                prior.notes,
+            )
+            alternativas = accepted_alternatives_for_frozen_value(
+                representative,
+                evidencia,
+                valor,
+                confianca,
+                prior.accepted_alternatives,
+            )
             decision = GroundTruthDecision(
-                expected_value=prior.expected_value,
-                accepted_alternatives=prior.accepted_alternatives,
-                confidence=prior.confidence,
+                expected_value=valor,
+                accepted_alternatives=alternativas,
+                confidence=confianca,
                 source_kind=prior.source_kind,
-                notes=prior.notes,
+                notes=notas,
                 legacy_reference=prior.legacy_reference,
             )
         else:

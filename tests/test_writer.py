@@ -125,7 +125,7 @@ def test_preencher_pset_returns_old_values(ifc_with_walls):
     guid = meta["wall2_guid"]  # wall2: IsExternal=True, ThermalTransmittance=2.48
 
     _, anteriores = writer.preencher_pset(
-        guid, "Pset_WallCommon", {"ThermalTransmittance": 1.0, "FireRating": "60"}
+        guid, "Pset_WallCommon", {"ThermalTransmittance": 1.0, "FireRating": "REI 60"}
     )
 
     # ThermalTransmittance existia; FireRating não existia
@@ -170,13 +170,29 @@ def test_preencher_pset_coerces_decorated_numeric_and_fire_rating(ifc_with_walls
         "Pset_WallCommon",
         {
             "ThermalTransmittance": "Pset_WallCommon.ThermalTransmittance = 2.50 W/(m².K)",
-            "FireRating": "120min",
+            "FireRating": "REI 120min",
         },
     )
 
     psets = ifcopenshell.util.element.get_psets(f.by_guid(guid))
     assert psets["Pset_WallCommon"]["ThermalTransmittance"] == pytest.approx(2.5)
     assert psets["Pset_WallCommon"]["FireRating"] == "REI 120"
+
+
+def test_preencher_pset_rejects_fire_rating_without_class(ifc_with_walls):
+    """Duração sem classe não vira REI por conta do sistema.
+
+    Escrever "REI 120" a partir de "120min" inventaria a classe de resistência —
+    R, EI e REI dependem da função do elemento, e a escrita no IFC é o pior lugar
+    para adivinhar isso. Recusar é o comportamento correto (2026-08-12).
+    """
+    f, meta = ifc_with_walls
+    writer = IFCWriter(f)
+
+    with pytest.raises(ValueError, match="FireRating invalido"):
+        writer.preencher_pset(
+            meta["wall3_guid"], "Pset_WallCommon", {"FireRating": "120min"}
+        )
 
 
 def test_preencher_pset_invalid_guid(ifc_with_walls):

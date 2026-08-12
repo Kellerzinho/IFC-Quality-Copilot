@@ -40,23 +40,38 @@ def test_parse_numeric_value_with_units_and_text() -> None:
 @pytest.mark.parametrize(
     ("raw_value", "expected"),
     [
-        ("60", "REI 60"),
-        ("60min", "REI 60"),
-        ("1h", "REI 60"),
-        ("2h", "REI 120"),
         ("REI60", "REI 60"),
         ("REI 120", "REI 120"),
         ("EI 30", "EI 30"),
         ("EI-60", "EI 60"),
         ("R 60", "R 60"),
+        # Classe declarada longe do número continua valendo.
+        ("REI 1h", "REI 60"),
+        ("EI de 30 min", "EI 30"),
+        ("REI de 60 minutos", "REI 60"),
     ],
 )
 def test_normalize_fire_rating(raw_value: str, expected: str) -> None:
     assert normalize_fire_rating(raw_value) == expected
 
 
-@pytest.mark.parametrize("raw_value", ["A1", "0", "1", "R 1", "EI 1", "", None, "N/A", "FireRating"])
+@pytest.mark.parametrize(
+    "raw_value",
+    ["A1", "0", "1", "R 1", "EI 1", "", None, "N/A", "FireRating"],
+)
 def test_normalize_fire_rating_rejects_invalid(raw_value) -> None:
+    assert normalize_fire_rating(raw_value) is None
+
+
+@pytest.mark.parametrize("raw_value", ["60", "60min", "1h", "2h", "120", "60 minutos"])
+def test_normalize_fire_rating_rejects_duration_without_class(raw_value: str) -> None:
+    """Duração sozinha não é classe de resistência ao fogo (2026-08-12).
+
+    A normalização preenchia a classe ausente com ``REI`` — o valor esperado mais
+    frequente do ground truth —, dando de graça a parte difícil da decisão: R, EI
+    e REI dependem da FUNÇÃO do elemento, que é o que o estrato mede. Medido no
+    log da rodada v7.5: 108 respostas cruas eram duração pura.
+    """
     assert normalize_fire_rating(raw_value) is None
 
 

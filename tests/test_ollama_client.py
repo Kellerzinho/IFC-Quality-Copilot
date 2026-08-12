@@ -21,6 +21,26 @@ def _make_response(body: dict, status_code: int = 200) -> MagicMock:
     return resp
 
 
+@pytest.fixture(autouse=True)
+def _settings_limpas():
+    """Garante que nenhum teste vaze configuração para o seguinte."""
+    get_settings.cache_clear()
+    yield
+    get_settings.cache_clear()
+
+
+def _usar_politica_fit(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Ativa a política adaptativa de janela para este teste.
+
+    O padrão passou a ser ``fixed`` em 2026-08-12 (a alternância de janela
+    custava ~7% do tempo de fila em recargas de KV cache), mas a política ``fit``
+    continua existindo para máquinas onde a janela maior não cabe — e o
+    dimensionamento continua sendo testado aqui.
+    """
+    monkeypatch.setenv("OLLAMA_NUM_CTX_POLICY", "fit")
+    get_settings.cache_clear()
+
+
 # ---------------------------------------------------------------------------
 # generate
 # ---------------------------------------------------------------------------
@@ -348,6 +368,7 @@ def test_num_ctx_shrinks_for_short_prompts(monkeypatch):
     gemma2:9b em 30% e qwen2.5:7b em 14%, sem mudar a resposta. Os prompts do
     projeto têm mediana ~464 tokens.
     """
+    _usar_politica_fit(monkeypatch)
     client = OllamaClient()
     captured: dict = {}
 
@@ -367,6 +388,7 @@ def test_num_ctx_grows_to_fit_long_prompts(monkeypatch):
 
     Truncar o prompt cortaria justamente o fim, onde está o contrato de saída.
     """
+    _usar_politica_fit(monkeypatch)
     client = OllamaClient()
     captured: dict = {}
 
@@ -385,6 +407,7 @@ def test_num_ctx_grows_to_fit_long_prompts(monkeypatch):
 
 def test_num_ctx_never_exceeds_configured_ceiling(monkeypatch):
     """O teto configurado em ollama_num_ctx continua sendo respeitado."""
+    _usar_politica_fit(monkeypatch)
     client = OllamaClient()
     captured: dict = {}
 
@@ -407,6 +430,7 @@ def test_num_ctx_stays_at_floor_for_the_projects_largest_common_prompt(monkeypat
     (6,3 GB, 88%) e o torna ~29% mais lento. O orçamento real (prompt + resposta)
     cabe folgadamente em 2048.
     """
+    _usar_politica_fit(monkeypatch)
     client = OllamaClient()
     captured: dict = {}
 
@@ -419,3 +443,69 @@ def test_num_ctx_stays_at_floor_for_the_projects_largest_common_prompt(monkeypat
     client.generate(prompt="x" * 1900, system="y" * 120)
 
     assert captured["options"]["num_ctx"] == 2048
+
+
+# ---------------------------------------------------------------------------
+# Política de janela fixa (2026-08-12)
+# ---------------------------------------------------------------------------
+
+
+def test_num_ctx_fixed_is_the_default_policy(monkeypatch):
+    """Toda chamada usa a mesma janela — o padrão desde 2026-08-12.
+
+    A política ``fit`` alternava entre 2048 e 4096 ao longo da fila e o Ollama
+    realoca o KV cache a cada troca: medido na rodada v7.5, 400 recargas
+    forçadas, +2,3 a +4,0 s de mediana cada, ~7% do tempo total.
+    """
+    client = OllamaClient()
+    janelas: list[int] = []
+
+    def fake_post(url, json=None, **kwargs):
+        janelas.append(json["options"]["num_ctx"])
+        return _make_response({"response": '{"opcoes": []}'})
+
+    monkeypatch.setattr(client._client, "post", fake_post)
+
+    client.generate(prompt="curto", system="sys")
+    client.generate(prompt="x" * 3000, system="sys")
+
+    fixa = get_settings().ollama_num_ctx_fixed
+    assert janelas == [fixa, fixa]
+
+
+def test_num_ctx_fixed_still_grows_to_avoid_truncation(monkeypatch):
+    """A guarda anti-truncamento vale nas duas políticas.
+
+    Janela fixa é otimização de desempenho; jamais pode cortar o fim do prompt,
+    onde está o contrato de saída.
+    """
+    client = OllamaClient()
+    captured: dict = {}
+
+    def fake_post(url, json=None, **kwargs):
+        captured["options"] = json["options"]
+        return _make_response({"response": '{"opcoes": []}'})
+
+    monkeypatch.setattr(client._client, "post", fake_post)
+
+    client.generate(prompt="palavra " * 6000, system="sys")
+
+    assert captured["options"]["num_ctx"] > get_settings().ollama_num_ctx_fixed
+
+
+def test_num_ctx_effective_is_reported_in_metrics(monkeypatch):
+    """A janela usada precisa chegar ao JSONL por issue.
+
+    Sem isso o run publicava só o teto configurado: na rodada v7.5, ``8192`` —
+    valor que nenhuma chamada usou.
+    """
+    client = OllamaClient()
+
+    def fake_post(url, json=None, **kwargs):
+        return _make_response({"response": '{"opcoes": []}'})
+
+    monkeypatch.setattr(client._client, "post", fake_post)
+
+    _, metrics = client.generate(prompt="curto", system="sys")
+
+    assert metrics["num_ctx_effective"] == get_settings().ollama_num_ctx_fixed
