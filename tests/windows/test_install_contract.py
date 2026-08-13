@@ -9,6 +9,8 @@ from pathlib import Path
 
 import pytest
 
+import scripts.build_windows_release as release_builder
+
 ROOT = Path(__file__).resolve().parents[2]
 INSTALL_PS1 = ROOT / "windows" / "install.ps1"
 ENTRYPOINT_CMD = ROOT / "windows" / "EXECUTAR_BENCHMARK.cmd"
@@ -119,7 +121,8 @@ def release_fixture(tmp_path: Path) -> Path:
             "prompt_templates": {
                 **internal,
                 "project_path": "src/suggestion_engine/prompt_templates.py",
-                "version": "v7.6",
+                # Pino vivo: o fixture precisa casar com o que install.ps1 exige.
+                "version": release_builder.PROMPT_VERSION,
             },
             "datasets": {
                 dataset: {

@@ -23,9 +23,9 @@ from __future__ import annotations
 from src.suggestion_engine.prompt_templates import PROMPT_VERSION, TEMPLATES
 
 
-def test_prompt_version_is_v7_6():
-    """v7.6: fechamento do instrumento apos a rodada oficial v7.5."""
-    assert PROMPT_VERSION == "v7.6"
+def test_prompt_version_is_v7_7():
+    """v7.7: roteamento do relation_broken + remocao de roteiro (2026-08-13)."""
+    assert PROMPT_VERSION == "v7.7"
 
 
 # ---------------------------------------------------------------------------

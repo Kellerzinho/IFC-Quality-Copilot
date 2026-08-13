@@ -97,7 +97,11 @@ def project_fixture(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> ProjectF
         "src/experiment/results/models.lock.json": (
             '{"schema_version":2,"runtime":{"name":"ollama"},"models":[]}\n'
         ),
-        "src/suggestion_engine/prompt_templates.py": b'PROMPT_VERSION = "v7.6"\r\n',
+        # CRLF de proposito: o builder normaliza para LF antes de hashear, e o
+        # pino vem da constante viva para nao quebrar a cada bump.
+        "src/suggestion_engine/prompt_templates.py": (
+            f'PROMPT_VERSION = "{release_builder.PROMPT_VERSION}"\r\n'.encode()
+        ),
         "scripts/run_benchmark.py": "print('runner')\n",
         "scripts/windows_benchmark.py": "print('windows')\n",
         "scripts/build_ground_truths.py": "print('gt')\n",
@@ -193,7 +197,7 @@ def test_project_archive_is_deterministic_allowlisted_and_portable(
         assert archive.read("src/core.py") == b"VALUE = 1\n"
         assert (
             archive.read("src/suggestion_engine/prompt_templates.py")
-            == b'PROMPT_VERSION = "v7.6"\n'
+            == f'PROMPT_VERSION = "{release_builder.PROMPT_VERSION}"\n'.encode()
         )
         assert not any(
             forbidden in name.casefold()
@@ -283,7 +287,7 @@ def test_manifest_hashes_every_local_payload_and_internal_input(
     with zipfile.ZipFile(release / manifest["project"]["path"]) as archive:
         model_lock = manifest["inputs"]["models_lock"]
         prompt = manifest["inputs"]["prompt_templates"]
-        assert prompt["version"] == "v7.6"
+        assert prompt["version"] == release_builder.PROMPT_VERSION
         for record in (model_lock, prompt):
             payload = archive.read(record["project_path"])
             assert record["size_bytes"] == len(payload)
@@ -362,5 +366,8 @@ def test_builder_rejects_prompt_version_other_than_pinned(
     prompt = project_fixture.root / "src/suggestion_engine/prompt_templates.py"
     prompt.write_text('PROMPT_VERSION = "v7.2"\n', encoding="utf-8", newline="\n")
 
-    with pytest.raises(ReleaseBuildError, match=r"PROMPT_VERSION.*v7.6"):
+    with pytest.raises(
+        ReleaseBuildError,
+        match=rf"PROMPT_VERSION.*{re.escape(release_builder.PROMPT_VERSION)}",
+    ):
         build_release(project_fixture.root, tmp_path / "dist")

@@ -61,7 +61,9 @@ def official_identity(**overrides: object) -> ExecutionIdentity:
         ),
         "replica_count": 1,
         "cache_enabled": False,
-        "prompt_version": "v7.6",
+        # Constante viva: o snapshot precisa casar com o PROMPT_VERSION do
+        # projeto, senao cada bump de instrumento quebra o fixture.
+        "prompt_version": module.PROMPT_VERSION,
         "prompt_sha256": "8" * 64,
         "reuse_equivalent": True,
         # Parametros de geracao entraram na identidade em 2026-08-12: dois runs
@@ -276,7 +278,7 @@ def _install_identity_fixture(
     prompt = tmp_path / "prompt_templates.py"
     ids = tmp_path / "profile.ids"
     shutil.copyfile(module.LOCK_FILE, lock)
-    prompt.write_text('PROMPT_VERSION = "v7.6"\n', encoding="utf-8")
+    prompt.write_text(f'PROMPT_VERSION = "{module.PROMPT_VERSION}"\n', encoding="utf-8")
     ids.write_text("<ids/>\n", encoding="utf-8")
     datasets = []
     identities = []
@@ -331,7 +333,7 @@ def _install_identity_fixture(
         datasets=tuple(identities),
         replica_count=1,
         cache_enabled=False,
-        prompt_version="v7.6",
+        prompt_version=module.PROMPT_VERSION,
         prompt_sha256=hashlib.sha256(prompt.read_bytes()).hexdigest(),
         reuse_equivalent=True,
     )

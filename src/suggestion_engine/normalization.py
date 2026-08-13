@@ -24,12 +24,17 @@ _COMMON_FIRE_RATING_MINUTES = {15, 20, 30, 45, 60, 90, 120, 180, 240}
 _ACOUSTIC_MARKER_RE = re.compile(r"rw|db", re.IGNORECASE)
 """Sem fronteira de palavra: ``"RW40DB"`` também é notação acústica."""
 _ACOUSTIC_VALUE_RE = re.compile(r"(\d{1,3})")
+# v7.7: os aliases sem funcao declarada ("alvenaria em bloco ceramico",
+# "alvenaria ceramica", "bloco ceramico") foram REMOVIDOS. Promoviam o rotulo
+# ambiguo a "Alvenaria de vedacao..." \u2014 o valor esperado da maior classe do
+# gabarito (262 itens, que aceita SO o rotulo com funcao). A funcao
+# (vedacao x estrutural) e a substancia do estrato; presumi-la e o mesmo
+# vazamento do REI preenchido no FireRating (removido no v7.6 \u00a77). Alias e
+# para NOTACAO: so permanece quando a funcao esta declarada no texto ou o
+# rotulo canonico nao carrega decisao de funcao.
 _WALL_SYSTEM_ALIASES: dict[str, str] = {
     "alvenaria de vedacao em bloco ceramico": "Alvenaria de veda\u00e7\u00e3o em bloco cer\u00e2mico",
     "alvenaria vedacao bloco ceramico": "Alvenaria de veda\u00e7\u00e3o em bloco cer\u00e2mico",
-    "alvenaria em bloco ceramico": "Alvenaria de veda\u00e7\u00e3o em bloco cer\u00e2mico",
-    "alvenaria ceramica": "Alvenaria de veda\u00e7\u00e3o em bloco cer\u00e2mico",
-    "bloco ceramico": "Alvenaria de veda\u00e7\u00e3o em bloco cer\u00e2mico",
     "alvenaria estrutural em bloco ceramico": "Alvenaria estrutural em bloco cer\u00e2mico",
     "concreto armado": "Concreto armado",
     "concreto armado moldado in loco": "Concreto armado",

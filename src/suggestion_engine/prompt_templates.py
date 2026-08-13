@@ -93,7 +93,7 @@ if TYPE_CHECKING:
 #       prompt e consumia a banda de 10% do termico antes de qualquer erro do
 #       modelo; floats crus de espessura e area chegavam com ruido binario.
 # Ver docs/condicao-v7-6-2026-08-12.md.
-PROMPT_VERSION = "v7.6"
+PROMPT_VERSION = "v7.7"
 
 _MEMORIA_ESTRUTURADA_BR = (
     "MEMÓRIA ESTRUTURADA (obrigatória): declare no campo memoria_calculo as camadas "
@@ -618,9 +618,15 @@ TEMPLATES: dict[str, str] = {
         "Alvenaria estrutural em bloco cerâmico, Concreto armado moldado in loco, "
         "Concreto pré-moldado, Drywall / Steel frame, Alvenaria em bloco de concreto, "
         "Estrutura metálica, Painel de EPS\n"
-        "VEDAÇÃO OU ESTRUTURAL: o rótulo declara a função da parede no sistema, não só o "
-        "material. Alvenaria estrutural é aquela que sustenta a edificação; quando o modelo "
-        "declara pórtico de pilares e vigas, a alvenaria entre eles é de vedação.\n"
+        # v7.7: o paragrafo "VEDACAO OU ESTRUTURAL" saiu. Era roteiro de
+        # raciocinio (regra de inferencia portico->vedacao), a natureza medida
+        # em -12,5 pp na matriz v6 — e na rodada v7.6 o priming lexical
+        # ("estrutural" 3x no paragrafo) coincidiu com "Alvenaria estrutural"
+        # saltando de 953 para 2145 itens no pool de modelos. A evidencia
+        # ({load_bearing}, {structural_inventory}) fica: ler o que ela significa
+        # e trabalho do modelo. So a primeira oracao sobrevive, porque define a
+        # SEMANTICA do rotulo, nao o caminho ate ele.
+        "O RÓTULO declara a função da parede no sistema construtivo, não só o material.\n"
         "TAREFA: Classifique o sistema construtivo desta parede com 3 opções "
         "ordenadas por probabilidade, considerando o material e espessura informados.\n"
         "VOCABULÁRIO FECHADO: o campo sistema deve reproduzir EXATAMENTE um dos rótulos "
@@ -823,10 +829,14 @@ TEMPLATES: dict[str, str] = {
         "  IfcWall fina (< 10 cm), drywall ou divisória de vedação → False\n"
         "REGRA: telha, forro, revestimento e elemento apoiado não sustentam carga de "
         "outros elementos — respondem False mesmo quando a classe IFC é IfcSlab.\n"
-        "PAREDE EM EDIFICAÇÃO COM PÓRTICO: quando o modelo declara pilares e vigas em "
-        "quantidade compatível com a estrutura da edificação, a carga corre por eles e as "
-        "paredes tendem a ser vedação; alvenaria portante é o caso em que a parede substitui "
-        "o pórtico. Decida pelo inventário acima, não pela espessura isolada.\n"
+        # v7.7: o paragrafo "PAREDE EM EDIFICACAO COM PORTICO" saiu. Era regra de
+        # inferencia (portico declarado -> parede e vedacao) somada a diretiva
+        # ("Decida pelo inventario acima") — roteiro, nao evidencia. Na rodada
+        # v7.6, True em IsLoadBearing subiu de 334 para 858 itens no pool, com
+        # falcon3 -39,0 pp e mistral -62,6 pp no estrato: modelos-eco reagiram
+        # ao vocabulario do paragrafo, nao ao dado. O inventario ({structural_
+        # inventory}) permanece na secao DADOS: e evidencia do arquivo, e le-la
+        # e a tarefa que o estrato mede.
         "TAREFA: determine {check_property} para este elemento e sugira 3 valores booleanos "
         "(true/false) ordenados por probabilidade, com justificativa baseada no "
         "PredefinedType, no material e na espessura.\n"
@@ -849,14 +859,20 @@ TEMPLATES: dict[str, str] = {
         "- Externo: {is_external}\n"
         "NORMA: ABNT NBR 9050 (acessibilidade) e NBR 15575-3 (pisos) — a propriedade "
         "declara se a superfície de uso do elemento é antiderrapante.\n"
+        # v7.7: a diretiva "Decida pelo acabamento declarado nas camadas e pela
+        # exposicao do elemento" saiu — era roteiro que elegia UM eixo de
+        # decisao, e na rodada v7.6 empurrou 9/10 modelos para False num
+        # gabarito True (escadas). Ficam os dois blocos de conhecimento
+        # genericos: o escopo normativo (onde a norma exige a superficie) e a
+        # tipologia de acabamento (o que nao e antiderrapante por si). Pesa-los
+        # e a decisao que o estrato mede — concordancia com a convencao do
+        # gabarito, como o SHGC.
         "CRITÉRIO: a exigência decorre do RISCO DE ESCORREGAMENTO da superfície onde se "
         "pisa — piso sujeito a molhamento, rampa e degrau são as situações que a norma "
-        "trata. Decida pelo acabamento declarado nas camadas e pela exposição do elemento; "
-        "concreto desempenado, pedra polida e porcelanato esmaltado comum não são "
-        "antiderrapantes por si.\n"
+        "trata. Acabamento liso (concreto desempenado, pedra polida, porcelanato "
+        "esmaltado comum) não é antiderrapante por si.\n"
         "TAREFA: determine {check_property} para este elemento e sugira 3 valores booleanos "
-        "(true/false) ordenados por probabilidade, justificando pelo acabamento e pela "
-        "exposição do elemento.\n"
+        "(true/false) ordenados por probabilidade.\n"
         "Formato JSON (o valor abaixo é PLACEHOLDER, não uma sugestão):\n"
         '{{"opcoes": [{{"valor": <true|false>, "justificativa": "...", "confianca": "alta/media/baixa"}}]}}'
     ),
@@ -1116,7 +1132,13 @@ def has_specialized_pset_template(issue: Issue) -> bool:
     return _specialized_pset_template_key(issue) is not None
 
 
-_RICH_TEMPLATE_ISSUE_TYPES = {"space_unnamed", "system_unclassified"}
+# v7.7: relation_broken entra no conjunto. O template relation_missing existia
+# desde o v7.6, mas com o bSDD resolvendo a classe do elemento
+# (``is_grounded=True``) a issue caia em ``build_compact_prompt`` e o
+# vocabulario de subtipos de IfcRelationship nunca chegou ao fio — 0,00 em
+# 20/20 estagios nas rodadas v7.5 e v7.6. Mesma regressao de roteamento de
+# 2026-07-27, num terceiro issue_type.
+_RICH_TEMPLATE_ISSUE_TYPES = {"space_unnamed", "system_unclassified", "relation_broken"}
 
 
 def has_rich_template(issue: Issue) -> bool:
