@@ -26,6 +26,14 @@ Muda:
 - Pinos de teste do lock (`tests/experiment/test_model_lock.py`): soma
   45_852_962_404 → **91_733_110_513**; `required_free_bytes({})`
   57_032_733_355 → **114_699_862_808**.
+- `windows/install.ps1` + `LEIA-ME.txt` — **natureza: operacional, fora do
+  fio de medição.** O destino padrão da instalação deixa de ser
+  `%LOCALAPPDATA%` e passa a ser a pasta `IFCQualityCopilot` vizinha da
+  pasta do pacote — o duplo clique instala tudo (ambiente, armazém de
+  modelos, resultados) no disco que o operador escolheu ao extrair o zip.
+  Motivo: o desktop da 4070 é compartilhado e não tem espaço no C:
+  (§2/§6). `-AppRoot` explícito segue valendo; contrato travado por teste
+  (`test_plan_only_sem_approot_instala_ao_lado_do_pacote`).
 
 Não muda: prompt v7.7 byte-idêntico (`PROMPT_VERSION` inalterado em
 `prompt_templates.py`, `build_windows_release.py` e `install.ps1`); ground
@@ -42,22 +50,26 @@ D: (o lock novo exige 114,7 GB livres; ver §6).
 
 ## 3. A população: 10 modelos, 5 eixos declarados
 
-Fila = ordem do lock: residentes por download crescente; os dois transbordos
-declarados ao fim (estágios rápidos consolidam retomada cedo; o risco fica
-concentrado no fim da fila).
+Fila = ordem do lock, e a regra é **risco de formato primeiro**: os dois
+modelos de raciocínio abrem a fila como piloto embutido (§7) — uma falha
+estrutural aparece nas primeiras horas, quando substituir o lock ainda é
+barato; descoberta no fim da fila, custaria a fila inteira (trocar o lock
+muda a identidade e invalida os estágios feitos). Depois, os residentes por
+download crescente; mistral-small:22b (transbordo de latência, não de
+formato) fecha.
 
 | # | tag | download | params | arch | quant | ctx | eixo |
 |---|-----|----------|--------|------|-------|-----|------|
-| 1 | falcon3:10b | 6,29 GB | 10,3B | llama | Q4_K_M | 32K | par estrito de falcon3:7b (1,4×) |
-| 2 | mistral-nemo:12b | 7,07 GB | 12,2B | llama | Q4_0 | 1000K | escada Mistral, degrau 2 (1,7×) |
-| 3 | gemma4:12b | 7,56 GB | 11,9B | gemma4 | Q4_K_M | 256K | escada geracional Gemma, geração +2 |
-| 4 | gemma3:12b | 8,15 GB | 12,2B | gemma3 | Q4_K_M | 128K | escada geracional Gemma, geração +1 |
-| 5 | deepseek-r1:14b | 8,99 GB | 14,8B | qwen2 | Q4_K_M | 128K | família nova: destilado de raciocínio |
-| 6 | qwen2.5:14b-instruct | 8,99 GB | 14,8B | qwen2 | Q4_K_M | 32K | par estrito de qwen2.5:7b-instruct (2,0×) |
-| 7 | phi4:14b | 9,05 GB | 14,7B | phi3 | Q4_K_M | 16K | par estrito de phi4-mini (3,9×) |
-| 8 | qwen3:14b | 9,28 GB | 14,8B | qwen3 | Q4_K_M | 40K | linhagem Qwen: geração a porte fixo |
-| 9 | mistral-small:22b | 12,57 GB | 22,2B | llama | Q4_0 | 128K | escada Mistral, degrau 3 + transbordo denso |
-| 10 | gpt-oss:20b | 13,79 GB | 20,9B | gptoss | MXFP4 | 128K | família nova (OpenAI, MoE a3,6B) + transbordo MoE |
+| 1 | gpt-oss:20b | 13,79 GB | 20,9B | gptoss | MXFP4 | 128K | família nova (OpenAI, MoE a3,6B) + transbordo MoE |
+| 2 | deepseek-r1:14b | 8,99 GB | 14,8B | qwen2 | Q4_K_M | 128K | família nova: destilado de raciocínio |
+| 3 | falcon3:10b | 6,29 GB | 10,3B | llama | Q4_K_M | 32K | par estrito de falcon3:7b (1,4×) |
+| 4 | mistral-nemo:12b | 7,07 GB | 12,2B | llama | Q4_0 | 1000K | escada Mistral, degrau 2 (1,7×) |
+| 5 | gemma4:12b | 7,56 GB | 11,9B | gemma4 | Q4_K_M | 256K | escada geracional Gemma, geração +2 |
+| 6 | gemma3:12b | 8,15 GB | 12,2B | gemma3 | Q4_K_M | 128K | escada geracional Gemma, geração +1 |
+| 7 | qwen2.5:14b-instruct | 8,99 GB | 14,8B | qwen2 | Q4_K_M | 32K | par estrito de qwen2.5:7b-instruct (2,0×) |
+| 8 | phi4:14b | 9,05 GB | 14,7B | phi3 | Q4_K_M | 16K | par estrito de phi4-mini (3,9×) |
+| 9 | qwen3:14b | 9,28 GB | 14,8B | qwen3 | Q4_K_M | 40K | linhagem Qwen: geração a porte fixo |
+| 10 | mistral-small:22b | 12,57 GB | 22,2B | llama | Q4_0 | 128K | escada Mistral, degrau 3 + transbordo denso |
 
 Os cinco eixos:
 
@@ -128,9 +140,10 @@ fila):
 
 ```bash
 python scripts/lock_from_registry.py \
-  falcon3:10b@32768 mistral-nemo:12b@1024000 gemma4:12b@262144 \
-  gemma3:12b@131072 deepseek-r1:14b@131072 qwen2.5:14b-instruct@32768 \
-  phi4:14b@16384 qwen3:14b@40960 mistral-small:22b@131072 gpt-oss:20b@131072
+  gpt-oss:20b@131072 deepseek-r1:14b@131072 falcon3:10b@32768 \
+  mistral-nemo:12b@1024000 gemma4:12b@262144 gemma3:12b@131072 \
+  qwen2.5:14b-instruct@32768 phi4:14b@16384 qwen3:14b@40960 \
+  mistral-small:22b@131072
 ```
 
 Tags do registry são móveis: se algum `ollama pull` na 4070 divergir do
@@ -149,9 +162,12 @@ gpt-oss:20b ~78–82% — transbordo declarado, como os líderes do par na 4060.
 residente em 12 GB; o bundle de evidência da rodada coleta o llmfit da
 própria máquina, como sempre.
 
-Disco: download total **91,73 GB**; `required_free_bytes` = **114,7 GB** ⇒
-armazém no **D:** (846 GB livres). Fila: o par fez 4h22 na 4070 com modelos
-de 2,5–6,6 GB; com 6,3–13,8 GB e dois transbordos, planejar **~9–14 h**
+Disco: download total **91,73 GB**; `required_free_bytes` = **114,7 GB**.
+Com o contrato de instalação novo (§1), basta extrair o pacote no **D:**
+(846 GB livres) e dar duplo clique: ambiente, armazém e resultados vão para
+`D:\...\IFCQualityCopilot`, vizinha do pacote — nada é gravado no C: da
+máquina compartilhada. Fila: o par fez 4h22 na 4070 com modelos de
+2,5–6,6 GB; com 6,3–13,8 GB e dois transbordos, planejar **~9–14 h**
 (overnight). Como no par: reportar **latência por chamada** como métrica de
 hardware, não a fila absoluta.
 
@@ -161,25 +177,23 @@ Lição do ciclo v7.5/v7.6: pilotos acharam 3 defeitos antes da rodada
 oficial. Aqui os riscos são de **formato de resposta**, concentrados nos
 dois modelos de raciocínio:
 
+- **gpt-oss:20b** usa o formato harmony; o Ollama 0.32.5 separa o canal
+  `thinking` do `response` — conferir que o JSON estruturado chega inteiro
+  em `response` e que a normalização o aceita.
 - **deepseek-r1:14b** emite bloco de raciocínio antes do JSON. Precedente
   favorável: r1:8b passou pelo smoke de jul/26 com **0 falhas de JSON**.
-- **gpt-oss:20b** usa o formato harmony; o Ollama 0.32.5 separa o canal
-  `thinking` do `response` — conferir no piloto que o JSON estruturado
-  chega inteiro em `response` e que a normalização o aceita.
 
-**Piloto**: antes da fila oficial, rodar na 4070 os dois modelos de risco
-sobre a casa (fila curta, 101 issues):
-
-```bash
-python scripts/run_benchmark.py --only-model gpt-oss:20b [...]
-python scripts/run_benchmark.py --only-model deepseek-r1:14b [...]
-```
-
-Como a identidade de execução é a mesma, os estágios do piloto são
-**reutilizados** pela retomada integral da fila oficial — piloto não
-desperdiça GPU. Se um dos dois falhar estruturalmente (falhas de JSON em
-série, canal vazio), entra o substituto pré-registrado (§4, olmo2:13b),
+**O piloto é a cabeça da própria fila** (§3): os dois modelos de risco
+abrem a rodada, e o operador confere os primeiros pares
+`run_0.json`/`run_0_issues.jsonl` gravados — o mesmo monitoramento por
+`run_0.json` da perna 4060 do par. Critério: sugestões parseadas e não
+vazias nos dois estágios de cada modelo de risco. Se um deles falhar
+estruturalmente (falhas de JSON em série, canal vazio), parada controlada
+(Ctrl+C uma vez) e entra o substituto pré-registrado (§4, olmo2:13b),
 re-autorado no lock pelo §5, com nova release e emenda datada aqui.
+Perde-se no máximo os estágios dos modelos de risco, nunca a fila inteira
+— a troca de lock muda a identidade de execução e não reaproveita estágio
+nenhum, e é exatamente por isso que o risco abre a fila em vez de fechá-la.
 
 ## 8. Como verificar
 
@@ -201,9 +215,13 @@ pytest tests/ -q --ignore=tests/evaluation
 ## 9. Estado na publicação
 
 Lock escala-4070 gravado e validado pelo schema v2 (10 tags únicas, runtime
-0.32.5 preservado, SHA-256 `eca716718094c800…`); pinos de teste atualizados;
-`RELEASE_DATE` 2026-08-16; release **`ifcqc-2026-08-16-8623c03acde6`**
+0.32.5 preservado, SHA-256 `a5e25d135c21…`); pinos de teste atualizados;
+`RELEASE_DATE` 2026-08-16; release **`ifcqc-2026-08-16-6cb3c5498138`**
 construída com prompt v7.7 inalterado
-(`dist/IFCQC-Benchmark-2026-08-16-8623c03acde6.zip`, 73,3 MB). Resultado do
-par unificado v7.7 permanece o resultado oficial do eixo principal; esta
-condição adiciona o eixo de escala sem tocá-lo.
+(`dist/IFCQC-Benchmark-2026-08-16-6cb3c5498138.zip`, 73,3 MB). Uma primeira
+construção do mesmo dia (`…-8623c03acde6`, fila por tamanho crescente e
+instalação em `%LOCALAPPDATA%`) foi substituída por esta **antes de
+qualquer distribuição**: o respin declara o contrato de instalação vizinho
+ao pacote e a fila risco-primeiro (§1, §3, §7). Resultado do par unificado
+v7.7 permanece o resultado oficial do eixo principal; esta condição
+adiciona o eixo de escala sem tocá-lo.

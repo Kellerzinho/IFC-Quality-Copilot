@@ -238,6 +238,24 @@ def test_plan_only_handles_spaces_without_persistent_writes(
     assert not (spaced / ".venv").exists()
 
 
+def test_plan_only_sem_approot_instala_ao_lado_do_pacote(
+    release_fixture: Path,
+) -> None:
+    """Contrato do duplo clique: sem -AppRoot, instala no disco do pacote.
+
+    Desde 2026-08-16 o padrao e a pasta IFCQualityCopilot VIZINHA da pasta do
+    pacote (mesmo disco que o operador escolheu), nao %LOCALAPPDATA% — o
+    desktop da 4070 nao tem espaco no C:.
+    """
+    result = _powershell("-PackageRoot", str(release_fixture), "-PlanOnly")
+
+    assert result.returncode == 0, result.stderr
+    plan = json.loads(result.stdout.splitlines()[-1])
+    expected = release_fixture.parent / "IFCQualityCopilot"
+    assert Path(plan["install_root"]).resolve() == expected.resolve()
+    assert not expected.exists()
+
+
 @pytest.mark.parametrize(
     ("probe", "expected_error"),
     [

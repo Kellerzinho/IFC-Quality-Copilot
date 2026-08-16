@@ -6,14 +6,18 @@ O que fazer
 
 1. Mantenha todos os arquivos e a pasta "payload" juntos, sem renomear nem
    mover somente uma parte do pacote.
-2. Confirme que o computador usa Windows 10 22H2 build 19045 ou Windows 11,
-   ambos x64, possui internet estável e pelo menos 55 GiB livres no disco de
+2. Coloque a pasta do pacote no disco onde há espaço: a instalação inteira
+   (ambiente, modelos e resultados) é criada na pasta IFCQualityCopilot, AO
+   LADO da pasta do pacote, no mesmo disco. São necessários pelo menos
+   120 GB livres nesse disco. Nada é gravado no disco C: nem em
    %LOCALAPPDATA%.
-3. Dê duplo clique em EXECUTAR_BENCHMARK.cmd.
+3. Confirme que o computador usa Windows 10 22H2 build 19045 ou Windows 11,
+   ambos x64, e possui internet estável. Dê duplo clique em
+   EXECUTAR_BENCHMARK.cmd.
 4. Não instale Python, Git, Ollama, llmfit ou modelos manualmente. O pacote cria
    seu ambiente isolado e não altera instalações existentes.
 5. Mantenha a janela aberta. A primeira preparação pode transferir cerca de
-   48 GB; o benchmark completo pode durar muitas horas.
+   92 GB; o benchmark completo pode durar muitas horas.
 6. Ao final, guarde o arquivo RESULTADO_IFCQC_*.zip cujo caminho aparece na
    tela. Esse ZIP é o arquivo a enviar para análise.
 
@@ -41,10 +45,10 @@ Interromper e continuar
 
 - Para uma parada controlada, pressione Ctrl+C uma vez na janela e aguarde.
   Alternativa: crie um arquivo vazio chamado BENCHMARK_STOP dentro da pasta da
-  release instalada, em
-  %LOCALAPPDATA%\IFCQualityCopilot\releases\<id-da-release>\
-  (o caminho completo aparece no log). Nao adianta criar o arquivo na pasta do
-  pacote: o programa observa somente a pasta instalada.
+  release instalada, em IFCQualityCopilot\releases\<id-da-release>\ — a pasta
+  IFCQualityCopilot fica ao lado da pasta do pacote (o caminho completo
+  aparece no log). Nao adianta criar o arquivo na pasta do pacote: o programa
+  observa somente a pasta instalada.
 - O programa tenta gerar um RESULTADO_IFCQC_*_interrupted.zip e encerra com o
   código 130. Não desligue o computador durante a gravação desse ZIP.
 - Execute o mesmo EXECUTAR_BENCHMARK.cmd novamente para continuar. Etapas que
@@ -55,6 +59,16 @@ Se aparecer QUARANTINE_RECOVERY_REQUIRED, execute novamente o mesmo CMD sem
 apagar, mover ou editar resultados e sem mexer em .invalid-stage-artifacts. Se a
 mensagem se repetir, envie o ZIP marcado como failed para análise. Não tente
 juntar manualmente os arquivos JSON e JSONL.
+
+Desinstalar
+-----------
+
+Apague duas pastas: a pasta do pacote e a pasta IFCQualityCopilot ao lado
+dela. O programa não grava registro do Windows, não altera o PATH e não
+instala serviços — remover as duas pastas remove tudo. Versões anteriores a
+2026-08-16 instalavam em %LOCALAPPDATA%\IFCQualityCopilot; se essa pasta
+existir e os resultados dela já tiverem sido exportados (RESULTADO_*.zip
+guardado), ela pode ser apagada do mesmo jeito.
 
 Problemas comuns
 ----------------

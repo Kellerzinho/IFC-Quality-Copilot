@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [string]$PackageRoot = $PSScriptRoot,
-    [string]$AppRoot = (Join-Path $env:LOCALAPPDATA 'IFCQualityCopilot'),
+    [string]$AppRoot = '',
     [switch]$ValidateOnly,
     [switch]$PlanOnly,
     [string]$TestProbeJson = ''
@@ -9,6 +9,35 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
+# Contrato do duplo clique (2026-08-16): sem -AppRoot explicito, a instalacao
+# inteira (ambiente, armazem de modelos, resultados) vai para a pasta
+# "IFCQualityCopilot" VIZINHA da pasta do pacote — isto e, no disco que o
+# operador escolheu ao extrair o zip. Maquinas compartilhadas raramente tem
+# espaco no C:; %LOCALAPPDATA% deixou de ser o padrao. -AppRoot explicito
+# continua valendo para testes e casos especiais.
+if (-not $AppRoot) {
+    $packageFullForAppRoot = [IO.Path]::GetFullPath($PackageRoot)
+    if ($packageFullForAppRoot.Length -gt 3) {
+        $packageFullForAppRoot = $packageFullForAppRoot.TrimEnd('\', '/')
+    }
+    $packageParentForAppRoot = [IO.Directory]::GetParent($packageFullForAppRoot)
+    $appRootBase = if ($null -eq $packageParentForAppRoot) {
+        $packageFullForAppRoot
+    } else {
+        $packageParentForAppRoot.FullName
+    }
+    $AppRoot = Join-Path $appRootBase 'IFCQualityCopilot'
+    if (-not $PlanOnly -and -not $ValidateOnly) {
+        Write-Output ('Instalacao e modelos ficarao em: ' + $AppRoot)
+        $legacyAppRoot = Join-Path $env:LOCALAPPDATA 'IFCQualityCopilot'
+        if (([IO.Path]::GetFullPath($legacyAppRoot) -ne [IO.Path]::GetFullPath($AppRoot)) -and
+            (Test-Path -LiteralPath $legacyAppRoot -PathType Container)) {
+            Write-Output ('Instalacao antiga encontrada em ' + $legacyAppRoot +
+                '; se os resultados dela ja foram exportados, apague a pasta para liberar espaco.')
+        }
+    }
+}
 
 $script:ExpectedToolPins = [ordered]@{
     uv = [ordered]@{

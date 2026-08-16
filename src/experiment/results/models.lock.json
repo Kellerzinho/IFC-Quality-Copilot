@@ -8,6 +8,24 @@
   },
   "models": [
     {
+      "name": "gpt-oss:20b",
+      "digest": "17052f91a42e97930aa6e28a6c6c06a983e6a58dbb00434885a0cf5313e376f7",
+      "size_bytes": 13793441244,
+      "architecture": "gptoss",
+      "parameters": "20.9B",
+      "context_length": 131072,
+      "quantization": "MXFP4"
+    },
+    {
+      "name": "deepseek-r1:14b",
+      "digest": "c333b7232bdb521236694ffbb5f5a6b11cc45d98e9142c73123b670fca400b09",
+      "size_bytes": 8988112209,
+      "architecture": "qwen2",
+      "parameters": "14.8B",
+      "context_length": 131072,
+      "quantization": "Q4_K_M"
+    },
+    {
       "name": "falcon3:10b",
       "digest": "1653ff122acd9292fe21a097c0f08ce419439be595b312d6d6d06ee33df91b88",
       "size_bytes": 6287534018,
@@ -40,15 +58,6 @@
       "size_bytes": 8149190253,
       "architecture": "gemma3",
       "parameters": "12.2B",
-      "context_length": 131072,
-      "quantization": "Q4_K_M"
-    },
-    {
-      "name": "deepseek-r1:14b",
-      "digest": "c333b7232bdb521236694ffbb5f5a6b11cc45d98e9142c73123b670fca400b09",
-      "size_bytes": 8988112209,
-      "architecture": "qwen2",
-      "parameters": "14.8B",
       "context_length": 131072,
       "quantization": "Q4_K_M"
     },
@@ -87,15 +96,6 @@
       "parameters": "22.2B",
       "context_length": 131072,
       "quantization": "Q4_0"
-    },
-    {
-      "name": "gpt-oss:20b",
-      "digest": "17052f91a42e97930aa6e28a6c6c06a983e6a58dbb00434885a0cf5313e376f7",
-      "size_bytes": 13793441244,
-      "architecture": "gptoss",
-      "parameters": "20.9B",
-      "context_length": 131072,
-      "quantization": "MXFP4"
     }
   ]
 }

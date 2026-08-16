@@ -101,7 +101,9 @@ def test_readme_explains_only_required_action_and_constraints() -> None:
     required = [
         "EXECUTAR_BENCHMARK.cmd",
         "Windows 10 22H2",
-        "55 GiB",
+        "120 GB",
+        "ao lado da pasta do pacote",
+        "IFCQualityCopilot",
         "internet",
         "muitas horas",
         "RESULTADO_IFCQC",
