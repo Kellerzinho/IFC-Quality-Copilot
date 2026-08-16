@@ -28,14 +28,14 @@ def test_official_lock_has_full_digests_and_exact_total():
     assert lock.runtime.platform == "windows-amd64"
     assert len(lock.models) == 10
     assert all(len(model.digest) == 64 for model in lock.models)
-    assert sum(model.size_bytes for model in lock.models) == 45_852_962_404
+    assert sum(model.size_bytes for model in lock.models) == 91_733_110_513
 
 
 def test_all_missing_requires_partial_and_reserve_space():
     """Sem modelos instalados, o orçamento inclui download, staging e reserva."""
     lock = load_model_lock(LOCK_PATH)
 
-    assert required_free_bytes(lock, {}) == 57_032_733_355
+    assert required_free_bytes(lock, {}) == 114_699_862_808
 
 
 def test_partial_and_complete_store_have_exact_space_budgets():
