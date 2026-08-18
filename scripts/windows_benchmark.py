@@ -1152,7 +1152,16 @@ def run_benchmark_release(
     active_services = services or DefaultServices()
     try:
         identity = build_execution_identity(resolved)
-    except Exception:
+    except Exception as exc:
+        # A causa era engolida: o operador via apenas "codigo 1" e nao tinha
+        # como saber QUAL entrada divergiu (medido em 2026-08-18, na 4070).
+        # O texto vai para o console do instalador, que e a unica superficie
+        # visivel antes de existir run_directory e runner.log.
+        print(
+            f"PREFLIGHT_FALHOU: {type(exc).__name__}: {exc}",
+            file=sys.stderr,
+            flush=True,
+        )
         return _emergency_partial(resolved, FailureCode.PHASE2_PREFLIGHT_FAILED)
 
     paths = _paths_for(resolved, identity)
