@@ -20,7 +20,7 @@ from typing import Any, cast
 
 # Data da release, fixada de proposito: o release_id precisa ser deterministico
 # para o mesmo conteudo. Bumpe junto com PROMPT_VERSION ou ao republicar.
-RELEASE_DATE = "2026-08-16"
+RELEASE_DATE = "2026-08-18"
 RELEASE_DIRECTORY_PREFIX = "IFCQC-Benchmark-Windows-x64"
 PROMPT_VERSION = "v7.7"
 TEMPLATE_PATH = "windows/release-manifest.template.json"
@@ -72,6 +72,10 @@ REQUIRED_PROJECT_FILES = frozenset(
 
 PUBLIC_FILES = {
     "windows/EXECUTAR_BENCHMARK.cmd": "EXECUTAR_BENCHMARK.cmd",
+    # Braço da condição de ablação de grounding (2026-08-18): mesma fila, com o
+    # bSDD desligado. Duplo clique próprio para não depender de linha de comando
+    # numa máquina compartilhada.
+    "windows/EXECUTAR_ABLACAO_SEM_BSDD.cmd": "EXECUTAR_ABLACAO_SEM_BSDD.cmd",
     "windows/LEIA-ME.txt": "LEIA-ME.txt",
     "windows/install.ps1": "install.ps1",
 }

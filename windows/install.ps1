@@ -4,6 +4,10 @@ param(
     [string]$AppRoot = '',
     [switch]$ValidateOnly,
     [switch]$PlanOnly,
+    # Braco da condicao de ablacao de grounding (2026-08-18): roda a fila com o
+    # bSDD desligado. A identidade de execucao registra grounding_bsdd=false, e
+    # os estagios NAO colidem com os do braco padrao.
+    [switch]$NoBsdd,
     [string]$TestProbeJson = ''
 )
 
@@ -848,8 +852,12 @@ function Invoke-Install {
     $stateRoot = Join-Path $plan.install_root 'state'
     New-Item -ItemType Directory -Path $stateRoot -Force | Out-Null
     $bootstrapReceipt = Join-Path $stateRoot 'bootstrap-receipt.json'
-    Write-Output '[4/4] Iniciando benchmark de predio e casa...'
-    Invoke-NativeChecked -Executable $uvExe -Label 'benchmark Windows' -Arguments @(
+    if ($NoBsdd) {
+        Write-Output '[4/4] Iniciando benchmark SEM bSDD (ablacao de grounding)...'
+    } else {
+        Write-Output '[4/4] Iniciando benchmark de predio e casa...'
+    }
+    $benchArgs = @(
         '--directory', $projectRoot, 'run', '--frozen', '--no-dev',
         '--managed-python', '--python', '3.12.13', 'python', $orchestrator,
         '--manifest', (Join-Path $plan.package_root 'release-manifest.json'),
@@ -857,6 +865,8 @@ function Invoke-Install {
         '--launch-dir', $plan.launch_dir,
         '--bootstrap-receipt', $bootstrapReceipt
     )
+    if ($NoBsdd) { $benchArgs += '--no-bsdd' }
+    Invoke-NativeChecked -Executable $uvExe -Label 'benchmark Windows' -Arguments $benchArgs
 }
 
 $exitCode = 0

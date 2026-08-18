@@ -74,10 +74,21 @@ class QualityPipeline:
         building_context: dict,
         ids_path: str | None = None,
         profile: ReadinessProfile | None = None,
+        use_bsdd: bool = True,
     ) -> None:
+        """Inicializa o pipeline.
+
+        Args:
+            use_bsdd: quando False, o pipeline não instancia o cliente bSDD e
+                nenhuma issue recebe contexto do dicionário. É o braço de
+                tratamento da condição de ablação de grounding
+                (docs/condicao-ablacao-bsdd-2026-08-18.md) — o padrão do
+                produto e de toda rodada anterior é True.
+        """
         self.ifc_path = ifc_path
         self.building_context = building_context
         self.profile = profile
+        self.use_bsdd = use_bsdd
         self.settings = get_settings()
 
         # ids_path explícito tem prioridade; se não fornecido, tenta inferir do perfil
@@ -118,8 +129,14 @@ class QualityPipeline:
         self.deduplicator = IssueDeduplicator()
         self._reuse_map: dict[str, str] = {}
         self.suggestion_metrics: list[dict] = []
-        self.bsdd_client: BSDDClient | None = BSDDClient()
-        self.bsdd_builder: BSDDContextBuilder | None = BSDDContextBuilder(self.bsdd_client)
+        # Ablação de grounding: sem builder, `_issue_bsdd_context` devolve None
+        # para toda issue e o prompt perde o bloco BSDD_CONTEXT.
+        self.bsdd_client: BSDDClient | None = BSDDClient() if use_bsdd else None
+        self.bsdd_builder: BSDDContextBuilder | None = (
+            BSDDContextBuilder(self.bsdd_client) if self.bsdd_client is not None else None
+        )
+        if not use_bsdd:
+            logger.warning("bSDD DESLIGADO nesta execucao (ablacao de grounding)")
         self.operational_rules: list[OperationalRule] = []
         self.post_validator = PostValidator(
             self.ifc_file,

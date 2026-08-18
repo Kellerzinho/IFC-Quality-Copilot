@@ -143,10 +143,20 @@ class ExecutionIdentity:
     temperature: float = 0.0
     top_p: float = 0.0
     repeat_penalty: float = 0.0
+    # Acrescentado em 2026-08-18 para a condição de ablação de grounding
+    # (docs/condicao-ablacao-bsdd-2026-08-18.md §5). Sem este campo, uma rodada
+    # com o bSDD desligado teria identidade IDÊNTICA à baseline: o tratamento
+    # vive em runtime e não toca prompt_templates.py, logo prompt_sha256,
+    # models_lock_sha256 e ids_sha256 não mudam. O runner trataria os estágios
+    # da ablação como já concluídos e os PULARIA.
+    grounding_bsdd: bool = True
+    """Se o pipeline consultou o bSDD para montar o contexto das sugestões."""
 
     def __post_init__(self) -> None:
         if not isinstance(self.datasets, tuple):
             raise TypeError("datasets deve ser tuple")
+        if type(self.grounding_bsdd) is not bool:
+            raise TypeError("grounding_bsdd deve ser booleano")
         if [dataset.key for dataset in self.datasets] != ["predio", "casa"]:
             raise ValueError("datasets devem estar na ordem predio,casa")
         if self.replica_count < 1:

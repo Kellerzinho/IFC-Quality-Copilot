@@ -137,7 +137,7 @@ def test_manual_checklist_keeps_unexecuted_clean_machine_cases_pending() -> None
 
 
 def test_built_release_has_exact_tree_and_verified_payloads(built_release: Path) -> None:
-    """Falha se faltar um dos sete arquivos ou se o manifesto não cobrir o payload."""
+    """Falha se faltar um dos oito arquivos ou se o manifesto não cobrir o payload."""
 
     relative = {
         path.relative_to(built_release).as_posix()
@@ -146,6 +146,8 @@ def test_built_release_has_exact_tree_and_verified_payloads(built_release: Path)
     }
     assert relative == {
         "EXECUTAR_BENCHMARK.cmd",
+        # Braço da ablação de grounding (2026-08-18): duplo clique próprio.
+        "EXECUTAR_ABLACAO_SEM_BSDD.cmd",
         "LEIA-ME.txt",
         "install.ps1",
         "release-manifest.json",

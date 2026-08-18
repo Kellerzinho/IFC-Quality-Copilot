@@ -119,6 +119,7 @@ def project_fixture(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> ProjectF
         "references/normative/public/README.md": "# Fontes publicas\n",
         "references/normative/public/sources.yaml": "sources: []\n",
         "windows/EXECUTAR_BENCHMARK.cmd": "@echo off\n",
+        "windows/EXECUTAR_ABLACAO_SEM_BSDD.cmd": "@echo off\nrem ablacao\n",
         "windows/install.ps1": b"Write-Output 'MVP'\r\n",
         "windows/LEIA-ME.txt": b"Execute EXECUTAR_BENCHMARK.cmd\r\n",
         # Estes arquivos parecem permitidos pelo glob amplo de Python, mas nunca podem sair.
@@ -233,6 +234,7 @@ def test_release_contains_exact_public_shape_and_canonical_manifest(
     }
     assert relative == {
         "EXECUTAR_BENCHMARK.cmd",
+        "EXECUTAR_ABLACAO_SEM_BSDD.cmd",
         "LEIA-ME.txt",
         "install.ps1",
         "release-manifest.json",
@@ -242,6 +244,9 @@ def test_release_contains_exact_public_shape_and_canonical_manifest(
     }
     manifest_bytes = (release / "release-manifest.json").read_bytes()
     assert (release / "EXECUTAR_BENCHMARK.cmd").read_bytes() == b"@echo off\r\n"
+    assert (release / "EXECUTAR_ABLACAO_SEM_BSDD.cmd").read_bytes() == (
+        b"@echo off\r\nrem ablacao\r\n"
+    )
     assert (release / "install.ps1").read_bytes() == b"Write-Output 'MVP'\n"
     assert (release / "LEIA-ME.txt").read_bytes().endswith(b"\n")
     assert b"\r\n" not in (release / "LEIA-ME.txt").read_bytes()

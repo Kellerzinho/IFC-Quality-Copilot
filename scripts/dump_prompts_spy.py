@@ -8,9 +8,13 @@ bSDD de 2026-08-04 provou que os prompts v6 e v6.1 são byte-idênticos
 (202/202 estímulos; ver docs/revisao-bsdd-2026-08-04.md).
 
 Uso:
-    python scripts/dump_prompts_spy.py <saida.json>
+    python scripts/dump_prompts_spy.py <saida.json> [--no-bsdd]
 
-Compare dois dumps com scripts/diff_prompts.py.
+``--no-bsdd`` roda o mesmo harness com o bSDD desligado: é o braço da condição
+de ablação (docs/condicao-ablacao-bsdd-2026-08-18.md §6). Comparar os dois
+dumps com scripts/diff_prompts.py responde, sem gastar GPU, se o tratamento é
+o que se diz que é — e se a família de template mudou, o que invalidaria a
+rodada.
 """
 
 # ruff: noqa: E402 — o sys.path.insert precisa vir antes dos imports de src/.
@@ -76,7 +80,11 @@ def main() -> None:
         "building_type": "Residencial multifamiliar",
         "bioclimatic_zone": "3",
     }
-    out_path = Path(sys.argv[1])
+    argumentos = [a for a in sys.argv[1:] if not a.startswith("--")]
+    if not argumentos:
+        raise SystemExit("uso: python scripts/dump_prompts_spy.py <saida.json> [--no-bsdd]")
+    out_path = Path(argumentos[0])
+    use_bsdd = "--no-bsdd" not in sys.argv[1:]
 
     runner = ExperimentRunner()
     runner.run_single(
@@ -89,12 +97,17 @@ def main() -> None:
         replica_index=0,
         issue_types=None,
         reuse_equivalent=True,
+        use_bsdd=use_bsdd,
     )
 
     out_path.write_text(json.dumps(CAPTURED, ensure_ascii=False, indent=1), encoding="utf-8")
     primeiras = [c for c in CAPTURED if c["attempt"] == 1]
     logger.warning(
-        "capturados: {} chamadas, {} estimulos -> {}", len(CAPTURED), len(primeiras), out_path
+        "capturados: {} chamadas, {} estimulos, bsdd={} -> {}",
+        len(CAPTURED),
+        len(primeiras),
+        use_bsdd,
+        out_path,
     )
 
 

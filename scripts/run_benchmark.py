@@ -196,6 +196,10 @@ def _parse_execution_identity(raw: object) -> ExecutionIdentity:
             "temperature",
             "top_p",
             "repeat_penalty",
+            # Acrescentado em 2026-08-18: sem ele, a rodada de ablação de
+            # grounding teria identidade idêntica à baseline e seus estágios
+            # seriam pulados como "já concluídos".
+            "grounding_bsdd",
         },
         "execution_identity",
     )
@@ -207,6 +211,8 @@ def _parse_execution_identity(raw: object) -> ExecutionIdentity:
         raise TypeError("cache_enabled deve ser booleano")
     if type(identity_data["reuse_equivalent"]) is not bool:
         raise TypeError("reuse_equivalent deve ser booleano")
+    if type(identity_data["grounding_bsdd"]) is not bool:
+        raise TypeError("grounding_bsdd deve ser booleano")
     if not isinstance(identity_data["prompt_version"], str):
         raise TypeError("prompt_version deve ser string")
     for chave in ("source_commit", "num_ctx_policy"):
@@ -303,6 +309,7 @@ def _parse_execution_identity(raw: object) -> ExecutionIdentity:
         temperature=float(identity_data["temperature"]),
         top_p=float(identity_data["top_p"]),
         repeat_penalty=float(identity_data["repeat_penalty"]),
+        grounding_bsdd=identity_data["grounding_bsdd"],
     )
     if not identity.release_id:
         raise ValueError("release_id vazio")
@@ -1197,6 +1204,15 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--execution-identity", type=Path, required=True)
     parser.add_argument("--no-cache", action="store_true", required=True)
     parser.add_argument("--reuse-equivalent", action="store_true")
+    # Braço da ablação de grounding. Não tem default implícito: o valor precisa
+    # casar com identity.grounding_bsdd, senão a fila aborta antes do 1º estágio.
+    parser.add_argument(
+        "--no-bsdd",
+        dest="use_bsdd",
+        action="store_false",
+        help="Desliga a consulta ao bSDD (exige execution-identity com grounding_bsdd=false).",
+    )
+    parser.set_defaults(use_bsdd=True)
     return parser
 
 
@@ -1248,6 +1264,11 @@ def main(argv: list[str] | None = None) -> int:
             raise RuntimeError("cache oficial deve permanecer desabilitado")
         if identity.reuse_equivalent != args.reuse_equivalent:
             raise RuntimeError("reuse_equivalent diverge da identidade")
+        if identity.grounding_bsdd != args.use_bsdd:
+            raise RuntimeError(
+                "grounding_bsdd diverge de --no-bsdd: a identidade declara "
+                f"{identity.grounding_bsdd} e a fila rodaria com {args.use_bsdd}"
+            )
 
         models = _locked_models()
         locked_digests = _locked_digests()
@@ -1316,6 +1337,7 @@ def main(argv: list[str] | None = None) -> int:
                             reuse_equivalent=args.reuse_equivalent,
                             dataset_key=dataset["key"],
                             execution_identity=identity,
+                            use_bsdd=args.use_bsdd,
                         )
                         json_path.parent.mkdir(parents=True, exist_ok=True)
                         _validate_contained_path(results_root, json_path.parent)

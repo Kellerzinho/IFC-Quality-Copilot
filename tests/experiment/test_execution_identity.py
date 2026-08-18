@@ -140,13 +140,13 @@ def test_every_experimental_input_changes_identity_digest(replacement):
 
 def test_digest_is_independent_from_json_mapping_order():
     # Vetor dourado calculado sobre JSON UTF-8 compacto com chaves ordenadas.
-    # Recalculado em 2026-08-12, quando os parametros de geracao entraram na
-    # identidade (source_commit, num_ctx_policy, num_ctx, num_predict, seed,
-    # temperature, top_p, repeat_penalty): antes, dois runs com janela de
-    # contexto ou seed diferentes produziam o mesmo hash.
-    # Anterior: 36cb1d2fa29f…59468a48f6768.
+    # Recalculado em 2026-08-18, quando `grounding_bsdd` entrou na identidade
+    # (condicao de ablacao de grounding): sem esse campo, uma rodada com o bSDD
+    # desligado tinha o MESMO hash da baseline e seus estagios eram pulados.
+    # Anteriores: 36cb1d2fa29f…59468a48f6768 (ate 2026-08-12);
+    # 9a5f8bd0c99e…960e2067bf7e3 (parametros de geracao, 2026-08-12).
     assert canonical_identity_sha256(identity()) == (
-        "9a5f8bd0c99ebfa182740e5355cdc521ddcd542457b4076c0c4960e2067bf7e3"
+        "13f5dc1718b89dd31af28d8c238cb9182f2c95c864e979d45f2b3744e8bada83"
     )
 
 

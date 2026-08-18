@@ -323,6 +323,7 @@ class ExperimentRunner:
         reuse_equivalent: bool = False,
         dataset_key: str = "",
         execution_identity: ExecutionIdentity | None = None,
+        use_bsdd: bool = True,
     ) -> ExperimentResult:
         """Executa uma réplica e retorna o ExperimentResult agregado.
 
@@ -344,7 +345,17 @@ class ExperimentRunner:
                 distintos, então o tempo cai ~77%. Registrado no metadata do run:
                 as métricas de qualidade não mudam (o estímulo é idêntico), mas a
                 telemetria de latência passa a medir estímulos, não issues.
+            use_bsdd: braço da condição de ablação de grounding
+                (docs/condicao-ablacao-bsdd-2026-08-18.md). False desliga a
+                consulta ao dicionário; o valor precisa casar com
+                ``execution_identity.grounding_bsdd`` quando há identidade
+                oficial, senão a rodada seria rotulada com o braço errado.
         """
+        if execution_identity is not None and execution_identity.grounding_bsdd != use_bsdd:
+            raise ValueError(
+                "use_bsdd diverge de execution_identity.grounding_bsdd "
+                f"({use_bsdd} != {execution_identity.grounding_bsdd})"
+            )
         ground_truth = GroundTruth.from_yaml(ground_truth_path)
         try:
             ground_truth_identity = load_ground_truth_identity_metadata(ground_truth_path)
@@ -394,6 +405,7 @@ class ExperimentRunner:
                     building_context,
                     ids_path=ids_path,
                     profile=profile,
+                    use_bsdd=use_bsdd,
                 )
                 try:
                     if self.suggestion_batch_fn is not None:
@@ -541,6 +553,7 @@ class ExperimentRunner:
                         cache_enabled=cache_enabled,
                         reuse_equivalent=reuse_equivalent,
                         bsdd_cache_sha256=sha256_of(settings.bsdd_cache_path),
+                        grounding_bsdd=use_bsdd,
                         hardware=hardware_snapshot(),
                         gpu_residency=residency,
                         replica_index=replica_index,
@@ -590,6 +603,7 @@ class ExperimentRunner:
         dataset_key: str = "",
         execution_identity: ExecutionIdentity | None = None,
         reuse_equivalent: bool = False,
+        use_bsdd: bool = True,
     ) -> list[ExperimentResult]:
         """Executa N réplicas e, se ``output_dir`` for dado, exporta um JSON por réplica."""
         results: list[ExperimentResult] = []
@@ -611,6 +625,7 @@ class ExperimentRunner:
                 dataset_key=dataset_key,
                 execution_identity=execution_identity,
                 reuse_equivalent=reuse_equivalent,
+                use_bsdd=use_bsdd,
             )
             results.append(result)
             if output_dir is not None:
@@ -688,6 +703,13 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         default=None,
         help="Restringe a geração a estes issue_types (separados por vírgula).",
     )
+    parser.add_argument(
+        "--no-bsdd",
+        dest="use_bsdd",
+        action="store_false",
+        help="Desliga a consulta ao bSDD (braço da ablação de grounding).",
+    )
+    parser.set_defaults(use_bsdd=True)
     return parser
 
 
@@ -717,6 +739,7 @@ def main(argv: list[str] | None = None) -> int:
             if args.issue_types
             else None
         ),
+        use_bsdd=args.use_bsdd,
     )
     logger.info("Concluído: {} réplicas.", len(results))
     if results:

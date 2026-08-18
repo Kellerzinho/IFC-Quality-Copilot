@@ -91,6 +91,13 @@ class RunMetadata(BaseModel):
     """Issues equivalentes reaproveitaram a sugestão da primária (ver runner)."""
     bsdd_cache_sha256: str | None = None
     """Hash do cache bSDD: identifica a condição de grounding do run."""
+    grounding_bsdd: bool = True
+    """Braço da ablação: o pipeline consultou o bSDD nesta execução.
+
+    Redundante com ``execution_identity["grounding_bsdd"]`` numa rodada oficial,
+    mas as execuções de pesquisa (sem identidade congelada) não têm outro lugar
+    onde o braço fique registrado no artefato.
+    """
     hardware: dict[str, Any] | None = None
     """Retrato anônimo da máquina (GPU/VRAM/driver, CPU, RAM e OS).
 

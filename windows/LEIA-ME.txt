@@ -21,6 +21,18 @@ O que fazer
 6. Ao final, guarde o arquivo RESULTADO_IFCQC_*.zip cujo caminho aparece na
    tela. Esse ZIP é o arquivo a enviar para análise.
 
+Rodada de ablação de grounding (opcional, só quando solicitada)
+---------------------------------------------------------------
+
+O pacote traz um segundo lançador, EXECUTAR_ABLACAO_SEM_BSDD.cmd, que roda a
+MESMA fila com a consulta ao bSDD desligada. Use-o apenas quando a rodada
+pedida for a de ablação; para a rodada normal, use EXECUTAR_BENCHMARK.cmd.
+
+Os dois braços não se misturam: a identidade de execução registra qual foi
+usado, então os resultados de um nunca são aproveitados como se fossem do
+outro. Cada braço gera seu próprio RESULTADO_IFCQC_*.zip; guarde os dois se
+rodar ambos.
+
 Não é preciso colocar mais nada nesta pasta. Ela já contém o projeto, os IFCs
 predio_v1.ifc e casa_v1.ifc, os dois ground truths integrais, o lock da base
 anterior e o manifesto. Ferramentas e os dez modelos fixados são baixados e

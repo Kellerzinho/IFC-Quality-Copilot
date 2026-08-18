@@ -103,6 +103,9 @@ class BenchmarkArgs:
     project_root: Path = PROJECT_ROOT
     app_root: Path | None = None
     python_executable: Path = Path(sys.executable)
+    use_bsdd: bool = True
+    """Braço da ablação de grounding: False constrói a identidade e roda a fila
+    com o bSDD desligado (docs/condicao-ablacao-bsdd-2026-08-18.md)."""
 
 
 @dataclass(frozen=True)
@@ -280,6 +283,7 @@ def _coerce_args(args: BenchmarkArgs | argparse.Namespace) -> BenchmarkArgs:
         project_root=project_root,
         app_root=_infer_app_root(project_root, getattr(args, "app_root", None)),
         python_executable=Path(getattr(args, "python_executable", sys.executable)),
+        use_bsdd=bool(getattr(args, "use_bsdd", True)),
     )
 
 
@@ -426,6 +430,7 @@ def build_execution_identity(args: BenchmarkArgs | argparse.Namespace) -> Execut
             if settings.ollama_num_ctx_policy == "fixed"
             else settings.ollama_num_ctx
         ),
+        grounding_bsdd=resolved.use_bsdd,
         num_predict=settings.ollama_num_predict,
         seed=settings.ollama_seed,
         temperature=settings.ollama_temperature,
@@ -1269,6 +1274,8 @@ def run_benchmark_release(
                 "--results-root",
                 str(results_root),
             ]
+            if not resolved.use_bsdd:
+                command.append("--no-bsdd")
             failure_code = FailureCode.RUNNER_FAILED
             runner = _service_run(
                 active_services,
@@ -1375,6 +1382,13 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--project-root", type=Path, default=PROJECT_ROOT)
     parser.add_argument("--app-root", type=Path, default=None)
     parser.add_argument("--python-executable", type=Path, default=Path(sys.executable))
+    parser.add_argument(
+        "--no-bsdd",
+        dest="use_bsdd",
+        action="store_false",
+        help="Braco da ablacao: constroi a identidade e roda a fila sem bSDD.",
+    )
+    parser.set_defaults(use_bsdd=True)
     return parser
 
 

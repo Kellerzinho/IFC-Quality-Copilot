@@ -28,14 +28,19 @@ def test_official_lock_has_full_digests_and_exact_total():
     assert lock.runtime.platform == "windows-amd64"
     assert len(lock.models) == 10
     assert all(len(model.digest) == 64 for model in lock.models)
-    assert sum(model.size_bytes for model in lock.models) == 91_733_110_513
+    # 2026-08-18: o lock volta a ser o do par v7.7 (10 modelos que rodam em
+    # 8 GB), população pré-registrada da condição de ablação de grounding §3 —
+    # ela roda tanto na 4070 quanto na 4060, e a baseline pareada existe nas
+    # duas. O lock da escala-4070 (91_733_110_513) segue recuperável em
+    # b655a54 e reautorável por scripts/lock_from_registry.py.
+    assert sum(model.size_bytes for model in lock.models) == 45_852_962_404
 
 
 def test_all_missing_requires_partial_and_reserve_space():
     """Sem modelos instalados, o orçamento inclui download, staging e reserva."""
     lock = load_model_lock(LOCK_PATH)
 
-    assert required_free_bytes(lock, {}) == 114_699_862_808
+    assert required_free_bytes(lock, {}) == 57_032_733_355
 
 
 def test_partial_and_complete_store_have_exact_space_budgets():
