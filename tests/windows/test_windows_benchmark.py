@@ -24,7 +24,11 @@ from scripts.windows_benchmark import (
     select_or_create_run,
 )
 from src.experiment.evidence_bundle import EvidencePrivacyError
-from src.experiment.execution_identity import DatasetIdentity, ExecutionIdentity
+from src.experiment.execution_identity import (
+    DatasetIdentity,
+    ExecutionIdentity,
+    canonical_identity_sha256,
+)
 from src.experiment.model_lock import ModelMatrixLock, load_model_lock
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -417,6 +421,26 @@ def test_identity_uses_manifest_records_and_real_payload_hashes(
     local_ifc.write_bytes(b"x" * local_ifc.stat().st_size)
     with pytest.raises(ValueError, match="SHA-256"):
         build_execution_identity(args)
+
+
+def test_no_bsdd_marca_o_braco_na_identidade_do_pacote(
+    release_fixture: tuple[BenchmarkArgs, FakeServices],
+) -> None:
+    """A ponta que o operador usa: -NoBsdd tem de chegar à identidade.
+
+    É o elo entre o duplo clique (EXECUTAR_ABLACAO_SEM_BSDD.cmd → install.ps1
+    -NoBsdd → windows_benchmark --no-bsdd) e o campo que separa os dois braços.
+    Sem ele, a rodada de ablação herdaria a identidade da baseline e teria os
+    estágios pulados como "já concluídos".
+    """
+    args, _ = release_fixture
+
+    padrao = build_execution_identity(args)
+    ablacao = build_execution_identity(replace(args, use_bsdd=False))
+
+    assert padrao.grounding_bsdd is True
+    assert ablacao.grounding_bsdd is False
+    assert canonical_identity_sha256(padrao) != canonical_identity_sha256(ablacao)
 
 
 def test_app_root_is_inferred_from_bootstrap_release_layout(
