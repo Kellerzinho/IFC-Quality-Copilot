@@ -388,3 +388,20 @@ vigente — não constituem resultado desta condição.
 O resultado oficial do eixo principal (par unificado v7.7) e o do eixo de
 escala (escala-4070) permanecem inalterados; esta condição adiciona o eixo de
 grounding sem tocar em nenhum dos dois.
+
+## 10. Rodada executada e resultado (2026-08-19)
+
+O braço off rodou em 2026-08-18 na RTX 4070 (release
+`ifcqc-2026-08-18-801636831646` — reconstrução da release da §8-bis após o
+fix do preflight, mesmo prompt `751ec1679d46…` e mesmo lock), 20/20 estágios
+validados, identidade `95c7a5c3e520…`, zip
+`dist/RESULTADO_IFCQC_20260818T185722Z_54c4f307….zip`. Todos os critérios da
+§6 e da §7 foram cumpridos; a verificação de template base foi estendida à
+casa (101/101).
+
+**Resultado**: pool +2,34 pp por classe a favor do braço **sem** bSDD
+(McNemar p=0,00022); `relation_broken` +50 pp — o colapso do fills-element no
+par era induzido pelo bloco bSDD não-escopado (42,5 KB → janela estourada →
+tarefa truncada → resposta colhida do próprio bloco); H1 confirmada em
+módulo, H2/H3(fogo)/H4 refutadas, H5 cumprida. Análise completa, mecanismos e
+implicações para o artigo em **`docs/resultado-ablacao-bsdd-2026-08-19.md`**.
