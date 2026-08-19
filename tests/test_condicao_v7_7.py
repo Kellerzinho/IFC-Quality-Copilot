@@ -208,5 +208,14 @@ def test_alias_continua_normalizando_notacao_com_funcao_declarada():
 # ---------------------------------------------------------------------------
 
 
-def test_prompt_version_e_v7_7():
-    assert PROMPT_VERSION == "v7.7"
+def test_prompt_version_avancou_alem_do_v7_7():
+    """O instrumento das rodadas publicadas é o v7.7; ele nunca volta atrás.
+
+    O pino literal migrou para ``tests/test_grounding_escopado_v78.py`` quando o
+    v7.8 corrigiu o empacotamento de grounding. O que este arquivo trava são os
+    **comportamentos** do v7.7 (roteamento do relation_broken, ausência de
+    roteiro de raciocínio, comparador sem presunção) — todos testados acima e
+    preservados pelo v7.8, que não tocou em nenhum template.
+    """
+    versao = tuple(int(parte) for parte in PROMPT_VERSION.lstrip("v").split("."))
+    assert versao >= (7, 7)

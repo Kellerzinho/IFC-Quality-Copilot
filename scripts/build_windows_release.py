@@ -20,9 +20,9 @@ from typing import Any, cast
 
 # Data da release, fixada de proposito: o release_id precisa ser deterministico
 # para o mesmo conteudo. Bumpe junto com PROMPT_VERSION ou ao republicar.
-RELEASE_DATE = "2026-08-18"
+RELEASE_DATE = "2026-08-19"
 RELEASE_DIRECTORY_PREFIX = "IFCQC-Benchmark-Windows-x64"
-PROMPT_VERSION = "v7.7"
+PROMPT_VERSION = "v7.8"
 TEMPLATE_PATH = "windows/release-manifest.template.json"
 
 PROJECT_PATTERNS = (

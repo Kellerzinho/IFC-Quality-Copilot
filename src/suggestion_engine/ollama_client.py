@@ -54,14 +54,32 @@ class OllamaClient:
         A janela nunca fica menor que prompt + resposta: truncar cortaria o fim do
         prompt, onde esta o contrato de saida.
         """
-        chars = len(prompt) + len(system or "")
-        estimado = int(chars / cls._CHARS_PER_TOKEN) + num_predict
-        necessario = int(estimado * cls._MARGEM)
-
+        necessario = cls._required_tokens(prompt, system, num_predict)
         janela = cls._MIN_NUM_CTX
         while janela < necessario and janela < ceiling:
             janela *= 2
         return min(janela, ceiling)
+
+    @classmethod
+    def _required_tokens(cls, prompt: str, system: str | None, num_predict: int) -> int:
+        """Tokens estimados para prompt + resposta, com a margem de seguranca."""
+        chars = len(prompt) + len(system or "")
+        return int((int(chars / cls._CHARS_PER_TOKEN) + num_predict) * cls._MARGEM)
+
+    @classmethod
+    def exceeds_context_ceiling(
+        cls, prompt: str, system: str | None, num_predict: int, ceiling: int
+    ) -> bool:
+        """O prompt nao cabe nem no teto de janela — ou seja, o servidor vai truncar.
+
+        Existe porque a guarda anti-truncamento mentia: ``_fit_num_ctx`` limita a
+        janela ao teto e devolvia 8192 para um prompt que precisava de ~20,7 mil
+        tokens, enquanto o log anunciava "usando 8192 para nao truncar". Foi o
+        que manteve invisivel, por quatro rodadas, o corte que decapitava a
+        tarefa nos dois estimulos de ``relation_broken`` de porta
+        (docs/resultado-ablacao-bsdd-2026-08-19.md).
+        """
+        return cls._required_tokens(prompt, system, num_predict) > ceiling
 
     @classmethod
     def resolve_num_ctx(
@@ -84,7 +102,20 @@ class OllamaClient:
             return cls._fit_num_ctx(prompt, system, num_predict, settings.ollama_num_ctx)
 
         fixa = int(settings.ollama_num_ctx_fixed)
-        minimo = cls._fit_num_ctx(prompt, system, num_predict, max(fixa, settings.ollama_num_ctx))
+        teto = max(fixa, settings.ollama_num_ctx)
+        minimo = cls._fit_num_ctx(prompt, system, num_predict, teto)
+        if cls.exceeds_context_ceiling(prompt, system, num_predict, teto):
+            # Nao ha janela a pedir: o teto e o teto. O que se pode fazer e
+            # parar de anunciar o contrario — quem truncou aqui foi o servidor,
+            # e o corte cai no INICIO do prompt, onde esta a tarefa.
+            logger.error(
+                "Prompt de {} chars excede o teto de janela ({} tokens): o servidor VAI "
+                "truncar o inicio do prompt, onde esta a tarefa. Reduza o bloco de "
+                "grounding — ver docs/resultado-ablacao-bsdd-2026-08-19.md",
+                len(prompt) + len(system or ""),
+                teto,
+            )
+            return teto
         if minimo > fixa:
             logger.warning(
                 "Prompt de {} chars nao cabe na janela fixa de {}; usando {} para nao truncar",

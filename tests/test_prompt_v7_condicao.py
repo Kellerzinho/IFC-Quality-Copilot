@@ -23,9 +23,15 @@ from __future__ import annotations
 from src.suggestion_engine.prompt_templates import PROMPT_VERSION, TEMPLATES
 
 
-def test_prompt_version_is_v7_7():
-    """v7.7: roteamento do relation_broken + remocao de roteiro (2026-08-13)."""
-    assert PROMPT_VERSION == "v7.7"
+def test_prompt_version_nao_regride_abaixo_do_v7():
+    """Os comportamentos do v7 travados abaixo valem de v7.7 em diante.
+
+    O pino literal da versão vigente mora no teste da condição corrente
+    (``tests/test_grounding_escopado_v78.py``); aqui o que importa é que o
+    instrumento não volte para antes das correções do v7.
+    """
+    versao = tuple(int(parte) for parte in PROMPT_VERSION.lstrip("v").split("."))
+    assert versao >= (7, 7)
 
 
 # ---------------------------------------------------------------------------

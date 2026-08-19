@@ -330,6 +330,18 @@ IsExternal, HasNonSkidSurface) trazem a mesma nota — "in IFC this property tak
 """
 
 
+_MAX_PROMPT_PROPERTIES = 12
+"""Teto de propriedades renderizadas no bloco bSDD do prompt.
+
+Defesa em profundidade da correção v7.8: nenhum bloco de grounding pode crescer
+sem limite declarado. O caso que motivou o teto foi medido em 2026-08-18 — o
+catálogo completo do ``IfcDoor`` (233 propriedades no dicionário IFC 4.3) virava
+42.473 chars de prompt e empurrava a tarefa para fora da janela de contexto. O
+escopo por tarefa (``_scoped_bsdd_context``) resolve a origem; este teto garante
+que nenhuma outra origem reabra o mesmo buraco.
+"""
+
+
 def _is_boilerplate(texto: str) -> bool:
     """True quando a descrição é o rodapé técnico genérico do bSDD."""
     return texto.strip().casefold().startswith(_BSDD_BOILERPLATE_PREFIX)
@@ -407,7 +419,7 @@ class BSDDContext(BaseModel):
                 lines.append(f"- {cls.name} | URI: {cls.uri}")
         if self.related_properties:
             lines.append("Propriedades e valores permitidos:")
-            for prop in self.related_properties:
+            for prop in self.related_properties[:_MAX_PROMPT_PROPERTIES]:
                 values = ", ".join(prop.allowed_values) if prop.allowed_values else "livre"
                 meta = []
                 if prop.uri:
@@ -420,6 +432,9 @@ class BSDDContext(BaseModel):
                 lines.append(f"- {prop.name}: {values}{suffix}")
                 if prop.description and not _is_boilerplate(prop.description):
                     lines.append(f"    definição: {_truncate_definition(prop.description)}")
+            omitidas = len(self.related_properties) - _MAX_PROMPT_PROPERTIES
+            if omitidas > 0:
+                lines.append(f"({omitidas} outras propriedades da classe omitidas do contexto)")
         elif self.property_absent_from_dictionary:
             lines.append(
                 "Propriedade pedida: ausente do dicionário IFC 4.3 — o bSDD foi "

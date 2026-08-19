@@ -93,7 +93,22 @@ if TYPE_CHECKING:
 #       prompt e consumia a banda de 10% do termico antes de qualquer erro do
 #       modelo; floats crus de espessura e area chegavam com ruido binario.
 # Ver docs/condicao-v7-6-2026-08-12.md.
-PROMPT_VERSION = "v7.7"
+# v7.8 (2026-08-19): correcoes de EMPACOTAMENTO de grounding medidas pela ablacao
+# de bSDD (docs/resultado-ablacao-bsdd-2026-08-19.md). O braco sem bSDD ganhou
+# +2,34 pp por classe (McNemar p=0,00022) e +50 pp em relation_broken; a causa
+# nao era o conteudo do dicionario, era como o bloco era montado e anunciado.
+# Nenhum template foi tocado — o estimulo por issue nao muda de conteudo.
+#   (1) Escopo: sem check_property, a lista de propriedades da classe nao entra
+#       no bloco. Em relation_broken ela era o catalogo inteiro do IfcDoor
+#       (42.473 chars contra 434 do bloco mediano), estourava a janela e o
+#       servidor cortava o INICIO — onde esta a pergunta. Os dez modelos
+#       respondiam tokens colhidos do proprio bloco (BARREL, TEU, PASSENGER).
+#   (2) Instrucao de obediencia condicionada a existir vocabulario fechado.
+#       "Use apenas o vocabulario fornecido" sobre um bloco que imprime "livre"
+#       encolhia a resposta para o literal (EI 30 no lugar da banda EI/REI 60).
+#   (3) Teto declarado de propriedades no bloco, como defesa em profundidade.
+# Ver docs/condicao-v7-8-2026-08-19.md.
+PROMPT_VERSION = "v7.8"
 
 _MEMORIA_ESTRUTURADA_BR = (
     "MEMÓRIA ESTRUTURADA (obrigatória): declare no campo memoria_calculo as camadas "
@@ -1538,11 +1553,12 @@ def build_prompt(
 
     safe_ctx: defaultdict[str, Any] = defaultdict(lambda: "N/D", fill_ctx)
     user_prompt = template.format_map(safe_ctx)
-    user_prompt = _inject_grounding(
-        user_prompt, _scoped_bsdd_context(issue, bsdd_context), ids_context
-    )
+    scoped_bsdd = _scoped_bsdd_context(issue, bsdd_context)
+    user_prompt = _inject_grounding(user_prompt, scoped_bsdd, ids_context)
     system_prompt = SYSTEM_PROMPT
-    if ids_context is not None or bsdd_context is not None:
+    # v7.8: a instrucao segue o que o bloco REALMENTE contem, nao a mera
+    # presenca de grounding. Ver _grounding_has_closed_vocabulary.
+    if _grounding_has_closed_vocabulary(scoped_bsdd, ids_context):
         system_prompt = f"{SYSTEM_PROMPT} {_GROUNDING_INSTRUCTION}"
     if issue.issue_type == "space_unnamed":
         # O template de nomeação já carrega o formato ({"opcoes":[{"nome":...}]});
@@ -1585,7 +1601,22 @@ def _scoped_bsdd_context(issue: Issue, bsdd_context: BSDDContext | None) -> BSDD
     nada aproveitavel sobrar, devolve None: bloco de grounding vazio so gasta
     contexto e convida o modelo a inventar.
     """
-    if bsdd_context is None or issue.issue_type != "system_unclassified":
+    if bsdd_context is None:
+        return None
+
+    if issue.issue_type != "system_unclassified":
+        # v7.8: sem propriedade pedida, nao ha propriedade a fundamentar — e a
+        # lista da classe vira o prompt inteiro. Medido em 2026-08-18 no
+        # relation_broken de porta: 42.473 chars de catalogo do IfcDoor contra
+        # 434 do bloco mediano, prompt de 44,8 KB (~20,7 mil tokens estimados)
+        # contra teto de janela 8192. O servidor cortava o inicio, que e onde
+        # esta a tarefa, e os dez modelos respondiam tokens do proprio bloco
+        # ("BARREL", "TEU", "PASSENGER" — enumeracao de logistica do IFC 4.3).
+        # A ancora de classe (definicao + URI) fica: e grounding legitimo.
+        if not str(issue.context.get("check_property") or "").strip():
+            return bsdd_context.model_copy(
+                update={"related_properties": [], "properties": []}
+            )
         return bsdd_context
 
     classes_dominio = [
@@ -1608,6 +1639,35 @@ def _scoped_bsdd_context(issue: Issue, bsdd_context: BSDDContext | None) -> BSDD
             "class_description": None,
             "property_absent_from_dictionary": False,
         }
+    )
+
+
+def _grounding_has_closed_vocabulary(
+    bsdd_context: BSDDContext | None, ids_context: IDSContext | None
+) -> bool:
+    """Há vocabulário fechado no grounding que chegou ao prompt?
+
+    Condiciona ``_GROUNDING_INSTRUCTION``. Mandar "use apenas o vocabulário
+    fornecido" quando o bloco imprime ``livre`` em toda propriedade — o caso de
+    100% das propriedades do experimento, porque o dicionário IFC 4.3 as tipa
+    como ``IfcLabel`` — não restringe nada e mede-se como dano: na ablação de
+    2026-08-18 o padrão das respostas escorregava para o literal mínimo
+    (``EI 30`` no lugar da banda ``EI/REI 60``, ``True`` em IsLoadBearing).
+
+    Contam como vocabulário fechado: qualquer requisito IDS (que carrega valor
+    ou restrição computável), propriedades com ``allowed_values`` e
+    classificações de dicionário não-IFC (onde a lista de classes É a resposta
+    permitida).
+    """
+    if ids_context is not None:
+        return True
+    if bsdd_context is None:
+        return False
+    if any(prop.allowed_values for prop in bsdd_context.related_properties):
+        return True
+    return any(
+        cls.name and not cls.name.strip().startswith("Ifc")
+        for cls in bsdd_context.classification_suggestions
     )
 
 

@@ -205,19 +205,28 @@ ifc-quality-copilot/
   testes ao vivo só via `scripts/test_bsdd_live.py`
 
 ### Sugestões (LLM)
-- **`PROMPT_VERSION` vigente: `v7.6`** (fonte única em `prompt_templates.py`).
-  Estado do instrumento e do gabarito declarados em
-  `docs/condicao-v7-6-2026-08-12.md` e `docs/emenda-gt-2026-08-12.md` — **leia os
-  dois antes de mexer em prompt, ground truth ou comparador**
+- **`PROMPT_VERSION` vigente: `v7.8`** (fonte única em `prompt_templates.py`),
+  declarado em `docs/condicao-v7-8-2026-08-19.md`. **O instrumento das rodadas
+  publicadas é o `v7.7`** (par unificado, escala-4070, ablação-bSDD) — o v7.8
+  corrige empacotamento de grounding e ainda não foi executado
+- Estado do gabarito e do instrumento anterior em `docs/emenda-gt-2026-08-12.md`
+  e `docs/condicao-v7-6-2026-08-12.md` — **leia antes de mexer em prompt, ground
+  truth ou comparador**
 - O LLM **apenas sugere**; a aplicação é sempre mediada por aprovação humana
 - **Aritmética não é tarefa de LLM** (medido em 2026-08-02): onde houver conta,
   o LLM declara os termos e o código executa — ver `thermal_recompute.py` e
   `docs/condicao-v7-2026-08-04.md`
-- **Mudança de prompt é mudança de instrumento:** bumpe `PROMPT_VERSION` (e o pino
-  em `scripts/build_windows_release.py`), meça o delta com
-  `scripts/dump_prompts_spy.py` + `diff_prompts.py` (sem GPU) e declare a condição
-  num doc datado. Evidência do arquivo tende a ajudar; roteiro de como raciocinar
-  tende a atrapalhar (+31,2 pp × −12,5 pp, matriz v6)
+- **Mudança de prompt é mudança de instrumento:** bumpe `PROMPT_VERSION` nos
+  **três** pinos — `prompt_templates.py`, `scripts/build_windows_release.py` (com
+  `RELEASE_DATE`) e **`windows/install.ps1`** (esquecer este quebra 8 testes de
+  contrato Windows) —, meça o delta com `scripts/dump_prompts_spy.py` +
+  `diff_prompts.py` (sem GPU) e declare a condição num doc datado. Evidência do
+  arquivo tende a ajudar; roteiro de como raciocinar tende a atrapalhar
+  (+31,2 pp × −12,5 pp, matriz v6)
+- **Grounding só ajuda se contiver a resposta** (medido em 2026-08-18): bloco sem
+  escopo custou um estrato inteiro por truncamento, e "use apenas o vocabulário
+  fornecido" sobre um bloco que imprime `livre` mede −2,34 pp. Ver
+  `docs/resultado-ablacao-bsdd-2026-08-19.md`
 - **Três naturezas legítimas de mudança de estímulo**, e nenhuma outra:
   evidência do arquivo IFC, vocabulário genérico (tipologia de literatura ou
   classe de schema) e formato. Colisão numérica entre prompt e gabarito precisa
