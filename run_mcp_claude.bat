@@ -1,3 +1,3 @@
 @echo off
-cd /d "C:\Users\Keller_\Desktop\Projetos FC\Pesquisa\ifc-quality-copilot"
+cd /d "%~dp0"
 python -m src.mcp_server.server
