@@ -126,6 +126,11 @@ ifc-quality-copilot/
 │   │   └── tools_pipeline.py    # ferramentas de orquestração do pipeline
 │   ├── audit/
 │   │   └── logger.py            # classe AuditLogger
+│   ├── foundation/             # contratos da reformulação semântica
+│   │   ├── contracts.py         # catálogo local, IFC/IDS, contexto/LLM, revisão, BCF, governança, avaliação
+│   │   ├── locality.py          # política de localidade (sem fallback externo)
+│   │   ├── review.py            # decisão humana por elemento (única porta de escrita)
+│   │   └── adapters.py          # ligações finas com módulos existentes
 │   └── ui/
 │       ├── app.py               # aplicação Streamlit principal
 │       ├── styles.py            # CSS customizado
@@ -151,6 +156,13 @@ ifc-quality-copilot/
 
 > Nota: o antigo módulo `rule_engine/` foi descontinuado; a geração de regras a partir
 > do IDS vive em `src/translator/rule_generator.py`.
+
+> Fundação semântica (branch `feat/semantic-foundation`): módulo novo entra pelos
+> contratos de `src/foundation/contracts.py`, e todo endpoint passa por
+> `src/foundation/locality.py` — inferência e dados ficam locais/internos ao IME, sem
+> fallback para API externa. Mapa de reaproveitamento e lacunas em
+> `docs/arquitetura/fundacao-semantica.md`; proveniência desta base em
+> `docs/migracao/PROVENIENCIA-2026-10-08.md`.
 
 ## Convenções de Código
 
