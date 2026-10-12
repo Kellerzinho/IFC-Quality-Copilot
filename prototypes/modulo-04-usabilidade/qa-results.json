@@ -1,0 +1,239 @@
+{
+  "date": "2026-10-12T15:29:45.539Z",
+  "browser": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/155.0.8059.39",
+    "revision": "@3ff7ac5a9224be9156d7f8703a06e22890aafd34",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "jsVersion": "15.5.35.20"
+  },
+  "url": "file:///C:/Users/Keller_/Desktop/Projetos%20FC/Pesquisa/ifc-quality-copilot/prototypes/modulo-04-usabilidade/modulo-04.html",
+  "offline": true,
+  "results": [
+    {
+      "name": "file:// offline, 11 elementos e 10 campos",
+      "ok": true
+    },
+    {
+      "name": "Aceitar registra apenas candidato; original permanece ausente",
+      "ok": true
+    },
+    {
+      "name": "Layout table preserva decisão e seleção",
+      "ok": true
+    },
+    {
+      "name": "Layout guided preserva decisão e seleção",
+      "ok": true
+    },
+    {
+      "name": "Layout model preserva decisão e seleção",
+      "ok": true
+    },
+    {
+      "name": "Seleção SVG sincroniza lista e propriedades; GUID repetido isolado",
+      "ok": true
+    },
+    {
+      "name": "Seleção tabela sincroniza SVG e painel",
+      "ok": true
+    },
+    {
+      "name": "Busca vazia e navegação bloqueada",
+      "ok": true
+    },
+    {
+      "name": "Interseção de filtros vazia",
+      "ok": true
+    },
+    {
+      "name": "Disciplina oculta remove formas e resultados",
+      "ok": true
+    },
+    {
+      "name": "Origem selecionada mantendo alvo e distinção caixilho",
+      "ok": true
+    },
+    {
+      "name": "Próxima respeita filtro",
+      "ok": true
+    },
+    {
+      "name": "Anterior respeita filtro",
+      "ok": true
+    },
+    {
+      "name": "Manual inválido bloqueia tipo",
+      "ok": true
+    },
+    {
+      "name": "Manual bloqueia unidade incorreta",
+      "ok": true
+    },
+    {
+      "name": "Manual exige fonte e justificativa",
+      "ok": true
+    },
+    {
+      "name": "Manual válido registrado",
+      "ok": true
+    },
+    {
+      "name": "Rejeitar preserva original",
+      "ok": true
+    },
+    {
+      "name": "Manter pendente retorna à fila",
+      "ok": true
+    },
+    {
+      "name": "Conflito sem aceite direto",
+      "ok": true
+    },
+    {
+      "name": "Sem evidência bloqueia aceite",
+      "ok": true
+    },
+    {
+      "name": "Erro bloqueia manual e aceite",
+      "ok": true
+    },
+    {
+      "name": "Requisito em revisão não aprova",
+      "ok": true
+    },
+    {
+      "name": "Lote prévia bloqueia conflitos, ausência e erro em revisão",
+      "ok": true
+    },
+    {
+      "name": "Lote aplica somente elegíveis",
+      "ok": true
+    },
+    {
+      "name": "Desfazer reverte lote inteiro",
+      "ok": true
+    },
+    {
+      "name": "Só pendências mantém apenas elementos com campos abertos",
+      "ok": true
+    },
+    {
+      "name": "Contexto transparente mantém seleção",
+      "ok": true
+    },
+    {
+      "name": "Cores por classe têm legenda",
+      "ok": true
+    },
+    {
+      "name": "Cores por situação têm legenda",
+      "ok": true
+    },
+    {
+      "name": "Resumo antes/depois sem falsa escrita",
+      "ok": true
+    },
+    {
+      "name": "Salvamento confirmado por leitura",
+      "ok": true
+    },
+    {
+      "name": "Recuperação após recarregar file://",
+      "ok": true
+    },
+    {
+      "name": "Falha de storage informa somente sessão",
+      "ok": true
+    },
+    {
+      "name": "Reinício exige confirmação",
+      "ok": true
+    },
+    {
+      "name": "Reinício limpa decisões",
+      "ok": true
+    },
+    {
+      "name": "Desfazer restaura reinício",
+      "ok": true
+    },
+    {
+      "name": "Requisito sinalizado pelo revisor fica fora do lote",
+      "ok": true
+    },
+    {
+      "name": "Texto não aceita unidade dimensional",
+      "ok": true
+    },
+    {
+      "name": "Desktop 1440px model sem overflow da página",
+      "ok": true
+    },
+    {
+      "name": "Desktop 1440px table sem overflow da página",
+      "ok": true
+    },
+    {
+      "name": "Desktop 1440px guided sem overflow da página",
+      "ok": true
+    },
+    {
+      "name": "Desktop 1024px model sem overflow da página",
+      "ok": true
+    },
+    {
+      "name": "Desktop 1024px table sem overflow da página",
+      "ok": true
+    },
+    {
+      "name": "Desktop 1024px guided sem overflow da página",
+      "ok": true
+    },
+    {
+      "name": "Desktop 1920px model sem overflow da página",
+      "ok": true
+    },
+    {
+      "name": "Desktop 1920px table sem overflow da página",
+      "ok": true
+    },
+    {
+      "name": "Desktop 1920px guided sem overflow da página",
+      "ok": true
+    },
+    {
+      "name": "Revisão guiada mostra evidência de imediato",
+      "ok": true
+    },
+    {
+      "name": "Miniatura lateral compacta",
+      "ok": true
+    },
+    {
+      "name": "Painel recolhe sem esconder expansão",
+      "ok": true
+    },
+    {
+      "name": "Painel expande",
+      "ok": true
+    },
+    {
+      "name": "Seleção SVG por teclado",
+      "ok": true
+    },
+    {
+      "name": "Console sem erros",
+      "ok": true
+    },
+    {
+      "name": "Nenhuma requisição HTTP externa do HTML",
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "requests": [
+    "file:///C:/Users/Keller_/Desktop/Projetos%20FC/Pesquisa/ifc-quality-copilot/prototypes/modulo-04-usabilidade/modulo-04.html",
+    "file:///C:/Users/Keller_/Desktop/Projetos%20FC/Pesquisa/ifc-quality-copilot/prototypes/modulo-04-usabilidade/modulo-04.html"
+  ]
+}
