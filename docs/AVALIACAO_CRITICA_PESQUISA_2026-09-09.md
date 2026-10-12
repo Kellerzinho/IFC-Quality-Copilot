@@ -36,7 +36,7 @@ Foram executados 405 testes selecionados de avaliação, referências, vazamento
 
 A conferência não executou novos LLMs nem refez toda a campanha histórica. Os resultados de escala e os estudos v5/v6 foram analisados documentalmente. O código de produção e os manuscritos não foram corrigidos durante este parecer.
 
-A apuração reproduzível desta avaliação está em [resultados da conferência](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/docs/reviews/2026-09-08/evidence_audit.json>), acompanhada de seu [procedimento de recálculo](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/docs/reviews/2026-09-08/audit_evidence.py>).
+A apuração reproduzível desta avaliação está em [resultados da conferência](../docs/reviews/2026-09-08/evidence_audit.json), acompanhada de seu [procedimento de recálculo](../docs/reviews/2026-09-08/audit_evidence.py).
 
 ## 2. Problema, importância e contribuição possível
 
@@ -56,7 +56,7 @@ Um modelo de IA mais capaz pode melhorar as duas primeiras atividades. Ele não 
 
 A proposta combina técnicas existentes. Isso não impede uma contribuição científica: integração, benchmark e achados experimentais podem ser contribuições válidas, desde que a avaliação mostre algo novo e transferível. A alegação de pioneirismo por reunir IFC, IDS, bSDD, LLM e revisão humana precisa de comparação explícita com os trabalhos mais próximos; a combinação de nomes de tecnologias não basta.
 
-O patrimônio já construído inclui a identidade experimental, o registro por ocorrência, o tratamento das equivalências, a rastreabilidade das mudanças de gabarito, a separação parcial entre inferência e cálculo e os casos documentados de falha. A existência desses mecanismos foi observada no [avaliador](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/src/experiment/evaluator.py:621>), no [registro por ocorrência](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/src/experiment/per_issue.py:45>) e nos [relatórios de replicação](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/docs/resultado-replicacao-5050-2026-08-19.md>).
+O patrimônio já construído inclui a identidade experimental, o registro por ocorrência, o tratamento das equivalências, a rastreabilidade das mudanças de gabarito, a separação parcial entre inferência e cálculo e os casos documentados de falha. A existência desses mecanismos foi observada no [avaliador](../src/experiment/evaluator.py#L621), no [registro por ocorrência](../src/experiment/per_issue.py#L45) e nos [relatórios de replicação](../docs/resultado-replicacao-5050-2026-08-19.md).
 
 ## 3. As cinco maiores ameaças
 
@@ -68,7 +68,7 @@ A sonda ignora geometria, materiais, função, especificação e contexto. Foi f
 
 Isso demonstra que alta pontuação nesse estrato pode ser obtida sem reconhecer o desempenho do elemento. Não demonstra que “REI 120” seja um valor verdadeiro, seguro ou tecnicamente adequado para esses elementos.
 
-O mecanismo está nas [alternativas aceitas para fogo](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/src/experiment/ground_truth_value_policy.py:196>). Aceitar uma classe superior como se fosse o mesmo valor pode confundir o atendimento a um requisito com a descrição do desempenho efetivamente documentado. São tarefas diferentes.
+O mecanismo está nas [alternativas aceitas para fogo](../src/experiment/ground_truth_value_policy.py#L196). Aceitar uma classe superior como se fosse o mesmo valor pode confundir o atendimento a um requisito com a descrição do desempenho efetivamente documentado. São tarefas diferentes.
 
 **Consequência:** revisar esse estrato antes de usar sua acurácia como evidência de competência técnica. Incluir controles de resposta constante e de superestimação; avaliar requisito, desempenho documentado e estimativa separadamente.
 
@@ -85,11 +85,11 @@ A leitura direta dos dois GTs confirmou:
 
 Os 1.127 itens low representam 22,62% das ocorrências e 28,05% das classes. Os itens medium também precisam de distinção interna: predominam referências tipológicas, não medições. High inclui referência autoral preservada e aliases do IFC; não significa automaticamente confirmação externa da realidade construída.
 
-Todos os 4.983 itens estão marcados como verified. A [política do GT](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/src/experiment/ground_truth_policy.py:29>) rejeita estados como desconhecido, não aplicável e revisão necessária como valor esperado. Já o [resolvedor](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/src/experiment/ground_truth_value_policy.py:628>) atribui valores tipológicos ou prováveis em várias situações de evidência incompleta.
+Todos os 4.983 itens estão marcados como verified. A [política do GT](../src/experiment/ground_truth_policy.py#L29) rejeita estados como desconhecido, não aplicável e revisão necessária como valor esperado. Já o [resolvedor](../src/experiment/ground_truth_value_policy.py#L628) atribui valores tipológicos ou prováveis em várias situações de evidência incompleta.
 
 A documentação é transparente sobre isso, o que é positivo. Mas transparência e congelamento não substituem validação independente. Nesse desenho, uma abstenção tecnicamente adequada pode perder para um palpite coincidente com a convenção autoral.
 
-Há ainda ajustes após observação dos resultados: [emendas de agosto](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/docs/emenda-gt-2026-08-12.md>) e a justificativa da [tolerância térmica de 10%](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/src/experiment/evaluator.py:50>). Corrigir um instrumento defeituoso é legítimo; depois disso, os casos usados para desenvolvê-lo deixam de constituir um teste independente convincente. Não encontrei demonstração de fraude ou vazamento direto generalizado; o risco principal é ajuste iterativo ao conjunto avaliado.
+Há ainda ajustes após observação dos resultados: [emendas de agosto](../docs/emenda-gt-2026-08-12.md) e a justificativa da [tolerância térmica de 10%](../src/experiment/evaluator.py#L50). Corrigir um instrumento defeituoso é legítimo; depois disso, os casos usados para desenvolvê-lo deixam de constituir um teste independente convincente. Não encontrei demonstração de fraude ou vazamento direto generalizado; o risco principal é ajuste iterativo ao conjunto avaliado.
 
 **Consequência:** produzir referência independente, distinguir verificação editorial de confirmação técnica e reservar projetos novos para avaliação final.
 
@@ -101,7 +101,7 @@ A justificativa de que já existe preenchimento determinístico antes do LLM nã
 
 Também faltam comparações realizadas com um agente generalista competente usando ferramentas IFC e com revisão manual real. Sem elas, não há evidência suficiente para afirmar superioridade sobre o que modelos mais fortes já conseguem fazer.
 
-A lacuna está reconhecida, mas parcialmente relativizada, no [argumentário](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/Artigo/ARGUMENTARIO_2026-08-19.md:373>). Recomendo tratá-la como uma prioridade experimental.
+A lacuna está reconhecida, mas parcialmente relativizada, no [argumentário](../Artigo/ARGUMENTARIO_2026-08-19.md#L373). Recomendo tratá-la como uma prioridade experimental.
 
 ### 4. O número de ocorrências excede muito a diversidade e a independência experimental
 
@@ -113,15 +113,15 @@ No gemma2, o efeito é particularmente nítido: 22 classes ganhas e nenhuma perd
 
 Há uma repetição por estágio. As três máquinas variam também em CPU, RAM e driver. McNemar não significativo não demonstra equivalência, e uma comparação entre máquinas não estima a variabilidade de repetições na mesma máquina.
 
-**Consequência:** apresentar diferenças e intervalos, preservar agrupamentos e ampliar os projetos antes de generalizar. A [replicação](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/docs/resultado-replicacao-5050-2026-08-19.md:81>) e a [ablação](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/docs/resultado-ablacao-bsdd-2026-08-19.md:51>) já oferecem material para essa reanálise.
+**Consequência:** apresentar diferenças e intervalos, preservar agrupamentos e ampliar os projetos antes de generalizar. A [replicação](../docs/resultado-replicacao-5050-2026-08-19.md#L81) e a [ablação](../docs/resultado-ablacao-bsdd-2026-08-19.md#L51) já oferecem material para essa reanálise.
 
 ### 5. O ciclo de validação e revisão é menos forte que algumas afirmações sugerem
 
-O [revisor simulado](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/src/experiment/reviewer.py:44>) conhece o gabarito: aceita a primeira sugestão compatível ou escolhe outra entre as três. Portanto, “aceitação” não é observação do comportamento de um engenheiro. O profissional pode não reconhecer a melhor opção, discordar do GT ou aceitar uma resposta convincente e errada.
+O [revisor simulado](../src/experiment/reviewer.py#L44) conhece o gabarito: aceita a primeira sugestão compatível ou escolhe outra entre as três. Portanto, “aceitação” não é observação do comportamento de um engenheiro. O profissional pode não reconhecer a melhor opção, discordar do GT ou aceitar uma resposta convincente e errada.
 
-A conformidade posterior é medida após essa seleção por um revisor que conhece a referência. Ela não mede a segurança de aplicar qualquer saída do sistema. O [readiness experimental](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/src/experiment/evaluator.py:716>) ainda simula a retirada das issues com GT, independentemente de a sugestão estar correta.
+A conformidade posterior é medida após essa seleção por um revisor que conhece a referência. Ela não mede a segurança de aplicar qualquer saída do sistema. O [readiness experimental](../src/experiment/evaluator.py#L716) ainda simula a retirada das issues com GT, independentemente de a sugestão estar correta.
 
-No código, a [correção](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/src/pipeline.py:415>) já foi escrita quando ocorre a pós-validação. Se o resultado é fail, há aviso e registro, mas a issue ainda é resolvida com a decisão recebida; a [exportação](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/src/pipeline.py:486>) não bloqueia esses casos. Além disso, o pipeline desliga a checagem de schema por elemento, enquanto o [resultado](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/src/validation/post_validator.py:45>) pode indicar schema_valid=True pela ausência de erros coletados.
+No código, a [correção](../src/pipeline.py#L415) já foi escrita quando ocorre a pós-validação. Se o resultado é fail, há aviso e registro, mas a issue ainda é resolvida com a decisão recebida; a [exportação](../src/pipeline.py#L486) não bloqueia esses casos. Além disso, o pipeline desliga a checagem de schema por elemento, enquanto o [resultado](../src/validation/post_validator.py#L45) pode indicar schema_valid=True pela ausência de erros coletados.
 
 **Consequência:** não afirmar segurança integral, ausência de regressões ou produtividade humana demonstrada. Separar “não verificado”, “aprovado” e “reprovado”; validar o arquivo resultante e medir a revisão humana real.
 
@@ -134,14 +134,14 @@ As limitações mais relevantes são:
 | Componente | Evidência e implicação |
 |---|---|
 | Troca de modelos | Está demonstrada dentro do Ollama pelos resultados arquivados. |
-| Troca de provedores | O [pipeline](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/src/pipeline.py:114>) instancia Ollama diretamente. Transporte e telemetria dependem dele. Uma interface comum e adaptadores ainda seriam necessários para comparação limpa com outros provedores. |
-| IDS | O [parser](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/src/translator/ids_parser.py:70>) preserva apenas a primeira restrição em certos casos. O [gerador](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/src/translator/rule_generator.py:129>) transforma limites em checagem numérica, padrões em texto não vazio e igualdade booleana em checagem de tipo. Isso é um subconjunto operacional com perda de semântica. |
-| Checagens de valores | No [executor](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/src/translator/rule_generator.py:624>), um número positivo não é testado contra o limite que foi perdido; um booleano não é necessariamente comparado com TRUE/FALSE exigido. XSD válido não prova avaliação fiel dos requisitos. |
-| IDS nos benchmarks | Nos 80 estágios conferidos, existem cinco regras, mas zero issues adicionais atribuídas ao IDS. O vínculo de contexto exige [rule_id](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/src/pipeline.py:828>). A telemetria mostra bSDD ou nenhuma fonte de grounding, sem IDS. Isso não prova que o IDS não participe de nenhuma etapa; mostra que seu benefício como contexto das sugestões não foi demonstrado. |
-| Auditoria da opção escolhida | A correção usa o valor escolhido, mas obtém confiança e referência da [primeira sugestão](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/src/pipeline.py:410>). Ao escolher outra opção, a proveniência pode ficar incorreta. |
-| Escrita por MCP | Os [handlers diretos](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/src/mcp_server/tools_write.py:87>) checam uma flag fornecida pelo cliente e chamam o writer. Auditoria e pós-validação não são uniformemente impostas nesse caminho. A flag não é, por si, evidência de autorização humana independente. |
-| Serviço HTTP | Sem token configurado, a [autorização](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/src/mcp_server/http_server.py:26>) permite a requisição. O estado global exige cuidado caso se evolua do uso individual para várias sessões. Não foi feito teste de intrusão nem verificado serviço exposto. |
-| Cache | A [assinatura](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/src/suggestion_engine/suggestion.py:358>) considera modelo, prompt e partes do contexto, mas não toda a identidade da inferência. Mudanças de provedor, parâmetros e contexto da edificação precisam invalidar resultados. O cache persistente estava desligado nos benchmarks conferidos. |
+| Troca de provedores | O [pipeline](../src/pipeline.py#L114) instancia Ollama diretamente. Transporte e telemetria dependem dele. Uma interface comum e adaptadores ainda seriam necessários para comparação limpa com outros provedores. |
+| IDS | O [parser](../src/translator/ids_parser.py#L70) preserva apenas a primeira restrição em certos casos. O [gerador](../src/translator/rule_generator.py#L129) transforma limites em checagem numérica, padrões em texto não vazio e igualdade booleana em checagem de tipo. Isso é um subconjunto operacional com perda de semântica. |
+| Checagens de valores | No [executor](../src/translator/rule_generator.py#L624), um número positivo não é testado contra o limite que foi perdido; um booleano não é necessariamente comparado com TRUE/FALSE exigido. XSD válido não prova avaliação fiel dos requisitos. |
+| IDS nos benchmarks | Nos 80 estágios conferidos, existem cinco regras, mas zero issues adicionais atribuídas ao IDS. O vínculo de contexto exige [rule_id](../src/pipeline.py#L828). A telemetria mostra bSDD ou nenhuma fonte de grounding, sem IDS. Isso não prova que o IDS não participe de nenhuma etapa; mostra que seu benefício como contexto das sugestões não foi demonstrado. |
+| Auditoria da opção escolhida | A correção usa o valor escolhido, mas obtém confiança e referência da [primeira sugestão](../src/pipeline.py#L410). Ao escolher outra opção, a proveniência pode ficar incorreta. |
+| Escrita por MCP | Os [handlers diretos](../src/mcp_server/tools_write.py#L87) checam uma flag fornecida pelo cliente e chamam o writer. Auditoria e pós-validação não são uniformemente impostas nesse caminho. A flag não é, por si, evidência de autorização humana independente. |
+| Serviço HTTP | Sem token configurado, a [autorização](../src/mcp_server/http_server.py#L26) permite a requisição. O estado global exige cuidado caso se evolua do uso individual para várias sessões. Não foi feito teste de intrusão nem verificado serviço exposto. |
+| Cache | A [assinatura](../src/suggestion_engine/suggestion.py#L358) considera modelo, prompt e partes do contexto, mas não toda a identidade da inferência. Mudanças de provedor, parâmetros e contexto da edificação precisam invalidar resultados. O cache persistente estava desligado nos benchmarks conferidos. |
 
 A correção prioritária de engenharia é ter um único caminho de aplicação que vincule a decisão à sugestão escolhida, teste a alteração em uma cópia, valide e só então confirme a gravação, registrando também recusas e exceções. As restrições IDS não suportadas precisam ser explicitamente rejeitadas ou delegadas a um validador compatível, em vez de silenciosamente simplificadas.
 
@@ -186,16 +186,16 @@ Para os próximos 12–24 meses, faz sentido priorizar a prova de benefício inc
 |---|---|
 | “Grounding IDS+bSDD aumenta a confiabilidade” | O canal IDS não aparece no contexto registrado dos benchmarks; retirar o tratamento bSDD melhorou a concordância nessa condição. Delimitar fontes e tratamentos efetivamente medidos. |
 | “bSDD prejudica a acurácia” | Restringir à versão, ao dicionário, às propriedades e ao empacotamento testados. Bloco e instrução foram alterados conjuntamente; não é efeito universal da plataforma. |
-| “O v7.8 teria no máximo o resultado sem bSDD” | A afirmação de teto no [documento v7.8](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/docs/condicao-v7-8-2026-08-19.md:19>) não foi demonstrada. Contexto corrigido pode ajudar, empatar ou piorar. Uma condição não executada não tem resultado conhecido. |
-| “+31,2 pontos provam o efeito global da evidência” | O número corresponde a Category na comparação v5/v6. Não é uma ablação global nem deve ser somado ao efeito do bSDD, medido em outra condição. [Fonte local](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/docs/resultado-matriz-v6-2026-08-03.md:35>). |
-| “A recomputação explica a queda térmica de 40 pontos” | A queda veio de uma classe cuja resposta não trouxe memória. Os erros de soma estavam em outros casos. Separar cobertura da memória, correção aritmética e validade das premissas. [Fonte local](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/docs/achado-aritmetica-termica-2026-08-02.md:37>). |
-| “Medimos o ciclo inteiro com revisão humana” | O sistema contém esse fluxo, mas o experimento usa revisão simulada. Não mede tempo, confiança ou erro do profissional. [Argumentário](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/Artigo/ARGUMENTARIO_2026-08-19.md:111>). |
+| “O v7.8 teria no máximo o resultado sem bSDD” | A afirmação de teto no [documento v7.8](../docs/condicao-v7-8-2026-08-19.md#L19) não foi demonstrada. Contexto corrigido pode ajudar, empatar ou piorar. Uma condição não executada não tem resultado conhecido. |
+| “+31,2 pontos provam o efeito global da evidência” | O número corresponde a Category na comparação v5/v6. Não é uma ablação global nem deve ser somado ao efeito do bSDD, medido em outra condição. [Fonte local](../docs/resultado-matriz-v6-2026-08-03.md#L35). |
+| “A recomputação explica a queda térmica de 40 pontos” | A queda veio de uma classe cuja resposta não trouxe memória. Os erros de soma estavam em outros casos. Separar cobertura da memória, correção aritmética e validade das premissas. [Fonte local](../docs/achado-aritmetica-termica-2026-08-02.md#L37). |
+| “Medimos o ciclo inteiro com revisão humana” | O sistema contém esse fluxo, mas o experimento usa revisão simulada. Não mede tempo, confiança ou erro do profissional. [Argumentário](../Artigo/ARGUMENTARIO_2026-08-19.md#L111). |
 | “Conformidade IDS e zero regressões” | Exigem semântica de requisitos preservada, validação independente e inspeção do arquivo final. A checagem atual é insuficiente para a afirmação geral. |
 | “Determinismo e equivalência entre GPUs” | Distinguir identidade dos artefatos, estabilidade agregada e igualdade das respostas. Ausência de significância não comprova equivalência. |
 | “82% de acerto” como qualidade geral | Identificar modelo, ambiente, instrumento, unidade e referência. No gemma2/4070/on: 82,16% por ocorrência e 66,34% por classe. |
-| “O artigo já reflete o experimento concluído” | O [argumentário](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/Artigo/ARGUMENTARIO_2026-08-19.md>) é mais atual que o [resumo ERA BIM](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/Artigo/ERABIM_RESUMO_2026/resumo_final.md:15>) e partes do [manuscrito IME](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/Artigo/artigo_ime_ifc_quality_copilot/exemplo-conclusao.tex:5>), que ainda contêm formulações prospectivas ou pendências já superadas. |
+| “O artigo já reflete o experimento concluído” | O [argumentário](../Artigo/ARGUMENTARIO_2026-08-19.md) é mais atual que o [resumo ERA BIM](../Artigo/ERABIM_RESUMO_2026/resumo_final.md#L15) e partes do [manuscrito IME](../Artigo/artigo_ime_ifc_quality_copilot/exemplo-conclusao.tex#L5), que ainda contêm formulações prospectivas ou pendências já superadas. |
 
-Também recomendo substituir os rótulos secundários precision/recall/F1 por nomes que expressem exatamente o que medem. No [avaliador](<C:/Users/Keller_/Desktop/Projetos FC/Pesquisa/ifc-quality-copilot/src/experiment/evaluator.py:669>), são métricas de acerto condicionado à geração e cobertura da referência, não avaliação convencional de detecção. A qualidade do diagnóstico precisa de casos positivos e negativos anotados independentemente.
+Também recomendo substituir os rótulos secundários precision/recall/F1 por nomes que expressem exatamente o que medem. No [avaliador](../src/experiment/evaluator.py#L669), são métricas de acerto condicionado à geração e cobertura da referência, não avaliação convencional de detecção. A qualidade do diagnóstico precisa de casos positivos e negativos anotados independentemente.
 
 ## 8. Melhorias por categoria
 
