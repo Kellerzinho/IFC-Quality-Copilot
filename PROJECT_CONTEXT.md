@@ -1,5 +1,20 @@
 # IFC Quality Copilot — Contexto Completo do Projeto
 
+> **Continuidade — 9 de outubro de 2026:** o corpo abaixo descreve a base existente
+> e contém afirmações de estado que exigem as ressalvas do inventário de 09/10.
+> Leia a [arquitetura base](docs/arquitetura/base-do-projeto.md), o
+> [mapa das sete frentes](docs/planejamento/mapa-sete-frentes.md), o
+> [planejamento atual](docs/planejamento/README.md) e os achados B01–B10 da
+> [consolidação preservada](docs/planejamento/CONSOLIDACAO-2026-10-09.md).
+> Contratos existentes não certificam localidade, conformidade ou integridade
+> transversal. Nesta primeira versão, o operador fornece IDS pronto; autoria
+> pela UI fica fora do escopo inicial. A validação de requisitos suportados
+> independe de cadastro no catálogo; campos sem mapeamento semântico devem ser
+> explicitados, sem preenchimento automático por equivalência inventada.
+> Solicitações de mapeamento pelo operador e sugestões do LLM dependem de
+> aprovação/publicação pelo curador; não viram cadastro aprovado automaticamente.
+> As decisões registradas não foram implementadas pela reorganização documental.
+
 > Documento gerado para uso como contexto em pesquisas e sessões com LLMs.
 > Descreve arquitetura, decisões de design, estado atual e pontos de extensão.
 

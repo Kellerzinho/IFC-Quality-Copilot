@@ -1,0 +1,15 @@
+{
+  "status": "succeeded",
+  "library_file_id": "libfile_c7444c875da48191b0543d32a6c14f76",
+  "file_id": "file_00000000d894820eaae2d16185f3b567",
+  "file_name": "modulo-04.html",
+  "path": "/modulo-04.html",
+  "current_version_number": 0,
+  "file_size_bytes": 37545,
+  "mime_type": "text/html",
+  "sha256": "4FB13CE04AB7B05F9AB89ACCE8D92B3AF45C98E848F21787855827BDB3D4482D",
+  "local_path": "C:\\Users\\Keller_\\Desktop\\Projetos FC\\Pesquisa\\ifc-quality-copilot\\prototypes\\modulo-04-usabilidade\\modulo-04.html",
+  "xattrs_returned": [{"name":"user.library-file-version","value":"0"}],
+  "local_xattrs_applied": false,
+  "note": "Library upload confirmed. Skill metadata helper resource unavailable; identity retained in this sidecar."
+}

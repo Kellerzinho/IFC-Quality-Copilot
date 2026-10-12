@@ -42,6 +42,21 @@ def isolate_bsdd_cache(tmp_path, monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def isolate_suggestion_cache(tmp_path, monkeypatch):
+    """Aponta o cache de sugestões para um banco temporário em cada teste.
+
+    O caminho padrão é ``data/cache/suggestion_cache.db``, que guarda as sugestões
+    reais das rodadas. Um teste que monte o pipeline com as configurações padrão
+    abre esse SQLite; ao fechar a última conexão, o SQLite faz checkpoint do WAL e
+    apaga ``-wal``/``-shm``, alterando o artefato em disco (medido em 2026-10-08,
+    na migração da base). Testes que precisam do cache seguem livres para apontar
+    ``SUGGESTION_CACHE_PATH`` para o próprio ``tmp_path``.
+    """
+    monkeypatch.setenv("SUGGESTION_CACHE_PATH", str(tmp_path / "suggestion_cache.db"))
+    get_settings.cache_clear()
+
+
+@pytest.fixture(autouse=True)
 def block_real_http(monkeypatch, request):
     """Falha o teste que tentar rede real, em vez de deixá-lo sair para a internet.
 

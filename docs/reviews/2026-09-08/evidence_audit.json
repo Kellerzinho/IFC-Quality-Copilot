@@ -1,0 +1,2911 @@
+{
+  "datasets": {
+    "predio": {
+      "sha256": "040c871f1797f4237bc7c7bd94c03870b1b7c2d7ea1ccabc318b044cae6d56fe",
+      "items": 4720,
+      "classes": 202,
+      "confidence_items": {
+        "low": 1048,
+        "medium": 1365,
+        "high": 2307
+      },
+      "confidence_classes": {
+        "low": 50,
+        "medium": 51,
+        "high": 101
+      },
+      "source_kind_items": {
+        "probable": 1048,
+        "typology": 1365,
+        "existing_gt": 1654,
+        "ifc_alias": 652,
+        "ifc_literal": 1
+      },
+      "verified_items": 4720
+    },
+    "casa": {
+      "sha256": "e72b344f5b1bd30ac73a02db77868322fae1458e3d4d050f2ccd667f66f6138b",
+      "items": 263,
+      "classes": 101,
+      "confidence_items": {
+        "low": 79,
+        "medium": 132,
+        "high": 52
+      },
+      "confidence_classes": {
+        "low": 35,
+        "medium": 45,
+        "high": 21
+      },
+      "source_kind_items": {
+        "probable": 79,
+        "typology": 125,
+        "ifc_alias": 37,
+        "calculation": 7,
+        "existing_gt": 12,
+        "ifc_literal": 3
+      },
+      "verified_items": 263
+    }
+  },
+  "archives": {
+    "4070_on": {
+      "path": "dist\\RESULTADO_IFCQC_20260813T164437Z_8b2516e1-0287-49f1-8b49-22a58a099cdb.zip",
+      "stages": 20,
+      "verdict_mismatches": 0,
+      "reference_value_mismatches": 0,
+      "primary_counts": {
+        "casa": 1010,
+        "predio": 2020
+      },
+      "stage_checks": [
+        {
+          "model": "falcon3:7b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "gemma2:9b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "granite4:tiny-h",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "lfm2.5:8b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "llama3.1:8b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "mistral:7b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "phi4-mini:latest",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "qwen2.5:7b-instruct",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "qwen3.5:4b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "qwen3.5:9b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "falcon3:7b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "gemma2:9b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "granite4:tiny-h",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "lfm2.5:8b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "llama3.1:8b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "mistral:7b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "phi4-mini:latest",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "qwen2.5:7b-instruct",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "qwen3.5:4b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "qwen3.5:9b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        }
+      ],
+      "models": {
+        "falcon3:7b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.6961669676901465,
+          "top1_classes": 0.636963696369637,
+          "top3_items": 0.9102950030102348,
+          "top3_classes": 0.8250825082508251,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.7540983606557377
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.3333333333333333
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.8117647058823529
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "gemma2:9b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.8215934176199077,
+          "top1_classes": 0.6633663366336634,
+          "top3_items": 0.9299618703592214,
+          "top3_classes": 0.8679867986798679,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.860655737704918
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.7291666666666666
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.3058823529411765
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "granite4:tiny-h": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.7740317078065423,
+          "top1_classes": 0.6567656765676567,
+          "top3_items": 0.9058799919727072,
+          "top3_classes": 0.8382838283828383,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.7868852459016393
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.375
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.788235294117647
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "lfm2.5:8b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.5396347581778045,
+          "top1_classes": 0.48514851485148514,
+          "top3_items": 0.7178406582380092,
+          "top3_classes": 0.6996699669966997,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.6557377049180327
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.3854166666666667
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.35294117647058826
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "llama3.1:8b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.747943006221152,
+          "top1_classes": 0.6270627062706271,
+          "top3_items": 0.9287577764398957,
+          "top3_classes": 0.8316831683168316,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.7459016393442623
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.3333333333333333
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.788235294117647
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "mistral:7b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.7031908488862131,
+          "top1_classes": 0.7062706270627063,
+          "top3_items": 0.8193859121011439,
+          "top3_classes": 0.8052805280528053,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.8032786885245902
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.5208333333333334
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.7764705882352941
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "phi4-mini:latest": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.6484045755568935,
+          "top1_classes": 0.42244224422442245,
+          "top3_items": 0.8575155528797913,
+          "top3_classes": 0.693069306930693,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.5491803278688525
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.1875
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.5058823529411764
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "qwen2.5:7b-instruct": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.5520770620108368,
+          "top1_classes": 0.5247524752475248,
+          "top3_items": 0.8645394340758579,
+          "top3_classes": 0.8448844884488449,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.8688524590163934
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.3958333333333333
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.17647058823529413
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "qwen3.5:4b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.7224563515954244,
+          "top1_classes": 0.6270627062706271,
+          "top3_items": 0.8715633152719245,
+          "top3_classes": 0.7854785478547854,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.7786885245901639
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.625
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.4117647058823529
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "qwen3.5:9b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.7868753762793498,
+          "top1_classes": 0.7029702970297029,
+          "top3_items": 0.9430062211519166,
+          "top3_classes": 0.8679867986798679,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.8278688524590164
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.6979166666666666
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.5294117647058824
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        }
+      }
+    },
+    "4060_on": {
+      "path": "dist\\RESULTADO_IFCQC_20260814T174140Z_1de27843-d185-4456-bc3e-810a6fd52c80.zip",
+      "stages": 20,
+      "verdict_mismatches": 0,
+      "reference_value_mismatches": 0,
+      "primary_counts": {
+        "casa": 1010,
+        "predio": 2020
+      },
+      "stage_checks": [
+        {
+          "model": "falcon3:7b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "gemma2:9b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "granite4:tiny-h",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "lfm2.5:8b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "llama3.1:8b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "mistral:7b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "phi4-mini:latest",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "qwen2.5:7b-instruct",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "qwen3.5:4b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "qwen3.5:9b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "falcon3:7b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "gemma2:9b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "granite4:tiny-h",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "lfm2.5:8b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "llama3.1:8b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "mistral:7b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "phi4-mini:latest",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "qwen2.5:7b-instruct",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "qwen3.5:4b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "qwen3.5:9b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        }
+      ],
+      "models": {
+        "falcon3:7b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.6803130644190247,
+          "top1_classes": 0.6237623762376238,
+          "top3_items": 0.8994581577363034,
+          "top3_classes": 0.8151815181518152,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.7295081967213115
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.3333333333333333
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.8
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "gemma2:9b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.8250050170579972,
+          "top1_classes": 0.6666666666666666,
+          "top3_items": 0.9135059201284367,
+          "top3_classes": 0.8646864686468647,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.860655737704918
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.7291666666666666
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.3176470588235294
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "granite4:tiny-h": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.7350993377483444,
+          "top1_classes": 0.6666666666666666,
+          "top3_items": 0.8039333734697973,
+          "top3_classes": 0.8382838283828383,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.7704918032786885
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.4375
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.7764705882352941
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "lfm2.5:8b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.47922937989163156,
+          "top1_classes": 0.42574257425742573,
+          "top3_items": 0.7742323901264299,
+          "top3_classes": 0.7062706270627063,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.6229508196721312
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.3333333333333333
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.24705882352941178
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "llama3.1:8b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.7373068432671082,
+          "top1_classes": 0.6303630363036303,
+          "top3_items": 0.9251454946819185,
+          "top3_classes": 0.8382838283828383,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.7540983606557377
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.3333333333333333
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.788235294117647
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "mistral:7b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.657033915312061,
+          "top1_classes": 0.6864686468646864,
+          "top3_items": 0.8101545253863135,
+          "top3_classes": 0.7986798679867987,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.7868852459016393
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.5
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.7529411764705882
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "phi4-mini:latest": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.6614489263495886,
+          "top1_classes": 0.4521452145214521,
+          "top3_items": 0.8926349588601245,
+          "top3_classes": 0.7062706270627063,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.5491803278688525
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.19791666666666666
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.6
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "qwen2.5:7b-instruct": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.5442504515352198,
+          "top1_classes": 0.5148514851485149,
+          "top3_items": 0.862933975516757,
+          "top3_classes": 0.8547854785478548,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.8770491803278688
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.4166666666666667
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.10588235294117647
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "qwen3.5:4b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.793096528195866,
+          "top1_classes": 0.6204620462046204,
+          "top3_items": 0.9183222958057395,
+          "top3_classes": 0.7920792079207921,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.7950819672131147
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.6145833333333334
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.3764705882352941
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "qwen3.5:9b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.7639975918121613,
+          "top1_classes": 0.6798679867986799,
+          "top3_items": 0.9381898454746137,
+          "top3_classes": 0.8514851485148515,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.8032786885245902
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.6979166666666666
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.4823529411764706
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        }
+      }
+    },
+    "4070_off": {
+      "path": "dist\\RESULTADO_IFCQC_20260818T185722Z_54c4f307-3e34-4be4-9575-acf0678ca94a.zip",
+      "stages": 20,
+      "verdict_mismatches": 0,
+      "reference_value_mismatches": 0,
+      "primary_counts": {
+        "casa": 1010,
+        "predio": 2020
+      },
+      "stage_checks": [
+        {
+          "model": "falcon3:7b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "gemma2:9b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "granite4:tiny-h",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "lfm2.5:8b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "llama3.1:8b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "mistral:7b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "phi4-mini:latest",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "qwen2.5:7b-instruct",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "qwen3.5:4b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "qwen3.5:9b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "falcon3:7b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "gemma2:9b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "granite4:tiny-h",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "lfm2.5:8b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "llama3.1:8b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "mistral:7b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "phi4-mini:latest",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "qwen2.5:7b-instruct",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "qwen3.5:4b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "qwen3.5:9b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        }
+      ],
+      "models": {
+        "falcon3:7b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.6931567328918322,
+          "top1_classes": 0.636963696369637,
+          "top3_items": 0.9131045554886614,
+          "top3_classes": 0.8415841584158416,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.7377049180327869
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.3541666666666667
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.8117647058823529
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "": 4983
+          }
+        },
+        "gemma2:9b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.8350391330523781,
+          "top1_classes": 0.735973597359736,
+          "top3_items": 0.9401966686734898,
+          "top3_classes": 0.8910891089108911,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.9098360655737705
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.75
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.47058823529411764
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "": 4983
+          }
+        },
+        "granite4:tiny-h": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.7684126028496889,
+          "top1_classes": 0.6600660066006601,
+          "top3_items": 0.9074854505318082,
+          "top3_classes": 0.858085808580858,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.7786885245901639
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.4270833333333333
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.7529411764705882
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "": 4983
+          }
+        },
+        "lfm2.5:8b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.5318081477021874,
+          "top1_classes": 0.5313531353135313,
+          "top3_items": 0.7840658238009232,
+          "top3_classes": 0.7062706270627063,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.6557377049180327
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.4479166666666667
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.4470588235294118
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "": 4983
+          }
+        },
+        "llama3.1:8b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.7593818984547461,
+          "top1_classes": 0.636963696369637,
+          "top3_items": 0.969496287377082,
+          "top3_classes": 0.8481848184818482,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.7786885245901639
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.3229166666666667
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.788235294117647
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "": 4983
+          }
+        },
+        "mistral:7b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.8522978125627132,
+          "top1_classes": 0.6798679867986799,
+          "top3_items": 0.891832229580574,
+          "top3_classes": 0.8184818481848185,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.8360655737704918
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.5
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.6588235294117647
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "": 4983
+          }
+        },
+        "phi4-mini:latest": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.6174994982942003,
+          "top1_classes": 0.4521452145214521,
+          "top3_items": 0.8280152518563114,
+          "top3_classes": 0.6633663366336634,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.48360655737704916
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.1875
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.7058823529411765
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "": 4983
+          }
+        },
+        "qwen2.5:7b-instruct": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.5892032911900461,
+          "top1_classes": 0.5544554455445545,
+          "top3_items": 0.9263495886012443,
+          "top3_classes": 0.8943894389438944,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.8360655737704918
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.4895833333333333
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.2235294117647059
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "": 4983
+          }
+        },
+        "qwen3.5:4b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.8105558900260887,
+          "top1_classes": 0.6831683168316832,
+          "top3_items": 0.8842063014248445,
+          "top3_classes": 0.8151815181518152,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.819672131147541
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.6770833333333334
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.49411764705882355
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "": 4983
+          }
+        },
+        "qwen3.5:9b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.800923138671483,
+          "top1_classes": 0.7161716171617162,
+          "top3_items": 0.9329721051575356,
+          "top3_classes": 0.8712871287128713,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.8114754098360656
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.6979166666666666
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.6
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "": 4983
+          }
+        }
+      }
+    },
+    "5050_on": {
+      "path": "dist\\RESULTADO_IFCQC_20260818T190222Z_96f42b02-422d-4795-a2c0-ab1e408aea86.zip",
+      "stages": 20,
+      "verdict_mismatches": 0,
+      "reference_value_mismatches": 0,
+      "primary_counts": {
+        "casa": 1010,
+        "predio": 2020
+      },
+      "stage_checks": [
+        {
+          "model": "falcon3:7b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "gemma2:9b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "granite4:tiny-h",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "lfm2.5:8b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "llama3.1:8b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "mistral:7b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "phi4-mini:latest",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "qwen2.5:7b-instruct",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "qwen3.5:4b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "qwen3.5:9b",
+          "dataset": "casa",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 263,
+            "total_issues": 263,
+            "with_ground_truth": 263
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "falcon3:7b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "gemma2:9b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "granite4:tiny-h",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "lfm2.5:8b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "llama3.1:8b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "mistral:7b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "phi4-mini:latest",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "qwen2.5:7b-instruct",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "qwen3.5:4b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        },
+        {
+          "model": "qwen3.5:9b",
+          "dataset": "predio",
+          "prompt": "v7.7",
+          "replica": 0,
+          "ground_truth_hash_matches": true,
+          "issue_counts": {
+            "ids_rules": 5,
+            "issue_types_filter": null,
+            "issues_from_ids": 0,
+            "sample_seed": null,
+            "sampled_from": 4720,
+            "total_issues": 4720,
+            "with_ground_truth": 4720
+          },
+          "simulation": true,
+          "ids_post_skip": 0
+        }
+      ],
+      "models": {
+        "falcon3:7b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.679108970499699,
+          "top1_classes": 0.6171617161716172,
+          "top3_items": 0.9000602046959663,
+          "top3_classes": 0.8151815181518152,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.7295081967213115
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.3125
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.8
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "gemma2:9b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.8231988761790087,
+          "top1_classes": 0.6633663366336634,
+          "top3_items": 0.9277543648404576,
+          "top3_classes": 0.8778877887788779,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.860655737704918
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.7291666666666666
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.3058823529411765
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "granite4:tiny-h": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.7553682520569938,
+          "top1_classes": 0.6666666666666666,
+          "top3_items": 0.8185831828215934,
+          "top3_classes": 0.8283828382838284,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.7786885245901639
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.4166666666666667
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.788235294117647
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "lfm2.5:8b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.3911298414609673,
+          "top1_classes": 0.42574257425742573,
+          "top3_items": 0.7816576359622717,
+          "top3_classes": 0.6897689768976898,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.6229508196721312
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.3541666666666667
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.2235294117647059
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "llama3.1:8b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.7579771222155328,
+          "top1_classes": 0.6270627062706271,
+          "top3_items": 0.9127031908488862,
+          "top3_classes": 0.8085808580858086,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.7540983606557377
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.3229166666666667
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.788235294117647
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "mistral:7b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.6259281557294802,
+          "top1_classes": 0.66996699669967,
+          "top3_items": 0.9341761990768613,
+          "top3_classes": 0.7953795379537953,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.7704918032786885
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.4895833333333333
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.7294117647058823
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "phi4-mini:latest": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.6670680313064419,
+          "top1_classes": 0.44884488448844884,
+          "top3_items": 0.8244029700983343,
+          "top3_classes": 0.7029702970297029,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.5491803278688525
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.21875
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.5647058823529412
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "qwen2.5:7b-instruct": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.5201685731487056,
+          "top1_classes": 0.5181518151815182,
+          "top3_items": 0.8488862131246238,
+          "top3_classes": 0.8547854785478548,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.8524590163934426
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.3958333333333333
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.17647058823529413
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "qwen3.5:4b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.7605859923740719,
+          "top1_classes": 0.6567656765676567,
+          "top3_items": 0.840858920329119,
+          "top3_classes": 0.8085808580858086,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.8032786885245902
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.6458333333333334
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.4588235294117647
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        },
+        "qwen3.5:9b": {
+          "items": 4983,
+          "classes": 303,
+          "top1_items": 0.7796508127633955,
+          "top1_classes": 0.6864686468646864,
+          "top3_items": 0.9281557294802328,
+          "top3_classes": 0.8481848184818482,
+          "gt_confidence_class_accuracy": {
+            "high": {
+              "n": 122,
+              "top1": 0.8032786885245902
+            },
+            "medium": {
+              "n": 96,
+              "top1": 0.6979166666666666
+            },
+            "low": {
+              "n": 85,
+              "top1": 0.5058823529411764
+            }
+          },
+          "fire_constant_REI120": {
+            "items": 1543,
+            "item_hits": 1191,
+            "classes": 69,
+            "class_hits": 68
+          },
+          "official_candidates": 0,
+          "grounding_sources": {
+            "bsdd": 4983
+          }
+        }
+      }
+    }
+  },
+  "method": "Archived outputs rescored; no model execution. Constant REI 120 probe is exploratory, not physical validation.",
+  "paired_ablation": {
+    "models": {
+      "falcon3:7b": {
+        "n": 303,
+        "only_on": 9,
+        "only_off": 9,
+        "delta_pp": 0.0,
+        "mcnemar_unadjusted": 1.0
+      },
+      "gemma2:9b": {
+        "n": 303,
+        "only_on": 0,
+        "only_off": 22,
+        "delta_pp": 7.260726072607261,
+        "mcnemar_unadjusted": 4.76837158203125e-07
+      },
+      "granite4:tiny-h": {
+        "n": 303,
+        "only_on": 17,
+        "only_off": 18,
+        "delta_pp": 0.33003300330033003,
+        "mcnemar_unadjusted": 1.0
+      },
+      "lfm2.5:8b": {
+        "n": 303,
+        "only_on": 24,
+        "only_off": 38,
+        "delta_pp": 4.62046204620462,
+        "mcnemar_unadjusted": 0.09795444051950737
+      },
+      "llama3.1:8b": {
+        "n": 303,
+        "only_on": 6,
+        "only_off": 9,
+        "delta_pp": 0.9900990099009901,
+        "mcnemar_unadjusted": 0.60723876953125
+      },
+      "mistral:7b": {
+        "n": 303,
+        "only_on": 27,
+        "only_off": 19,
+        "delta_pp": -2.6402640264026402,
+        "mcnemar_unadjusted": 0.3019956131896606
+      },
+      "phi4-mini:latest": {
+        "n": 303,
+        "only_on": 20,
+        "only_off": 29,
+        "delta_pp": 2.9702970297029703,
+        "mcnemar_unadjusted": 0.2528697301676033
+      },
+      "qwen2.5:7b-instruct": {
+        "n": 303,
+        "only_on": 15,
+        "only_off": 24,
+        "delta_pp": 2.9702970297029703,
+        "mcnemar_unadjusted": 0.19959086691960692
+      },
+      "qwen3.5:4b": {
+        "n": 303,
+        "only_on": 11,
+        "only_off": 28,
+        "delta_pp": 5.6105610561056105,
+        "mcnemar_unadjusted": 0.009475304279476404
+      },
+      "qwen3.5:9b": {
+        "n": 303,
+        "only_on": 16,
+        "only_off": 20,
+        "delta_pp": 1.3201320132013201,
+        "mcnemar_unadjusted": 0.617719317029696
+      }
+    },
+    "pooled": {
+      "n_model_classes": 3030,
+      "only_on": 145,
+      "only_off": 216,
+      "naive_mcnemar": 0.00021984241886895665,
+      "caution": "Pooled McNemar assumes independence across model-class pairs; the same classes occur across models. Not a cluster-adjusted inference."
+    }
+  }
+}

@@ -1,5 +1,27 @@
 # CLAUDE.md — IFC Quality Copilot
 
+## Continuidade documental — 9 de outubro de 2026
+
+Leia o [índice documental](docs/README.md), o
+[planejamento atual](docs/planejamento/README.md), o
+[mapa das sete frentes](docs/planejamento/mapa-sete-frentes.md) e a
+[arquitetura base](docs/arquitetura/base-do-projeto.md). A
+[consolidação](docs/planejamento/CONSOLIDACAO-2026-10-09.md) mantém o inventário
+original; decisões confirmadas depois estão datadas no planejamento.
+
+Os princípios de localidade transversal e de decisão humana como porta de
+escrita são requisitos da evolução. A existência dos contratos da fundação
+não garante que todo o pipeline os aplique. Consulte as lacunas e os achados
+B01–B10 antes de tratar a descrição abaixo como conformidade operacional.
+
+Na primeira versão, o operador fornece IDS pronto; autoria pela UI fica fora
+do escopo inicial. Requisitos suportados são validados independentemente de
+cadastro no catálogo; campos sem mapeamento semântico ficam explícitos, sem
+preenchimento automático por equivalência inventada. Operador pode solicitar
+mapeamentos, e somente curador aprova/publica versões; LLM pode sugerir sem
+cadastrar automaticamente como verdade. Isso registra decisões, sem implementar
+funções ou alterar `PROMPT_VERSION v7.8`.
+
 ## Sobre o Projeto
 
 **IFC Quality Copilot** é um fluxo com supervisão humana para enriquecimento semântico
@@ -126,6 +148,11 @@ ifc-quality-copilot/
 │   │   └── tools_pipeline.py    # ferramentas de orquestração do pipeline
 │   ├── audit/
 │   │   └── logger.py            # classe AuditLogger
+│   ├── foundation/             # contratos da reformulação semântica
+│   │   ├── contracts.py         # catálogo local, IFC/IDS, contexto/LLM, revisão, BCF, governança, avaliação
+│   │   ├── locality.py          # política de localidade (sem fallback externo)
+│   │   ├── review.py            # decisão humana por elemento (única porta de escrita)
+│   │   └── adapters.py          # ligações finas com módulos existentes
 │   └── ui/
 │       ├── app.py               # aplicação Streamlit principal
 │       ├── styles.py            # CSS customizado
@@ -151,6 +178,13 @@ ifc-quality-copilot/
 
 > Nota: o antigo módulo `rule_engine/` foi descontinuado; a geração de regras a partir
 > do IDS vive em `src/translator/rule_generator.py`.
+
+> Fundação semântica (branch `feat/semantic-foundation`): módulo novo entra pelos
+> contratos de `src/foundation/contracts.py`, e todo endpoint passa por
+> `src/foundation/locality.py` — inferência e dados ficam locais/internos ao IME, sem
+> fallback para API externa. Mapa de reaproveitamento e lacunas em
+> `docs/arquitetura/fundacao-semantica.md`; proveniência desta base em
+> `docs/migracao/PROVENIENCIA-2026-10-08.md`.
 
 ## Convenções de Código
 

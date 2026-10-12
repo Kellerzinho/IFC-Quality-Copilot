@@ -1,0 +1,637 @@
+{
+  "schema_version": "m7-documentary-verification-1.0",
+  "date": "2026-10-12",
+  "verified_at_utc": "2026-10-12T17:38:14.484259+00:00",
+  "document": "docs/planejamento/modulo-07-avaliacao-cientifica.md",
+  "kind": "documentary_checks_only",
+  "status": "passed",
+  "checks": [
+    {
+      "check": "plan_exists_utf8",
+      "passed": true,
+      "detail": {
+        "bytes": 90203,
+        "lines": 761
+      }
+    },
+    {
+      "check": "text_integrity:modulo-07-avaliacao-cientifica.md",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "anchors_unique:modulo-07-avaliacao-cientifica.md",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "text_integrity:inventario-legado.md",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "anchors_unique:inventario-legado.md",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "text_integrity:protocolo-e-registros.md",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "anchors_unique:protocolo-e-registros.md",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "text_integrity:README.md",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "anchors_unique:README.md",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "local_links_and_anchors",
+      "passed": true,
+      "detail": {
+        "count": 87,
+        "errors": []
+      }
+    },
+    {
+      "check": "markdown_tables",
+      "passed": true,
+      "detail": {
+        "tables": 25,
+        "errors": []
+      }
+    },
+    {
+      "check": "eighteen_unique_tasks",
+      "passed": true,
+      "detail": [
+        "M7-01",
+        "M7-02",
+        "M7-03",
+        "M7-04",
+        "M7-05",
+        "M7-06",
+        "M7-07",
+        "M7-08",
+        "M7-09",
+        "M7-10",
+        "M7-11",
+        "M7-12",
+        "M7-13",
+        "M7-14",
+        "M7-15",
+        "M7-16",
+        "M7-17",
+        "M7-18"
+      ]
+    },
+    {
+      "check": "forty_future_tests",
+      "passed": true,
+      "detail": [
+        "T7-01",
+        "T7-02",
+        "T7-03",
+        "T7-04",
+        "T7-05",
+        "T7-06",
+        "T7-07",
+        "T7-08",
+        "T7-09",
+        "T7-10",
+        "T7-11",
+        "T7-12",
+        "T7-13",
+        "T7-14",
+        "T7-15",
+        "T7-16",
+        "T7-17",
+        "T7-18",
+        "T7-19",
+        "T7-20",
+        "T7-21",
+        "T7-22",
+        "T7-23",
+        "T7-24",
+        "T7-25",
+        "T7-26",
+        "T7-27",
+        "T7-28",
+        "T7-29",
+        "T7-30",
+        "T7-31",
+        "T7-32",
+        "T7-33",
+        "T7-34",
+        "T7-35",
+        "T7-36",
+        "T7-37",
+        "T7-38",
+        "T7-39",
+        "T7-40"
+      ]
+    },
+    {
+      "check": "sixteen_decisions_defined_and_covered",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "seven_boundary_contracts",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "all_tasks_actionable",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "check": "task_references_resolve",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "check": "test_references_resolve",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "check": "D7-01_traceability",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D7-02_traceability",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D7-03_traceability",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D7-04_traceability",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D7-05_traceability",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D7-06_traceability",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D7-07_traceability",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D7-08_traceability",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D7-09_traceability",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D7-10_traceability",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D7-11_traceability",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D7-12_traceability",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D7-13_traceability",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D7-14_traceability",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D7-15_traceability",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D7-16_traceability",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "json_parse:inventario-experimentos.json",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "json_parse:registro-modelos.json",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "json_parse:manifesto-preservacao.json",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "run_count_reconciliation",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "sidecar_count_reconciliation",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "zip_manifest_hashes",
+      "passed": true,
+      "detail": {
+        "members_checked": 240
+      }
+    },
+    {
+      "check": "duplicate_zip_not_counted",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "twenty_one_historical_tags",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "run_csv_matches_json",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "matrix_source_ids_complete",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "ten_families",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "matrix_no_fabricated_results",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "M6_final_reread_hash",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "real_gaps_and_no_masking",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "human_secondary",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "rule_context_call_controls",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "uncertainty_and_holdout",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "M6_contracts",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "no_new_model_research_import",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "future_external_documents",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "preservation_907_hashes",
+      "passed": true,
+      "detail": {
+        "source": "docs/planejamento/apoios-modulo-06/manifesto-preservacao.json",
+        "captured_at_utc": "2026-10-12T17:11:53.683597+00:00",
+        "compared_at_utc": "2026-10-12T17:36:28.451931+00:00"
+      }
+    },
+    {
+      "check": "consulted_M1_M6_and_support_versions_unchanged",
+      "passed": true,
+      "detail": [
+        {
+          "path": "docs/planejamento/modulo-01-dominio-catalogo.md",
+          "matches": true,
+          "sha256": "b7e224610782f2f9679788bd214848e7e507786f138b8c5d198c2eb0ee797c79"
+        },
+        {
+          "path": "docs/planejamento/modulo-02-nucleo-ifc-ids.md",
+          "matches": true,
+          "sha256": "9ff7bc96d8e5b96f3ad281116a8cd86b78624fa207e18af688f83c0c6b590565"
+        },
+        {
+          "path": "docs/planejamento/modulo-03-contexto-enriquecimento.md",
+          "matches": true,
+          "sha256": "682bbf256937997fccee67c63b7c8b22d8b9c43b32f801b11bb777a368b642d6"
+        },
+        {
+          "path": "docs/planejamento/modulo-04-interface-revisao.md",
+          "matches": true,
+          "sha256": "514464f7bcbd2aaabd59b19b94a04f6f88eac0e457d6cf1fad13604e7ccb4622"
+        },
+        {
+          "path": "docs/planejamento/modulo-05-saidas-revisoes.md",
+          "matches": true,
+          "sha256": "9d687ed8d2d1677d47cca58b670bae665f01fffad59fa784432fe4e55f664abc"
+        },
+        {
+          "path": "docs/planejamento/modulo-06-infraestrutura-governanca.md",
+          "matches": true,
+          "sha256": "3069bd87f64c6e4e80909f3b12e3af1fc4fb347102ee8f35aaa058968639a8c1"
+        },
+        {
+          "path": "docs/planejamento/apoios-modulo-06/verificacao-documental.json",
+          "matches": true,
+          "sha256": "5529d6aa2370168565ced55913241cef9623b5a9a845d4917a89c836a4cf1e2c"
+        },
+        {
+          "path": "docs/planejamento/apoios-modulo-06/manifesto-preservacao.json",
+          "matches": true,
+          "sha256": "b5dad960e8a377968228f9a6c7fe87f4ae4fcd375a8a1b2bfb5fc948d30108cb"
+        },
+        {
+          "path": "docs/pesquisa/modulo-03-contexto/matriz-canonica.json",
+          "matches": true,
+          "sha256": "ebd06ea8069627807db5cce4b104067406176b80e2ae4d84db0bbfc688dd0085"
+        }
+      ]
+    },
+    {
+      "check": "M6_final_report_matches_saved_plan",
+      "passed": true,
+      "detail": {
+        "reread_final": true,
+        "source_confirmation": "Mensagem do pai nesta tarefa em 12/10/2026 antes do encerramento",
+        "reported_M6_documentary_checks": 51,
+        "not_product_test_reexecution": true
+      }
+    },
+    {
+      "check": "git_head_branch_index_preserved",
+      "passed": true,
+      "detail": {
+        "head": "a76c2d7a85983ef246761a49db9266c411ea90fd",
+        "branch": "feat/semantic-foundation",
+        "index_sha256": "fe66e494402e7a741c2aa982958ab74384444b8a96aede668e4defe9f32db16d"
+      }
+    },
+    {
+      "check": "task_dependency_graph_acyclic",
+      "passed": true,
+      "detail": {
+        "explicit_normalized_dependencies": {
+          "1": [],
+          "2": [],
+          "3": [
+            2
+          ],
+          "4": [
+            3
+          ],
+          "5": [
+            1,
+            3,
+            4
+          ],
+          "6": [
+            4,
+            5
+          ],
+          "7": [
+            5,
+            6
+          ],
+          "8": [
+            7
+          ],
+          "9": [
+            2
+          ],
+          "10": [
+            6,
+            8,
+            9
+          ],
+          "11": [
+            1,
+            4,
+            5,
+            10
+          ],
+          "12": [
+            6,
+            8,
+            11
+          ],
+          "13": [
+            11,
+            12
+          ],
+          "14": [
+            5,
+            11,
+            13
+          ],
+          "15": [
+            11,
+            14
+          ],
+          "16": [
+            1,
+            5,
+            14
+          ],
+          "17": [
+            1,
+            14
+          ],
+          "18": [
+            2,
+            14,
+            15
+          ]
+        },
+        "conditional_extensions": "M7-16/M7-17 somente se no escopo executado para M7-18; nao bloqueiam nucleo"
+      }
+    },
+    {
+      "check": "twenty_numbered_sections",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "nine_integration_reconciliations",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "twelve_risks",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "saved_documentary_completion_status",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "ten_deliverables_exclusive_M7",
+      "passed": true,
+      "detail": [
+        "docs/planejamento/modulo-07-avaliacao-cientifica.md",
+        "docs/pesquisa/modulo-07-avaliacao/inventario-experimentos.json",
+        "docs/pesquisa/modulo-07-avaliacao/inventario-legado.md",
+        "docs/pesquisa/modulo-07-avaliacao/inventario-runs.csv",
+        "docs/pesquisa/modulo-07-avaliacao/manifesto-preservacao.json",
+        "docs/pesquisa/modulo-07-avaliacao/matriz-modelos-propriedades.csv",
+        "docs/pesquisa/modulo-07-avaliacao/protocolo-e-registros.md",
+        "docs/pesquisa/modulo-07-avaliacao/README.md",
+        "docs/pesquisa/modulo-07-avaliacao/registro-modelos.json",
+        "docs/pesquisa/modulo-07-avaliacao/verificacao-documental.json"
+      ]
+    },
+    {
+      "check": "final_saved_markdown_reread_links_tables",
+      "passed": true,
+      "detail": {
+        "local_links": 87,
+        "tables": 25,
+        "errors": []
+      }
+    },
+    {
+      "check": "current_prompt_v78_pins_preserved",
+      "passed": true,
+      "detail": null
+    }
+  ],
+  "counts": {
+    "checks": 66,
+    "passed": 66,
+    "tasks": 18,
+    "future_tests": 40,
+    "decisions": 16,
+    "tables": 25,
+    "local_link_occurrences": 87,
+    "written_files": 10,
+    "source_matrix_records": 313,
+    "historical_runs": 275,
+    "historical_tags": 21,
+    "protected_reference_files": 907
+  },
+  "limits": [
+    "Checagens exclusivamente documentais; os quarenta casos T7 sao ensaios/testes futuros nao executados.",
+    "Sem inferencia, benchmark, download, consulta atual Ollama, suite funcional, treino ou automacao.",
+    "Inventario nao certifica correcao de engenharia, independencia das linhas ou novo estudo humano.",
+    "Primeiro snapshot M7 de 803 hashes perdido no temporario entre chamadas; preservacao comparada contra referencia M6 de 907 arquivos com proveniencia/data explicitas.",
+    "Licencas/hardware atuais, corpus final, gabaritos por caso, alinhamento academico e resultados novos permanecem futuros.",
+    "Referencias externas nao revalidadas pela rede; uso de fontes locais e artefatos historicos."
+  ],
+  "sha256": "66dbdb3096bc9b932d9d12175b46a6f69bbf2ab36e018e9aebf2afec6e83397b",
+  "bytes": 90203,
+  "lines": 761,
+  "deliverables": [
+    {
+      "path": "docs/planejamento/modulo-07-avaliacao-cientifica.md",
+      "sha256": "66dbdb3096bc9b932d9d12175b46a6f69bbf2ab36e018e9aebf2afec6e83397b",
+      "bytes": 90203
+    },
+    {
+      "path": "docs/pesquisa/modulo-07-avaliacao/inventario-experimentos.json",
+      "sha256": "e487b8c3fb37429fd393e32080a33fc50826027035018fc2b6b002ff80584d50",
+      "bytes": 1235005
+    },
+    {
+      "path": "docs/pesquisa/modulo-07-avaliacao/inventario-legado.md",
+      "sha256": "9522e239bbf6ffb612a84c86177f411c959f345c12d594c04c1b23ef01209e2a",
+      "bytes": 9851
+    },
+    {
+      "path": "docs/pesquisa/modulo-07-avaliacao/inventario-runs.csv",
+      "sha256": "47015ee59c1e4ef2d020cd36dbdb14868b314f6a80faf6d0edad849b158ae528",
+      "bytes": 113958
+    },
+    {
+      "path": "docs/pesquisa/modulo-07-avaliacao/manifesto-preservacao.json",
+      "sha256": "b748db33cb926e48c230194e36fc094ee1ee344f51f6d781b309174e8dd88957",
+      "bytes": 175037
+    },
+    {
+      "path": "docs/pesquisa/modulo-07-avaliacao/matriz-modelos-propriedades.csv",
+      "sha256": "fd2fcc6b5aa63aa1e2eb5cf13ca3fb692bcaf1b59b4e0c7cea17a35fdb80010b",
+      "bytes": 174671
+    },
+    {
+      "path": "docs/pesquisa/modulo-07-avaliacao/protocolo-e-registros.md",
+      "sha256": "7a98202280fe5120ea28326f17c38196ebb62e39ab97f65b3e6b30be564a1558",
+      "bytes": 14032
+    },
+    {
+      "path": "docs/pesquisa/modulo-07-avaliacao/README.md",
+      "sha256": "8c61f63bd7e0c612e079b6c16bf4b49d6101ccf2dd73d27e14a57f8c5e860f3b",
+      "bytes": 3325
+    },
+    {
+      "path": "docs/pesquisa/modulo-07-avaliacao/registro-modelos.json",
+      "sha256": "629cf7ed6eeeadc0e560b5942cf2d51aab9f30130c6b95121e65a7fbe1c8d731",
+      "bytes": 80520
+    }
+  ],
+  "editorial_review": {
+    "coverage": "16/16 decisoes mapeadas a tarefas e verificacoes futuras; nucleos separados, reais sem masking inicial, controles R/E*/granularidade, incerteza/grupos e roteiro secundario revisados",
+    "M6_reconciliation": "Versao final relida; loopback sem contas, identidade local nao verificada, dados por projeto, pesos compartilhados, slot global, cancelamento/backup/limites e autenticacao antes de rede preservados",
+    "parallel_model_research": "Nao incorporada como decisao ou modelo testado",
+    "remaining_documentary_blockers": []
+  }
+}

@@ -1,0 +1,1419 @@
+{
+  "schema_version": "m7-prospection-1.0",
+  "date": "2026-10-12",
+  "owner": "Nonato",
+  "scope": "Registro inicial por evidencia historica; nenhum novo candidato externo incorporado; sem consulta Ollama atual ou download",
+  "models": [
+    {
+      "model_tag_historical": "deepseek-r1:14b",
+      "lineage": "escala",
+      "run_count": 2,
+      "run_artifacts": [
+        "dist/RESULTADO_IFCQC_20260817T131446Z_eafb5188-3022-4999-b3f6-a70cbfb35a8a.zip!/benchmark/results/casa/deepseek-r1_14b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260817T131446Z_eafb5188-3022-4999-b3f6-a70cbfb35a8a.zip!/benchmark/results/predio/deepseek-r1_14b/run_0.json"
+      ],
+      "observed_run_digests": [
+        "c333b7232bdb521236694ffbb5f5a6b11cc45d98e9142c73123b670fca400b09"
+      ],
+      "runs_missing_digest": 0,
+      "historical_lock_entries": [
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-16-6cb3c5498138/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "deepseek-r1:14b",
+          "digest": "c333b7232bdb521236694ffbb5f5a6b11cc45d98e9142c73123b670fca400b09",
+          "size_bytes": 8988112209,
+          "architecture": "qwen2",
+          "parameters": "14.8B",
+          "context_length": 131072,
+          "quantization": "Q4_K_M"
+        }
+      ],
+      "quantization_from_historical_locks": [
+        "Q4_K_M"
+      ],
+      "M7_selection_status": "nao_selecionado; ensaios historicos nao decidem nova rodada",
+      "personal_computer_fit": "a verificar no equipamento/perfil atual",
+      "ime_fit": "a verificar; servidor/disponibilidade nao confirmados",
+      "license_provenance_current": "consulta primaria e registro por artefato pendentes da prospeccao",
+      "new_M7_runs": 0
+    },
+    {
+      "model_tag_historical": "falcon3:10b",
+      "lineage": "escala",
+      "run_count": 2,
+      "run_artifacts": [
+        "dist/RESULTADO_IFCQC_20260817T131446Z_eafb5188-3022-4999-b3f6-a70cbfb35a8a.zip!/benchmark/results/casa/falcon3_10b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260817T131446Z_eafb5188-3022-4999-b3f6-a70cbfb35a8a.zip!/benchmark/results/predio/falcon3_10b/run_0.json"
+      ],
+      "observed_run_digests": [
+        "1653ff122acd9292fe21a097c0f08ce419439be595b312d6d6d06ee33df91b88"
+      ],
+      "runs_missing_digest": 0,
+      "historical_lock_entries": [
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-16-6cb3c5498138/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "falcon3:10b",
+          "digest": "1653ff122acd9292fe21a097c0f08ce419439be595b312d6d6d06ee33df91b88",
+          "size_bytes": 6287534018,
+          "architecture": "llama",
+          "parameters": "10.3B",
+          "context_length": 32768,
+          "quantization": "Q4_K_M"
+        }
+      ],
+      "quantization_from_historical_locks": [
+        "Q4_K_M"
+      ],
+      "M7_selection_status": "nao_selecionado; ensaios historicos nao decidem nova rodada",
+      "personal_computer_fit": "a verificar no equipamento/perfil atual",
+      "ime_fit": "a verificar; servidor/disponibilidade nao confirmados",
+      "license_provenance_current": "consulta primaria e registro por artefato pendentes da prospeccao",
+      "new_M7_runs": 0
+    },
+    {
+      "model_tag_historical": "falcon3:7b",
+      "lineage": "principal",
+      "run_count": 22,
+      "run_artifacts": [
+        "src/experiment/results/2026-07-27-benchmark-top10/predio/falcon3_7b/run_0.json",
+        "src/experiment/results/2026-07-27-benchmark-top10/predio-masked/falcon3_7b/run_0.json",
+        "src/experiment/results/2026-07-28-benchmark-limpo/predio/falcon3_7b/run_0.json",
+        "src/experiment/results/2026-07-28-benchmark-limpo/predio-masked/falcon3_7b/run_0.json",
+        "src/experiment/results/2026-08-02-benchmark-v6/predio/falcon3_7b/run_0.json",
+        "src/experiment/results/2026-08-02-benchmark-v6/predio-masked/falcon3_7b/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio/falcon3_7b/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio/falcon3_7b/run_1.json",
+        "src/experiment/results/2026-08-04-benchmark/predio-masked/falcon3_7b/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio-masked/falcon3_7b/run_1.json",
+        "src/experiment/results/2026-08-12-benchmark-4060/results/casa/falcon3_7b/run_0.json",
+        "src/experiment/results/2026-08-12-benchmark-4060/results/predio/falcon3_7b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260810T183938Z_e2b94a5a-647d-4f79-9b93-62fb4a7ed7c7.zip!/benchmark/results/casa/falcon3_7b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260810T183938Z_e2b94a5a-647d-4f79-9b93-62fb4a7ed7c7.zip!/benchmark/results/predio/falcon3_7b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260813T164437Z_8b2516e1-0287-49f1-8b49-22a58a099cdb.zip!/benchmark/results/casa/falcon3_7b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260813T164437Z_8b2516e1-0287-49f1-8b49-22a58a099cdb.zip!/benchmark/results/predio/falcon3_7b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260814T174140Z_1de27843-d185-4456-bc3e-810a6fd52c80.zip!/benchmark/results/casa/falcon3_7b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260814T174140Z_1de27843-d185-4456-bc3e-810a6fd52c80.zip!/benchmark/results/predio/falcon3_7b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T185722Z_54c4f307-3e34-4be4-9575-acf0678ca94a.zip!/benchmark/results/casa/falcon3_7b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T185722Z_54c4f307-3e34-4be4-9575-acf0678ca94a.zip!/benchmark/results/predio/falcon3_7b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T190222Z_96f42b02-422d-4795-a2c0-ab1e408aea86.zip!/benchmark/results/casa/falcon3_7b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T190222Z_96f42b02-422d-4795-a2c0-ab1e408aea86.zip!/benchmark/results/predio/falcon3_7b/run_0.json"
+      ],
+      "observed_run_digests": [
+        "472ea1c89f64f932368963bfb8c7f54bd797f2161932cf0a72766a587b2e586d"
+      ],
+      "runs_missing_digest": 8,
+      "historical_lock_entries": [
+        {
+          "source": "dist/entrega-final/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-10-eb835f2ab43d/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "falcon3:7b",
+          "digest": "472ea1c89f64f932368963bfb8c7f54bd797f2161932cf0a72766a587b2e586d",
+          "size_bytes": 4569738977,
+          "architecture": "llama",
+          "parameters": "7.5B",
+          "context_length": 32768,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-10-eb835f2ab43d/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "falcon3:7b",
+          "digest": "472ea1c89f64f932368963bfb8c7f54bd797f2161932cf0a72766a587b2e586d",
+          "size_bytes": 4569738977,
+          "architecture": "llama",
+          "parameters": "7.5B",
+          "context_length": 32768,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-12-523b937cc657/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "falcon3:7b",
+          "digest": "472ea1c89f64f932368963bfb8c7f54bd797f2161932cf0a72766a587b2e586d",
+          "size_bytes": 4569738977,
+          "architecture": "llama",
+          "parameters": "7.5B",
+          "context_length": 32768,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-13-da0f471b44a9/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "falcon3:7b",
+          "digest": "472ea1c89f64f932368963bfb8c7f54bd797f2161932cf0a72766a587b2e586d",
+          "size_bytes": 4569738977,
+          "architecture": "llama",
+          "parameters": "7.5B",
+          "context_length": 32768,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-18-801636831646/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "falcon3:7b",
+          "digest": "472ea1c89f64f932368963bfb8c7f54bd797f2161932cf0a72766a587b2e586d",
+          "size_bytes": 4569738977,
+          "architecture": "llama",
+          "parameters": "7.5B",
+          "context_length": 32768,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "src/experiment/results/models.lock.json",
+          "name": "falcon3:7b",
+          "digest": "472ea1c89f64f932368963bfb8c7f54bd797f2161932cf0a72766a587b2e586d",
+          "size_bytes": 4569738977,
+          "architecture": "llama",
+          "parameters": "7.5B",
+          "context_length": 32768,
+          "quantization": "Q4_K_M"
+        }
+      ],
+      "quantization_from_historical_locks": [
+        "Q4_K_M"
+      ],
+      "M7_selection_status": "nao_selecionado; ensaios historicos nao decidem nova rodada",
+      "personal_computer_fit": "a verificar no equipamento/perfil atual",
+      "ime_fit": "a verificar; servidor/disponibilidade nao confirmados",
+      "license_provenance_current": "consulta primaria e registro por artefato pendentes da prospeccao",
+      "new_M7_runs": 0
+    },
+    {
+      "model_tag_historical": "gemma2:9b",
+      "lineage": "principal",
+      "run_count": 43,
+      "run_artifacts": [
+        "src/experiment/results/2026-07-02-benchmark/predio/gemma2_9b/run_0.json",
+        "src/experiment/results/2026-07-02-benchmark/predio-masked/gemma2_9b/run_0.json",
+        "src/experiment/results/2026-07-02-smoke-matriz/gemma2_9b/run_0.json",
+        "src/experiment/results/2026-07-27-benchmark-top10/predio/gemma2_9b/run_0.json",
+        "src/experiment/results/2026-07-27-benchmark-top10/predio-masked/gemma2_9b/run_0.json",
+        "src/experiment/results/2026-07-27-breakdown/predio/gemma2_9b/run_0.json",
+        "src/experiment/results/2026-07-27-breakdown/predio-masked/gemma2_9b/run_0.json",
+        "src/experiment/results/2026-07-27-corrigido/predio/gemma2_9b/run_0.json",
+        "src/experiment/results/2026-07-27-corrigido/predio-masked/gemma2_9b/run_0.json",
+        "src/experiment/results/2026-07-27-evidencia/predio/gemma2_9b/run_0.json",
+        "src/experiment/results/2026-07-27-evidencia/predio-masked/gemma2_9b/run_0.json",
+        "src/experiment/results/2026-07-27-final/predio/gemma2_9b/run_0.json",
+        "src/experiment/results/2026-07-27-final/predio-masked/gemma2_9b/run_0.json",
+        "src/experiment/results/2026-07-27-final2/predio/gemma2_9b/run_0.json",
+        "src/experiment/results/2026-07-27-final2/predio-masked/gemma2_9b/run_0.json",
+        "src/experiment/results/2026-07-28-benchmark-limpo/predio/gemma2_9b/run_0.json",
+        "src/experiment/results/2026-07-28-benchmark-limpo/predio-masked/gemma2_9b/run_0.json",
+        "src/experiment/results/2026-08-02-benchmark-v6/predio/gemma2_9b/run_0.json",
+        "src/experiment/results/2026-08-02-benchmark-v6/predio-masked/gemma2_9b/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio/gemma2_9b/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio/gemma2_9b/run_1.json",
+        "src/experiment/results/2026-08-04-benchmark/predio-masked/gemma2_9b/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio-masked/gemma2_9b/run_1.json",
+        "src/experiment/results/2026-08-12-benchmark-4060/results/casa/gemma2_9b/run_0.json",
+        "src/experiment/results/2026-08-12-benchmark-4060/results/predio/gemma2_9b/run_0.json",
+        "src/experiment/results/estrato-a-pos-fix-bsdd/gemma2_9b/run_0.json",
+        "src/experiment/results/estrato-b-pos-material/gemma2_9b/run_0.json",
+        "src/experiment/results/estrato-v6-pset-gemma2/gemma2_9b/run_0.json",
+        "src/experiment/results/estrato-v7-fogo-termico-gemma2/gemma2_9b/run_0.json",
+        "src/experiment/results/estrato-v71-fogo-termico-gemma2/gemma2_9b/run_0.json",
+        "src/experiment/results/estrato-v72-fogo-termico-gemma2/gemma2_9b/run_0.json",
+        "src/experiment/results/gate-v72-gemma2-piloto/predio/gemma2_9b/run_0.json",
+        "src/experiment/results/gate-v72-gemma2-piloto/predio-masked/gemma2_9b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260810T183938Z_e2b94a5a-647d-4f79-9b93-62fb4a7ed7c7.zip!/benchmark/results/casa/gemma2_9b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260810T183938Z_e2b94a5a-647d-4f79-9b93-62fb4a7ed7c7.zip!/benchmark/results/predio/gemma2_9b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260813T164437Z_8b2516e1-0287-49f1-8b49-22a58a099cdb.zip!/benchmark/results/casa/gemma2_9b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260813T164437Z_8b2516e1-0287-49f1-8b49-22a58a099cdb.zip!/benchmark/results/predio/gemma2_9b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260814T174140Z_1de27843-d185-4456-bc3e-810a6fd52c80.zip!/benchmark/results/casa/gemma2_9b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260814T174140Z_1de27843-d185-4456-bc3e-810a6fd52c80.zip!/benchmark/results/predio/gemma2_9b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T185722Z_54c4f307-3e34-4be4-9575-acf0678ca94a.zip!/benchmark/results/casa/gemma2_9b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T185722Z_54c4f307-3e34-4be4-9575-acf0678ca94a.zip!/benchmark/results/predio/gemma2_9b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T190222Z_96f42b02-422d-4795-a2c0-ab1e408aea86.zip!/benchmark/results/casa/gemma2_9b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T190222Z_96f42b02-422d-4795-a2c0-ab1e408aea86.zip!/benchmark/results/predio/gemma2_9b/run_0.json"
+      ],
+      "observed_run_digests": [
+        "ff02c3702f322b9e075e9568332d96c0a7028002f1a5a056e0a6784320a4db0b"
+      ],
+      "runs_missing_digest": 29,
+      "historical_lock_entries": [
+        {
+          "source": "dist/entrega-final/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-10-eb835f2ab43d/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "gemma2:9b",
+          "digest": "ff02c3702f322b9e075e9568332d96c0a7028002f1a5a056e0a6784320a4db0b",
+          "size_bytes": 5443152417,
+          "architecture": "gemma2",
+          "parameters": "9.2B",
+          "context_length": 8192,
+          "quantization": "Q4_0"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-10-eb835f2ab43d/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "gemma2:9b",
+          "digest": "ff02c3702f322b9e075e9568332d96c0a7028002f1a5a056e0a6784320a4db0b",
+          "size_bytes": 5443152417,
+          "architecture": "gemma2",
+          "parameters": "9.2B",
+          "context_length": 8192,
+          "quantization": "Q4_0"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-12-523b937cc657/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "gemma2:9b",
+          "digest": "ff02c3702f322b9e075e9568332d96c0a7028002f1a5a056e0a6784320a4db0b",
+          "size_bytes": 5443152417,
+          "architecture": "gemma2",
+          "parameters": "9.2B",
+          "context_length": 8192,
+          "quantization": "Q4_0"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-13-da0f471b44a9/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "gemma2:9b",
+          "digest": "ff02c3702f322b9e075e9568332d96c0a7028002f1a5a056e0a6784320a4db0b",
+          "size_bytes": 5443152417,
+          "architecture": "gemma2",
+          "parameters": "9.2B",
+          "context_length": 8192,
+          "quantization": "Q4_0"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-18-801636831646/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "gemma2:9b",
+          "digest": "ff02c3702f322b9e075e9568332d96c0a7028002f1a5a056e0a6784320a4db0b",
+          "size_bytes": 5443152417,
+          "architecture": "gemma2",
+          "parameters": "9.2B",
+          "context_length": 8192,
+          "quantization": "Q4_0"
+        },
+        {
+          "source": "src/experiment/results/models.lock.json",
+          "name": "gemma2:9b",
+          "digest": "ff02c3702f322b9e075e9568332d96c0a7028002f1a5a056e0a6784320a4db0b",
+          "size_bytes": 5443152417,
+          "architecture": "gemma2",
+          "parameters": "9.2B",
+          "context_length": 8192,
+          "quantization": "Q4_0"
+        }
+      ],
+      "quantization_from_historical_locks": [
+        "Q4_0"
+      ],
+      "M7_selection_status": "nao_selecionado; ensaios historicos nao decidem nova rodada",
+      "personal_computer_fit": "a verificar no equipamento/perfil atual",
+      "ime_fit": "a verificar; servidor/disponibilidade nao confirmados",
+      "license_provenance_current": "consulta primaria e registro por artefato pendentes da prospeccao",
+      "new_M7_runs": 0
+    },
+    {
+      "model_tag_historical": "gemma3:12b",
+      "lineage": "escala",
+      "run_count": 2,
+      "run_artifacts": [
+        "dist/RESULTADO_IFCQC_20260817T131446Z_eafb5188-3022-4999-b3f6-a70cbfb35a8a.zip!/benchmark/results/casa/gemma3_12b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260817T131446Z_eafb5188-3022-4999-b3f6-a70cbfb35a8a.zip!/benchmark/results/predio/gemma3_12b/run_0.json"
+      ],
+      "observed_run_digests": [
+        "f4031aab637d1ffa37b42570452ae0e4fad0314754d17ded67322e4b95836f8a"
+      ],
+      "runs_missing_digest": 0,
+      "historical_lock_entries": [
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-16-6cb3c5498138/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "gemma3:12b",
+          "digest": "f4031aab637d1ffa37b42570452ae0e4fad0314754d17ded67322e4b95836f8a",
+          "size_bytes": 8149190253,
+          "architecture": "gemma3",
+          "parameters": "12.2B",
+          "context_length": 131072,
+          "quantization": "Q4_K_M"
+        }
+      ],
+      "quantization_from_historical_locks": [
+        "Q4_K_M"
+      ],
+      "M7_selection_status": "nao_selecionado; ensaios historicos nao decidem nova rodada",
+      "personal_computer_fit": "a verificar no equipamento/perfil atual",
+      "ime_fit": "a verificar; servidor/disponibilidade nao confirmados",
+      "license_provenance_current": "consulta primaria e registro por artefato pendentes da prospeccao",
+      "new_M7_runs": 0
+    },
+    {
+      "model_tag_historical": "gemma4:12b",
+      "lineage": "escala",
+      "run_count": 2,
+      "run_artifacts": [
+        "dist/RESULTADO_IFCQC_20260817T131446Z_eafb5188-3022-4999-b3f6-a70cbfb35a8a.zip!/benchmark/results/casa/gemma4_12b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260817T131446Z_eafb5188-3022-4999-b3f6-a70cbfb35a8a.zip!/benchmark/results/predio/gemma4_12b/run_0.json"
+      ],
+      "observed_run_digests": [
+        "4eb23ef187e2c5462566d6a1d3bbbc2f1346d0b4327cbb66d58fffbcc9b2b05c"
+      ],
+      "runs_missing_digest": 0,
+      "historical_lock_entries": [
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-16-6cb3c5498138/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "gemma4:12b",
+          "digest": "4eb23ef187e2c5462566d6a1d3bbbc2f1346d0b4327cbb66d58fffbcc9b2b05c",
+          "size_bytes": 7556508396,
+          "architecture": "gemma4",
+          "parameters": "11.9B",
+          "context_length": 262144,
+          "quantization": "Q4_K_M"
+        }
+      ],
+      "quantization_from_historical_locks": [
+        "Q4_K_M"
+      ],
+      "M7_selection_status": "nao_selecionado; ensaios historicos nao decidem nova rodada",
+      "personal_computer_fit": "a verificar no equipamento/perfil atual",
+      "ime_fit": "a verificar; servidor/disponibilidade nao confirmados",
+      "license_provenance_current": "consulta primaria e registro por artefato pendentes da prospeccao",
+      "new_M7_runs": 0
+    },
+    {
+      "model_tag_historical": "gpt-oss:20b",
+      "lineage": "escala",
+      "run_count": 2,
+      "run_artifacts": [
+        "dist/RESULTADO_IFCQC_20260817T131446Z_eafb5188-3022-4999-b3f6-a70cbfb35a8a.zip!/benchmark/results/casa/gpt-oss_20b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260817T131446Z_eafb5188-3022-4999-b3f6-a70cbfb35a8a.zip!/benchmark/results/predio/gpt-oss_20b/run_0.json"
+      ],
+      "observed_run_digests": [
+        "17052f91a42e97930aa6e28a6c6c06a983e6a58dbb00434885a0cf5313e376f7"
+      ],
+      "runs_missing_digest": 0,
+      "historical_lock_entries": [
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-16-6cb3c5498138/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "gpt-oss:20b",
+          "digest": "17052f91a42e97930aa6e28a6c6c06a983e6a58dbb00434885a0cf5313e376f7",
+          "size_bytes": 13793441244,
+          "architecture": "gptoss",
+          "parameters": "20.9B",
+          "context_length": 131072,
+          "quantization": "MXFP4"
+        }
+      ],
+      "quantization_from_historical_locks": [
+        "MXFP4"
+      ],
+      "M7_selection_status": "nao_selecionado; ensaios historicos nao decidem nova rodada",
+      "personal_computer_fit": "a verificar no equipamento/perfil atual",
+      "ime_fit": "a verificar; servidor/disponibilidade nao confirmados",
+      "license_provenance_current": "consulta primaria e registro por artefato pendentes da prospeccao",
+      "new_M7_runs": 0
+    },
+    {
+      "model_tag_historical": "granite4:tiny-h",
+      "lineage": "principal",
+      "run_count": 22,
+      "run_artifacts": [
+        "src/experiment/results/2026-07-27-benchmark-top10/predio/granite4_tiny-h/run_0.json",
+        "src/experiment/results/2026-07-27-benchmark-top10/predio-masked/granite4_tiny-h/run_0.json",
+        "src/experiment/results/2026-07-28-benchmark-limpo/predio/granite4_tiny-h/run_0.json",
+        "src/experiment/results/2026-07-28-benchmark-limpo/predio-masked/granite4_tiny-h/run_0.json",
+        "src/experiment/results/2026-08-02-benchmark-v6/predio/granite4_tiny-h/run_0.json",
+        "src/experiment/results/2026-08-02-benchmark-v6/predio-masked/granite4_tiny-h/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio/granite4_tiny-h/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio/granite4_tiny-h/run_1.json",
+        "src/experiment/results/2026-08-04-benchmark/predio-masked/granite4_tiny-h/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio-masked/granite4_tiny-h/run_1.json",
+        "src/experiment/results/2026-08-12-benchmark-4060/results/casa/granite4_tiny-h/run_0.json",
+        "src/experiment/results/2026-08-12-benchmark-4060/results/predio/granite4_tiny-h/run_0.json",
+        "dist/RESULTADO_IFCQC_20260810T183938Z_e2b94a5a-647d-4f79-9b93-62fb4a7ed7c7.zip!/benchmark/results/casa/granite4_tiny-h/run_0.json",
+        "dist/RESULTADO_IFCQC_20260810T183938Z_e2b94a5a-647d-4f79-9b93-62fb4a7ed7c7.zip!/benchmark/results/predio/granite4_tiny-h/run_0.json",
+        "dist/RESULTADO_IFCQC_20260813T164437Z_8b2516e1-0287-49f1-8b49-22a58a099cdb.zip!/benchmark/results/casa/granite4_tiny-h/run_0.json",
+        "dist/RESULTADO_IFCQC_20260813T164437Z_8b2516e1-0287-49f1-8b49-22a58a099cdb.zip!/benchmark/results/predio/granite4_tiny-h/run_0.json",
+        "dist/RESULTADO_IFCQC_20260814T174140Z_1de27843-d185-4456-bc3e-810a6fd52c80.zip!/benchmark/results/casa/granite4_tiny-h/run_0.json",
+        "dist/RESULTADO_IFCQC_20260814T174140Z_1de27843-d185-4456-bc3e-810a6fd52c80.zip!/benchmark/results/predio/granite4_tiny-h/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T185722Z_54c4f307-3e34-4be4-9575-acf0678ca94a.zip!/benchmark/results/casa/granite4_tiny-h/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T185722Z_54c4f307-3e34-4be4-9575-acf0678ca94a.zip!/benchmark/results/predio/granite4_tiny-h/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T190222Z_96f42b02-422d-4795-a2c0-ab1e408aea86.zip!/benchmark/results/casa/granite4_tiny-h/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T190222Z_96f42b02-422d-4795-a2c0-ab1e408aea86.zip!/benchmark/results/predio/granite4_tiny-h/run_0.json"
+      ],
+      "observed_run_digests": [
+        "566b725534ea0e9824f844abe6a78e1ab6f7357f1efb549be94908cb681513bb"
+      ],
+      "runs_missing_digest": 8,
+      "historical_lock_entries": [
+        {
+          "source": "dist/entrega-final/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-10-eb835f2ab43d/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "granite4:tiny-h",
+          "digest": "566b725534ea0e9824f844abe6a78e1ab6f7357f1efb549be94908cb681513bb",
+          "size_bytes": 4230995221,
+          "architecture": "granitehybrid",
+          "parameters": "6.9B",
+          "context_length": 1048576,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-10-eb835f2ab43d/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "granite4:tiny-h",
+          "digest": "566b725534ea0e9824f844abe6a78e1ab6f7357f1efb549be94908cb681513bb",
+          "size_bytes": 4230995221,
+          "architecture": "granitehybrid",
+          "parameters": "6.9B",
+          "context_length": 1048576,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-12-523b937cc657/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "granite4:tiny-h",
+          "digest": "566b725534ea0e9824f844abe6a78e1ab6f7357f1efb549be94908cb681513bb",
+          "size_bytes": 4230995221,
+          "architecture": "granitehybrid",
+          "parameters": "6.9B",
+          "context_length": 1048576,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-13-da0f471b44a9/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "granite4:tiny-h",
+          "digest": "566b725534ea0e9824f844abe6a78e1ab6f7357f1efb549be94908cb681513bb",
+          "size_bytes": 4230995221,
+          "architecture": "granitehybrid",
+          "parameters": "6.9B",
+          "context_length": 1048576,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-18-801636831646/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "granite4:tiny-h",
+          "digest": "566b725534ea0e9824f844abe6a78e1ab6f7357f1efb549be94908cb681513bb",
+          "size_bytes": 4230995221,
+          "architecture": "granitehybrid",
+          "parameters": "6.9B",
+          "context_length": 1048576,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "src/experiment/results/models.lock.json",
+          "name": "granite4:tiny-h",
+          "digest": "566b725534ea0e9824f844abe6a78e1ab6f7357f1efb549be94908cb681513bb",
+          "size_bytes": 4230995221,
+          "architecture": "granitehybrid",
+          "parameters": "6.9B",
+          "context_length": 1048576,
+          "quantization": "Q4_K_M"
+        }
+      ],
+      "quantization_from_historical_locks": [
+        "Q4_K_M"
+      ],
+      "M7_selection_status": "nao_selecionado; ensaios historicos nao decidem nova rodada",
+      "personal_computer_fit": "a verificar no equipamento/perfil atual",
+      "ime_fit": "a verificar; servidor/disponibilidade nao confirmados",
+      "license_provenance_current": "consulta primaria e registro por artefato pendentes da prospeccao",
+      "new_M7_runs": 0
+    },
+    {
+      "model_tag_historical": "lfm2.5:8b",
+      "lineage": "principal",
+      "run_count": 22,
+      "run_artifacts": [
+        "src/experiment/results/2026-07-27-benchmark-top10/predio/lfm2.5_8b/run_0.json",
+        "src/experiment/results/2026-07-27-benchmark-top10/predio-masked/lfm2.5_8b/run_0.json",
+        "src/experiment/results/2026-07-28-benchmark-limpo/predio/lfm2.5_8b/run_0.json",
+        "src/experiment/results/2026-07-28-benchmark-limpo/predio-masked/lfm2.5_8b/run_0.json",
+        "src/experiment/results/2026-08-02-benchmark-v6/predio/lfm2.5_8b/run_0.json",
+        "src/experiment/results/2026-08-02-benchmark-v6/predio-masked/lfm2.5_8b/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio/lfm2.5_8b/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio/lfm2.5_8b/run_1.json",
+        "src/experiment/results/2026-08-04-benchmark/predio-masked/lfm2.5_8b/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio-masked/lfm2.5_8b/run_1.json",
+        "src/experiment/results/2026-08-12-benchmark-4060/results/casa/lfm2.5_8b/run_0.json",
+        "src/experiment/results/2026-08-12-benchmark-4060/results/predio/lfm2.5_8b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260810T183938Z_e2b94a5a-647d-4f79-9b93-62fb4a7ed7c7.zip!/benchmark/results/casa/lfm2.5_8b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260810T183938Z_e2b94a5a-647d-4f79-9b93-62fb4a7ed7c7.zip!/benchmark/results/predio/lfm2.5_8b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260813T164437Z_8b2516e1-0287-49f1-8b49-22a58a099cdb.zip!/benchmark/results/casa/lfm2.5_8b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260813T164437Z_8b2516e1-0287-49f1-8b49-22a58a099cdb.zip!/benchmark/results/predio/lfm2.5_8b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260814T174140Z_1de27843-d185-4456-bc3e-810a6fd52c80.zip!/benchmark/results/casa/lfm2.5_8b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260814T174140Z_1de27843-d185-4456-bc3e-810a6fd52c80.zip!/benchmark/results/predio/lfm2.5_8b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T185722Z_54c4f307-3e34-4be4-9575-acf0678ca94a.zip!/benchmark/results/casa/lfm2.5_8b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T185722Z_54c4f307-3e34-4be4-9575-acf0678ca94a.zip!/benchmark/results/predio/lfm2.5_8b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T190222Z_96f42b02-422d-4795-a2c0-ab1e408aea86.zip!/benchmark/results/casa/lfm2.5_8b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T190222Z_96f42b02-422d-4795-a2c0-ab1e408aea86.zip!/benchmark/results/predio/lfm2.5_8b/run_0.json"
+      ],
+      "observed_run_digests": [
+        "9cf756159fc2f3b9128c6a3f544ec90c5e9b8afdbb4179a57b8aea9de589cfb2"
+      ],
+      "runs_missing_digest": 8,
+      "historical_lock_entries": [
+        {
+          "source": "dist/entrega-final/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-10-eb835f2ab43d/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "lfm2.5:8b",
+          "digest": "9cf756159fc2f3b9128c6a3f544ec90c5e9b8afdbb4179a57b8aea9de589cfb2",
+          "size_bytes": 5156075525,
+          "architecture": "lfm2moe",
+          "parameters": "8.5B",
+          "context_length": 128000,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-10-eb835f2ab43d/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "lfm2.5:8b",
+          "digest": "9cf756159fc2f3b9128c6a3f544ec90c5e9b8afdbb4179a57b8aea9de589cfb2",
+          "size_bytes": 5156075525,
+          "architecture": "lfm2moe",
+          "parameters": "8.5B",
+          "context_length": 128000,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-12-523b937cc657/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "lfm2.5:8b",
+          "digest": "9cf756159fc2f3b9128c6a3f544ec90c5e9b8afdbb4179a57b8aea9de589cfb2",
+          "size_bytes": 5156075525,
+          "architecture": "lfm2moe",
+          "parameters": "8.5B",
+          "context_length": 128000,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-13-da0f471b44a9/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "lfm2.5:8b",
+          "digest": "9cf756159fc2f3b9128c6a3f544ec90c5e9b8afdbb4179a57b8aea9de589cfb2",
+          "size_bytes": 5156075525,
+          "architecture": "lfm2moe",
+          "parameters": "8.5B",
+          "context_length": 128000,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-18-801636831646/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "lfm2.5:8b",
+          "digest": "9cf756159fc2f3b9128c6a3f544ec90c5e9b8afdbb4179a57b8aea9de589cfb2",
+          "size_bytes": 5156075525,
+          "architecture": "lfm2moe",
+          "parameters": "8.5B",
+          "context_length": 128000,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "src/experiment/results/models.lock.json",
+          "name": "lfm2.5:8b",
+          "digest": "9cf756159fc2f3b9128c6a3f544ec90c5e9b8afdbb4179a57b8aea9de589cfb2",
+          "size_bytes": 5156075525,
+          "architecture": "lfm2moe",
+          "parameters": "8.5B",
+          "context_length": 128000,
+          "quantization": "Q4_K_M"
+        }
+      ],
+      "quantization_from_historical_locks": [
+        "Q4_K_M"
+      ],
+      "M7_selection_status": "nao_selecionado; ensaios historicos nao decidem nova rodada",
+      "personal_computer_fit": "a verificar no equipamento/perfil atual",
+      "ime_fit": "a verificar; servidor/disponibilidade nao confirmados",
+      "license_provenance_current": "consulta primaria e registro por artefato pendentes da prospeccao",
+      "new_M7_runs": 0
+    },
+    {
+      "model_tag_historical": "llama3.1:8b",
+      "lineage": "principal",
+      "run_count": 25,
+      "run_artifacts": [
+        "src/experiment/results/2026-07-02-benchmark/predio/llama3.1_8b/run_0.json",
+        "src/experiment/results/2026-07-02-benchmark/predio-masked/llama3.1_8b/run_0.json",
+        "src/experiment/results/2026-07-02-smoke-matriz/llama3.1_8b/run_0.json",
+        "src/experiment/results/2026-07-27-benchmark-top10/predio/llama3.1_8b/run_0.json",
+        "src/experiment/results/2026-07-27-benchmark-top10/predio-masked/llama3.1_8b/run_0.json",
+        "src/experiment/results/2026-07-28-benchmark-limpo/predio/llama3.1_8b/run_0.json",
+        "src/experiment/results/2026-07-28-benchmark-limpo/predio-masked/llama3.1_8b/run_0.json",
+        "src/experiment/results/2026-08-02-benchmark-v6/predio/llama3.1_8b/run_0.json",
+        "src/experiment/results/2026-08-02-benchmark-v6/predio-masked/llama3.1_8b/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio/llama3.1_8b/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio/llama3.1_8b/run_1.json",
+        "src/experiment/results/2026-08-04-benchmark/predio-masked/llama3.1_8b/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio-masked/llama3.1_8b/run_1.json",
+        "src/experiment/results/2026-08-12-benchmark-4060/results/casa/llama3.1_8b/run_0.json",
+        "src/experiment/results/2026-08-12-benchmark-4060/results/predio/llama3.1_8b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260810T183938Z_e2b94a5a-647d-4f79-9b93-62fb4a7ed7c7.zip!/benchmark/results/casa/llama3.1_8b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260810T183938Z_e2b94a5a-647d-4f79-9b93-62fb4a7ed7c7.zip!/benchmark/results/predio/llama3.1_8b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260813T164437Z_8b2516e1-0287-49f1-8b49-22a58a099cdb.zip!/benchmark/results/casa/llama3.1_8b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260813T164437Z_8b2516e1-0287-49f1-8b49-22a58a099cdb.zip!/benchmark/results/predio/llama3.1_8b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260814T174140Z_1de27843-d185-4456-bc3e-810a6fd52c80.zip!/benchmark/results/casa/llama3.1_8b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260814T174140Z_1de27843-d185-4456-bc3e-810a6fd52c80.zip!/benchmark/results/predio/llama3.1_8b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T185722Z_54c4f307-3e34-4be4-9575-acf0678ca94a.zip!/benchmark/results/casa/llama3.1_8b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T185722Z_54c4f307-3e34-4be4-9575-acf0678ca94a.zip!/benchmark/results/predio/llama3.1_8b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T190222Z_96f42b02-422d-4795-a2c0-ab1e408aea86.zip!/benchmark/results/casa/llama3.1_8b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T190222Z_96f42b02-422d-4795-a2c0-ab1e408aea86.zip!/benchmark/results/predio/llama3.1_8b/run_0.json"
+      ],
+      "observed_run_digests": [
+        "46e0c10c039e019119339687c3c1757cc81b9da49709a3b3924863ba87ca666e"
+      ],
+      "runs_missing_digest": 11,
+      "historical_lock_entries": [
+        {
+          "source": "dist/entrega-final/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-10-eb835f2ab43d/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "llama3.1:8b",
+          "digest": "46e0c10c039e019119339687c3c1757cc81b9da49709a3b3924863ba87ca666e",
+          "size_bytes": 4920753328,
+          "architecture": "llama",
+          "parameters": "8.0B",
+          "context_length": 131072,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-10-eb835f2ab43d/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "llama3.1:8b",
+          "digest": "46e0c10c039e019119339687c3c1757cc81b9da49709a3b3924863ba87ca666e",
+          "size_bytes": 4920753328,
+          "architecture": "llama",
+          "parameters": "8.0B",
+          "context_length": 131072,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-12-523b937cc657/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "llama3.1:8b",
+          "digest": "46e0c10c039e019119339687c3c1757cc81b9da49709a3b3924863ba87ca666e",
+          "size_bytes": 4920753328,
+          "architecture": "llama",
+          "parameters": "8.0B",
+          "context_length": 131072,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-13-da0f471b44a9/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "llama3.1:8b",
+          "digest": "46e0c10c039e019119339687c3c1757cc81b9da49709a3b3924863ba87ca666e",
+          "size_bytes": 4920753328,
+          "architecture": "llama",
+          "parameters": "8.0B",
+          "context_length": 131072,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-18-801636831646/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "llama3.1:8b",
+          "digest": "46e0c10c039e019119339687c3c1757cc81b9da49709a3b3924863ba87ca666e",
+          "size_bytes": 4920753328,
+          "architecture": "llama",
+          "parameters": "8.0B",
+          "context_length": 131072,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "src/experiment/results/models.lock.json",
+          "name": "llama3.1:8b",
+          "digest": "46e0c10c039e019119339687c3c1757cc81b9da49709a3b3924863ba87ca666e",
+          "size_bytes": 4920753328,
+          "architecture": "llama",
+          "parameters": "8.0B",
+          "context_length": 131072,
+          "quantization": "Q4_K_M"
+        }
+      ],
+      "quantization_from_historical_locks": [
+        "Q4_K_M"
+      ],
+      "M7_selection_status": "nao_selecionado; ensaios historicos nao decidem nova rodada",
+      "personal_computer_fit": "a verificar no equipamento/perfil atual",
+      "ime_fit": "a verificar; servidor/disponibilidade nao confirmados",
+      "license_provenance_current": "consulta primaria e registro por artefato pendentes da prospeccao",
+      "new_M7_runs": 0
+    },
+    {
+      "model_tag_historical": "mistral-nemo:12b",
+      "lineage": "escala",
+      "run_count": 2,
+      "run_artifacts": [
+        "dist/RESULTADO_IFCQC_20260817T131446Z_eafb5188-3022-4999-b3f6-a70cbfb35a8a.zip!/benchmark/results/casa/mistral-nemo_12b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260817T131446Z_eafb5188-3022-4999-b3f6-a70cbfb35a8a.zip!/benchmark/results/predio/mistral-nemo_12b/run_0.json"
+      ],
+      "observed_run_digests": [
+        "e7e06d107c6c86ed0cf45445f1790720b5092149c4c95f4d965844e9afbfdc89"
+      ],
+      "runs_missing_digest": 0,
+      "historical_lock_entries": [
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-16-6cb3c5498138/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "mistral-nemo:12b",
+          "digest": "e7e06d107c6c86ed0cf45445f1790720b5092149c4c95f4d965844e9afbfdc89",
+          "size_bytes": 7071713227,
+          "architecture": "llama",
+          "parameters": "12.2B",
+          "context_length": 1024000,
+          "quantization": "Q4_0"
+        }
+      ],
+      "quantization_from_historical_locks": [
+        "Q4_0"
+      ],
+      "M7_selection_status": "nao_selecionado; ensaios historicos nao decidem nova rodada",
+      "personal_computer_fit": "a verificar no equipamento/perfil atual",
+      "ime_fit": "a verificar; servidor/disponibilidade nao confirmados",
+      "license_provenance_current": "consulta primaria e registro por artefato pendentes da prospeccao",
+      "new_M7_runs": 0
+    },
+    {
+      "model_tag_historical": "mistral-small:22b",
+      "lineage": "escala",
+      "run_count": 2,
+      "run_artifacts": [
+        "dist/RESULTADO_IFCQC_20260817T131446Z_eafb5188-3022-4999-b3f6-a70cbfb35a8a.zip!/benchmark/results/casa/mistral-small_22b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260817T131446Z_eafb5188-3022-4999-b3f6-a70cbfb35a8a.zip!/benchmark/results/predio/mistral-small_22b/run_0.json"
+      ],
+      "observed_run_digests": [
+        "d095cd553b04e6bde571072bf3d8bc0a88c340e011acf12a5d4fa06ee36f88bc"
+      ],
+      "runs_missing_digest": 0,
+      "historical_lock_entries": [
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-16-6cb3c5498138/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "mistral-small:22b",
+          "digest": "d095cd553b04e6bde571072bf3d8bc0a88c340e011acf12a5d4fa06ee36f88bc",
+          "size_bytes": 12569172141,
+          "architecture": "llama",
+          "parameters": "22.2B",
+          "context_length": 131072,
+          "quantization": "Q4_0"
+        }
+      ],
+      "quantization_from_historical_locks": [
+        "Q4_0"
+      ],
+      "M7_selection_status": "nao_selecionado; ensaios historicos nao decidem nova rodada",
+      "personal_computer_fit": "a verificar no equipamento/perfil atual",
+      "ime_fit": "a verificar; servidor/disponibilidade nao confirmados",
+      "license_provenance_current": "consulta primaria e registro por artefato pendentes da prospeccao",
+      "new_M7_runs": 0
+    },
+    {
+      "model_tag_historical": "mistral:7b",
+      "lineage": "principal",
+      "run_count": 23,
+      "run_artifacts": [
+        "src/experiment/results/2026-07-02-benchmark/predio/mistral_7b/run_0.json",
+        "src/experiment/results/2026-07-02-benchmark/predio-masked/mistral_7b/run_0.json",
+        "src/experiment/results/2026-07-02-smoke-matriz/mistral_7b/run_0.json",
+        "src/experiment/results/2026-07-27-benchmark-top10/predio/mistral_7b/run_0.json",
+        "src/experiment/results/2026-07-27-benchmark-top10/predio-masked/mistral_7b/run_0.json",
+        "src/experiment/results/2026-07-28-benchmark-limpo/predio/mistral_7b/run_0.json",
+        "src/experiment/results/2026-07-28-benchmark-limpo/predio-masked/mistral_7b/run_0.json",
+        "src/experiment/results/2026-08-02-benchmark-v6/predio/mistral_7b/run_0.json",
+        "src/experiment/results/2026-08-02-benchmark-v6/predio-masked/mistral_7b/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio/mistral_7b/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio-masked/mistral_7b/run_0.json",
+        "src/experiment/results/2026-08-12-benchmark-4060/results/casa/mistral_7b/run_0.json",
+        "src/experiment/results/2026-08-12-benchmark-4060/results/predio/mistral_7b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260810T183938Z_e2b94a5a-647d-4f79-9b93-62fb4a7ed7c7.zip!/benchmark/results/casa/mistral_7b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260810T183938Z_e2b94a5a-647d-4f79-9b93-62fb4a7ed7c7.zip!/benchmark/results/predio/mistral_7b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260813T164437Z_8b2516e1-0287-49f1-8b49-22a58a099cdb.zip!/benchmark/results/casa/mistral_7b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260813T164437Z_8b2516e1-0287-49f1-8b49-22a58a099cdb.zip!/benchmark/results/predio/mistral_7b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260814T174140Z_1de27843-d185-4456-bc3e-810a6fd52c80.zip!/benchmark/results/casa/mistral_7b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260814T174140Z_1de27843-d185-4456-bc3e-810a6fd52c80.zip!/benchmark/results/predio/mistral_7b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T185722Z_54c4f307-3e34-4be4-9575-acf0678ca94a.zip!/benchmark/results/casa/mistral_7b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T185722Z_54c4f307-3e34-4be4-9575-acf0678ca94a.zip!/benchmark/results/predio/mistral_7b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T190222Z_96f42b02-422d-4795-a2c0-ab1e408aea86.zip!/benchmark/results/casa/mistral_7b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T190222Z_96f42b02-422d-4795-a2c0-ab1e408aea86.zip!/benchmark/results/predio/mistral_7b/run_0.json"
+      ],
+      "observed_run_digests": [
+        "6577803aa9a036369e481d648a2baebb381ebc6e897f2bb9a766a2aa7bfbc1cf"
+      ],
+      "runs_missing_digest": 11,
+      "historical_lock_entries": [
+        {
+          "source": "dist/entrega-final/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-10-eb835f2ab43d/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "mistral:7b",
+          "digest": "6577803aa9a036369e481d648a2baebb381ebc6e897f2bb9a766a2aa7bfbc1cf",
+          "size_bytes": 4372824384,
+          "architecture": "llama",
+          "parameters": "7.2B",
+          "context_length": 32768,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-10-eb835f2ab43d/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "mistral:7b",
+          "digest": "6577803aa9a036369e481d648a2baebb381ebc6e897f2bb9a766a2aa7bfbc1cf",
+          "size_bytes": 4372824384,
+          "architecture": "llama",
+          "parameters": "7.2B",
+          "context_length": 32768,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-12-523b937cc657/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "mistral:7b",
+          "digest": "6577803aa9a036369e481d648a2baebb381ebc6e897f2bb9a766a2aa7bfbc1cf",
+          "size_bytes": 4372824384,
+          "architecture": "llama",
+          "parameters": "7.2B",
+          "context_length": 32768,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-13-da0f471b44a9/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "mistral:7b",
+          "digest": "6577803aa9a036369e481d648a2baebb381ebc6e897f2bb9a766a2aa7bfbc1cf",
+          "size_bytes": 4372824384,
+          "architecture": "llama",
+          "parameters": "7.2B",
+          "context_length": 32768,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-18-801636831646/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "mistral:7b",
+          "digest": "6577803aa9a036369e481d648a2baebb381ebc6e897f2bb9a766a2aa7bfbc1cf",
+          "size_bytes": 4372824384,
+          "architecture": "llama",
+          "parameters": "7.2B",
+          "context_length": 32768,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "src/experiment/results/models.lock.json",
+          "name": "mistral:7b",
+          "digest": "6577803aa9a036369e481d648a2baebb381ebc6e897f2bb9a766a2aa7bfbc1cf",
+          "size_bytes": 4372824384,
+          "architecture": "llama",
+          "parameters": "7.2B",
+          "context_length": 32768,
+          "quantization": "Q4_K_M"
+        }
+      ],
+      "quantization_from_historical_locks": [
+        "Q4_K_M"
+      ],
+      "M7_selection_status": "nao_selecionado; ensaios historicos nao decidem nova rodada",
+      "personal_computer_fit": "a verificar no equipamento/perfil atual",
+      "ime_fit": "a verificar; servidor/disponibilidade nao confirmados",
+      "license_provenance_current": "consulta primaria e registro por artefato pendentes da prospeccao",
+      "new_M7_runs": 0
+    },
+    {
+      "model_tag_historical": "phi3.5",
+      "lineage": "smoke inicial",
+      "run_count": 1,
+      "run_artifacts": [
+        "src/experiment/results/2026-07-02-smoke-matriz/phi3.5/run_0.json"
+      ],
+      "observed_run_digests": [],
+      "runs_missing_digest": 1,
+      "historical_lock_entries": [],
+      "quantization_from_historical_locks": [],
+      "M7_selection_status": "nao_selecionado; ensaios historicos nao decidem nova rodada",
+      "personal_computer_fit": "a verificar no equipamento/perfil atual",
+      "ime_fit": "a verificar; servidor/disponibilidade nao confirmados",
+      "license_provenance_current": "consulta primaria e registro por artefato pendentes da prospeccao",
+      "new_M7_runs": 0
+    },
+    {
+      "model_tag_historical": "phi4-mini:latest",
+      "lineage": "principal",
+      "run_count": 22,
+      "run_artifacts": [
+        "src/experiment/results/2026-07-27-benchmark-top10/predio/phi4-mini_latest/run_0.json",
+        "src/experiment/results/2026-07-27-benchmark-top10/predio-masked/phi4-mini_latest/run_0.json",
+        "src/experiment/results/2026-07-28-benchmark-limpo/predio/phi4-mini_latest/run_0.json",
+        "src/experiment/results/2026-07-28-benchmark-limpo/predio-masked/phi4-mini_latest/run_0.json",
+        "src/experiment/results/2026-08-02-benchmark-v6/predio/phi4-mini_latest/run_0.json",
+        "src/experiment/results/2026-08-02-benchmark-v6/predio-masked/phi4-mini_latest/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio/phi4-mini_latest/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio/phi4-mini_latest/run_1.json",
+        "src/experiment/results/2026-08-04-benchmark/predio-masked/phi4-mini_latest/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio-masked/phi4-mini_latest/run_1.json",
+        "src/experiment/results/2026-08-12-benchmark-4060/results/casa/phi4-mini_latest/run_0.json",
+        "src/experiment/results/2026-08-12-benchmark-4060/results/predio/phi4-mini_latest/run_0.json",
+        "dist/RESULTADO_IFCQC_20260810T183938Z_e2b94a5a-647d-4f79-9b93-62fb4a7ed7c7.zip!/benchmark/results/casa/phi4-mini_latest/run_0.json",
+        "dist/RESULTADO_IFCQC_20260810T183938Z_e2b94a5a-647d-4f79-9b93-62fb4a7ed7c7.zip!/benchmark/results/predio/phi4-mini_latest/run_0.json",
+        "dist/RESULTADO_IFCQC_20260813T164437Z_8b2516e1-0287-49f1-8b49-22a58a099cdb.zip!/benchmark/results/casa/phi4-mini_latest/run_0.json",
+        "dist/RESULTADO_IFCQC_20260813T164437Z_8b2516e1-0287-49f1-8b49-22a58a099cdb.zip!/benchmark/results/predio/phi4-mini_latest/run_0.json",
+        "dist/RESULTADO_IFCQC_20260814T174140Z_1de27843-d185-4456-bc3e-810a6fd52c80.zip!/benchmark/results/casa/phi4-mini_latest/run_0.json",
+        "dist/RESULTADO_IFCQC_20260814T174140Z_1de27843-d185-4456-bc3e-810a6fd52c80.zip!/benchmark/results/predio/phi4-mini_latest/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T185722Z_54c4f307-3e34-4be4-9575-acf0678ca94a.zip!/benchmark/results/casa/phi4-mini_latest/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T185722Z_54c4f307-3e34-4be4-9575-acf0678ca94a.zip!/benchmark/results/predio/phi4-mini_latest/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T190222Z_96f42b02-422d-4795-a2c0-ab1e408aea86.zip!/benchmark/results/casa/phi4-mini_latest/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T190222Z_96f42b02-422d-4795-a2c0-ab1e408aea86.zip!/benchmark/results/predio/phi4-mini_latest/run_0.json"
+      ],
+      "observed_run_digests": [
+        "78fad5d182a7c33065e153a5f8ba210754207ba9d91973f57dffa7f487363753"
+      ],
+      "runs_missing_digest": 8,
+      "historical_lock_entries": [
+        {
+          "source": "dist/entrega-final/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-10-eb835f2ab43d/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "phi4-mini:latest",
+          "digest": "78fad5d182a7c33065e153a5f8ba210754207ba9d91973f57dffa7f487363753",
+          "size_bytes": 2491876774,
+          "architecture": "phi3",
+          "parameters": "3.8B",
+          "context_length": 131072,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-10-eb835f2ab43d/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "phi4-mini:latest",
+          "digest": "78fad5d182a7c33065e153a5f8ba210754207ba9d91973f57dffa7f487363753",
+          "size_bytes": 2491876774,
+          "architecture": "phi3",
+          "parameters": "3.8B",
+          "context_length": 131072,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-12-523b937cc657/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "phi4-mini:latest",
+          "digest": "78fad5d182a7c33065e153a5f8ba210754207ba9d91973f57dffa7f487363753",
+          "size_bytes": 2491876774,
+          "architecture": "phi3",
+          "parameters": "3.8B",
+          "context_length": 131072,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-13-da0f471b44a9/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "phi4-mini:latest",
+          "digest": "78fad5d182a7c33065e153a5f8ba210754207ba9d91973f57dffa7f487363753",
+          "size_bytes": 2491876774,
+          "architecture": "phi3",
+          "parameters": "3.8B",
+          "context_length": 131072,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-18-801636831646/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "phi4-mini:latest",
+          "digest": "78fad5d182a7c33065e153a5f8ba210754207ba9d91973f57dffa7f487363753",
+          "size_bytes": 2491876774,
+          "architecture": "phi3",
+          "parameters": "3.8B",
+          "context_length": 131072,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "src/experiment/results/models.lock.json",
+          "name": "phi4-mini:latest",
+          "digest": "78fad5d182a7c33065e153a5f8ba210754207ba9d91973f57dffa7f487363753",
+          "size_bytes": 2491876774,
+          "architecture": "phi3",
+          "parameters": "3.8B",
+          "context_length": 131072,
+          "quantization": "Q4_K_M"
+        }
+      ],
+      "quantization_from_historical_locks": [
+        "Q4_K_M"
+      ],
+      "M7_selection_status": "nao_selecionado; ensaios historicos nao decidem nova rodada",
+      "personal_computer_fit": "a verificar no equipamento/perfil atual",
+      "ime_fit": "a verificar; servidor/disponibilidade nao confirmados",
+      "license_provenance_current": "consulta primaria e registro por artefato pendentes da prospeccao",
+      "new_M7_runs": 0
+    },
+    {
+      "model_tag_historical": "phi4:14b",
+      "lineage": "escala",
+      "run_count": 2,
+      "run_artifacts": [
+        "dist/RESULTADO_IFCQC_20260817T131446Z_eafb5188-3022-4999-b3f6-a70cbfb35a8a.zip!/benchmark/results/casa/phi4_14b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260817T131446Z_eafb5188-3022-4999-b3f6-a70cbfb35a8a.zip!/benchmark/results/predio/phi4_14b/run_0.json"
+      ],
+      "observed_run_digests": [
+        "ac896e5b8b34a1f4efa7b14d7520725140d5512484457fab45d2a4ea14c69dba"
+      ],
+      "runs_missing_digest": 0,
+      "historical_lock_entries": [
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-16-6cb3c5498138/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "phi4:14b",
+          "digest": "ac896e5b8b34a1f4efa7b14d7520725140d5512484457fab45d2a4ea14c69dba",
+          "size_bytes": 9053116391,
+          "architecture": "phi3",
+          "parameters": "14.7B",
+          "context_length": 16384,
+          "quantization": "Q4_K_M"
+        }
+      ],
+      "quantization_from_historical_locks": [
+        "Q4_K_M"
+      ],
+      "M7_selection_status": "nao_selecionado; ensaios historicos nao decidem nova rodada",
+      "personal_computer_fit": "a verificar no equipamento/perfil atual",
+      "ime_fit": "a verificar; servidor/disponibilidade nao confirmados",
+      "license_provenance_current": "consulta primaria e registro por artefato pendentes da prospeccao",
+      "new_M7_runs": 0
+    },
+    {
+      "model_tag_historical": "qwen2.5:14b-instruct",
+      "lineage": "escala",
+      "run_count": 2,
+      "run_artifacts": [
+        "dist/RESULTADO_IFCQC_20260817T131446Z_eafb5188-3022-4999-b3f6-a70cbfb35a8a.zip!/benchmark/results/casa/qwen2.5_14b-instruct/run_0.json",
+        "dist/RESULTADO_IFCQC_20260817T131446Z_eafb5188-3022-4999-b3f6-a70cbfb35a8a.zip!/benchmark/results/predio/qwen2.5_14b-instruct/run_0.json"
+      ],
+      "observed_run_digests": [
+        "7cdf5a0187d5c58cc5d369b255592f7841d1c4696d45a8c8a9489440385b22f6"
+      ],
+      "runs_missing_digest": 0,
+      "historical_lock_entries": [
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-16-6cb3c5498138/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "qwen2.5:14b-instruct",
+          "digest": "7cdf5a0187d5c58cc5d369b255592f7841d1c4696d45a8c8a9489440385b22f6",
+          "size_bytes": 8988124069,
+          "architecture": "qwen2",
+          "parameters": "14.8B",
+          "context_length": 32768,
+          "quantization": "Q4_K_M"
+        }
+      ],
+      "quantization_from_historical_locks": [
+        "Q4_K_M"
+      ],
+      "M7_selection_status": "nao_selecionado; ensaios historicos nao decidem nova rodada",
+      "personal_computer_fit": "a verificar no equipamento/perfil atual",
+      "ime_fit": "a verificar; servidor/disponibilidade nao confirmados",
+      "license_provenance_current": "consulta primaria e registro por artefato pendentes da prospeccao",
+      "new_M7_runs": 0
+    },
+    {
+      "model_tag_historical": "qwen2.5:7b-instruct",
+      "lineage": "principal",
+      "run_count": 31,
+      "run_artifacts": [
+        "src/experiment/results/2026-07-02-benchmark/predio/qwen2.5_7b-instruct/run_0.json",
+        "src/experiment/results/2026-07-02-benchmark/predio-masked/qwen2.5_7b-instruct/run_0.json",
+        "src/experiment/results/2026-07-02-smoke-matriz/qwen2.5_7b-instruct/run_0.json",
+        "src/experiment/results/2026-07-27-benchmark-top10/predio/qwen2.5_7b-instruct/run_0.json",
+        "src/experiment/results/2026-07-27-benchmark-top10/predio-masked/qwen2.5_7b-instruct/run_0.json",
+        "src/experiment/results/2026-07-27-breakdown/predio/qwen2.5_7b-instruct/run_0.json",
+        "src/experiment/results/2026-07-27-breakdown/predio-masked/qwen2.5_7b-instruct/run_0.json",
+        "src/experiment/results/2026-07-27-final/predio/qwen2.5_7b-instruct/run_0.json",
+        "src/experiment/results/2026-07-27-final/predio-masked/qwen2.5_7b-instruct/run_0.json",
+        "src/experiment/results/2026-07-27-final2/predio/qwen2.5_7b-instruct/run_0.json",
+        "src/experiment/results/2026-07-27-final2/predio-masked/qwen2.5_7b-instruct/run_0.json",
+        "src/experiment/results/2026-07-28-benchmark-limpo/predio/qwen2.5_7b-instruct/run_0.json",
+        "src/experiment/results/2026-07-28-benchmark-limpo/predio-masked/qwen2.5_7b-instruct/run_0.json",
+        "src/experiment/results/2026-08-02-benchmark-v6/predio/qwen2.5_7b-instruct/run_0.json",
+        "src/experiment/results/2026-08-02-benchmark-v6/predio-masked/qwen2.5_7b-instruct/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio/qwen2.5_7b-instruct/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio/qwen2.5_7b-instruct/run_1.json",
+        "src/experiment/results/2026-08-04-benchmark/predio-masked/qwen2.5_7b-instruct/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio-masked/qwen2.5_7b-instruct/run_1.json",
+        "src/experiment/results/2026-08-12-benchmark-4060/results/casa/qwen2.5_7b-instruct/run_0.json",
+        "src/experiment/results/2026-08-12-benchmark-4060/results/predio/qwen2.5_7b-instruct/run_0.json",
+        "dist/RESULTADO_IFCQC_20260810T183938Z_e2b94a5a-647d-4f79-9b93-62fb4a7ed7c7.zip!/benchmark/results/casa/qwen2.5_7b-instruct/run_0.json",
+        "dist/RESULTADO_IFCQC_20260810T183938Z_e2b94a5a-647d-4f79-9b93-62fb4a7ed7c7.zip!/benchmark/results/predio/qwen2.5_7b-instruct/run_0.json",
+        "dist/RESULTADO_IFCQC_20260813T164437Z_8b2516e1-0287-49f1-8b49-22a58a099cdb.zip!/benchmark/results/casa/qwen2.5_7b-instruct/run_0.json",
+        "dist/RESULTADO_IFCQC_20260813T164437Z_8b2516e1-0287-49f1-8b49-22a58a099cdb.zip!/benchmark/results/predio/qwen2.5_7b-instruct/run_0.json",
+        "dist/RESULTADO_IFCQC_20260814T174140Z_1de27843-d185-4456-bc3e-810a6fd52c80.zip!/benchmark/results/casa/qwen2.5_7b-instruct/run_0.json",
+        "dist/RESULTADO_IFCQC_20260814T174140Z_1de27843-d185-4456-bc3e-810a6fd52c80.zip!/benchmark/results/predio/qwen2.5_7b-instruct/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T185722Z_54c4f307-3e34-4be4-9575-acf0678ca94a.zip!/benchmark/results/casa/qwen2.5_7b-instruct/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T185722Z_54c4f307-3e34-4be4-9575-acf0678ca94a.zip!/benchmark/results/predio/qwen2.5_7b-instruct/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T190222Z_96f42b02-422d-4795-a2c0-ab1e408aea86.zip!/benchmark/results/casa/qwen2.5_7b-instruct/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T190222Z_96f42b02-422d-4795-a2c0-ab1e408aea86.zip!/benchmark/results/predio/qwen2.5_7b-instruct/run_0.json"
+      ],
+      "observed_run_digests": [
+        "845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e"
+      ],
+      "runs_missing_digest": 17,
+      "historical_lock_entries": [
+        {
+          "source": "dist/entrega-final/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-10-eb835f2ab43d/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "qwen2.5:7b-instruct",
+          "digest": "845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e",
+          "size_bytes": 4683087332,
+          "architecture": "qwen2",
+          "parameters": "7.6B",
+          "context_length": 32768,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-10-eb835f2ab43d/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "qwen2.5:7b-instruct",
+          "digest": "845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e",
+          "size_bytes": 4683087332,
+          "architecture": "qwen2",
+          "parameters": "7.6B",
+          "context_length": 32768,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-12-523b937cc657/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "qwen2.5:7b-instruct",
+          "digest": "845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e",
+          "size_bytes": 4683087332,
+          "architecture": "qwen2",
+          "parameters": "7.6B",
+          "context_length": 32768,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-13-da0f471b44a9/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "qwen2.5:7b-instruct",
+          "digest": "845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e",
+          "size_bytes": 4683087332,
+          "architecture": "qwen2",
+          "parameters": "7.6B",
+          "context_length": 32768,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-18-801636831646/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "qwen2.5:7b-instruct",
+          "digest": "845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e",
+          "size_bytes": 4683087332,
+          "architecture": "qwen2",
+          "parameters": "7.6B",
+          "context_length": 32768,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "src/experiment/results/models.lock.json",
+          "name": "qwen2.5:7b-instruct",
+          "digest": "845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e",
+          "size_bytes": 4683087332,
+          "architecture": "qwen2",
+          "parameters": "7.6B",
+          "context_length": 32768,
+          "quantization": "Q4_K_M"
+        }
+      ],
+      "quantization_from_historical_locks": [
+        "Q4_K_M"
+      ],
+      "M7_selection_status": "nao_selecionado; ensaios historicos nao decidem nova rodada",
+      "personal_computer_fit": "a verificar no equipamento/perfil atual",
+      "ime_fit": "a verificar; servidor/disponibilidade nao confirmados",
+      "license_provenance_current": "consulta primaria e registro por artefato pendentes da prospeccao",
+      "new_M7_runs": 0
+    },
+    {
+      "model_tag_historical": "qwen3.5:4b",
+      "lineage": "principal",
+      "run_count": 20,
+      "run_artifacts": [
+        "src/experiment/results/2026-07-27-benchmark-top10/predio/qwen3.5_4b/run_0.json",
+        "src/experiment/results/2026-07-27-benchmark-top10/predio-masked/qwen3.5_4b/run_0.json",
+        "src/experiment/results/2026-07-28-benchmark-limpo/predio/qwen3.5_4b/run_0.json",
+        "src/experiment/results/2026-07-28-benchmark-limpo/predio-masked/qwen3.5_4b/run_0.json",
+        "src/experiment/results/2026-08-02-benchmark-v6/predio/qwen3.5_4b/run_0.json",
+        "src/experiment/results/2026-08-02-benchmark-v6/predio-masked/qwen3.5_4b/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio/qwen3.5_4b/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio-masked/qwen3.5_4b/run_0.json",
+        "src/experiment/results/2026-08-12-benchmark-4060/results/casa/qwen3.5_4b/run_0.json",
+        "src/experiment/results/2026-08-12-benchmark-4060/results/predio/qwen3.5_4b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260810T183938Z_e2b94a5a-647d-4f79-9b93-62fb4a7ed7c7.zip!/benchmark/results/casa/qwen3.5_4b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260810T183938Z_e2b94a5a-647d-4f79-9b93-62fb4a7ed7c7.zip!/benchmark/results/predio/qwen3.5_4b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260813T164437Z_8b2516e1-0287-49f1-8b49-22a58a099cdb.zip!/benchmark/results/casa/qwen3.5_4b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260813T164437Z_8b2516e1-0287-49f1-8b49-22a58a099cdb.zip!/benchmark/results/predio/qwen3.5_4b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260814T174140Z_1de27843-d185-4456-bc3e-810a6fd52c80.zip!/benchmark/results/casa/qwen3.5_4b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260814T174140Z_1de27843-d185-4456-bc3e-810a6fd52c80.zip!/benchmark/results/predio/qwen3.5_4b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T185722Z_54c4f307-3e34-4be4-9575-acf0678ca94a.zip!/benchmark/results/casa/qwen3.5_4b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T185722Z_54c4f307-3e34-4be4-9575-acf0678ca94a.zip!/benchmark/results/predio/qwen3.5_4b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T190222Z_96f42b02-422d-4795-a2c0-ab1e408aea86.zip!/benchmark/results/casa/qwen3.5_4b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T190222Z_96f42b02-422d-4795-a2c0-ab1e408aea86.zip!/benchmark/results/predio/qwen3.5_4b/run_0.json"
+      ],
+      "observed_run_digests": [
+        "2a654d98e6fba55d452b7043684e9b57a947e393bbffa62485a7aac05ee4eefd"
+      ],
+      "runs_missing_digest": 8,
+      "historical_lock_entries": [
+        {
+          "source": "dist/entrega-final/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-10-eb835f2ab43d/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "qwen3.5:4b",
+          "digest": "2a654d98e6fba55d452b7043684e9b57a947e393bbffa62485a7aac05ee4eefd",
+          "size_bytes": 3389983735,
+          "architecture": "qwen35",
+          "parameters": "4.7B",
+          "context_length": 262144,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-10-eb835f2ab43d/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "qwen3.5:4b",
+          "digest": "2a654d98e6fba55d452b7043684e9b57a947e393bbffa62485a7aac05ee4eefd",
+          "size_bytes": 3389983735,
+          "architecture": "qwen35",
+          "parameters": "4.7B",
+          "context_length": 262144,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-12-523b937cc657/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "qwen3.5:4b",
+          "digest": "2a654d98e6fba55d452b7043684e9b57a947e393bbffa62485a7aac05ee4eefd",
+          "size_bytes": 3389983735,
+          "architecture": "qwen35",
+          "parameters": "4.7B",
+          "context_length": 262144,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-13-da0f471b44a9/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "qwen3.5:4b",
+          "digest": "2a654d98e6fba55d452b7043684e9b57a947e393bbffa62485a7aac05ee4eefd",
+          "size_bytes": 3389983735,
+          "architecture": "qwen35",
+          "parameters": "4.7B",
+          "context_length": 262144,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-18-801636831646/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "qwen3.5:4b",
+          "digest": "2a654d98e6fba55d452b7043684e9b57a947e393bbffa62485a7aac05ee4eefd",
+          "size_bytes": 3389983735,
+          "architecture": "qwen35",
+          "parameters": "4.7B",
+          "context_length": 262144,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "src/experiment/results/models.lock.json",
+          "name": "qwen3.5:4b",
+          "digest": "2a654d98e6fba55d452b7043684e9b57a947e393bbffa62485a7aac05ee4eefd",
+          "size_bytes": 3389983735,
+          "architecture": "qwen35",
+          "parameters": "4.7B",
+          "context_length": 262144,
+          "quantization": "Q4_K_M"
+        }
+      ],
+      "quantization_from_historical_locks": [
+        "Q4_K_M"
+      ],
+      "M7_selection_status": "nao_selecionado; ensaios historicos nao decidem nova rodada",
+      "personal_computer_fit": "a verificar no equipamento/perfil atual",
+      "ime_fit": "a verificar; servidor/disponibilidade nao confirmados",
+      "license_provenance_current": "consulta primaria e registro por artefato pendentes da prospeccao",
+      "new_M7_runs": 0
+    },
+    {
+      "model_tag_historical": "qwen3.5:9b",
+      "lineage": "principal",
+      "run_count": 23,
+      "run_artifacts": [
+        "src/experiment/results/2026-07-02-smoke/qwen3.5_9b/run_0.json",
+        "src/experiment/results/2026-07-27-benchmark-top10/predio/qwen3.5_9b/run_0.json",
+        "src/experiment/results/2026-07-27-benchmark-top10/predio-masked/qwen3.5_9b/run_0.json",
+        "src/experiment/results/2026-07-27-final2/predio/qwen3.5_9b/run_0.json",
+        "src/experiment/results/2026-07-27-final2/predio-masked/qwen3.5_9b/run_0.json",
+        "src/experiment/results/2026-07-28-benchmark-limpo/predio/qwen3.5_9b/run_0.json",
+        "src/experiment/results/2026-07-28-benchmark-limpo/predio-masked/qwen3.5_9b/run_0.json",
+        "src/experiment/results/2026-08-02-benchmark-v6/predio/qwen3.5_9b/run_0.json",
+        "src/experiment/results/2026-08-02-benchmark-v6/predio-masked/qwen3.5_9b/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio/qwen3.5_9b/run_0.json",
+        "src/experiment/results/2026-08-04-benchmark/predio-masked/qwen3.5_9b/run_0.json",
+        "src/experiment/results/2026-08-12-benchmark-4060/results/casa/qwen3.5_9b/run_0.json",
+        "src/experiment/results/2026-08-12-benchmark-4060/results/predio/qwen3.5_9b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260810T183938Z_e2b94a5a-647d-4f79-9b93-62fb4a7ed7c7.zip!/benchmark/results/casa/qwen3.5_9b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260810T183938Z_e2b94a5a-647d-4f79-9b93-62fb4a7ed7c7.zip!/benchmark/results/predio/qwen3.5_9b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260813T164437Z_8b2516e1-0287-49f1-8b49-22a58a099cdb.zip!/benchmark/results/casa/qwen3.5_9b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260813T164437Z_8b2516e1-0287-49f1-8b49-22a58a099cdb.zip!/benchmark/results/predio/qwen3.5_9b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260814T174140Z_1de27843-d185-4456-bc3e-810a6fd52c80.zip!/benchmark/results/casa/qwen3.5_9b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260814T174140Z_1de27843-d185-4456-bc3e-810a6fd52c80.zip!/benchmark/results/predio/qwen3.5_9b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T185722Z_54c4f307-3e34-4be4-9575-acf0678ca94a.zip!/benchmark/results/casa/qwen3.5_9b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T185722Z_54c4f307-3e34-4be4-9575-acf0678ca94a.zip!/benchmark/results/predio/qwen3.5_9b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T190222Z_96f42b02-422d-4795-a2c0-ab1e408aea86.zip!/benchmark/results/casa/qwen3.5_9b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260818T190222Z_96f42b02-422d-4795-a2c0-ab1e408aea86.zip!/benchmark/results/predio/qwen3.5_9b/run_0.json"
+      ],
+      "observed_run_digests": [
+        "6488c96fa5faab64bb65cbd30d4289e20e6130ef535a93ef9a49f42eda893ea7"
+      ],
+      "runs_missing_digest": 11,
+      "historical_lock_entries": [
+        {
+          "source": "dist/entrega-final/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-10-eb835f2ab43d/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "qwen3.5:9b",
+          "digest": "6488c96fa5faab64bb65cbd30d4289e20e6130ef535a93ef9a49f42eda893ea7",
+          "size_bytes": 6594474711,
+          "architecture": "qwen35",
+          "parameters": "9.7B",
+          "context_length": 262144,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-10-eb835f2ab43d/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "qwen3.5:9b",
+          "digest": "6488c96fa5faab64bb65cbd30d4289e20e6130ef535a93ef9a49f42eda893ea7",
+          "size_bytes": 6594474711,
+          "architecture": "qwen35",
+          "parameters": "9.7B",
+          "context_length": 262144,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-12-523b937cc657/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "qwen3.5:9b",
+          "digest": "6488c96fa5faab64bb65cbd30d4289e20e6130ef535a93ef9a49f42eda893ea7",
+          "size_bytes": 6594474711,
+          "architecture": "qwen35",
+          "parameters": "9.7B",
+          "context_length": 262144,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-13-da0f471b44a9/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "qwen3.5:9b",
+          "digest": "6488c96fa5faab64bb65cbd30d4289e20e6130ef535a93ef9a49f42eda893ea7",
+          "size_bytes": 6594474711,
+          "architecture": "qwen35",
+          "parameters": "9.7B",
+          "context_length": 262144,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-18-801636831646/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "qwen3.5:9b",
+          "digest": "6488c96fa5faab64bb65cbd30d4289e20e6130ef535a93ef9a49f42eda893ea7",
+          "size_bytes": 6594474711,
+          "architecture": "qwen35",
+          "parameters": "9.7B",
+          "context_length": 262144,
+          "quantization": "Q4_K_M"
+        },
+        {
+          "source": "src/experiment/results/models.lock.json",
+          "name": "qwen3.5:9b",
+          "digest": "6488c96fa5faab64bb65cbd30d4289e20e6130ef535a93ef9a49f42eda893ea7",
+          "size_bytes": 6594474711,
+          "architecture": "qwen35",
+          "parameters": "9.7B",
+          "context_length": 262144,
+          "quantization": "Q4_K_M"
+        }
+      ],
+      "quantization_from_historical_locks": [
+        "Q4_K_M"
+      ],
+      "M7_selection_status": "nao_selecionado; ensaios historicos nao decidem nova rodada",
+      "personal_computer_fit": "a verificar no equipamento/perfil atual",
+      "ime_fit": "a verificar; servidor/disponibilidade nao confirmados",
+      "license_provenance_current": "consulta primaria e registro por artefato pendentes da prospeccao",
+      "new_M7_runs": 0
+    },
+    {
+      "model_tag_historical": "qwen3:14b",
+      "lineage": "escala",
+      "run_count": 3,
+      "run_artifacts": [
+        "src/experiment/results/2026-07-02-smoke-matriz/qwen3_14b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260817T131446Z_eafb5188-3022-4999-b3f6-a70cbfb35a8a.zip!/benchmark/results/casa/qwen3_14b/run_0.json",
+        "dist/RESULTADO_IFCQC_20260817T131446Z_eafb5188-3022-4999-b3f6-a70cbfb35a8a.zip!/benchmark/results/predio/qwen3_14b/run_0.json"
+      ],
+      "observed_run_digests": [
+        "bdbd181c33f2ed1b31c972991882db3cf4d192569092138a7d29e973cd9debe8"
+      ],
+      "runs_missing_digest": 1,
+      "historical_lock_entries": [
+        {
+          "source": "dist/IFCQC-Benchmark-Windows-x64-ifcqc-2026-08-16-6cb3c5498138/payload/project.zip!/src/experiment/results/models.lock.json",
+          "name": "qwen3:14b",
+          "digest": "bdbd181c33f2ed1b31c972991882db3cf4d192569092138a7d29e973cd9debe8",
+          "size_bytes": 9276198565,
+          "architecture": "qwen3",
+          "parameters": "14.8B",
+          "context_length": 40960,
+          "quantization": "Q4_K_M"
+        }
+      ],
+      "quantization_from_historical_locks": [
+        "Q4_K_M"
+      ],
+      "M7_selection_status": "nao_selecionado; ensaios historicos nao decidem nova rodada",
+      "personal_computer_fit": "a verificar no equipamento/perfil atual",
+      "ime_fit": "a verificar; servidor/disponibilidade nao confirmados",
+      "license_provenance_current": "consulta primaria e registro por artefato pendentes da prospeccao",
+      "new_M7_runs": 0
+    }
+  ]
+}
