@@ -1,5 +1,27 @@
 # CLAUDE.md — IFC Quality Copilot
 
+## Continuidade documental — 9 de outubro de 2026
+
+Leia o [índice documental](docs/README.md), o
+[planejamento atual](docs/planejamento/README.md), o
+[mapa das sete frentes](docs/planejamento/mapa-sete-frentes.md) e a
+[arquitetura base](docs/arquitetura/base-do-projeto.md). A
+[consolidação](docs/planejamento/CONSOLIDACAO-2026-10-09.md) mantém o inventário
+original; decisões confirmadas depois estão datadas no planejamento.
+
+Os princípios de localidade transversal e de decisão humana como porta de
+escrita são requisitos da evolução. A existência dos contratos da fundação
+não garante que todo o pipeline os aplique. Consulte as lacunas e os achados
+B01–B10 antes de tratar a descrição abaixo como conformidade operacional.
+
+Na primeira versão, o operador fornece IDS pronto; autoria pela UI fica fora
+do escopo inicial. Requisitos suportados são validados independentemente de
+cadastro no catálogo; campos sem mapeamento semântico ficam explícitos, sem
+preenchimento automático por equivalência inventada. Operador pode solicitar
+mapeamentos, e somente curador aprova/publica versões; LLM pode sugerir sem
+cadastrar automaticamente como verdade. Isso registra decisões, sem implementar
+funções ou alterar `PROMPT_VERSION v7.8`.
+
 ## Sobre o Projeto
 
 **IFC Quality Copilot** é um fluxo com supervisão humana para enriquecimento semântico

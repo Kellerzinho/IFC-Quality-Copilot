@@ -1,0 +1,1175 @@
+{
+  "schema_version": "m6-documentary-verification-1",
+  "document": "docs/planejamento/modulo-06-infraestrutura-governanca.md",
+  "kind": "documentary_verification_only",
+  "date": "2026-10-12",
+  "verified_at_utc": "2026-10-12T17:16:37.649290+00:00",
+  "sha256": "3069bd87f64c6e4e80909f3b12e3af1fc4fb347102ee8f35aaa058968639a8c1",
+  "bytes": 125435,
+  "lines": 1567,
+  "status": "passed",
+  "counts": {
+    "decisions": 13,
+    "boundaries": 7,
+    "tasks": 18,
+    "future_cases": 50,
+    "sections": 20,
+    "integration_divergences": 12,
+    "risks": 12,
+    "explicit_anchors": 38,
+    "tables": 22,
+    "local_link_occurrences": 95,
+    "external_link_occurrences": 9,
+    "external_unique_urls": 5,
+    "automated_checks": 51,
+    "passed_checks": 51
+  },
+  "checks": [
+    {
+      "check": "utf8_strict",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "no_replacement_or_nul",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "balanced_fences",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "anchors_unique",
+      "passed": true,
+      "detail": 38
+    },
+    {
+      "check": "local_links_and_anchors",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "check": "markdown_tables_consistent",
+      "passed": true,
+      "detail": {
+        "tables": 22,
+        "errors": []
+      }
+    },
+    {
+      "check": "13_decisions_defined_and_covered",
+      "passed": true,
+      "detail": [
+        "D6-01",
+        "D6-02",
+        "D6-03",
+        "D6-04",
+        "D6-05",
+        "D6-06",
+        "D6-07",
+        "D6-08",
+        "D6-09",
+        "D6-10",
+        "D6-11",
+        "D6-12",
+        "D6-13",
+        "D6-01",
+        "D6-02",
+        "D6-03",
+        "D6-04",
+        "D6-05",
+        "D6-06",
+        "D6-07",
+        "D6-08",
+        "D6-09",
+        "D6-10",
+        "D6-11",
+        "D6-12",
+        "D6-13"
+      ]
+    },
+    {
+      "check": "18_tasks_unique",
+      "passed": true,
+      "detail": [
+        "M6-01",
+        "M6-02",
+        "M6-03",
+        "M6-04",
+        "M6-05",
+        "M6-06",
+        "M6-07",
+        "M6-08",
+        "M6-09",
+        "M6-10",
+        "M6-11",
+        "M6-12",
+        "M6-13",
+        "M6-14",
+        "M6-15",
+        "M6-16",
+        "M6-17",
+        "M6-18"
+      ]
+    },
+    {
+      "check": "50_future_cases_unique",
+      "passed": true,
+      "detail": [
+        "T6-01",
+        "T6-02",
+        "T6-03",
+        "T6-04",
+        "T6-05",
+        "T6-06",
+        "T6-07",
+        "T6-08",
+        "T6-09",
+        "T6-10",
+        "T6-11",
+        "T6-12",
+        "T6-13",
+        "T6-14",
+        "T6-15",
+        "T6-16",
+        "T6-17",
+        "T6-18",
+        "T6-19",
+        "T6-20",
+        "T6-21",
+        "T6-22",
+        "T6-23",
+        "T6-24",
+        "T6-25",
+        "T6-26",
+        "T6-27",
+        "T6-28",
+        "T6-29",
+        "T6-30",
+        "T6-31",
+        "T6-32",
+        "T6-33",
+        "T6-34",
+        "T6-35",
+        "T6-36",
+        "T6-37",
+        "T6-38",
+        "T6-39",
+        "T6-40",
+        "T6-41",
+        "T6-42",
+        "T6-43",
+        "T6-44",
+        "T6-45",
+        "T6-46",
+        "T6-47",
+        "T6-48",
+        "T6-49",
+        "T6-50"
+      ]
+    },
+    {
+      "check": "D6_references_resolve",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "check": "M6_references_resolve",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "check": "T6_references_resolve",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "check": "seven_module_boundaries",
+      "passed": true,
+      "detail": [
+        "M1",
+        "M2",
+        "M3",
+        "M4",
+        "M5",
+        "M6",
+        "M7"
+      ]
+    },
+    {
+      "check": "12_integration_divergences",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "12_risks_with_owner",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "20_numbered_sections",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "all_tasks_have_dependencies_owner_files_io_steps_acceptance",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "check": "task_dependency_graph_acyclic",
+      "passed": true,
+      "detail": {
+        "M6-01": [],
+        "M6-02": [
+          "M6-01"
+        ],
+        "M6-03": [
+          "M6-01",
+          "M6-02"
+        ],
+        "M6-04": [
+          "M6-02",
+          "M6-03"
+        ],
+        "M6-05": [
+          "M6-04"
+        ],
+        "M6-06": [
+          "M6-01",
+          "M6-04",
+          "M6-05"
+        ],
+        "M6-07": [
+          "M6-02",
+          "M6-03",
+          "M6-04"
+        ],
+        "M6-08": [
+          "M6-04",
+          "M6-05",
+          "M6-07"
+        ],
+        "M6-09": [
+          "M6-03",
+          "M6-04",
+          "M6-06"
+        ],
+        "M6-10": [
+          "M6-01",
+          "M6-03",
+          "M6-04"
+        ],
+        "M6-11": [
+          "M6-02",
+          "M6-05",
+          "M6-08"
+        ],
+        "M6-12": [
+          "M6-07",
+          "M6-08",
+          "M6-10",
+          "M6-11"
+        ],
+        "M6-13": [
+          "M6-12"
+        ],
+        "M6-14": [
+          "M6-08",
+          "M6-13"
+        ],
+        "M6-15": [
+          "M6-01",
+          "M6-06"
+        ],
+        "M6-16": [
+          "M6-09",
+          "M6-14",
+          "M6-15"
+        ],
+        "M6-17": [
+          "M6-05",
+          "M6-06",
+          "M6-10",
+          "M6-11"
+        ],
+        "M6-18": [
+          "M6-01",
+          "M6-02",
+          "M6-03",
+          "M6-04",
+          "M6-05",
+          "M6-06",
+          "M6-07",
+          "M6-08",
+          "M6-09",
+          "M6-10",
+          "M6-11",
+          "M6-12",
+          "M6-13",
+          "M6-14",
+          "M6-15",
+          "M6-16",
+          "M6-17"
+        ]
+      }
+    },
+    {
+      "check": "all_future_cases_have_explicit_task_reference",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "check": "D6-01_coverage_links_tasks_cases",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D6-02_coverage_links_tasks_cases",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D6-03_coverage_links_tasks_cases",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D6-04_coverage_links_tasks_cases",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D6-05_coverage_links_tasks_cases",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D6-06_coverage_links_tasks_cases",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D6-07_coverage_links_tasks_cases",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D6-08_coverage_links_tasks_cases",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D6-09_coverage_links_tasks_cases",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D6-10_coverage_links_tasks_cases",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D6-11_coverage_links_tasks_cases",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D6-12_coverage_links_tasks_cases",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "D6-13_coverage_links_tasks_cases",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "unimplemented_status_explicit",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "no_placeholder_tokens",
+      "passed": true,
+      "detail": "Case-sensitive marker scan; Portuguese Todo is not a placeholder."
+    },
+    {
+      "check": "no_completed_implementation_checkboxes",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "no_institutional_login_in_mvp",
+      "passed": true,
+      "detail": "Case/line-wrap normalization; approved no-account statement and unverified local identity present."
+    },
+    {
+      "check": "backup_consistency_and_restore_separate",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "no_automatic_rollback_claim",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "no_local_identity_or_hash_authorship_claim",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "preservation_limit_explicit",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "health_four_components_and_freshness",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "401_earlier_reference_hashes_preserved",
+      "passed": true,
+      "detail": {
+        "count": 401,
+        "changed": [],
+        "missing": []
+      }
+    },
+    {
+      "check": "head_unchanged",
+      "passed": true,
+      "detail": "a76c2d7a85983ef246761a49db9266c411ea90fd"
+    },
+    {
+      "check": "branch_unchanged",
+      "passed": true,
+      "detail": "feat/semantic-foundation"
+    },
+    {
+      "check": "git_index_matches_previous_m5_and_no_staging",
+      "passed": true,
+      "detail": {
+        "index_sha256": "fe66e494402e7a741c2aa982958ab74384444b8a96aede668e4defe9f32db16d",
+        "staged": []
+      }
+    },
+    {
+      "check": "tracked_change_set_unchanged",
+      "passed": true,
+      "detail": [
+        ".claude/settings.local.json",
+        "CLAUDE.md",
+        "PROJECT_CONTEXT.md",
+        "docs/arquitetura/fundacao-semantica.md"
+      ]
+    },
+    {
+      "check": "907_postdraft_hashes_unchanged",
+      "passed": true,
+      "detail": {
+        "count": 907,
+        "changed": [],
+        "missing": []
+      }
+    },
+    {
+      "check": "no_preexisting_snapshot_file_removed",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "check": "initial_aggregate_count_and_bytes_match",
+      "passed": true,
+      "detail": {
+        "files": 907,
+        "bytes": 8063921028,
+        "limit": "Aggregate match is not proof of all initial individual hashes."
+      }
+    },
+    {
+      "check": "new_files_only_m6_or_authorized_concurrent_m7",
+      "passed": true,
+      "detail": {
+        "m6": [
+          "docs/planejamento/apoios-modulo-06/manifesto-preservacao.json",
+          "docs/planejamento/apoios-modulo-06/verificacao-documental.json",
+          "docs/planejamento/modulo-06-infraestrutura-governanca.md"
+        ],
+        "concurrent_m7": [],
+        "unexpected": []
+      }
+    },
+    {
+      "check": "final_saved_document_integrity_status",
+      "passed": true,
+      "detail": {
+        "full_utf8_reread": true,
+        "structure_coverage_local_links_rechecked": true,
+        "completion_documentary_only": true,
+        "sha256": "3069bd87f64c6e4e80909f3b12e3af1fc4fb347102ee8f35aaa058968639a8c1",
+        "errors": []
+      }
+    }
+  ],
+  "coverage": [
+    {
+      "decision": "D6-01",
+      "tasks": [
+        "M6-01",
+        "M6-15",
+        "M6-16"
+      ],
+      "cases": [
+        "T6-01",
+        "T6-31",
+        "T6-32",
+        "T6-41"
+      ],
+      "passed": true
+    },
+    {
+      "decision": "D6-02",
+      "tasks": [
+        "M6-02",
+        "M6-06",
+        "M6-11"
+      ],
+      "cases": [
+        "T6-10",
+        "T6-11",
+        "T6-22",
+        "T6-42"
+      ],
+      "passed": true
+    },
+    {
+      "decision": "D6-03",
+      "tasks": [
+        "M6-04",
+        "M6-05",
+        "M6-06",
+        "M6-09"
+      ],
+      "cases": [
+        "T6-05",
+        "T6-06",
+        "T6-07",
+        "T6-39"
+      ],
+      "passed": true
+    },
+    {
+      "decision": "D6-04",
+      "tasks": [
+        "M6-03",
+        "M6-04",
+        "M6-08"
+      ],
+      "cases": [
+        "T6-02",
+        "T6-03",
+        "T6-04",
+        "T6-30"
+      ],
+      "passed": true
+    },
+    {
+      "decision": "D6-05",
+      "tasks": [
+        "M6-06",
+        "M6-09"
+      ],
+      "cases": [
+        "T6-08",
+        "T6-09",
+        "T6-12",
+        "T6-42"
+      ],
+      "passed": true
+    },
+    {
+      "decision": "D6-06",
+      "tasks": [
+        "M6-02",
+        "M6-11"
+      ],
+      "cases": [
+        "T6-13",
+        "T6-14",
+        "T6-15",
+        "T6-16",
+        "T6-44"
+      ],
+      "passed": true
+    },
+    {
+      "decision": "D6-07",
+      "tasks": [
+        "M6-12",
+        "M6-13"
+      ],
+      "cases": [
+        "T6-17",
+        "T6-18",
+        "T6-19",
+        "T6-20",
+        "T6-21",
+        "T6-22",
+        "T6-23"
+      ],
+      "passed": true
+    },
+    {
+      "decision": "D6-08",
+      "tasks": [
+        "M6-10"
+      ],
+      "cases": [
+        "T6-37",
+        "T6-38",
+        "T6-41",
+        "T6-50"
+      ],
+      "passed": true
+    },
+    {
+      "decision": "D6-09",
+      "tasks": [
+        "M6-14",
+        "M6-16"
+      ],
+      "cases": [
+        "T6-01",
+        "T6-24",
+        "T6-25",
+        "T6-26",
+        "T6-43"
+      ],
+      "passed": true
+    },
+    {
+      "decision": "D6-10",
+      "tasks": [
+        "M6-06",
+        "M6-15"
+      ],
+      "cases": [
+        "T6-09",
+        "T6-12",
+        "T6-33",
+        "T6-34"
+      ],
+      "passed": true
+    },
+    {
+      "decision": "D6-11",
+      "tasks": [
+        "M6-05",
+        "M6-11",
+        "M6-17"
+      ],
+      "cases": [
+        "T6-14",
+        "T6-15",
+        "T6-35",
+        "T6-36",
+        "T6-46"
+      ],
+      "passed": true
+    },
+    {
+      "decision": "D6-12",
+      "tasks": [
+        "M6-09"
+      ],
+      "cases": [
+        "T6-08",
+        "T6-14",
+        "T6-39"
+      ],
+      "passed": true
+    },
+    {
+      "decision": "D6-13",
+      "tasks": [
+        "M6-04",
+        "M6-05",
+        "M6-07",
+        "M6-16"
+      ],
+      "cases": [
+        "T6-27",
+        "T6-28",
+        "T6-29",
+        "T6-40",
+        "T6-49"
+      ],
+      "passed": true
+    }
+  ],
+  "links": [
+    {
+      "target": "#m6-decisoes",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "modulo-01-dominio-catalogo.md",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "modulo-02-nucleo-ifc-ids.md",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "modulo-03-contexto-enriquecimento.md",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "modulo-04-interface-revisao.md",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "modulo-05-saidas-revisoes.md",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "mapa-sete-frentes.md",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "apoios-modulo-05/verificacao-documental.json",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-integracao",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-decisoes",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-base",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-arquitetura",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-contratos",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-governanca",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-fila",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-concorrencia",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-runtime",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-armazenamento",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-backup",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-instalacao",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-saude",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-localidade",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-tarefas",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-testes",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-aceite",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-integracao",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-fontes",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-cobertura",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-verificacao",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-cobertura",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "apoios-modulo-06/verificacao-documental.json",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../src/config.py",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../.env.example",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../pyproject.toml",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../uv.lock",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../src/foundation/locality.py",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../src/foundation/adapters.py",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../src/foundation/contracts.py",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../src/foundation/review.py",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../src/suggestion_engine/worker.py",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../src/suggestion_engine/issue_store.py",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../src/suggestion_engine/ollama_client.py",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../src/suggestion_engine/suggestion_cache.py",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../src/audit/logger.py",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../src/bsdd/client.py",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../src/bsdd/cache.py",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../src/mcp_server/http_server.py",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../src/ui/app.py",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../src/experiment/windows_runtime.py",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../src/experiment/execution_identity.py",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../src/experiment/model_lock.py",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../src/experiment/environment.py",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../src/experiment/evidence_bundle.py",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../windows/install.ps1",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../scripts/build_windows_release.py",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../windows/LEIA-ME.txt",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "modulo-02-nucleo-ifc-ids.md#m2-dados",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "modulo-03-contexto-enriquecimento.md#m3-contratos",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "modulo-04-interface-revisao.md#m4-contratos",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "modulo-05-saidas-revisoes.md#m5-contratos",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "README.md",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "mapa-sete-frentes.md",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "modulo-01-dominio-catalogo.md#m1-interfaces",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "modulo-02-nucleo-ifc-ids.md#m2-operacao",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "modulo-03-contexto-enriquecimento.md#m3-pipeline",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "modulo-03-contexto-enriquecimento.md#m3-seguranca",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "modulo-04-interface-revisao.md#m4-persistencia",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "modulo-04-interface-revisao.md#m4-perfis",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "modulo-05-saidas-revisoes.md#m5-escrita",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "modulo-05-saidas-revisoes.md#m5-operacao",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "apoios-modulo-05/verificacao-documental.json",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "../../CLAUDE.md",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-governanca",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-localidade",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-contratos",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-armazenamento",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-fila",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-runtime",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-fila",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-concorrencia",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-runtime",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-armazenamento",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-backup",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-governanca",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-saude",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-instalacao",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-localidade",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-runtime",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-armazenamento",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-saude",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-concorrencia",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-fila",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "#m6-instalacao",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "apoios-modulo-06/manifesto-preservacao.json",
+      "exists_and_anchor_valid": true
+    },
+    {
+      "target": "apoios-modulo-06/verificacao-documental.json",
+      "exists_and_anchor_valid": true
+    }
+  ],
+  "external_sources": [
+    "https://docs.ollama.com/api/tags",
+    "https://docs.ollama.com/faq",
+    "https://www.sqlite.org/backup.html",
+    "https://www.sqlite.org/lockingv3.html",
+    "https://www.sqlite.org/wal.html"
+  ],
+  "remaining_errors": [],
+  "preservation": {
+    "earlier_reference_files": 401,
+    "changed": [],
+    "missing": [],
+    "postdraft_full_comparison": "passed",
+    "initial_baseline_limitation": "O inventário inicial integral foi calculado em temporário do sandbox; ao terminar a chamada, o arquivo temporário não permaneceu acessível. Contagem e bytes iniciais constam do output da ferramenta; não se afirma comparação inicial/final dos 907 hashes.",
+    "postdraft_reference_files": 907,
+    "unchanged_postdraft_files": 907,
+    "changed_postdraft": [],
+    "removed_postdraft": [],
+    "new_files_m6": [
+      "docs/planejamento/apoios-modulo-06/manifesto-preservacao.json",
+      "docs/planejamento/apoios-modulo-06/verificacao-documental.json",
+      "docs/planejamento/modulo-06-infraestrutura-governanca.md"
+    ],
+    "authorized_concurrent_m7_files": [],
+    "unexpected_new_files": [],
+    "current_existing_bytes": 8063921028,
+    "verified_at_utc": "2026-10-12T17:14:50.921693+00:00",
+    "concurrent_work_notice": "Parent authorized separate M7 task 01a13119-86c0-77d0-b312-46acaa18d037 during verification. Only concrete observed M7 paths listed; none edited/reverted by M6.",
+    "last_new_file_scan_utc": "2026-10-12T17:16:37.768893+00:00"
+  },
+  "manual_review": {
+    "reviewer": "document author; no independent agent",
+    "decisions_reviewed": 13,
+    "contracts_reviewed": "M1–M7",
+    "topics": [
+      "Sem contas e autoria declarada; precedência M1/M4/M5",
+      "Fila serial incluindo retry/warmup e GPU incerta",
+      "CAS, generation, journal e gates W0–W8",
+      "Backup banco/arquivos, restore isolado e migração sem rollback não testado",
+      "Localidade, bSDD público restrito, saúde e limites calibrados"
+    ],
+    "corrections": [
+      "Preservação: substituir alegação de baseline integral disponível por referência M5 de 401 hashes e snapshot integral após redação, informando perda do temporário efêmero.",
+      "Registrada autorização concorrente de M7; nenhum arquivo M7 observado no último scan, sem reverter ou modificar trabalho de outra frente."
+    ],
+    "full_saved_plan_reread": true,
+    "final_status_documentary_only": true,
+    "concurrent_m7_preserved": true
+  },
+  "not_executed": [
+    "functional implementation",
+    "functional tests T6-01–T6-50",
+    "dependency installation",
+    "inference",
+    "benchmark",
+    "backup/restore product tests",
+    "database/catalog migrations",
+    "stage",
+    "commit",
+    "push",
+    "previous plan or index edits",
+    "prototype edits"
+  ],
+  "remaining_documentary_blockers": [],
+  "verification_method": {
+    "execution": "Python standard library, PowerShell and read-only Git commands; full document decoded/re-read, structural/coverage/links/graph checks and SHA-256 comparisons. No product modules imported.",
+    "initial_checker_corrections": [
+      "Marker scan was case-insensitive and incorrectly matched Portuguese Todo; corrected to literal uppercase engineering markers.",
+      "No-login text check normalized whitespace and capitalization; document policy unchanged."
+    ],
+    "manual_scope": "Author reviewed decisions, contracts, failure protocols, future tasks/tests and integration precedence. No independent reviewer."
+  },
+  "support_manifest_sha256": "b5dad960e8a377968228f9a6c7fe87f4ae4fcd375a8a1b2bfb5fc948d30108cb",
+  "communication": {
+    "access_progress": "Commentary emitted after listing/reading. Direct app send to source thread returned thread not found; not a filesystem/document blocker.",
+    "saved_progress": "Commentary emitted after initial save and before final verification.",
+    "completion": "Final response will be automatically delivered to parent by delegation platform."
+  }
+}

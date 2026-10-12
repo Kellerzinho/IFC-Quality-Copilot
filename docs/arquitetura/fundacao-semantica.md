@@ -1,5 +1,12 @@
 # Fundação semântica: contratos da reformulação
 
+> **Precedência de 12/10/2026:** este registro de 08/10 permanece histórico. O
+> [planejamento vigente](../planejamento/README.md#decisoes-posteriores-de-1210)
+> permite consulta à API pública bSDD apenas para semântica pública, sem conteúdo de
+> projeto; dicionários locais integrais são estudo futuro. Inferência, dados, evidências
+> e logs permanecem locais/IME. Felipe conduz M1/M2/M3/M5; Nonato M4/M6 e lidera M7 com
+> Felipe. Esta nota não altera contratos ou atesta aplicação transversal da política.
+
 - **Data:** 2026-10-08
 - **Branch:** `feat/semantic-foundation`
 - **Código:** `src/foundation/`
@@ -8,6 +15,24 @@
 Esta etapa entrega a estrutura básica: contratos, política de localidade e
 modelos de revisão. Nenhum módulo existente foi reescrito. Os contratos seguem
 a forma das classes atuais, e os testes conferem essa forma.
+
+## Continuidade — 9 de outubro de 2026
+
+Este documento conserva o registro inicial de 08/10. A
+[arquitetura base](base-do-projeto.md), o
+[mapa das sete frentes](../planejamento/mapa-sete-frentes.md) e o
+[planejamento atual](../planejamento/README.md) organizam a evolução posterior.
+Contratos e testes de forma não certificam integração operacional completa:
+a política de localidade e o uso obrigatório de `ReviewDecision` ainda não
+são aplicados transversalmente ao pipeline. Leia também os achados da
+[consolidação preservada](../planejamento/CONSOLIDACAO-2026-10-09.md).
+
+O operador fornecerá IDS pronto na primeira versão; autoria pela UI fica fora
+do escopo inicial. A validação dos requisitos suportados independe de cadastro
+semântico; campos sem mapeamento devem ser explícitos, sem equivalências
+inventadas ou preenchimento automático. Operador solicita mapeamentos e curador
+aprova/publica versões; LLM pode sugerir sem publicar automaticamente como
+verdade. A reorganização documental não implementa esses comportamentos.
 
 ## Princípios
 
