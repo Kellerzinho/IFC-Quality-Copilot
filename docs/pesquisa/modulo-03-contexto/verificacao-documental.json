@@ -1,0 +1,365 @@
+{
+  "kind": "documentary_verification_only",
+  "date": "2026-10-12",
+  "canonical_revision": "2026-10-12-r2",
+  "status": "passed",
+  "functional_tests_run": false,
+  "llm_inference_run": false,
+  "ifc_mutated": false,
+  "git_staging_commit_push": false,
+  "checks": {
+    "preservation_existing_384": {
+      "passed": true,
+      "detail": {
+        "baseline_count": 384,
+        "changed": [
+          "docs/README.md",
+          "docs/arquitetura/base-do-projeto.md",
+          "docs/planejamento/README.md",
+          "docs/planejamento/mapa-sete-frentes.md",
+          "docs/planejamento/modulo-03-contexto-enriquecimento.md",
+          "docs/arquitetura/fundacao-semantica.md"
+        ],
+        "removed": [],
+        "unchanged": 378
+      }
+    },
+    "new_files_scope": {
+      "passed": true,
+      "detail": {
+        "owned_m3": [
+          "docs/pesquisa/modulo-03-contexto/README.md",
+          "docs/pesquisa/modulo-03-contexto/baseline.md",
+          "docs/pesquisa/modulo-03-contexto/fichas-apendice-a.md",
+          "docs/pesquisa/modulo-03-contexto/matriz-canonica.json",
+          "docs/pesquisa/modulo-03-contexto/matriz-revisao.csv",
+          "docs/pesquisa/modulo-03-contexto/verificacao-documental.json"
+        ],
+        "authorized_concurrent_m4": [
+          "docs/planejamento/modulo-04-interface-revisao.md"
+        ],
+        "m4_content_not_reviewed_or_modified": true
+      }
+    },
+    "head_unchanged": {
+      "passed": true,
+      "detail": "a76c2d7a85983ef246761a49db9266c411ea90fd"
+    },
+    "branch_unchanged": {
+      "passed": true,
+      "detail": "feat/semantic-foundation"
+    },
+    "git_index_unchanged": {
+      "passed": true,
+      "detail": "fe66e494402e7a741c2aa982958ab74384444b8a96aede668e4defe9f32db16d"
+    },
+    "git_porcelain_unchanged": {
+      "passed": true,
+      "detail": null
+    },
+    "foundation_existing_content_preserved": {
+      "passed": true,
+      "detail": null
+    },
+    "source_json_preserved": {
+      "passed": true,
+      "detail": null
+    },
+    "source_records_preserved_from_resume": {
+      "passed": true,
+      "detail": {
+        "records": 313
+      }
+    },
+    "record_counts_unique": {
+      "passed": true,
+      "detail": {
+        "entity": 10,
+        "attribute": 28,
+        "material": 10,
+        "classification": 19,
+        "custom_property": 82,
+        "standard_property": 36,
+        "metadata": 50,
+        "geometry_requirement": 50,
+        "document_requirement": 10,
+        "quantity": 18
+      }
+    },
+    "source_203_ids_preserved": {
+      "passed": true,
+      "detail": null
+    },
+    "family_counts": {
+      "passed": true,
+      "detail": {
+        "A1": 24,
+        "A2": 28,
+        "A3": 26,
+        "A4": 22,
+        "A5": 19,
+        "A6": 24,
+        "A7": 18,
+        "A8": 16,
+        "A9": 17,
+        "A10": 9
+      }
+    },
+    "names_pairs_denominators": {
+      "passed": true,
+      "detail": {
+        "entries": 136,
+        "names": 72,
+        "set_name_pairs": 85
+      }
+    },
+    "complete_label_denominators": {
+      "passed": true,
+      "detail": {
+        "labels": 79,
+        "set_label_pairs": 90
+      }
+    },
+    "csv_json_exact_projection": {
+      "passed": true,
+      "detail": []
+    },
+    "decision_ids_01_25": {
+      "passed": true,
+      "detail": {
+        "count": 25,
+        "unique": 25
+      }
+    },
+    "task_ids_01_27": {
+      "passed": true,
+      "detail": [
+        "M3-01",
+        "M3-02",
+        "M3-03",
+        "M3-04",
+        "M3-05",
+        "M3-06",
+        "M3-07",
+        "M3-08",
+        "M3-09",
+        "M3-10",
+        "M3-11",
+        "M3-12",
+        "M3-13",
+        "M3-14",
+        "M3-15",
+        "M3-16",
+        "M3-17",
+        "M3-18",
+        "M3-19",
+        "M3-20",
+        "M3-21",
+        "M3-22",
+        "M3-23",
+        "M3-24",
+        "M3-25",
+        "M3-26",
+        "M3-27"
+      ]
+    },
+    "case_ids_01_81": {
+      "passed": true,
+      "detail": {
+        "count": 81,
+        "unique": 81,
+        "case_81": "decisão posterior dos dois pares IFC–IDS no MVP"
+      }
+    },
+    "individual_record_completeness": {
+      "passed": true,
+      "detail": []
+    },
+    "scenario_ids_unique_1328": {
+      "passed": true,
+      "detail": {
+        "definitions": 1328,
+        "executed": 0
+      }
+    },
+    "fiches_all_313_once": {
+      "passed": true,
+      "detail": null
+    },
+    "fiches_all_scenarios": {
+      "passed": true,
+      "detail": null
+    },
+    "fiches_individual_content_projection": {
+      "passed": true,
+      "detail": {
+        "records_checked": 313,
+        "errors": []
+      }
+    },
+    "context_organization_313": {
+      "passed": true,
+      "detail": []
+    },
+    "review_channel_corrections": {
+      "passed": true,
+      "detail": {
+        "corrected_record_count": 38,
+        "missing": []
+      }
+    },
+    "channel_schema_and_semantic_guards": {
+      "passed": true,
+      "detail": null
+    },
+    "auxiliary_obligations_distinguished": {
+      "passed": true,
+      "detail": {
+        "auxiliaries": 110,
+        "metadata_with_invalid_absence": []
+      }
+    },
+    "ten_pdf_page_texts_preserved": {
+      "passed": true,
+      "detail": []
+    },
+    "pdf_hash": {
+      "passed": true,
+      "detail": "82ead7b5f06fd06247f9f057727bab071ab1c08de4fe42412bebeb9e0c06877a"
+    },
+    "zip_hash": {
+      "passed": true,
+      "detail": "e4bab30f48eaf6f57b79aaf514c7306489f89e834dfa000dc72637ebdbd75ca7"
+    },
+    "archive_members_hashes": {
+      "passed": true,
+      "detail": []
+    },
+    "local_links_and_anchors": {
+      "passed": true,
+      "detail": {
+        "checked": 3523,
+        "broken": []
+      }
+    },
+    "explicit_anchors_unique": {
+      "passed": true,
+      "detail": []
+    },
+    "markdown_fences": {
+      "passed": true,
+      "detail": []
+    },
+    "markdown_tables": {
+      "passed": true,
+      "detail": []
+    },
+    "markdown_table_column_counts": {
+      "passed": true,
+      "detail": []
+    },
+    "utf8_no_replacement": {
+      "passed": true,
+      "detail": null
+    },
+    "example_syntax_without_execution": {
+      "passed": true,
+      "detail": {
+        "json_blocks": 3,
+        "python_blocks": 2,
+        "errors": []
+      }
+    },
+    "no_generator_placeholder": {
+      "passed": true,
+      "detail": null
+    },
+    "no_superseded_active_policy": {
+      "passed": true,
+      "detail": []
+    },
+    "completed_documentary_status_consistent": {
+      "passed": true,
+      "detail": []
+    },
+    "m4_two_pairs_contract": {
+      "passed": true,
+      "detail": null
+    },
+    "bibliography_rows_preserved": {
+      "passed": true,
+      "detail": {
+        "rows": 17
+      }
+    },
+    "named_protected_files": {
+      "passed": true,
+      "detail": {
+        "docs/planejamento/modulo-01-dominio-catalogo.md": "b7e224610782f2f9679788bd214848e7e507786f138b8c5d198c2eb0ee797c79",
+        "docs/planejamento/modulo-02-nucleo-ifc-ids.md": "9ff7bc96d8e5b96f3ad281116a8cd86b78624fa207e18af688f83c0c6b590565",
+        "docs/planejamento/CONSOLIDACAO-2026-10-09.md": "de0282cbb89d398f3d73454de9907e795fc2db2781e97dadd997faac52d50169",
+        "docs/pesquisa/sintese-bibliografica-daiane-29-artigos.md": "6a8c6f2a161ef199c6996e183705b6fdce7872a7e5e099f87fca1dbb980f3e57",
+        ".claude/settings.local.json": "3f6c3addc42c8141b2445323a0981597a3895e055c733a5f869858adac62be29",
+        "CLAUDE.md": "43cfd4b2fc2a1939e99cb7fbe52b3d07bf949d127fe89ee2a4fe6bcfc9d1a059",
+        "PROJECT_CONTEXT.md": "1d178983692def4195f45b372f459f4efbb8a2175bbb1852d21622644a8ba856"
+      }
+    }
+  },
+  "verified_file_sha256": {
+    "docs/planejamento/modulo-03-contexto-enriquecimento.md": "682bbf256937997fccee67c63b7c8b22d8b9c43b32f801b11bb777a368b642d6",
+    "docs/planejamento/README.md": "8e46e2b41c4bf483b58bd549080fc96a110f484a04334db9f12d6910c2e905b2",
+    "docs/README.md": "4c224132eb31499ac92a60502694ec0e6365e44852df3a827cf5872ebc97cdde",
+    "docs/planejamento/mapa-sete-frentes.md": "64aa7578dd0400fabae8ad69bdb29374a21271288f5b748e7019172ecb8a03e8",
+    "docs/arquitetura/base-do-projeto.md": "9b4a31df22517fbb5ed1b7764b46f0e91a920ebd38c99c629087eed0d68468ff",
+    "docs/arquitetura/fundacao-semantica.md": "4d24b22819fa6483938011250bc42a376c69ee56ff47ffec695b5aa88514c565",
+    "docs/pesquisa/modulo-03-contexto/README.md": "52ff76c12d0fab21cd5c101697b1d0c757625ac29822f8c872636522807e7a62",
+    "docs/pesquisa/modulo-03-contexto/fichas-apendice-a.md": "48926f29e4547c4c471707064ba4109d7adf9efe4a115935627e20bf1df321cc",
+    "docs/pesquisa/modulo-03-contexto/baseline.md": "b92d343fca8b80f881f9bac143f916aac8955acbccadd7fd4321f26fc58be7c1",
+    "docs/pesquisa/modulo-03-contexto/matriz-canonica.json": "ebd06ea8069627807db5cce4b104067406176b80e2ae4d84db0bbfc688dd0085",
+    "docs/pesquisa/modulo-03-contexto/matriz-revisao.csv": "cebf709df92cde53d03a54f0def09e66a8a832a5a74f837bfa134cf0cb56fcc7"
+  },
+  "preservation_manifests": {
+    "baseline_path": "C:\\Users\\Keller_\\AppData\\Local\\Temp\\ifc-m3-consolidacao-20261012\\baseline.json",
+    "baseline_file_sha256": "d3e23e37504514a041fed2a7c0b62d6b968f477ef200431827292b4ce852479b",
+    "resume_checkpoint_path": "C:\\Users\\Keller_\\AppData\\Local\\Temp\\ifc-m3-consolidacao-20261012\\retomada-manifesto.json",
+    "resume_checkpoint_sha256": "dbeae38e1a68b9dce942fa62c42b47923288cb69fbede409d0f1e0029f42b4d4",
+    "unchanged_378_sorted_compact_json_sha256": "8b8e31cb8f5ed65585b6c9e2afe58ba09504aceb362c21948f600fdb20b0ebd0",
+    "scope": "Arquivos rastreados e não rastreados não ignorados do manifesto original. Novos arquivos M4 autorizados são listados separadamente; conteúdo concorrente não foi revisado/modificado e não entra nos hashes M3."
+  },
+  "independent_review": {
+    "model": "gpt-6-astra",
+    "reasoning_effort": "xhigh",
+    "read_only": true,
+    "alphanumeric_records_reviewed": 203,
+    "auxiliary_records_reviewed": 110,
+    "extracted_appendix_pages_compared": 10,
+    "additional_visual_pages": [
+      164,
+      171
+    ],
+    "findings": [
+      "Canais incompletos frente à busca prescrita: corrigidos e verificados por review_channel_corrections",
+      "RelatedSpace/RelatingSpace: versões explicitadas e verificadas por channel_schema_and_semantic_guards"
+    ],
+    "other_new_semantic_blockers_found": false,
+    "correction_verification": "Executada pelo responsável da consolidação; não houve segunda revisão independente das correções."
+  },
+  "limitations": [
+    "XML/planilha original 2025 ausentes",
+    "Fixtures F01–F24 não incluídas no ZIP",
+    "Síntese Library não materializada pelo helper Windows; não lida",
+    "Receitas, cenários e contratos são planejados; suporte operacional depende de implementação/ensaio",
+    "Hash do próprio relatório não é incluído para evitar autorreferência"
+  ],
+  "verification_command": {
+    "command": "python C:\\Users\\Keller_\\AppData\\Local\\Temp\\ifc-m3-consolidacao-20261012\\verificar.py",
+    "script_sha256": "a090977186e4d9cf121d7b5333642f6d09c73cbaab7043fced1040d661413b5d",
+    "working_directory": "C:\\Users\\Keller_\\Desktop\\Projetos FC\\Pesquisa\\ifc-quality-copilot",
+    "purpose": "Somente verificação documental; não executa módulos, exemplos ou casos funcionais do produto."
+  },
+  "check_summary": {
+    "passed": 44,
+    "total": 44,
+    "failed": 0
+  }
+}
