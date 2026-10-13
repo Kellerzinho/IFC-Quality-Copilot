@@ -1,0 +1,14 @@
+{
+  "name": "ifc-quality-copilot-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "gen:api": "uv run --directory .. python -m src.review_api.export_openapi frontend/openapi.json && openapi-typescript openapi.json -o src/shared/contracts.ts",
+    "check:api": "node scripts/check-api-types.mjs"
+  },
+  "devDependencies": {
+    "openapi-typescript": "7.13.0",
+    "typescript": "5.9.3"
+  }
+}
