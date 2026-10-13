@@ -12,8 +12,12 @@ import pytest
 from src.experiment.budget_v1.prospection import (
     BITS_PER_WEIGHT,
     GIB,
+    NVIDIA_SMI_QUERY,
     ArchitectureSpec,
+    FitAssessment,
+    Gate,
     HardwareProfile,
+    ModelProspectionRecord,
     OllamaTagInfo,
     SourcedValue,
     build_records,
@@ -37,8 +41,8 @@ from src.experiment.budget_v1.prospection import (
 )
 from src.experiment.budget_v1.prospection_sources import CANDIDATES
 
-NVIDIA_SMI_CSV = """name, memory.total [MiB], driver_version
-NVIDIA GeForce RTX 4050 Laptop GPU, 6141 MiB, 572.83
+NVIDIA_SMI_CSV = """name, memory.total [MiB], memory.used [MiB], memory.free [MiB], driver_version
+NVIDIA GeForce RTX 4050 Laptop GPU, 6141 MiB, 441 MiB, 5481 MiB, 572.83
 """
 NVIDIA_SMI_BANNER = """Mon Oct 12 23:07:15 2026
 +-----------------------------------------------------------------------------------------+
@@ -82,6 +86,9 @@ def _spec(**overrides: object) -> ArchitectureSpec:
         "head_dim": sv(128),
         "context_advertised": sv(131072),
         "license": sv("apache-2.0"),
+        "license_gate": Gate(
+            kind="licenca", status="sem_restricao_identificada", summary="fixture"
+        ),
         "ollama_tags": {
             "Q8_0": None,
             "Q5_K_M": None,
@@ -99,18 +106,37 @@ def _spec(**overrides: object) -> ArchitectureSpec:
     return ArchitectureSpec.model_validate(base)
 
 
-def _personal(vram_mib: int = 6141, ram_total: float = 7.71) -> HardwareProfile:
+def _personal(
+    vram_mib: int = 6141,
+    free_mib: int = 5481,
+    ram_total: float = 7.71,
+    ram_available: float = 0.43,
+) -> HardwareProfile:
     profile = unconfirmed_profile("pessoal-teste", "fixture")
+    used_mib = vram_mib - free_mib
     return profile.model_copy(
         update={
             "line": "pessoal",
             "status": "observado",
             "gpus": parse_nvidia_smi_csv(
-                f"NVIDIA GeForce RTX 4050 Laptop GPU, {vram_mib} MiB, 572.83"
+                f"NVIDIA GeForce RTX 4050 Laptop GPU, {vram_mib} MiB, {used_mib} MiB, "
+                f"{free_mib} MiB, 572.83"
             ),
             "ram_total_gib": SourcedValue(value=ram_total, status="medido"),
+            "ram_available_gib": SourcedValue(value=ram_available, status="medido"),
             "notes": [],
         }
+    )
+
+
+def _fit(record: ModelProspectionRecord, scenario: str, ctx: int = 4096) -> FitAssessment:
+    """Classificação do perfil pessoal da fixture num cenário e contexto."""
+    return next(
+        f
+        for f in record.memory.fit
+        if f.hardware_profile_id == "pessoal-teste"
+        and f.scenario == scenario
+        and f.context_tokens == ctx
     )
 
 
@@ -131,11 +157,7 @@ class FakeRunner:
 
 def _machine_outputs(ollama_version: str) -> dict[tuple[str, ...], str]:
     return {
-        (
-            "nvidia-smi",
-            "--query-gpu=name,memory.total,driver_version",
-            "--format=csv",
-        ): NVIDIA_SMI_CSV,
+        ("nvidia-smi", NVIDIA_SMI_QUERY, "--format=csv"): NVIDIA_SMI_CSV,
         ("nvidia-smi",): NVIDIA_SMI_BANNER,
         ("ollama", "--version"): ollama_version,
         ("ollama", "list"): OLLAMA_LIST,
@@ -210,9 +232,7 @@ def test_record_memory_is_labelled_estimate_with_both_contexts() -> None:
     assert [c.context_tokens for c in q4.memory.per_context] == [4096, 8192]
     four_k = q4.memory.per_context[0]
     assert four_k.kv_cache_gib == pytest.approx(0.5)
-    assert four_k.total_gib == pytest.approx(
-        weights_bytes(8.0, 4.8944) / GIB + 0.5 + 0.7, abs=0.001
-    )
+    assert four_k.total_gib == pytest.approx(4.9e9 / GIB + 0.5 + 0.7, abs=0.001)
     assert q4.context.usable.status == "nao_medido"
     assert q4.context.advertised.value == 131072
 
@@ -227,16 +247,26 @@ def test_recurrent_state_is_added_once_independent_of_context() -> None:
     )
 
 
-def test_unpublished_quantization_keeps_estimate_without_tag_or_catalog_size() -> None:
+def test_published_size_is_used_and_formula_kept_visible() -> None:
+    q4 = next(r for r in build_records([_spec()], [_personal()]) if r.quantization == "Q4_K_M")
+    assert q4.memory.weights_source == "publicado"
+    assert q4.memory.weights_published_gib == pytest.approx(4.9e9 / GIB, abs=0.001)
+    assert q4.memory.weights_used_gib == q4.memory.weights_published_gib
+    assert q4.memory.weights_formula_gib == pytest.approx(
+        weights_bytes(8.0, 4.8944) / GIB, abs=0.001
+    )
+
+
+def test_unpublished_quantization_falls_back_to_formula() -> None:
     q8 = next(r for r in build_records([_spec()], [_personal()]) if r.quantization == "Q8_0")
     assert q8.tag is None
-    assert q8.memory.catalog_size_gib is None
-    assert all(f.classification_by_catalog_size is None for f in q8.memory.fit)
-    assert any("não publicado" in note for note in q8.notes)
+    assert q8.memory.weights_source == "formula"
+    assert q8.memory.weights_published_gib is None
+    assert q8.memory.weights_used_gib == q8.memory.weights_formula_gib
 
 
-def test_catalog_size_can_flip_classification_against_formula() -> None:
-    # Pesos pela fórmula cabem; o arquivo publicado (maior) não cabe.
+def test_published_size_decides_classification_against_formula() -> None:
+    # Pesos pela fórmula cabem; o arquivo publicado (maior) não cabe, e é ele que vale.
     tag = OllamaTagInfo(
         tag="teste:8b-q4_K_M",
         catalog_size_gb=5.4,
@@ -250,9 +280,104 @@ def test_catalog_size_can_flip_classification_against_formula() -> None:
         ollama_tags={"Q8_0": None, "Q5_K_M": None, "Q4_K_M": tag, "Q3_K_M": None},
     )
     q4 = next(r for r in build_records([spec], [_personal()]) if r.quantization == "Q4_K_M")
-    fit_4k = next(f for f in q4.memory.fit if f.context_tokens == 4096)
-    assert fit_4k.classification == "gpu_inteira"
-    assert fit_4k.classification_by_catalog_size == "offload_parcial"
+    formula_total = q4.memory.weights_formula_gib + q4.memory.per_context[0].kv_cache_gib
+    assert formula_total <= 6141 / 1024 - 0.7
+    assert _fit(q4, "nominal").classification == "offload_parcial"
+
+
+@pytest.mark.parametrize(
+    ("free_mib", "ram_available", "expected"),
+    [
+        (6141, 4.0, "gpu_inteira"),  # tudo livre: igual ao nominal
+        (4096, 4.0, "offload_parcial"),  # VRAM ocupada, RAM sobra
+        (4096, 0.43, "inviavel"),  # VRAM ocupada e RAM quase cheia
+    ],
+)
+def test_instant_scenario_uses_free_vram_and_available_ram(
+    free_mib: int, ram_available: float, expected: str
+) -> None:
+    profile = _personal(free_mib=free_mib, ram_available=ram_available)
+    spec = _spec(params_billion=SourcedValue(value=4.0, status="fonte_primaria"))
+    q8 = next(r for r in build_records([spec], [profile]) if r.quantization == "Q8_0")
+    assert _fit(q8, "nominal").classification == "gpu_inteira"
+    assert _fit(q8, "instantaneo").classification == expected
+
+
+def test_instant_scenario_without_free_vram_is_conditioned() -> None:
+    profile = _personal()
+    profile.gpus[0].memory_free_mib = None
+    q4 = next(r for r in build_records([_spec()], [profile]) if r.quantization == "Q4_K_M")
+    assert _fit(q4, "instantaneo").classification == "condicionado_hardware_nao_confirmado"
+    assert _fit(q4, "nominal").classification != "condicionado_hardware_nao_confirmado"
+
+
+# --------------------------------------------------------------------------
+# Gates de licença e procedência
+# --------------------------------------------------------------------------
+
+
+def test_unpublished_tag_gets_provenance_gate_but_keeps_memory_estimate() -> None:
+    q3 = next(r for r in build_records([_spec()], [_personal()]) if r.quantization == "Q3_K_M")
+    gate = next(g for g in q3.screening.gates if g.kind == "procedencia")
+    assert gate.status == "condicionado"
+    assert gate.summary == "condicionado: procedência (exigiria GGUF de terceiros)"
+    assert q3.screening.gate_state == "condicionado"
+    assert {f.classification for f in q3.memory.fit} <= {
+        "gpu_inteira",
+        "offload_parcial",
+        "inviavel",
+    }
+
+
+def test_published_tag_with_clear_license_has_no_conditioning_gate() -> None:
+    q4 = next(r for r in build_records([_spec()], [_personal()]) if r.quantization == "Q4_K_M")
+    assert [g.kind for g in q4.screening.gates] == ["licenca", "procedencia"]
+    assert q4.screening.gate_state == "sem_condicionante"
+
+
+def test_llama_candidates_are_kept_and_conditioned_by_license() -> None:
+    records = build_records(CANDIDATES, [_personal()])
+    llama = [r for r in records if r.family == "Llama 3.x"]
+    assert len(llama) == 8
+    for record in llama:
+        gate = next(g for g in record.screening.gates if g.kind == "licenca")
+        assert gate.status == "condicionado"
+        assert gate.summary.startswith(
+            "bloqueio potencial: uso militar — decisão do orientador (Cel Giuseppe)"
+        )
+        assert gate.decision_owner == "orientador (Cel Giuseppe)"
+        assert record.screening.gate_state == "condicionado"
+        assert record.decision.status == "pendente"
+        assert all(src.accessed_on and src.source for src in gate.sources)
+        assert any("USE_POLICY.md" in (src.source or "") for src in gate.sources)
+        assert any("/LICENSE" in (src.source or "") for src in gate.sources)
+
+
+def test_qwen_license_gates_cite_official_license_file() -> None:
+    for spec in (s for s in CANDIDATES if s.family.startswith("Qwen")):
+        assert spec.license.value == "apache-2.0"
+        assert spec.license.status == "fonte_primaria"
+        assert spec.license.source is not None
+        assert spec.license.source.endswith("/LICENSE")
+        assert spec.license_gate.status == "sem_restricao_identificada"
+
+
+def test_every_license_source_is_primary_with_access_date() -> None:
+    for spec in CANDIDATES:
+        sources = [spec.license, *spec.license_gate.sources]
+        assert all(s.status == "fonte_primaria" and s.accessed_on for s in sources)
+
+
+def test_qwen35_recurrent_state_is_sourced_and_context_independent() -> None:
+    qwen35 = [s for s in CANDIDATES if s.family == "Qwen3.5"]
+    for spec in qwen35:
+        state = spec.recurrent_state_gib
+        assert state is not None
+        assert state.value == pytest.approx(24 * (128 * 4096 + 3 * 8192) * 4 / GIB, abs=0.001)
+        assert state.source is not None
+        assert "llama-hparams.cpp" in state.source
+    others = [s for s in CANDIDATES if s.family != "Qwen3.5"]
+    assert all(s.recurrent_state_gib is None for s in others)
 
 
 # --------------------------------------------------------------------------
@@ -268,6 +393,7 @@ def test_t7_26_unconfirmed_lab_profile_never_claims_viability() -> None:
     assert {f.classification for f in lab_fits} == {"condicionado_hardware_nao_confirmado"}
     assert all(f.vram_margin_gib is None for f in lab_fits)
     assert all("não confirmado" in f.basis for f in lab_fits)
+    assert {f.scenario for f in lab_fits} == {"nominal", "instantaneo"}
 
 
 def test_t7_26_profile_without_gpu_observation_is_conditioned() -> None:
@@ -302,14 +428,22 @@ def test_parse_nvidia_smi_csv_skips_header_and_reads_mib() -> None:
     assert len(gpus) == 1
     assert gpus[0].name == "NVIDIA GeForce RTX 4050 Laptop GPU"
     assert gpus[0].memory_total_mib == 6141
+    assert gpus[0].memory_used_mib == 441
+    assert gpus[0].memory_free_mib == 5481
     assert gpus[0].driver_version == "572.83"
 
 
 def test_parse_nvidia_smi_csv_handles_multiple_gpus_and_noise() -> None:
-    text = "name, memory.total [MiB], driver_version\nA, 8192 MiB, 1\n\nlixo\nB, [N/A], 2\n"
+    text = (
+        "name, memory.total [MiB], memory.used [MiB], memory.free [MiB], driver_version\n"
+        "A, 8192 MiB, 100 MiB, 8000 MiB, 1\n\nlixo\n"
+        "B, [N/A], [N/A], [N/A], 2\n"
+        "C, 4096 MiB, 1\n"
+    )
     gpus = parse_nvidia_smi_csv(text)
     assert [g.name for g in gpus] == ["A", "B"]
     assert gpus[1].memory_total_mib is None
+    assert gpus[1].memory_free_mib is None
 
 
 @pytest.mark.parametrize("text", ["", "NVIDIA-SMI has failed because it couldn't communicate"])
@@ -383,7 +517,10 @@ def test_read_ollama_manifests_lists_tags_and_short_digest(tmp_path: Path) -> No
 def test_collect_marks_missing_commands_as_unavailable(tmp_path: Path) -> None:
     runner = FakeRunner({})
     profile = collect_hardware_profile(
-        runner, project_root=tmp_path, collected_on="2026-10-12", ollama_models_dir=tmp_path
+        runner,
+        project_root=tmp_path,
+        collected_at="2026-10-12T23:00:00+00:00",
+        ollama_models_dir=tmp_path,
     )
     assert profile.gpus == []
     assert profile.gpu_probe.status == "indisponivel"
@@ -396,8 +533,12 @@ def test_collect_marks_missing_commands_as_unavailable(tmp_path: Path) -> None:
 
 def test_collect_with_server_up_uses_list_and_show(tmp_path: Path) -> None:
     runner = FakeRunner(_machine_outputs(OLLAMA_VERSION_UP))
-    profile = collect_hardware_profile(runner, project_root=tmp_path, collected_on="2026-10-12")
+    profile = collect_hardware_profile(
+        runner, project_root=tmp_path, collected_at="2026-10-12T23:00:00+00:00"
+    )
     assert profile.gpus[0].memory_total_mib == 6141
+    assert profile.gpus[0].memory_free_mib == 5481
+    assert profile.collected_at == "2026-10-12T23:00:00+00:00"
     assert profile.cuda_driver_max.value == "12.8"
     assert profile.ollama_server.value == "no_ar"
     assert [m.name for m in profile.ollama_installed] == ["qwen3:8b-q4_K_M", "llama3.2:3b"]
@@ -414,7 +555,7 @@ def test_t7_40_collect_never_calls_list_or_show_when_server_is_down(tmp_path: Pa
     profile = collect_hardware_profile(
         runner,
         project_root=tmp_path,
-        collected_on="2026-10-12",
+        collected_at="2026-10-12T23:00:00+00:00",
         ollama_models_dir=tmp_path / "models",
     )
 
@@ -437,7 +578,9 @@ def test_t7_40_ollama_runner_refuses_non_metadata_subcommands(subcommand: str) -
 
 def test_t7_40_collect_uses_only_readonly_ollama_subcommands(tmp_path: Path) -> None:
     runner = FakeRunner(_machine_outputs(OLLAMA_VERSION_UP))
-    collect_hardware_profile(runner, project_root=tmp_path, collected_on="2026-10-12")
+    collect_hardware_profile(
+        runner, project_root=tmp_path, collected_at="2026-10-12T23:00:00+00:00"
+    )
     used = {c[1] for c in runner.calls if c[0] == "ollama"}
     assert used <= {"--version", "list", "show"}
 
@@ -447,7 +590,10 @@ def test_collect_tolerates_timeouts(tmp_path: Path) -> None:
         raise subprocess.TimeoutExpired(command, 1)
 
     profile = collect_hardware_profile(
-        runner, project_root=tmp_path, collected_on="2026-10-12", ollama_models_dir=tmp_path
+        runner,
+        project_root=tmp_path,
+        collected_at="2026-10-12T23:00:00+00:00",
+        ollama_models_dir=tmp_path,
     )
     assert profile.gpu_probe.status == "indisponivel"
 
