@@ -1,0 +1,95 @@
+{
+  "manifest_version": 1,
+  "corpus": "m4-sintetico",
+  "nature": "SINTÉTICO — gerado pelo projeto; não representa obra real",
+  "rights": "Gerado por scripts/m4_gerar_corpus_sintetico.py; uso livre no projeto.",
+  "generator": "scripts/m4_gerar_corpus_sintetico.py",
+  "generated_dir": "tests/fixtures/m4/generated (ignorado pelo git)",
+  "generated_with": {
+    "ifcopenshell": "0.8.5",
+    "ifc_schema": "IFC4",
+    "units": "metro (SI)"
+  },
+  "files": {
+    "m4_sintetico_arquitetura.ifc": {
+      "discipline": "architecture",
+      "sha256": "8af363c765ca406821d72aa026f8863e0c759ef1b03538aedc11a9bbf9887ea2"
+    },
+    "m4_sintetico_arquitetura.ids": {
+      "discipline": "architecture",
+      "sha256": "e690771c8bfdf9d135d72a87875abd18949ba571d1bc770818651cced90533f6"
+    },
+    "m4_sintetico_estrutura.ifc": {
+      "discipline": "structure",
+      "sha256": "ddc772113e26efd12175548e20126de64be08d73814bd1561de306208fc5d968"
+    },
+    "m4_sintetico_estrutura.ids": {
+      "discipline": "structure",
+      "sha256": "1522e79931ffc40930122fbc6d04a8b91c9495b7b6718f6a57e454907e59a214"
+    }
+  },
+  "coordinates": "Mesmo referencial nos dois IFCs: planta 10 m × 6 m, origem no canto sudoeste, pé-direito 3 m.",
+  "ids_limitation": "data/ids_schema/ids.xsd é placeholder (não o XSD oficial IDS 1.0); os IDS sintéticos seguem o formato dos templates do repositório e não declaram ifcVersion.",
+  "cases": [
+    {
+      "id": "sem-pset",
+      "file": "m4_sintetico_arquitetura.ifc",
+      "element_name": "W-04 Fachada oeste (sem Pset)",
+      "expected": "3 lacunas do legado (FireRating, IsExternal, ThermalTransmittance) com current_value.state = pset_absent"
+    },
+    {
+      "id": "marcadores",
+      "file": "m4_sintetico_arquitetura.ifc",
+      "element_name": "W-02 Fachada leste (marcadores)",
+      "expected": "FireRating 'A definir' e IsExternal FALSE como observação do adaptador (m4_adapter_marker); ThermalTransmittance 0 como lacuna do legado com marcador '0'"
+    },
+    {
+      "id": "marcador-false-estrutura",
+      "file": "m4_sintetico_estrutura.ifc",
+      "element_name": "C-03 Pilar",
+      "expected": "LoadBearing FALSE como observação do adaptador"
+    },
+    {
+      "id": "guid-entre-arquivos",
+      "files": ["m4_sintetico_arquitetura.ifc", "m4_sintetico_estrutura.ifc"],
+      "element_names": ["Piso acabado", "Laje estrutural"],
+      "expected": "mesmo GlobalId, duas ElementRef distintas (T4-03)"
+    },
+    {
+      "id": "guid-duplicado-no-arquivo",
+      "file": "m4_sintetico_arquitetura.ifc",
+      "element_names": ["J-01 Janela sala", "J-02 Janela quarto"],
+      "expected": "dois ElementRecord com global_id_state = duplicated_in_file; lacuna do legado 'ambiguous' com 2 candidatos e sem elemento escolhido (T4-04)"
+    },
+    {
+      "id": "sem-geometria",
+      "file": "m4_sintetico_arquitetura.ifc",
+      "element_name": "PX-01 Proxy sem geometria",
+      "expected": "listado com has_geometry = false (T4-07)"
+    },
+    {
+      "id": "nome-com-script",
+      "file": "m4_sintetico_arquitetura.ifc",
+      "element_name": "Porta <script>alert(1)</script>",
+      "expected": "nome devolvido como texto literal no JSON; renderização inerte na UI (T4-53)"
+    },
+    {
+      "id": "requisito-impossivel-arquitetura",
+      "file": "m4_sintetico_arquitetura.ids",
+      "requirement": "Pset_WindowCommon.Reference = IMPOSSIVEL-ARQ-999",
+      "expected": "nenhuma janela atende; lacuna (ambígua, pelo GUID duplicado)"
+    },
+    {
+      "id": "requisito-impossivel-estrutura",
+      "file": "m4_sintetico_estrutura.ids",
+      "requirement": "Pset_BeamCommon.Reference = IMPOSSIVEL-EST-999",
+      "expected": "lacuna nas 4 vigas"
+    },
+    {
+      "id": "viga-sem-vao",
+      "file": "m4_sintetico_estrutura.ifc",
+      "element_name": "V-02 Viga",
+      "expected": "lacuna do legado em Pset_BeamCommon.Span com property_absent"
+    }
+  ]
+}
