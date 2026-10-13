@@ -84,7 +84,9 @@ def main(argv: list[str] | None = None) -> int:
     )
     write_outputs(args.saida, profiles, records)
     profiles, records = load_outputs(args.saida)
-    (args.saida / MARKDOWN_FILE).write_text(render_markdown(profiles, records), encoding="utf-8")
+    (args.saida / MARKDOWN_FILE).write_text(
+        render_markdown(profiles, records), encoding="utf-8", newline="\n"
+    )
     logger.info("{} registros gravados em {}", len(records), args.saida.name)
     return 0
 

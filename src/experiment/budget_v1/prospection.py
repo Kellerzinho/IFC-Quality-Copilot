@@ -831,10 +831,10 @@ def write_outputs(
         "profiles": [p.model_dump(mode="json") for p in profiles],
     }
     (out_dir / HARDWARE_FILE).write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n"
     )
     lines = [json.dumps(r.model_dump(mode="json"), ensure_ascii=False) for r in records]
-    (out_dir / MODELS_FILE).write_text("\n".join(lines) + "\n", encoding="utf-8")
+    (out_dir / MODELS_FILE).write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
 
 def load_outputs(out_dir: Path) -> tuple[list[HardwareProfile], list[ModelProspectionRecord]]:
