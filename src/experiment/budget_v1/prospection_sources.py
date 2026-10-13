@@ -1,0 +1,229 @@
+"""Fontes da prospecção M7-09: arquitetura, licença e catálogo Ollama dos candidatos.
+
+Cada número traz URL, data de acesso e status. ``fonte_primaria`` é o card ou o
+``config.json`` do produtor; ``espelho_a_verificar`` é cópia de terceiros (o
+repositório oficial exige login) e precisa ser conferida no original;
+``catalogo_runtime`` é a página de tags do Ollama. Nada aqui foi medido: são
+insumos da estimativa, não do hardware.
+"""
+
+from __future__ import annotations
+
+from src.experiment.budget_v1.prospection import (
+    ArchitectureSpec,
+    OllamaTagInfo,
+    SourcedValue,
+)
+
+SOURCES_ACCESSED_ON = "2026-10-12"
+
+_HF = "https://huggingface.co"
+_OLLAMA = "https://ollama.com/library"
+
+
+def _primary(value: str | int | float, url: str, note: str | None = None) -> SourcedValue:
+    """Valor lido na fonte primária do produtor na data de acesso."""
+    return SourcedValue(
+        value=value,
+        status="fonte_primaria",
+        source=url,
+        accessed_on=SOURCES_ACCESSED_ON,
+        note=note,
+    )
+
+
+def _mirror(value: str | int | float, url: str, note: str | None = None) -> SourcedValue:
+    """Valor lido em espelho público; conferir no repositório oficial."""
+    return SourcedValue(
+        value=value,
+        status="espelho_a_verificar",
+        source=url,
+        accessed_on=SOURCES_ACCESSED_ON,
+        note=note,
+    )
+
+
+def _tag(tag: str, size_gb: float, context: str, family_page: str) -> OllamaTagInfo:
+    """Tag publicada no catálogo do Ollama, com o tamanho exibido (GB decimais)."""
+    return OllamaTagInfo(
+        tag=tag,
+        catalog_size_gb=size_gb,
+        catalog_context=context,
+        source=f"{_OLLAMA}/{family_page}/tags",
+        accessed_on=SOURCES_ACCESSED_ON,
+    )
+
+
+_QWEN3_CTX_NOTE = "32.768 nativo; 131.072 com YaRN (card). config.json: 40.960"
+_QWEN35_CTX_NOTE = "262.144 nativo; extensível a 1.010.000 (card)"
+_QWEN35_STATE_NOTE = (
+    "24 camadas lineares x (32 cabeças-valor x 128 x 128 + conv 3 x 8192) x 4 bytes "
+    "(float32 presumido) ~ 50 MiB por sequência, independente do contexto. "
+    "Tipo do estado no runtime a verificar"
+)
+_LLAMA_LICENSE_NOTE = (
+    "Licença comercial própria; exige licença adicional acima de 700 milhões de "
+    "usuários ativos mensais"
+)
+
+CANDIDATES: tuple[ArchitectureSpec, ...] = (
+    ArchitectureSpec(
+        family="Qwen3",
+        model="Qwen3-4B",
+        params_billion=_primary(4.0, f"{_HF}/Qwen/Qwen3-4B", "3,6B sem embeddings"),
+        kv_layers=_primary(36, f"{_HF}/Qwen/Qwen3-4B/raw/main/config.json"),
+        kv_heads=_primary(8, f"{_HF}/Qwen/Qwen3-4B/raw/main/config.json"),
+        head_dim=_primary(128, f"{_HF}/Qwen/Qwen3-4B/raw/main/config.json"),
+        context_advertised=_primary(32768, f"{_HF}/Qwen/Qwen3-4B", _QWEN3_CTX_NOTE),
+        license=_primary("apache-2.0", f"{_HF}/Qwen/Qwen3-4B"),
+        ollama_tags={
+            "Q8_0": _tag("qwen3:4b-q8_0", 4.4, "40K", "qwen3"),
+            "Q5_K_M": None,
+            "Q4_K_M": _tag("qwen3:4b-q4_K_M", 2.6, "40K", "qwen3"),
+            "Q3_K_M": None,
+        },
+        notes=[
+            "A tag padrão qwen3:4b (2,5 GB, 256K) não é a mesma de qwen3:4b-q4_K_M "
+            "(2,6 GB, 40K): aponta para outro checkpoint. Usar a tag explícita; "
+            "conferir o digest antes de qualquer ensaio.",
+        ],
+    ),
+    ArchitectureSpec(
+        family="Qwen3",
+        model="Qwen3-8B",
+        params_billion=_primary(8.2, f"{_HF}/Qwen/Qwen3-8B", "6,95B sem embeddings"),
+        kv_layers=_primary(36, f"{_HF}/Qwen/Qwen3-8B/raw/main/config.json"),
+        kv_heads=_primary(8, f"{_HF}/Qwen/Qwen3-8B/raw/main/config.json"),
+        head_dim=_primary(128, f"{_HF}/Qwen/Qwen3-8B/raw/main/config.json"),
+        context_advertised=_primary(32768, f"{_HF}/Qwen/Qwen3-8B", _QWEN3_CTX_NOTE),
+        license=_primary("apache-2.0", f"{_HF}/Qwen/Qwen3-8B"),
+        ollama_tags={
+            "Q8_0": _tag("qwen3:8b-q8_0", 8.9, "40K", "qwen3"),
+            "Q5_K_M": None,
+            "Q4_K_M": _tag("qwen3:8b-q4_K_M", 5.2, "40K", "qwen3"),
+            "Q3_K_M": None,
+        },
+    ),
+    ArchitectureSpec(
+        family="Qwen3.5",
+        model="Qwen3.5-4B",
+        params_billion=_primary(
+            4.0,
+            f"{_HF}/Qwen/Qwen3.5-4B",
+            "card: 4B; metadado safetensors: 5B (inclui encoder de visão/MTP, a verificar)",
+        ),
+        kv_layers=_primary(
+            8,
+            f"{_HF}/Qwen/Qwen3.5-4B/raw/main/config.json",
+            "32 camadas, das quais 8 full_attention (full_attention_interval=4); "
+            "as 24 lineares não têm KV por token",
+        ),
+        kv_heads=_primary(4, f"{_HF}/Qwen/Qwen3.5-4B/raw/main/config.json"),
+        head_dim=_primary(256, f"{_HF}/Qwen/Qwen3.5-4B/raw/main/config.json"),
+        recurrent_state_gib=SourcedValue(
+            value=0.049,
+            status="derivado",
+            source=f"{_HF}/Qwen/Qwen3.5-4B/raw/main/config.json",
+            accessed_on=SOURCES_ACCESSED_ON,
+            note=_QWEN35_STATE_NOTE,
+        ),
+        context_advertised=_primary(262144, f"{_HF}/Qwen/Qwen3.5-4B", _QWEN35_CTX_NOTE),
+        license=_primary("apache-2.0", f"{_HF}/Qwen/Qwen3.5-4B"),
+        ollama_tags={
+            "Q8_0": _tag("qwen3.5:4b-q8_0", 5.2, "256K", "qwen3.5"),
+            "Q5_K_M": None,
+            "Q4_K_M": _tag("qwen3.5:4b-q4_K_M", 3.3, "256K", "qwen3.5"),
+            "Q3_K_M": None,
+        },
+        notes=[
+            "Modelo multimodal (encoder de visão de 27 blocos); o tamanho do catálogo "
+            "inclui partes que o MVP textual não usa.",
+        ],
+    ),
+    ArchitectureSpec(
+        family="Qwen3.5",
+        model="Qwen3.5-9B",
+        params_billion=_primary(
+            9.0,
+            f"{_HF}/Qwen/Qwen3.5-9B",
+            "card: 9B; metadado safetensors: 10B (inclui encoder de visão/MTP, a verificar)",
+        ),
+        kv_layers=_primary(
+            8,
+            f"{_HF}/Qwen/Qwen3.5-9B/raw/main/config.json",
+            "32 camadas, das quais 8 full_attention (full_attention_interval=4)",
+        ),
+        kv_heads=_primary(4, f"{_HF}/Qwen/Qwen3.5-9B/raw/main/config.json"),
+        head_dim=_primary(256, f"{_HF}/Qwen/Qwen3.5-9B/raw/main/config.json"),
+        recurrent_state_gib=SourcedValue(
+            value=0.049,
+            status="derivado",
+            source=f"{_HF}/Qwen/Qwen3.5-9B/raw/main/config.json",
+            accessed_on=SOURCES_ACCESSED_ON,
+            note=_QWEN35_STATE_NOTE,
+        ),
+        context_advertised=_primary(262144, f"{_HF}/Qwen/Qwen3.5-9B", _QWEN35_CTX_NOTE),
+        license=_primary("apache-2.0", f"{_HF}/Qwen/Qwen3.5-9B"),
+        ollama_tags={
+            "Q8_0": _tag("qwen3.5:9b-q8_0", 10.0, "256K", "qwen3.5"),
+            "Q5_K_M": None,
+            "Q4_K_M": _tag("qwen3.5:9b-q4_K_M", 6.6, "256K", "qwen3.5"),
+            "Q3_K_M": None,
+        },
+        notes=[
+            "Default atual do repositório (src/config.py: qwen3.5:9b).",
+            "Modelo multimodal (encoder de visão de 27 blocos); o tamanho do catálogo "
+            "inclui partes que o MVP textual não usa.",
+        ],
+    ),
+    ArchitectureSpec(
+        family="Llama 3.x",
+        model="Llama-3.2-3B-Instruct",
+        params_billion=_primary(3.21, f"{_HF}/meta-llama/Llama-3.2-3B-Instruct"),
+        kv_layers=_mirror(28, f"{_HF}/unsloth/Llama-3.2-3B-Instruct/raw/main/config.json"),
+        kv_heads=_mirror(8, f"{_HF}/unsloth/Llama-3.2-3B-Instruct/raw/main/config.json"),
+        head_dim=_mirror(128, f"{_HF}/unsloth/Llama-3.2-3B-Instruct/raw/main/config.json"),
+        context_advertised=_primary(131072, f"{_HF}/meta-llama/Llama-3.2-3B-Instruct"),
+        license=_primary(
+            "Llama 3.2 Community License",
+            f"{_HF}/meta-llama/Llama-3.2-3B-Instruct",
+            _LLAMA_LICENSE_NOTE,
+        ),
+        ollama_tags={
+            "Q8_0": _tag("llama3.2:3b-instruct-q8_0", 3.4, "128K", "llama3.2"),
+            "Q5_K_M": _tag("llama3.2:3b-instruct-q5_K_M", 2.3, "128K", "llama3.2"),
+            "Q4_K_M": _tag("llama3.2:3b-instruct-q4_K_M", 2.0, "128K", "llama3.2"),
+            "Q3_K_M": _tag("llama3.2:3b-instruct-q3_K_M", 1.7, "128K", "llama3.2"),
+        },
+        notes=[
+            "Arquitetura lida no espelho unsloth: o config.json oficial da Meta exige "
+            "login no Hugging Face.",
+        ],
+    ),
+    ArchitectureSpec(
+        family="Llama 3.x",
+        model="Llama-3.1-8B-Instruct",
+        params_billion=_primary(8.0, f"{_HF}/meta-llama/Llama-3.1-8B-Instruct", "card: 8B"),
+        kv_layers=_mirror(32, f"{_HF}/unsloth/Meta-Llama-3.1-8B-Instruct/raw/main/config.json"),
+        kv_heads=_mirror(8, f"{_HF}/unsloth/Meta-Llama-3.1-8B-Instruct/raw/main/config.json"),
+        head_dim=_mirror(128, f"{_HF}/unsloth/Meta-Llama-3.1-8B-Instruct/raw/main/config.json"),
+        context_advertised=_primary(131072, f"{_HF}/meta-llama/Llama-3.1-8B-Instruct"),
+        license=_primary(
+            "Llama 3.1 Community License",
+            f"{_HF}/meta-llama/Llama-3.1-8B-Instruct",
+            _LLAMA_LICENSE_NOTE,
+        ),
+        ollama_tags={
+            "Q8_0": _tag("llama3.1:8b-instruct-q8_0", 8.5, "128K", "llama3.1"),
+            "Q5_K_M": _tag("llama3.1:8b-instruct-q5_K_M", 5.7, "128K", "llama3.1"),
+            "Q4_K_M": _tag("llama3.1:8b-instruct-q4_K_M", 4.9, "128K", "llama3.1"),
+            "Q3_K_M": _tag("llama3.1:8b-instruct-q3_K_M", 4.0, "128K", "llama3.1"),
+        },
+        notes=[
+            "Llama 3.2 e 3.1 são gerações vizinhas, não a mesma: o par mede "
+            "tamanho e geração juntos.",
+            "Arquitetura lida no espelho unsloth: o config.json oficial da Meta exige "
+            "login no Hugging Face.",
+        ],
+    ),
+)
