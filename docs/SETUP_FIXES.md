@@ -91,11 +91,21 @@ constante `IDS_XSD_PATH` de `config.py:12`.
 - Risco: com HTTP exposto e sem token, terceiros leem/alteram o IFC carregado e se
   interferem mutuamente. O transporte stdio não tem esse problema.
 
-## 4. Pré-requisitos não validados nesta máquina
+## 4. Estado do ambiente e resultado dos testes (2026-10-12, após rebase sobre `main` 81dd79f)
 
-- `make` e `uv`: ausentes do PATH do shell usado (`make -n install` não pôde ser executado).
-- `ifcopenshell`, `pydantic_settings` e demais dependências: não instaladas no Python global
-  (3.13); o pytest completo **não** foi executado. A reprodução do item 2 usou apenas
-  `pydantic-settings` instalado em pasta temporária.
-- `ollama` (e o modelo `qwen3.5:9b`): não verificado.
-- Python do projeto exige `>=3.11` (`pyproject.toml:8`); o `python` global é 3.13.
+- `uv` 0.12.21 presente; `uv sync` provisionou o Python **3.12.13** fixado em `.python-version`
+  na `.venv` (o `python` global é 3.13.2 e não é usado).
+- `make` continua ausente do PATH: `make -n install` não foi executado (o alvo só chama `uv sync`,
+  rodado diretamente).
+- Item 2 reproduzido com a `.venv` do projeto: com o `.env.example` da `main`, `get_settings()`
+  falha com `extra_forbidden`; com o desta branch, imprime `qwen3.5:9b`.
+- Pytest completo, sem inferência de LLM:
+  `uv run pytest -q -rs -m "not network and not windows_e2e"` (com `IFCQC_WINDOWS_SMOKE` ausente)
+  → **1690 passed, 5 skipped, 2 deselected, 5 errors**, idêntico na `main` e nesta branch.
+  - 2 deselected: os dois testes `windows_e2e` de `tests/windows/test_windows_release_smoke.py`
+    (um deles chama o Ollama real).
+  - 5 errors: setup do fixture `built_release` (`tests/windows/test_windows_release_smoke.py`) →
+    `ReleaseBuildError: Entrada obrigatória ausente: data/evaluation/predio/predio_v1.ifc`.
+  - 5 skipped: `predio_v1.ifc`/`casa_v1.ifc` ausentes (`tests/experiment/`). Os dois IFCs não são
+    versionados.
+- `ollama` (e o modelo `qwen3.5:9b`): instalado, mas não verificado nem executado.
