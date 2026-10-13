@@ -6,7 +6,7 @@
       "profile_id": "pessoal-nvidia-geforce-rtx-4050-laptop-gpu",
       "line": "pessoal",
       "status": "observado",
-      "collected_on": "2026-10-13",
+      "collected_at": "2026-10-13T02:52:53+00:00",
       "os": {
         "value": "Windows 11 (build 10.0.26200)",
         "status": "medido",
@@ -18,13 +18,15 @@
         {
           "name": "NVIDIA GeForce RTX 4050 Laptop GPU",
           "memory_total_mib": 6141,
+          "memory_used_mib": 433,
+          "memory_free_mib": 5489,
           "driver_version": "572.83"
         }
       ],
       "gpu_probe": {
         "value": "ok",
         "status": "medido",
-        "source": "nvidia-smi --query-gpu",
+        "source": "nvidia-smi --query-gpu=name,memory.total,memory.used,memory.free,driver_version",
         "accessed_on": null,
         "note": null
       },
@@ -50,14 +52,14 @@
         "note": null
       },
       "ram_available_gib": {
-        "value": 0.43,
+        "value": 0.84,
         "status": "medido",
         "source": "psutil.virtual_memory",
         "accessed_on": null,
         "note": "instantâneo no momento da coleta; varia com os aplicativos abertos"
       },
       "disk_free_gib": {
-        "value": 82.4,
+        "value": 82.2,
         "status": "medido",
         "source": "shutil.disk_usage (unidade do projeto)",
         "accessed_on": null,
@@ -91,7 +93,7 @@
       "profile_id": "ime-se2-lab",
       "line": "ime",
       "status": "nao_confirmado",
-      "collected_on": null,
+      "collected_at": null,
       "os": {
         "value": null,
         "status": "indisponivel",
