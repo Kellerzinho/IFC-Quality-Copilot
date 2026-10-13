@@ -71,7 +71,7 @@ def main(argv: list[str] | None = None) -> int:
         personal = redact_profile(
             collect_hardware_profile(
                 project_root=PROJECT_ROOT,
-                collected_on=datetime.now(UTC).date().isoformat(),
+                collected_at=datetime.now(UTC).isoformat(timespec="seconds"),
             )
         )
     profiles = [personal, unconfirmed_profile(LAB_PROFILE_ID, LAB_NOTE)]

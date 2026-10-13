@@ -71,12 +71,20 @@ FitClass = Literal[
     "condicionado_hardware_nao_confirmado",
 ]
 HardwareLine = Literal["pessoal", "ime"]
+# nominal: VRAM total e RAM total − reserva declarada; instantaneo: VRAM livre e
+# RAM disponível medidas no momento da coleta. A reserva de runtime vale nos dois.
+FitScenario = Literal["nominal", "instantaneo"]
+WeightsSource = Literal["publicado", "formula"]
+GateKind = Literal["licenca", "procedencia"]
+GateStatus = Literal["sem_restricao_identificada", "condicionado", "a_verificar"]
 
 QUANTIZATIONS: tuple[QuantName, ...] = ("Q8_0", "Q5_K_M", "Q4_K_M", "Q3_K_M")
+FIT_SCENARIOS: tuple[FitScenario, ...] = ("nominal", "instantaneo")
 
 # Bits efetivos por peso do arquivo GGUF inteiro, medidos pelo llama.cpp no
-# Llama-3.1-8B. Em modelos com vocabulário grande ou partes mantidas em maior
-# precisão, o arquivo real fica acima da fórmula (ver catalog_size_gib).
+# Llama-3.1-8B. Só valem como fallback para tags sem tamanho publicado: em
+# modelos com vocabulário grande ou partes multimodais, o arquivo real fica
+# acima da fórmula.
 BITS_PER_WEIGHT: dict[QuantName, float] = {
     "Q8_0": 8.5008,
     "Q5_K_M": 5.7036,
@@ -113,6 +121,20 @@ class OllamaTagInfo(BaseModel):
     accessed_on: str
 
 
+class Gate(BaseModel):
+    """Condição de triagem (licença, procedência) que pode deixar o candidato condicionado.
+
+    Um gate registra o que a fonte diz e quem decide; não conclui se o modelo
+    pode ou não ser usado.
+    """
+
+    kind: GateKind
+    status: GateStatus
+    summary: str
+    decision_owner: str | None = None
+    sources: list[SourcedValue] = Field(default_factory=list)
+
+
 class ArchitectureSpec(BaseModel):
     """Insumos da estimativa de um modelo candidato, cada um com sua fonte."""
 
@@ -125,15 +147,18 @@ class ArchitectureSpec(BaseModel):
     recurrent_state_gib: SourcedValue | None = None
     context_advertised: SourcedValue
     license: SourcedValue
+    license_gate: Gate
     ollama_tags: dict[QuantName, OllamaTagInfo | None]
     notes: list[str] = Field(default_factory=list)
 
 
 class GpuInfo(BaseModel):
-    """GPU observada pelo nvidia-smi."""
+    """GPU observada pelo nvidia-smi; usada/livre são instantâneos da coleta."""
 
     name: str
     memory_total_mib: int | None = None
+    memory_used_mib: int | None = None
+    memory_free_mib: int | None = None
     driver_version: str | None = None
 
 
@@ -152,7 +177,7 @@ class HardwareProfile(BaseModel):
     profile_id: str
     line: HardwareLine
     status: Literal["observado", "nao_confirmado"]
-    collected_on: str | None = None
+    collected_at: str | None = None
     os: SourcedValue
     gpus: list[GpuInfo] = Field(default_factory=list)
     gpu_probe: SourcedValue
@@ -172,38 +197,45 @@ class FitAssessment(BaseModel):
     """Classificação de uma célula num equipamento; derivada da estimativa."""
 
     hardware_profile_id: str
+    scenario: FitScenario
     context_tokens: int
     classification: FitClass
-    classification_by_catalog_size: FitClass | None = None
     vram_margin_gib: float | None = None
     basis: str
 
 
 class ContextMemory(BaseModel):
-    """Memória estimada para um tamanho de contexto."""
+    """Memória estimada para um tamanho de contexto, com os pesos efetivamente usados."""
 
     context_tokens: int
     kv_cache_gib: float
     recurrent_state_gib: float
     runtime_reserve_gib: float
     total_gib: float
-    total_with_catalog_size_gib: float | None = None
 
 
 class MemoryEstimate(BaseModel):
-    """ESTIMATIVA de memória (pesos + KV + reserva); não é medição."""
+    """ESTIMATIVA de memória (pesos + KV + reserva); não é medição.
+
+    Os pesos usados são o tamanho publicado da tag no catálogo do Ollama quando
+    existe; sem tag publicada, a fórmula é o fallback. As duas colunas ficam
+    registradas. Tamanho de arquivo publicado não é pico de memória medido.
+    """
 
     kind: Literal["estimativa"] = "estimativa"
     formula: str = (
-        "pesos = parâmetros × bits_efetivos ÷ 8; "
+        "pesos = tamanho publicado da tag (ou, sem tag, parâmetros × bits_efetivos ÷ 8); "
         "KV = 2 × camadas_com_KV × cabeças_KV × dim_cabeça × contexto × 2 bytes (f16); "
         "total = pesos + KV + estado recorrente + reserva de runtime"
     )
     params_billion: float
     bits_per_weight: float
     bits_per_weight_source: str = BITS_PER_WEIGHT_SOURCE
-    weights_gib: float
-    catalog_size_gib: float | None = None
+    weights_formula_gib: float
+    weights_published_gib: float | None = None
+    weights_source: WeightsSource
+    weights_used_gib: float
+    recurrent_state_source: SourcedValue | None = None
     kv_bytes_per_token: int
     per_context: list[ContextMemory]
     fit: list[FitAssessment] = Field(default_factory=list)
@@ -229,6 +261,8 @@ class Screening(BaseModel):
     """Triagem do candidato; dados do legado ficam pendentes da M7-02."""
 
     status: Literal["nao_triado", "triado"] = "nao_triado"
+    gates: list[Gate] = Field(default_factory=list)
+    gate_state: Literal["condicionado", "sem_condicionante"] = "sem_condicionante"
     legacy_runs: SourcedValue = Field(
         default_factory=lambda: SourcedValue(
             status="pendente_M7-02",
@@ -333,16 +367,27 @@ def classify_fit(
 
 
 def _profile_budget(
-    profile: HardwareProfile, ram_reserve_gib: float
+    profile: HardwareProfile, scenario: FitScenario, ram_reserve_gib: float
 ) -> tuple[float | None, float | None]:
-    """VRAM e RAM disponível para offload de um perfil, só se observadas."""
+    """VRAM e RAM para offload de um perfil no cenário pedido, só se observadas.
+
+    ``nominal`` usa VRAM total e RAM total menos a reserva declarada;
+    ``instantaneo`` usa VRAM livre e RAM disponível medidas na coleta.
+    """
     if profile.status != "observado" or not profile.gpus:
         return None, None
-    vram_mib = profile.gpus[0].memory_total_mib
-    ram_total = profile.ram_total_gib.value
-    if vram_mib is None or not isinstance(ram_total, (int, float)):
+    gpu = profile.gpus[0]
+    if scenario == "nominal":
+        vram_mib = gpu.memory_total_mib
+        ram_total = profile.ram_total_gib.value
+        ram = float(ram_total) - ram_reserve_gib if isinstance(ram_total, (int, float)) else None
+    else:
+        vram_mib = gpu.memory_free_mib
+        ram_free = profile.ram_available_gib.value
+        ram = float(ram_free) if isinstance(ram_free, (int, float)) else None
+    if vram_mib is None or ram is None:
         return None, None
-    return vram_mib / 1024, float(ram_total) - ram_reserve_gib
+    return vram_mib / 1024, ram
 
 
 def _int_value(value: SourcedValue) -> int:
@@ -365,9 +410,11 @@ def estimate_memory(
     if not isinstance(params, (int, float)):
         raise ValueError(f"{spec.model}: parâmetros sem valor numérico")
     bits = BITS_PER_WEIGHT[quantization]
-    weights = weights_bytes(float(params), bits) / GIB
+    formula = weights_bytes(float(params), bits) / GIB
     tag = spec.ollama_tags.get(quantization)
-    catalog = tag.catalog_size_gb * 1e9 / GIB if tag else None
+    published = tag.catalog_size_gb * 1e9 / GIB if tag else None
+    weights = published if published is not None else formula
+    source: WeightsSource = "publicado" if published is not None else "formula"
     per_token = kv_cache_bytes(
         _int_value(spec.kv_layers), _int_value(spec.kv_heads), _int_value(spec.head_dim), 1
     )
@@ -379,7 +426,6 @@ def estimate_memory(
     for ctx in contexts:
         kv = per_token * ctx / GIB
         required = weights + kv + state_gib
-        required_catalog = catalog + kv + state_gib if catalog is not None else None
         per_context.append(
             ContextMemory(
                 context_tokens=ctx,
@@ -387,50 +433,48 @@ def estimate_memory(
                 recurrent_state_gib=round(state_gib, 3),
                 runtime_reserve_gib=runtime_reserve_gib,
                 total_gib=round(required + runtime_reserve_gib, 3),
-                total_with_catalog_size_gib=(
-                    round(required_catalog + runtime_reserve_gib, 3)
-                    if required_catalog is not None
-                    else None
-                ),
             )
         )
         for profile in profiles:
-            vram, ram_budget = _profile_budget(profile, ram_reserve_gib)
-            klass, margin = classify_fit(required, vram, ram_budget, runtime_reserve_gib)
-            klass_catalog = (
-                classify_fit(required_catalog, vram, ram_budget, runtime_reserve_gib)[0]
-                if required_catalog is not None
-                else None
-            )
-            fit.append(
-                FitAssessment(
-                    hardware_profile_id=profile.profile_id,
-                    context_tokens=ctx,
-                    classification=klass,
-                    classification_by_catalog_size=klass_catalog,
-                    vram_margin_gib=round(margin, 3) if margin is not None else None,
-                    basis=(
-                        "estimativa contra VRAM/RAM observadas"
-                        if vram is not None
-                        else "hardware não confirmado: sem VRAM/RAM observadas"
-                    ),
+            for scenario in FIT_SCENARIOS:
+                vram, ram_budget = _profile_budget(profile, scenario, ram_reserve_gib)
+                klass, margin = classify_fit(required, vram, ram_budget, runtime_reserve_gib)
+                fit.append(
+                    FitAssessment(
+                        hardware_profile_id=profile.profile_id,
+                        scenario=scenario,
+                        context_tokens=ctx,
+                        classification=klass,
+                        vram_margin_gib=round(margin, 3) if margin is not None else None,
+                        basis=(
+                            f"estimativa contra VRAM/RAM observadas (cenário {scenario})"
+                            if vram is not None
+                            else "hardware não confirmado: sem VRAM/RAM observadas"
+                        ),
+                    )
                 )
-            )
 
     return MemoryEstimate(
         params_billion=float(params),
         bits_per_weight=bits,
-        weights_gib=round(weights, 3),
-        catalog_size_gib=round(catalog, 3) if catalog is not None else None,
+        weights_formula_gib=round(formula, 3),
+        weights_published_gib=round(published, 3) if published is not None else None,
+        weights_source=source,
+        weights_used_gib=round(weights, 3),
+        recurrent_state_source=state,
         kv_bytes_per_token=per_token,
         per_context=per_context,
         fit=fit,
         assumptions=[
             "ESTIMATIVA, não medição: o pico real só existe após ensaio autorizado (M7-10).",
+            "Pesos = tamanho publicado da tag no catálogo do Ollama; fórmula só sem tag "
+            "publicada. Tamanho de arquivo não é pico de memória medido.",
             "KV em f16 (padrão do Ollama), uma sequência por vez (fila serial M6).",
-            f"Reserva de runtime CUDA de {_fmt(runtime_reserve_gib)} GiB, descontada da VRAM.",
-            f"RAM para offload = RAM total − {_fmt(ram_reserve_gib)} GiB reservados ao sistema "
-            "e aplicativos (premissa declarada).",
+            f"Reserva de runtime CUDA de {_fmt(runtime_reserve_gib)} GiB, descontada da VRAM "
+            "nos dois cenários.",
+            f"Cenário nominal: VRAM total; RAM para offload = RAM total − "
+            f"{_fmt(ram_reserve_gib)} GiB reservados ao sistema e aplicativos (premissa).",
+            "Cenário instantâneo: VRAM livre e RAM disponível medidas no horário da coleta.",
             "Buffers de computação do grafo não estão incluídos.",
         ],
     )
@@ -441,24 +485,33 @@ def estimate_memory(
 # --------------------------------------------------------------------------
 
 
-def parse_nvidia_smi_csv(text: str) -> list[GpuInfo]:
-    """Lê ``nvidia-smi --query-gpu=name,memory.total,driver_version --format=csv``.
+NVIDIA_SMI_QUERY = "--query-gpu=name,memory.total,memory.used,memory.free,driver_version"
 
-    Aceita a linha de cabeçalho e a unidade ``MiB``; linhas malformadas são
-    ignoradas.
+
+def _mib(field: str) -> int | None:
+    match = re.match(r"(\d+)", field)
+    return int(match.group(1)) if match else None
+
+
+def parse_nvidia_smi_csv(text: str) -> list[GpuInfo]:
+    """Lê ``nvidia-smi --query-gpu=name,memory.total,memory.used,memory.free,driver_version``.
+
+    Formato ``--format=csv``: aceita a linha de cabeçalho e a unidade ``MiB``;
+    valores ``[N/A]`` viram None e linhas malformadas são ignoradas.
     """
     gpus: list[GpuInfo] = []
     for row in csv.reader(text.splitlines(), skipinitialspace=True):
-        if len(row) != 3 or row[0].strip().casefold() == "name":
+        if len(row) != 5 or row[0].strip().casefold() == "name":
             continue
-        name, memory, driver = (field.strip() for field in row)
+        name, total, used, free, driver = (field.strip() for field in row)
         if not name:
             continue
-        match = re.match(r"(\d+)", memory)
         gpus.append(
             GpuInfo(
                 name=name,
-                memory_total_mib=int(match.group(1)) if match else None,
+                memory_total_mib=_mib(total),
+                memory_used_mib=_mib(used),
+                memory_free_mib=_mib(free),
                 driver_version=driver or None,
             )
         )
@@ -604,7 +657,7 @@ def collect_hardware_profile(
     runner: CommandRunner = subprocess.run,
     *,
     project_root: Path,
-    collected_on: str,
+    collected_at: str,
     timeout: float = 30.0,
     ollama_models_dir: Path | None = None,
 ) -> HardwareProfile:
@@ -617,7 +670,7 @@ def collect_hardware_profile(
     """
     smi = _run(
         runner,
-        ["nvidia-smi", "--query-gpu=name,memory.total,driver_version", "--format=csv"],
+        ["nvidia-smi", NVIDIA_SMI_QUERY, "--format=csv"],
         timeout,
     )
     gpus = parse_nvidia_smi_csv(smi) if smi else []
@@ -668,13 +721,13 @@ def collect_hardware_profile(
         profile_id=profile_id,
         line="pessoal",
         status="observado",
-        collected_on=collected_on,
+        collected_at=collected_at,
         os=_measured(
             f"{platform.system()} {platform.release()} (build {platform.version()})",
             "platform",
         ),
         gpus=gpus,
-        gpu_probe=_measured("ok" if gpus else None, "nvidia-smi --query-gpu"),
+        gpu_probe=_measured("ok" if gpus else None, f"nvidia-smi {NVIDIA_SMI_QUERY}"),
         cuda_driver_max=_measured(
             parse_cuda_driver_version(banner or ""), "nvidia-smi (cabeçalho)"
         ),
@@ -729,6 +782,40 @@ def redact_profile(profile: HardwareProfile) -> HardwareProfile:
 # --------------------------------------------------------------------------
 
 
+def provenance_gate(spec: ArchitectureSpec, quantization: QuantName) -> Gate:
+    """Gate de procedência: só tags do catálogo oficial do Ollama ficam sem condicionante.
+
+    Sem tag publicada, a célula ainda tem estimativa de memória, mas usá-la
+    exigiria importar GGUF de terceiros, e o candidato fica condicionado.
+    """
+    tag = spec.ollama_tags.get(quantization)
+    if tag is None:
+        return Gate(
+            kind="procedencia",
+            status="condicionado",
+            summary="condicionado: procedência (exigiria GGUF de terceiros)",
+            sources=[
+                SourcedValue(
+                    status="catalogo_runtime",
+                    note=f"{quantization} não publicado no catálogo do Ollama para {spec.model}",
+                )
+            ],
+        )
+    return Gate(
+        kind="procedencia",
+        status="sem_restricao_identificada",
+        summary=f"tag {tag.tag} publicada no catálogo oficial do Ollama",
+        sources=[
+            SourcedValue(
+                value=tag.tag,
+                status="catalogo_runtime",
+                source=tag.source,
+                accessed_on=tag.accessed_on,
+            )
+        ],
+    )
+
+
 def build_records(
     specs: Iterable[ArchitectureSpec],
     profiles: Sequence[HardwareProfile],
@@ -752,11 +839,7 @@ def build_records(
             local = installed.get(tag.tag) if tag else None
             sources = [spec.params_billion, spec.kv_layers, spec.license]
             notes = list(spec.notes)
-            if tag is None:
-                notes.append(
-                    f"{quant} não publicado no catálogo do Ollama para {spec.model}: "
-                    "exigiria importar GGUF de terceiros (procedência a verificar)."
-                )
+            gates = [spec.license_gate, provenance_gate(spec, quant)]
             records.append(
                 ModelProspectionRecord(
                     record_id=f"{_slug(spec.model)}-{quant.casefold()}",
@@ -806,6 +889,14 @@ def build_records(
                     ),
                     runtime=RuntimeInfo(observed_version=observed_version),
                     hardware_target=[p.profile_id for p in profiles],
+                    screening=Screening(
+                        gates=gates,
+                        gate_state=(
+                            "condicionado"
+                            if any(g.status != "sem_restricao_identificada" for g in gates)
+                            else "sem_condicionante"
+                        ),
+                    ),
                     installed=local is not None,
                     notes=notes,
                 )
@@ -872,17 +963,59 @@ def _sv(value: SourcedValue) -> str:
     return f"{shown} ({value.status})"
 
 
-def _fit_cell(record: ModelProspectionRecord, profile_id: str, ctx: int) -> str:
+def _fit_cell(
+    record: ModelProspectionRecord, profile_id: str, scenario: FitScenario, ctx: int
+) -> str:
     for fit in record.memory.fit:
-        if fit.hardware_profile_id == profile_id and fit.context_tokens == ctx:
-            label = _FIT_LABEL[fit.classification]
-            if (
-                fit.classification_by_catalog_size
-                and fit.classification_by_catalog_size != fit.classification
-            ):
-                label += f" → {_FIT_LABEL[fit.classification_by_catalog_size]}*"
-            return label
+        if (
+            fit.hardware_profile_id == profile_id
+            and fit.scenario == scenario
+            and fit.context_tokens == ctx
+        ):
+            return _FIT_LABEL[fit.classification]
     return "—"
+
+
+def _gate_cell(record: ModelProspectionRecord) -> str:
+    conditioned = [g for g in record.screening.gates if g.status != "sem_restricao_identificada"]
+    if not conditioned:
+        return "—"
+    return "; ".join(g.kind for g in conditioned)
+
+
+def _render_profile(profile: HardwareProfile) -> list[str]:
+    out = [f"### `{profile.profile_id}` ({profile.line}, {profile.status})", ""]
+    if profile.status != "observado":
+        out.extend(f"- {note}" for note in profile.notes)
+        return [*out, ""]
+    gpu = profile.gpus[0] if profile.gpus else None
+    gpu_line = (
+        f"- GPU: {gpu.name}, driver {gpu.driver_version}; VRAM total {gpu.memory_total_mib} MiB, "
+        f"em uso {gpu.memory_used_mib} MiB, livre {gpu.memory_free_mib} MiB (na coleta)"
+        if gpu
+        else "- GPU: indisponível"
+    )
+    return [
+        *out,
+        f"- Coleta (UTC): {profile.collected_at}",
+        f"- SO: {_sv(profile.os)}",
+        gpu_line,
+        f"- CUDA máximo do driver: {_sv(profile.cuda_driver_max)}; "
+        f"toolkit (nvcc): {_sv(profile.cuda_toolkit)}",
+        f"- RAM total: {_sv(profile.ram_total_gib)} GiB; "
+        f"disponível na coleta: {_sv(profile.ram_available_gib)} GiB",
+        f"- Disco livre (unidade do projeto): {_sv(profile.disk_free_gib)} GiB",
+        f"- Ollama: {_sv(profile.ollama_version)}, servidor {_sv(profile.ollama_server)}",
+        f"- Modelos instalados ({profile.ollama_installed_source.value}): "
+        + (", ".join(m.name for m in profile.ollama_installed) or "nenhum"),
+        "",
+    ]
+
+
+def _source_line(value: SourcedValue) -> str:
+    parts = [p for p in (value.source, value.accessed_on and f"acesso {value.accessed_on}") if p]
+    text = " — ".join(parts) if parts else value.status
+    return f"{text}. {value.note}" if value.note else text
 
 
 def render_markdown(
@@ -906,33 +1039,7 @@ def render_markdown(
         "",
     ]
     for profile in profiles:
-        out.append(f"### `{profile.profile_id}` ({profile.line}, {profile.status})")
-        out.append("")
-        if profile.status != "observado":
-            out.extend(f"- {note}" for note in profile.notes)
-            out.append("")
-            continue
-        gpu = profile.gpus[0] if profile.gpus else None
-        out.extend(
-            [
-                f"- Coleta (data UTC): {profile.collected_on}",
-                f"- SO: {_sv(profile.os)}",
-                (
-                    f"- GPU: {gpu.name}, {gpu.memory_total_mib} MiB, driver {gpu.driver_version}"
-                    if gpu
-                    else "- GPU: indisponível"
-                ),
-                f"- CUDA máximo do driver: {_sv(profile.cuda_driver_max)}; "
-                f"toolkit (nvcc): {_sv(profile.cuda_toolkit)}",
-                f"- RAM total: {_sv(profile.ram_total_gib)} GiB; "
-                f"livre na coleta: {_sv(profile.ram_available_gib)} GiB",
-                f"- Disco livre (unidade do projeto): {_sv(profile.disk_free_gib)} GiB",
-                f"- Ollama: {_sv(profile.ollama_version)}, servidor {_sv(profile.ollama_server)}",
-                f"- Modelos instalados ({profile.ollama_installed_source.value}): "
-                + (", ".join(m.name for m in profile.ollama_installed) or "nenhum"),
-                "",
-            ]
-        )
+        out += _render_profile(profile)
 
     header = [
         "Família",
@@ -940,50 +1047,72 @@ def render_markdown(
         "Quant. (bits efetivos)",
         "Tag Ollama",
         "Pesos fórmula (GiB)",
-        "Catálogo (GiB)",
+        "Pesos publicados (GiB)",
+        "Pesos usados",
     ]
     header += [f"KV {c // 1024}k (GiB)" for c in contexts]
     header += [f"Total {c // 1024}k (GiB)" for c in contexts]
     if personal:
-        header += [f"Pessoal {c // 1024}k" for c in contexts]
+        header += [f"Nominal {c // 1024}k" for c in contexts]
+        header += [f"Instantâneo {c // 1024}k" for c in contexts]
     header += [f"{p.profile_id}" for p in others]
+    header.append("Gates condicionantes")
     out += ["## Tabela", "", "| " + " | ".join(header) + " |", "|" + "---|" * len(header)]
     for record in records:
         mem = record.memory
         by_ctx = {c.context_tokens: c for c in mem.per_context}
+        bits = str(mem.bits_per_weight).replace(".", ",")
         row = [
             record.family,
             record.model,
-            f"{record.quantization} ({str(mem.bits_per_weight).replace('.', ',')})",
+            f"{record.quantization} ({bits})",
             f"`{record.tag}`" if record.tag else "não publicada",
-            _fmt(mem.weights_gib),
-            _fmt(mem.catalog_size_gib),
+            _fmt(mem.weights_formula_gib),
+            _fmt(mem.weights_published_gib),
+            mem.weights_source,
         ]
         row += [_fmt(by_ctx[c].kv_cache_gib + by_ctx[c].recurrent_state_gib) for c in contexts]
         row += [_fmt(by_ctx[c].total_gib) for c in contexts]
         if personal:
-            row += [_fit_cell(record, personal.profile_id, c) for c in contexts]
-        row += [_fit_cell(record, p.profile_id, contexts[0]) for p in others]
+            row += [_fit_cell(record, personal.profile_id, "nominal", c) for c in contexts]
+            row += [_fit_cell(record, personal.profile_id, "instantaneo", c) for c in contexts]
+        row += [_fit_cell(record, p.profile_id, "nominal", contexts[0]) for p in others]
+        row.append(_gate_cell(record))
         out.append("| " + " | ".join(row) + " |")
 
     first = records[0].memory if records else None
-    out += [
-        "",
-        "`*` a classificação muda quando se usa o tamanho publicado no catálogo do "
-        "Ollama no lugar da fórmula (o arquivo real costuma ser maior: embeddings e "
-        "partes multimodais ficam em maior precisão).",
-        "",
-        "## Premissas",
-        "",
-    ]
+    out += ["", "## Premissas", ""]
     if first:
         out.append(f"- Fórmula: {first.formula}.")
-        out.append(f"- Bits efetivos: {first.bits_per_weight_source}.")
+        out.append(f"- Bits efetivos (fallback da fórmula): {first.bits_per_weight_source}.")
         out.extend(f"- {a}" for a in first.assumptions)
     out += [
         "- 1 GiB = 1024³ bytes; tamanhos do catálogo Ollama convertidos de GB decimais.",
         "- Qwen3.5: só 8 das 32 camadas têm KV por token; as 24 lineares têm estado "
         "recorrente de tamanho fixo, somado na coluna KV.",
+    ]
+    states = {
+        r.model: r.memory.recurrent_state_source
+        for r in records
+        if r.memory.recurrent_state_source is not None
+    }
+    for model, state in states.items():
+        out.append(f"- Estado recorrente de {model}: {_sv(state)} GiB — {_source_line(state)}")
+
+    out += ["", "## Gates de licença", ""]
+    seen_models: set[str] = set()
+    for record in records:
+        if record.model in seen_models:
+            continue
+        seen_models.add(record.model)
+        for gate in record.screening.gates:
+            if gate.kind != "licenca":
+                continue
+            owner = f" Decisão: {gate.decision_owner}." if gate.decision_owner else ""
+            out.append(f"- **{record.model}** — `{gate.status}`: {gate.summary}.{owner}")
+            out.extend(f"  - {_source_line(src)}" for src in gate.sources)
+
+    out += [
         "",
         "## Contexto, licença e estado por modelo",
         "",
@@ -997,12 +1126,13 @@ def render_markdown(
             continue
         seen.add(record.model)
         ctx = record.context
-        tagged = [r for r in records if r.model == record.model and r.tag]
+        same = [r for r in records if r.model == record.model]
+        tagged = [r for r in same if r.tag]
         out.append(
             f"| {record.model} | {_sv(ctx.advertised)} | "
             f"{tagged[0].context.runtime_catalog.value if tagged else '—'} | "
             f"{ctx.usable.status} | {record.license.value} ({record.license.status}) | "
-            f"{'sim' if any(r.installed for r in records if r.model == record.model) else 'não'} | "
+            f"{'sim' if any(r.installed for r in same) else 'não'} | "
             f"não | não | {record.screening.legacy_runs.status} |"
         )
     out += ["", "## Notas", ""]
