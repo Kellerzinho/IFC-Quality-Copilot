@@ -127,3 +127,20 @@
     }
   }
 }
+
+/* Único movimento automático: a onda da entrada se desenha uma vez. */
+@layer components {
+  .assinatura-onda path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+    animation: desenhar-onda 1.6s cubic-bezier(0.65, 0, 0.35, 1) both;
+  }
+  .assinatura-onda path + path {
+    animation-delay: 0.25s;
+  }
+  @keyframes desenhar-onda {
+    from {
+      stroke-dashoffset: 1;
+    }
+  }
+}
