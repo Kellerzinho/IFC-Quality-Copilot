@@ -1,7 +1,7 @@
 // PROVISÓRIO — escolha definitiva na M4-03 (comparação de viewers ainda não feita).
 //
 // Adaptador That Open (@thatopen/components 3.4.9 + @thatopen/fragments 3.4.8 +
-// web-ifc 0.0.78). Decisões desta fatia:
+// web-ifc 0.0.77, fixado: o build de navegador da 0.0.78 quebra StreamMeshes). Decisões desta fatia:
 // - Ativos locais: WASM em /viewer/web-ifc.wasm e worker do Fragments em
 //   /viewer/fragments-worker.mjs (scripts/copy-viewer-assets.mjs). Nunca usa
 //   autoSetWasm nem FragmentsManager.getWorker(), que buscam no unpkg.

@@ -48,6 +48,6 @@
     "react-resizable-panels": "4.14.5",
     "tailwind-merge": "3.7.0",
     "three": "0.184.0",
-    "web-ifc": "0.0.78"
+    "web-ifc": "0.0.77"
   }
 }
