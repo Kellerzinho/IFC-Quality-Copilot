@@ -1,12 +1,14 @@
-// Tela de revisão em três painéis — layout "Modelo em foco" do protótipo M4,
-// PROVISÓRIO até a escolha visual (claro / escuro / compacto).
+// Tela de revisão em três painéis — layout "Modelo em foco" do protótipo M4, no tema
+// LEPV em avaliação (a escolha visual do plano M4 §13.4 segue pendente).
 // Seleção sincronizada sempre pela ElementRef (modelo + revisão + express_id).
 import { ArrowLeft } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { cn } from "@/lib/utils";
 import type { Api } from "@/shared/api";
 import { DISCIPLINE_SHORT, elementKey } from "@/shared/elementKey";
 import type { ElementRef, Project } from "@/shared/types";
@@ -16,13 +18,25 @@ import { DiagnosticList, type FiltrosLista } from "../diagnostic/DiagnosticList"
 import { DisplayControls, type EstadoExibicao } from "../viewer/DisplayControls";
 import { ViewerPanel, type SituacaoViewer } from "../viewer/ViewerPanel";
 import type { ViewerAdapter } from "../viewer/ViewerPort";
-import { montarLinhas, totalLacunas, type LinhaElemento, type ModeloRevisao } from "./reviewData";
+import { montarLinhas, resumirRevisao, totalLacunas, type LinhaElemento, type ModeloRevisao } from "./reviewData";
 
 interface Props {
   api: Api;
   project: Project;
   createViewer: () => ViewerAdapter;
   onVoltar: () => void;
+}
+
+/** Número grande da faixa de resumo; null aparece como travessão, não como zero. */
+function Numero({ rotulo, valor, testId, semValor }: { rotulo: string; valor: number | null; testId: string; semValor: string }) {
+  return (
+    <div className="grid min-w-16 gap-0.5">
+      <dt className="order-2 text-xs text-band-muted">{rotulo}</dt>
+      <dd className="order-1 font-serif text-4xl leading-none tabular-nums" data-testid={testId} title={valor === null ? semValor : undefined}>
+        {valor ?? "—"}
+      </dd>
+    </div>
+  );
 }
 
 async function carregarModelos(api: Api, project: Project): Promise<ModeloRevisao[]> {
@@ -63,6 +77,7 @@ export function ReviewWorkspace({ api, project, createViewer, onVoltar }: Props)
   const linhas = useMemo(() => (modelos ? montarLinhas(modelos) : []), [modelos]);
   const porChave = useMemo(() => new Map(linhas.map((l) => [l.chave, l])), [linhas]);
   const linhaSelecionada = selecionada ? porChave.get(selecionada) ?? null : null;
+  const resumo = useMemo(() => (modelos ? resumirRevisao(modelos, linhas) : null), [modelos, linhas]);
 
   /** Chamada ao viewer que nunca derruba a lista/painel. */
   const noViewer = useCallback((acao: () => Promise<unknown>) => {
@@ -119,17 +134,37 @@ export function ReviewWorkspace({ api, project, createViewer, onVoltar }: Props)
 
   return (
     <div className="flex h-full flex-col">
-      <header className="flex flex-wrap items-center gap-3 border-b px-4 py-2">
-        <Button size="sm" variant="ghost" onClick={onVoltar}>
-          <ArrowLeft aria-hidden /> Projeto
-        </Button>
-        <h1 className="font-semibold">{project.name}</h1>
+      <header className="bg-band text-band-foreground">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={onVoltar}
+            className="text-band-foreground hover:bg-band-foreground/10 hover:text-band-foreground"
+          >
+            <ArrowLeft aria-hidden /> Projeto
+          </Button>
+          <h1 className="min-w-0 truncate font-serif text-3xl leading-none">{project.name}</h1>
+          {resumo && (
+            <dl className="ml-auto flex gap-x-8" aria-label="Resumo da revisão">
+              <Numero rotulo="Elementos" valor={resumo.elementos} testId="resumo-elementos" semValor="" />
+              <Numero rotulo="Lacunas" valor={resumo.lacunas} testId="resumo-lacunas" semValor="Nenhum modelo analisado" />
+              <Numero rotulo="Ambíguas" valor={resumo.ambiguas} testId="resumo-ambiguas" semValor="Nenhum modelo analisado" />
+              <Numero rotulo="Sem geometria" valor={resumo.semGeometria} testId="resumo-sem-geometria" semValor="" />
+            </dl>
+          )}
+          <ThemeToggle
+            className={cn("text-band-foreground hover:bg-band-foreground/10 hover:text-band-foreground", !resumo && "ml-auto")}
+          />
+        </div>
+      </header>
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-1 border-b bg-card px-4 py-1.5" aria-label="Arquivos da revisão">
         {project.models
           .filter((m) => m.ifc)
           .map((m) => (
-            <span key={m.model_id} className="flex items-center gap-1 text-xs">
+            <span key={m.model_id} className="flex items-center gap-1.5 text-xs">
               <Badge variant="outline">{DISCIPLINE_SHORT[m.discipline]}</Badge>
-              <span className="max-w-48 truncate" title={m.ifc?.display_name}>
+              <span className="max-w-48 truncate font-medium" title={m.ifc?.display_name}>
                 {m.ifc?.display_name}
               </span>
               <span className="font-mono text-muted-foreground">{m.ifc?.revision_id.slice(0, 8)}</span>
@@ -138,9 +173,9 @@ export function ReviewWorkspace({ api, project, createViewer, onVoltar }: Props)
             </span>
           ))}
         <Badge variant="secondary" className="ml-auto">
-          Tema e layout provisórios
+          Tema em avaliação
         </Badge>
-      </header>
+      </div>
 
       {aviso && (
         <p role="status" className="border-b bg-warning/10 px-4 py-1 text-sm">
@@ -152,7 +187,7 @@ export function ReviewWorkspace({ api, project, createViewer, onVoltar }: Props)
         <p className="p-6 text-sm text-muted-foreground">Carregando elementos e lacunas…</p>
       ) : (
         <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
-          <ResizablePanel defaultSize="26" minSize="16">
+          <ResizablePanel defaultSize="26" minSize="16" className="bg-card">
             <DiagnosticList
               modelos={modelos}
               linhas={linhas}
@@ -195,7 +230,7 @@ export function ReviewWorkspace({ api, project, createViewer, onVoltar }: Props)
             </div>
           </ResizablePanel>
           <ResizableHandle />
-          <ResizablePanel defaultSize="26" minSize="16">
+          <ResizablePanel defaultSize="26" minSize="16" className="bg-card">
             <DetailPanel linha={linhaSelecionada} modelos={modelos} onIrPara={selecionarPelaLista} />
           </ResizablePanel>
         </ResizablePanelGroup>

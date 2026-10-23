@@ -103,7 +103,7 @@ export function DetailPanel({ linha, modelos, onIrPara }: Props) {
   return (
     <section aria-label="Detalhe" className="grid content-start gap-4 overflow-y-auto p-4">
       <header className="grid gap-1">
-        <h2 className="text-base font-semibold break-all" data-testid="detalhe-nome">
+        <h2 className="font-serif text-2xl leading-tight break-all" data-testid="detalhe-nome">
           {record.name ?? "(sem nome)"}
         </h2>
         <p className="text-sm text-muted-foreground" data-testid="detalhe-arquivo">
