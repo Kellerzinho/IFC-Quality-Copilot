@@ -262,10 +262,21 @@ def test_foreign_host_or_origin_is_refused(client: TestClient, headers: dict) ->
     assert resp.status_code == 403
 
 
-def test_dev_ui_origin_is_allowed(client: TestClient) -> None:
-    resp = client.get("/api/v1/health", headers={"origin": "http://127.0.0.1:5173"})
-    assert resp.status_code == 200
+def test_dev_ui_origin_is_allowed_only_on_loopback_ip(client: TestClient) -> None:
+    """Proxy do Vite: só a Origin exata http://127.0.0.1:5173 é aceita."""
+    resp = client.post("/api/v1/projects", json={"name": "x"},
+                       headers={"origin": "http://127.0.0.1:5173"})
+    assert resp.status_code == 201
     assert "access-control-allow-origin" not in resp.headers
+    for origin in ("http://localhost:5173", "http://127.0.0.1:5174", "https://127.0.0.1:5173"):
+        refused = client.post("/api/v1/projects", json={"name": "x"}, headers={"origin": origin})
+        assert refused.status_code == 403, origin
+
+
+def test_vite_proxy_host_header_is_accepted(client: TestClient) -> None:
+    """O proxy (changeOrigin=false) repassa Host 127.0.0.1:5173."""
+    resp = client.get("/api/v1/health", headers={"host": "127.0.0.1:5173"})
+    assert resp.status_code == 200
 
 
 def test_interactive_docs_are_disabled(client: TestClient) -> None:

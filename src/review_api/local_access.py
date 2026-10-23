@@ -2,8 +2,9 @@
 
 - bind somente em 127.0.0.1 (imposto em ``__main__``);
 - Host precisa ser 127.0.0.1 ou localhost;
-- Origin, quando presente, precisa estar na allowlist exata (inclui o
-  servidor Vite de desenvolvimento); ``null`` é recusado; sem CORS ``*``.
+- Origin, quando presente, precisa estar na allowlist exata: a própria API e,
+  para o Vite de desenvolvimento (proxy /api), apenas http://127.0.0.1:5173;
+  ``null`` é recusado; sem CORS ``*``.
 
 PROVISÓRIO: o nonce de instância para comandos fica para M6.
 """
@@ -20,12 +21,13 @@ ALLOWED_HOSTNAMES = frozenset({"127.0.0.1", "localhost"})
 DEV_UI_PORT = 5173
 
 
+DEV_UI_ORIGIN = f"http://{LOOPBACK_HOST}:{DEV_UI_PORT}"
+
+
 def allowed_origins(api_port: int) -> frozenset[str]:
-    """Origens exatas aceitas: a própria API e o Vite de desenvolvimento."""
-    origins: set[str] = set()
-    for host in ALLOWED_HOSTNAMES:
-        for port in (api_port, DEV_UI_PORT):
-            origins.add(f"http://{host}:{port}")
+    """Origens exatas aceitas: a própria API e, em dev, só http://127.0.0.1:5173."""
+    origins = {f"http://{host}:{api_port}" for host in ALLOWED_HOSTNAMES}
+    origins.add(DEV_UI_ORIGIN)
     return frozenset(origins)
 
 
