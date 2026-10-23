@@ -58,3 +58,7 @@ src/experiment/results/*
 !src/experiment/results/models.lock.json
 !src/experiment/results/2026-07-02-smoke/
 !src/experiment/results/2026-07-02-smoke-matriz/
+
+# Pasta operacional de pesquisa (M6/M7): saídas derivadas de modelos reais,
+# p.ex. scripts/mapear_propriedades.py. Não versionar.
+research/
