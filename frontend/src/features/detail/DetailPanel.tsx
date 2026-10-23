@@ -103,7 +103,7 @@ export function DetailPanel({ linha, modelos, onIrPara }: Props) {
   return (
     <section aria-label="Detalhe" className="grid content-start gap-4 overflow-y-auto p-4">
       <header className="grid gap-1">
-        <h2 className="font-serif text-2xl leading-tight break-all" data-testid="detalhe-nome">
+        <h2 className="text-lg leading-tight font-semibold break-all" data-testid="detalhe-nome">
           {record.name ?? "(sem nome)"}
         </h2>
         <p className="text-sm text-muted-foreground" data-testid="detalhe-arquivo">
@@ -124,7 +124,7 @@ export function DetailPanel({ linha, modelos, onIrPara }: Props) {
         <Campo rotulo="GlobalId">
           {record.global_id ?? "ausente"} <span className="text-xs text-muted-foreground">(atributo, não identidade)</span>
           {record.global_id_state === "duplicated_in_file" && (
-            <Badge variant="destructive" className="ml-1">
+            <Badge variant="destructive" className="ml-1 whitespace-normal break-normal">
               repetido neste arquivo
             </Badge>
           )}

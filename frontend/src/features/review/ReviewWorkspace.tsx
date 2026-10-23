@@ -27,12 +27,13 @@ interface Props {
   onVoltar: () => void;
 }
 
-/** Número grande da faixa de resumo; null aparece como travessão, não como zero. */
+/** Número grande da faixa de resumo; null aparece como travessão, não como zero.
+ *  Na sans: o "1" da serifa de título se confunde com "l". */
 function Numero({ rotulo, valor, testId, semValor }: { rotulo: string; valor: number | null; testId: string; semValor: string }) {
   return (
     <div className="grid min-w-16 gap-0.5">
       <dt className="order-2 text-xs text-band-muted">{rotulo}</dt>
-      <dd className="order-1 font-serif text-4xl leading-none tabular-nums" data-testid={testId} title={valor === null ? semValor : undefined}>
+      <dd className="order-1 text-3xl leading-none font-medium tracking-tight tabular-nums" data-testid={testId} title={valor === null ? semValor : undefined}>
         {valor ?? "—"}
       </dd>
     </div>
