@@ -59,6 +59,7 @@ src/experiment/results/*
 !src/experiment/results/2026-07-02-smoke/
 !src/experiment/results/2026-07-02-smoke-matriz/
 
-# Pasta operacional de pesquisa (M6/M7): saídas derivadas de modelos reais,
-# p.ex. scripts/mapear_propriedades.py. Não versionar.
-research/
+# Saídas do mapeamento de propriedades (M3), derivadas de modelos reais
+# (scripts/mapear_propriedades.py). Não versionar. O restante de research/
+# (p.ex. research/M7/) continua versionado.
+research/M3/mapeamento/
