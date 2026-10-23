@@ -28,6 +28,11 @@ export const VIEWER_ASSETS = {
 } as const;
 
 const COR_DESTAQUE = new THREE.Color("#f59e0b");
+
+/** Fundo da cena pelo token --viewer-bg do tema; cinza claro se ausente. */
+function corDeFundo(el: HTMLElement): string {
+  return getComputedStyle(el).getPropertyValue("--viewer-bg").trim() || "#f5f5f5";
+}
 const OPACIDADE_RAIO_X = 0.15;
 
 type Mundo = OBC.SimpleWorld<OBC.SimpleScene, OBC.SimpleCamera, OBC.SimpleRenderer>;
@@ -89,6 +94,7 @@ export class ThatOpenViewerAdapter implements ViewerAdapter {
   private isolamento: Set<string> | null = null;
   private cancelados = new Set<string>();
   private removerClique: (() => void) | null = null;
+  private observadorTema: MutationObserver | null = null;
 
   async montar(container: HTMLElement): Promise<void> {
     this.container = container;
@@ -96,7 +102,7 @@ export class ThatOpenViewerAdapter implements ViewerAdapter {
     const world = components.get(OBC.Worlds).create<OBC.SimpleScene, OBC.SimpleCamera, OBC.SimpleRenderer>();
     world.scene = new OBC.SimpleScene(components);
     world.scene.setup();
-    world.scene.three.background = new THREE.Color("#f5f5f5");
+    world.scene.three.background = new THREE.Color(corDeFundo(container));
     world.renderer = new OBC.SimpleRenderer(components, container);
     world.camera = new OBC.SimpleCamera(components);
     components.init();
@@ -110,6 +116,11 @@ export class ThatOpenViewerAdapter implements ViewerAdapter {
     this.world = world;
     this.fragments = fragments;
     this.removerClique = this.instalarClique(world.renderer.three.domElement);
+    // Troca de tema (classe .dark no <html>) só muda o fundo da cena.
+    this.observadorTema = new MutationObserver(() => {
+      if (this.world) this.world.scene.three.background = new THREE.Color(corDeFundo(container));
+    });
+    this.observadorTema.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
   }
 
   private instalarClique(dom: HTMLCanvasElement): () => void {
@@ -301,6 +312,8 @@ export class ThatOpenViewerAdapter implements ViewerAdapter {
 
   async destruir(): Promise<void> {
     this.removerClique?.();
+    this.observadorTema?.disconnect();
+    this.observadorTema = null;
     this.conversor.encerrar();
     for (const id of [...this.modelos.keys()]) await this.descarregar(id);
     this.components?.dispose();
