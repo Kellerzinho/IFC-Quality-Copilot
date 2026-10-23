@@ -1,0 +1,174 @@
+{
+  "schema_version": 1,
+  "task": "M7-09",
+  "profiles": [
+    {
+      "profile_id": "pessoal-nvidia-geforce-rtx-4050-laptop-gpu",
+      "line": "pessoal",
+      "status": "observado",
+      "collected_at": "2026-10-13T02:52:53+00:00",
+      "os": {
+        "value": "Windows 11 (build 10.0.26200)",
+        "status": "medido",
+        "source": "platform",
+        "accessed_on": null,
+        "note": null
+      },
+      "gpus": [
+        {
+          "name": "NVIDIA GeForce RTX 4050 Laptop GPU",
+          "memory_total_mib": 6141,
+          "memory_used_mib": 433,
+          "memory_free_mib": 5489,
+          "driver_version": "572.83"
+        }
+      ],
+      "gpu_probe": {
+        "value": "ok",
+        "status": "medido",
+        "source": "nvidia-smi --query-gpu=name,memory.total,memory.used,memory.free,driver_version",
+        "accessed_on": null,
+        "note": null
+      },
+      "cuda_driver_max": {
+        "value": "12.8",
+        "status": "medido",
+        "source": "nvidia-smi (cabeçalho)",
+        "accessed_on": null,
+        "note": null
+      },
+      "cuda_toolkit": {
+        "value": null,
+        "status": "indisponivel",
+        "source": "nvcc --version",
+        "accessed_on": null,
+        "note": null
+      },
+      "ram_total_gib": {
+        "value": 7.71,
+        "status": "medido",
+        "source": "psutil.virtual_memory",
+        "accessed_on": null,
+        "note": null
+      },
+      "ram_available_gib": {
+        "value": 0.84,
+        "status": "medido",
+        "source": "psutil.virtual_memory",
+        "accessed_on": null,
+        "note": "instantâneo no momento da coleta; varia com os aplicativos abertos"
+      },
+      "disk_free_gib": {
+        "value": 82.2,
+        "status": "medido",
+        "source": "shutil.disk_usage (unidade do projeto)",
+        "accessed_on": null,
+        "note": null
+      },
+      "ollama_version": {
+        "value": "0.40.3",
+        "status": "medido",
+        "source": "ollama --version",
+        "accessed_on": null,
+        "note": null
+      },
+      "ollama_server": {
+        "value": "no_ar",
+        "status": "medido",
+        "source": "ollama --version",
+        "accessed_on": null,
+        "note": null
+      },
+      "ollama_installed_source": {
+        "value": "ollama list",
+        "status": "medido",
+        "source": "ollama list",
+        "accessed_on": null,
+        "note": null
+      },
+      "ollama_installed": [],
+      "notes": []
+    },
+    {
+      "profile_id": "ime-se2-lab",
+      "line": "ime",
+      "status": "nao_confirmado",
+      "collected_at": null,
+      "os": {
+        "value": null,
+        "status": "indisponivel",
+        "source": null,
+        "accessed_on": null,
+        "note": "equipamento não confirmado"
+      },
+      "gpus": [],
+      "gpu_probe": {
+        "value": null,
+        "status": "indisponivel",
+        "source": null,
+        "accessed_on": null,
+        "note": "equipamento não confirmado"
+      },
+      "cuda_driver_max": {
+        "value": null,
+        "status": "indisponivel",
+        "source": null,
+        "accessed_on": null,
+        "note": "equipamento não confirmado"
+      },
+      "cuda_toolkit": {
+        "value": null,
+        "status": "indisponivel",
+        "source": null,
+        "accessed_on": null,
+        "note": "equipamento não confirmado"
+      },
+      "ram_total_gib": {
+        "value": null,
+        "status": "indisponivel",
+        "source": null,
+        "accessed_on": null,
+        "note": "equipamento não confirmado"
+      },
+      "ram_available_gib": {
+        "value": null,
+        "status": "indisponivel",
+        "source": null,
+        "accessed_on": null,
+        "note": "equipamento não confirmado"
+      },
+      "disk_free_gib": {
+        "value": null,
+        "status": "indisponivel",
+        "source": null,
+        "accessed_on": null,
+        "note": "equipamento não confirmado"
+      },
+      "ollama_version": {
+        "value": null,
+        "status": "indisponivel",
+        "source": null,
+        "accessed_on": null,
+        "note": "equipamento não confirmado"
+      },
+      "ollama_server": {
+        "value": null,
+        "status": "indisponivel",
+        "source": null,
+        "accessed_on": null,
+        "note": "equipamento não confirmado"
+      },
+      "ollama_installed_source": {
+        "value": null,
+        "status": "indisponivel",
+        "source": null,
+        "accessed_on": null,
+        "note": "equipamento não confirmado"
+      },
+      "ollama_installed": [],
+      "notes": [
+        "Laboratório da SE2 (linha IME): GPU, VRAM, RAM, acesso e concorrência ainda não confirmados. Toda célula fica condicionada até haver inventário real (T7-26)."
+      ]
+    }
+  ]
+}

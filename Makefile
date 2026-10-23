@@ -1,7 +1,7 @@
 .PHONY: install test test-cov lint format run-ui run-mcp run-mcp-http clean clean-cache
 
 install:
-	pip install -e ".[dev]"
+	uv sync
 
 test:
 	pytest -v --tb=short
