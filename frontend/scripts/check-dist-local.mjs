@@ -57,7 +57,16 @@ for (const arquivo of arquivos) {
   if (ext === ".css") {
     if (/@import\s+(url\()?\s*["']?(https?:)?\/\//i.test(texto)) falhar(arquivo, "@import de CSS externo");
     for (const m of texto.matchAll(/url\(\s*["']?((?:https?:)?\/\/[^"')]+)/gi)) falhar(arquivo, `url() externa (${m[1]})`);
-    if (/@font-face/i.test(texto)) falhar(arquivo, "@font-face presente (o app usa fontes do sistema)");
+    // Fontes do tema (@fontsource) vêm empacotadas: todo src de @font-face precisa ser
+    // um arquivo deste build, servido pela própria origem.
+    for (const bloco of texto.matchAll(/@font-face\s*\{[^}]*\}/gi)) {
+      for (const m of bloco[0].matchAll(/url\(\s*["']?([^"')]+)/gi)) {
+        const alvo = m[1].split(/[?#]/)[0];
+        if (/^(?:[a-z]+:)?\/\//i.test(alvo) || /^data:/i.test(alvo)) continue; // externa já acusada acima; data: é local
+        const local = alvo.startsWith("/") ? join(dist, alvo) : join(dirname(arquivo), alvo);
+        if (!existsSync(local)) falhar(arquivo, `@font-face aponta para arquivo ausente no build (${m[1]})`);
+      }
+    }
   }
 }
 
