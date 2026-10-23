@@ -19,7 +19,7 @@ import * as THREE from "three";
 import { elementKey } from "@/shared/elementKey";
 import type { ElementRef } from "@/shared/types";
 
-import { construirMapa, resumoMapa, type FatoViewer, type MapaIdentidade } from "./idMap";
+import { coletarFatos, construirMapa, resumoMapa, type MapaIdentidade } from "./idMap";
 import type { EstadoModelo, ModeloParaCarregar, ViewerAdapter } from "./ViewerPort";
 
 export const VIEWER_ASSETS = {
@@ -174,7 +174,7 @@ export class ThatOpenViewerAdapter implements ViewerAdapter {
       }
       model.useCamera(this.world.camera.three);
       this.world.scene.three.add(model.object);
-      const mapa = construirMapa(modelo.modelId, modelo.elementos, await this.coletarFatos(model));
+      const mapa = construirMapa(modelo.modelId, modelo.elementos, await coletarFatos(model));
       this.modelos.set(modelo.modelId, { model, mapa, visivel: true, raioX: false });
       await this.fragments.core.update(true);
       if (this.modelos.size === 1) await this.enquadrarTudo();
@@ -186,21 +186,6 @@ export class ThatOpenViewerAdapter implements ViewerAdapter {
       this.emitirEstado({ modelId: modelo.modelId, etapa: "falhou", decorridoMs: decorrido(), mensagem });
       throw erro;
     }
-  }
-
-  /** Classe e GlobalId de cada item COM geometria, em lote. */
-  private async coletarFatos(model: FRAGS.FragmentsModel): Promise<Map<number, FatoViewer>> {
-    const itemIds = await model.getItemsIdsWithGeometry();
-    const localIds = await model.getLocalIdsFromItemIds(itemIds);
-    const guids = await model.getGuidsByLocalIds(localIds);
-    const porCategoria = await model.getItemsOfCategories([/.*/]);
-    const categoria = new Map<number, string>();
-    for (const [cat, ids] of Object.entries(porCategoria)) for (const id of ids) categoria.set(id, cat);
-    const fatos = new Map<number, FatoViewer>();
-    localIds.forEach((localId, i) => {
-      fatos.set(localId, { localId, categoria: categoria.get(localId) ?? null, guid: guids[i] ?? null });
-    });
-    return fatos;
   }
 
   private async enquadrarTudo(): Promise<void> {

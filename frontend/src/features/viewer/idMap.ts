@@ -16,6 +16,31 @@ export interface FatoViewer {
 
 export type SituacaoVinculo = "verificado" | "sem_geometria" | "divergente";
 
+/** Subconjunto do FragmentsModel usado para levantar os fatos. */
+export interface FonteFatos {
+  getItemsIdsWithGeometry(): Promise<number[]>;
+  getGuidsByLocalIds(localIds: number[]): Promise<(string | null)[]>;
+  getItemsOfCategories(categories: RegExp[]): Promise<Record<string, number[]>>;
+}
+
+/**
+ * Classe e GlobalId de cada item COM geometria. Apesar do nome,
+ * getItemsIdsWithGeometry() já devolve localIds (Fragments 3.4.8); passá-los
+ * por getLocalIdsFromItemIds() embaralha os ids.
+ */
+export async function coletarFatos(model: FonteFatos): Promise<Map<number, FatoViewer>> {
+  const localIds = await model.getItemsIdsWithGeometry();
+  const guids = await model.getGuidsByLocalIds(localIds);
+  const porCategoria = await model.getItemsOfCategories([/.*/]);
+  const categoria = new Map<number, string>();
+  for (const [cat, ids] of Object.entries(porCategoria)) for (const id of ids) categoria.set(id, cat);
+  const fatos = new Map<number, FatoViewer>();
+  localIds.forEach((localId, i) => {
+    fatos.set(localId, { localId, categoria: categoria.get(localId) ?? null, guid: guids[i] ?? null });
+  });
+  return fatos;
+}
+
 export interface MapaIdentidade {
   modelId: string;
   /** chave do ElementRef → localId no viewer (só verificados). */
