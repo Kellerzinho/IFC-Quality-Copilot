@@ -1,39 +1,85 @@
-/* Tema neutro do shadcn/ui — PROVISÓRIO: a escolha visual (claro / escuro / compacto) está pendente.
-   Fontes do sistema; nenhuma fonte, ícone ou CSS externo. */
+/* Tema "LEPV": proposta visual em avaliação; a escolha final de tema segue pendente
+   (plano M4 §13.4). Tokens shadcn/ui com tema claro e escuro (.dark no <html>).
+   Fontes locais via @fontsource (OFL-1.1), sem CDN: a CSP do build só permite 'self'.
+   Paleta, contrastes e licenças: docs/m4-tema-visual.md. */
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "@fontsource/instrument-serif/latin-400.css";
+@import "@fontsource/instrument-serif/latin-400-italic.css";
+@import "@fontsource-variable/instrument-sans/index.css";
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --radius: 0.5rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --warning: oklch(0.769 0.188 70.08);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  color-scheme: light;
+  --radius: 0.625rem;
+  /* papel, tinta e vinho */
+  --background: #f7f5f0;
+  --foreground: #1b1918;
+  --card: #fdfcf9;
+  --card-foreground: #1b1918;
+  --popover: #fdfcf9;
+  --popover-foreground: #1b1918;
+  --primary: #7b1e2c;
+  --primary-foreground: #fdfcf9;
+  --secondary: #ece8e0;
+  --secondary-foreground: #1b1918;
+  --muted: #ece8e0;
+  --muted-foreground: #5c5650;
+  --accent: #f1e5e3;
+  --accent-foreground: #4f121c;
+  --destructive: #b42318;
+  --destructive-foreground: #ffffff;
+  --warning: #c27c0e;
+  --border: #dcd6cc;
+  --input: #8f877c;
+  --ring: #7b1e2c;
+  /* faixa de contraste (seções escuras) */
+  --band: #1b1918;
+  --band-foreground: #f7f5f0;
+  --band-muted: #b9b1a7;
+  --band-accent: #e3a0a9;
+  /* fundo da cena 3D; lido pelo adaptador do viewer */
+  --viewer-bg: #efece6;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #151312;
+  --foreground: #ede8e1;
+  --card: #1e1b19;
+  --card-foreground: #ede8e1;
+  --popover: #1e1b19;
+  --popover-foreground: #ede8e1;
+  --primary: #d9808e;
+  --primary-foreground: #1f0a0e;
+  --secondary: #2a2623;
+  --secondary-foreground: #ede8e1;
+  --muted: #2a2623;
+  --muted-foreground: #a9a097;
+  --accent: #3a2226;
+  --accent-foreground: #f4d9dc;
+  --destructive: #f0645a;
+  --destructive-foreground: #1f0a08;
+  --warning: #e0a040;
+  --border: #36312d;
+  --input: #7a7168;
+  --ring: #e08a97;
+  --band: #0d0c0b;
+  --band-foreground: #ede8e1;
+  --band-muted: #a9a097;
+  --band-accent: #e3a0a9;
+  --viewer-bg: #1a1816;
 }
 
 @theme inline {
-  --font-sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: "Instrument Sans Variable", ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-serif: "Instrument Serif", ui-serif, Georgia, "Times New Roman", serif;
   --font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -49,15 +95,20 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-warning: var(--warning);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-band: var(--band);
+  --color-band-foreground: var(--band-foreground);
+  --color-band-muted: var(--band-muted);
+  --color-band-accent: var(--band-accent);
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring;
   }
   html,
   body,
@@ -66,5 +117,13 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }

@@ -98,7 +98,7 @@ export function DiagnosticList({ modelos, linhas, filtros, onFiltros, selecionad
                 aria-current={ativa ? "true" : undefined}
                 onClick={() => onSelecionar(linha)}
                 className={cn(
-                  "grid w-full gap-0.5 rounded-md border border-transparent px-2 py-1.5 text-left text-sm hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",
+                  "grid w-full gap-0.5 rounded-md border border-transparent px-2 py-1.5 text-left text-sm hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none",
                   ativa && "border-primary bg-accent",
                 )}
               >
