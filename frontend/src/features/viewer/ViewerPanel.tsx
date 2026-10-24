@@ -112,7 +112,13 @@ export function ViewerPanel({ adapter, api, projectId, modelos, onSituacao }: Pr
               <li key={m.binding.model_id} className="flex flex-wrap items-center gap-2">
                 <span className="font-medium">{DISCIPLINE_LABEL[m.binding.discipline]}:</span>
                 <span data-testid={`estado-3d-${m.binding.discipline}`}>
-                  {e ? `${ROTULO_ETAPA[e.etapa]} (${(e.decorridoMs / 1000).toFixed(1)} s)` : "aguardando"}
+                  {e ? (
+                    <>
+                      {ROTULO_ETAPA[e.etapa]} (<span className="font-mono">{(e.decorridoMs / 1000).toFixed(1)} s</span>)
+                    </>
+                  ) : (
+                    "aguardando"
+                  )}
                 </span>
                 {e?.mapa && (
                   <span className="text-muted-foreground">
