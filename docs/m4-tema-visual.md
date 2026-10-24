@@ -1,128 +1,164 @@
-# Tema visual LEPV da UI M4: proposta em avaliação (2026-10-23)
+# Tema visual da UI M4: Proposta Oliva-Turquesa (em avaliação)
 
-Branch `feat/m4-tema-visual`, a partir de `feat/m4-plataforma-base`.
+Branch `feat/m4-tema-visual`, a partir de `feat/m4-plataforma-base`, ajustada em 2026-10-23.
 
 ## Situação em relação ao plano
 
 O plano M4 (§1, §6.2, §13.4) deixa a escolha de tema **aberta** entre três propostas: claro limpo,
 escuro com foco no 3D e painéis compactos. A escolha depende de comparação com Felipe e Nonato.
 
-Este tema é uma **quarta direção, pedida por Nonato**, com a identidade do LEPV. Ele foi implementado
-como proposta e **não substitui a decisão pendente**: a tela de revisão mostra o selo
-"Tema em avaliação". O tema mantém o que o plano já fixa para qualquer proposta:
+Esta é uma proposta adicional, **em avaliação**, e não substitui a decisão pendente. A tela de revisão
+mostra o selo "Tema em avaliação".
+
+- **Por que a identidade mudou:** a plataforma é do IME para o Exército. A identidade sai do LEPV e passa
+  a usar verde-oliva, azul-turquesa (cor da arma de Engenharia) e ouro.
+- **Proposta anterior:** a proposta LEPV (papel, tinta e vinho) está preservada, sem push, na branch
+  `feat/m4-tema-lepv` (`1a230a0`).
+
+O tema mantém o que o plano fixa para qualquer proposta:
 
 - três áreas redimensionáveis (D4-12);
-- contorno de seleção independente da paleta e informação que não depende só de cor (D4-14).
-  O destaque 3D continua âmbar, e as lacunas usam ícone e texto;
+- contorno de seleção e informação que não dependem só de cor (D4-14). Seleção, lacunas e "GUID
+  repetido" sempre têm borda, ícone ou texto;
 - fontes e ativos locais, sem CDN (D4-27);
-- uso só em desktop (D4-01). Os screenshots foram feitos a 1440 e 1024 px.
+- uso só em desktop (D4-01).
 
-Não houve mudança de comportamento, contrato de API ou `data-testid`. Os acréscimos são:
+Não houve mudança de comportamento, contrato de API ou `data-testid` existente. Os acréscimos são:
 
-- alternância claro/escuro;
-- faixa de resumo, com novos `data-testid` `resumo-*`;
-- fundo da cena 3D lido do token `--viewer-bg`.
+- `data-testid` `resumo-*-rotulo` nos rótulos da faixa;
+- botão copiar na chave e na revisão IFC.
+
+> **Ressalva.** Os códigos de cor abaixo são **aproximados**. Antes de qualquer uso oficial, confira-os
+> com o manual de identidade visual do Exército Brasileiro e com a comunicação do IME. A tela não usa
+> brasão, logotipo nem marca oficial. O vínculo institucional aparece só em texto
+> ("Instituto Militar de Engenharia · PIBITI 2026/2027").
 
 ## Paleta
 
-Tokens em `frontend/src/index.css` (variáveis do shadcn/Tailwind v4).
+Os tokens têm os mesmos nomes nos dois temas e ficam em `frontend/src/index.css`. No bloco `@theme`,
+eles são mapeados para os nomes do shadcn/Tailwind.
 
-| Papel | Token | Claro | Escuro |
+| Token | Claro | Escuro | Nome shadcn/Tailwind |
 |---|---|---|---|
-| Papel (fundo) | `--background` | `#f7f5f0` | `#151312` |
-| Superfície (painéis, cards) | `--card` | `#fdfcf9` | `#1e1b19` |
-| Tinta | `--foreground` | `#1b1918` | `#ede8e1` |
-| Tinta secundária | `--muted-foreground` | `#5c5650` | `#a9a097` |
-| Vinho (botão primário, destaque, foco) | `--primary` / `--ring` | `#7b1e2c` | `#d9808e` / `#e08a97` |
-| Texto sobre o vinho | `--primary-foreground` | `#fdfcf9` | `#1f0a0e` |
-| Seleção na lista | `--accent` | `#f1e5e3` | `#3a2226` |
-| Linhas finas | `--border` | `#dcd6cc` | `#36312d` |
-| Borda de campo | `--input` | `#8f877c` | `#7a7168` |
-| Erro | `--destructive` | `#b42318` | `#f0645a` |
-| Atenção (fundo a 10–20%) | `--warning` | `#c27c0e` | `#e0a040` |
-| Faixa escura | `--band` | `#1b1918` | `#0d0c0b` |
-| Fundo 3D | `--viewer-bg` | `#efece6` | `#1a1816` |
+| `--bg` | `#f7f7f4` | `#141511` | `background` |
+| `--surface` | `#ffffff` | `#1f201c` | `card`, `popover` |
+| `--sunken` | `#ebece6` | `#2b2c28` | `muted`, `secondary` |
+| `--line` | `#d8d8d1` | `#40403a` | `border` |
+| `--ink` | `#1b1b18` | `#ebece6` | `foreground` |
+| `--muted` | `#555650` | `#a2a29b` | `muted-foreground`, `input` |
+| `--band` | `#292f0e` | `#0f110a` | `band` |
+| `--band-ink` | `#f7f7f4` | `#ebece6` | `band-foreground` |
+| `--band-muted` | `#d3dfa7` | `#b9c58e` | `band-muted` |
+| `--primary` | `#525b27` | `#b9c58e` | `primary` |
+| `--primary-ink` | `#ffffff` | `#191d0a` | `primary-foreground` |
+| `--accent` | `#026266` | `#56d3da` | `accent`, `ring` |
+| `--accent-soft` | `#e1fdff` | `#02494d` | `accent-soft` |
+| `--gold` | `#e4b750` | `#e4b750` | `gold` |
+| `--gold-text` | `#6d5001` | `#ffd16b` | `gold-text` |
+| `--gold-soft` | `#fef6e5` | `#392800` | `gold-soft` |
+| `--danger` | `#b63b35` | `#f57569` | `destructive` |
+| `--danger-soft` | `#fff4f2` | `#560507` | `destructive-soft` |
+| `--viewer` | `#ebece6` | `#1b1b18` | lido pelo adaptador 3D |
 
-No escuro, o vinho clareia e recebe texto escuro. O vinho original `#7b1e2c` ficaria com 2,9:1
-sobre o fundo escuro.
+## Papéis das cores
 
-O vermelho de erro (`#b42318`) é mais claro e mais quente que o vinho. Selos de erro sempre têm
-texto, por exemplo "ambígua" ou "repetido neste arquivo".
+- **primary (oliva):** botões primários ("Criar projeto", "Confirmar", "Abrir revisão").
+- **accent (turquesa):**
+  - seleção na lista: fundo `accent-soft` com borda `accent`;
+  - links ("Enviar IFC/IDS");
+  - anel de foco de 2 px com offset;
+  - switches ligados.
+- **gold (ouro):**
+  - números grandes da faixa de resumo;
+  - filete de 3 px sob as faixas oliva da entrada e da revisão;
+  - destaque do elemento selecionado no 3D, igual nos dois temas.
+  - Em texto pequeno, usa-se `gold-text` sobre `gold-soft`: selos de lacuna, alerta de vínculo e aviso
+    do 3D.
+- **danger:** mensagens de erro, selo "repetido neste arquivo", "GUID repetido" na lista e selo
+  "ambígua". Os selos usam `danger-soft` como fundo e `danger` como texto e borda.
+- **band (oliva escuro):** faixa da entrada (eyebrow, título e resumo) e faixa da revisão (projeto e
+  números).
+- **sunken e muted:** botão desativado (fundo `sunken`, texto `muted`, sem opacidade), hover neutro de
+  botões e da lista, e a seção de passos da entrada.
+- **Decisões que não estavam no pedido:**
+  - a borda de campo usa `muted`, porque `line` (1,3:1) não chega aos 3:1 exigidos para limite de
+    componente;
+  - o hover de botões e da lista é `sunken`, porque o `accent` do shadcn passou a ser o turquesa forte.
 
 ## Contraste (WCAG 2.1 AA)
 
-Os valores foram calculados a partir dos tokens. O script foi usado fora do repo; o resumo vem abaixo.
+O teste automatizado `frontend/tests/unit/contraste.test.ts` lê os tokens de `src/index.css` e
+confere, nos temas claro e escuro, **20 pares de texto (≥ 4,5:1)** e **4 pares de borda e foco
+(≥ 3:1)**. São 48 asserções, todas aprovadas.
 
-- **Texto (mínimo 4,5:1), nos dois temas:**
-  - tinta/papel: 16,1 no claro e 15,2 no escuro;
-  - tinta secundária sobre papel, card e muted: 5,8 a 7,2;
-  - texto sobre o vinho: 9,9 no claro e 6,7 no escuro;
-  - vinho como texto (links de envio): 9,3 no claro e 6,6 no escuro;
-  - erro sobre papel: 6,0 no claro e 5,9 no escuro;
-  - números e rótulos da faixa escura: 7,6 a 16,1;
-  - texto sobre o fundo de atenção: 9,6 ou mais.
-- **Não texto (mínimo 3:1):**
-  - anel de foco: 6,7 ou mais;
-  - borda de campo: 3,25 a 3,87.
-- **Foco visível:** anel sólido de 2 px com offset em botão, campo, switch, item da lista e alça de
-  redimensionamento.
-  - O envio de arquivo usa input `sr-only`, por isso o anel fica no rótulo (`has-[:focus-visible]`).
-  - Conferido em screenshot (`revisao-foco-escuro-*.png`).
-- **Movimento:** o único movimento automático é a onda da entrada, desenhada uma vez. Com
-  `prefers-reduced-motion`, a duração vai a ~0.
+| Par (frente / fundo) | Claro | Escuro |
+|---|---|---|
+| ink / bg | 16,1 | 15,4 |
+| muted / sunken (botão desativado) | 6,2 | 5,5 |
+| primary-ink / primary | 7,3 | 9,4 |
+| accent / surface (link, foco) | 7,1 | 9,2 |
+| accent / accent-soft (selecionado) | 6,7 | 5,7 |
+| gold / band (números) | 7,4 | 10,1 |
+| band-muted / band | 9,9 | 10,4 |
+| gold-text / gold-soft | 7,0 | 9,9 |
+| danger / danger-soft | 5,3 | 5,4 |
+
+- **Fora do teste:** o destaque 3D em `gold` sobre o fundo do viewer claro (`#ebece6`) tem **1,58:1**.
+  - É contraste de objeto na cena, não de texto, e a identificação nunca depende só dele: a lista
+    marca o item com borda accent e o painel nomeia o elemento.
+  - Mesmo assim, fica abaixo dos 3:1 de componente gráfico.
+  - No escuro, o mesmo par dá 9,2:1.
+  - Ver **Pendências**.
+- **Foco visível:** anel `accent` sólido de 2 px com offset em botão, campo, switch, item da lista, alça
+  de redimensionamento e envio de arquivo (o anel fica no rótulo, porque o input é `sr-only`).
+- **Movimento:** não há movimento automático. Com `prefers-reduced-motion`, as transições vão a ~0.
 
 ## Fontes
 
-As fontes são pacotes locais (`@fontsource`) importados no CSS. O Vite as copia para `dist/assets/`.
-A CSP `font-src 'self'` foi conferida no build: as três faces carregam, com zero violações.
+As fontes são pacotes locais `@fontsource` importados no CSS, e o Vite as copia para `dist/assets/`.
+No build, com CSP `font-src 'self'`, as três famílias carregam, com zero violações.
 
 | Uso | Família | Pacote (versão exata) | Licença |
 |---|---|---|---|
-| Títulos (serifa estreita, itálico pontual) | Instrument Serif | `@fontsource/instrument-serif@5.3.0` | SIL OFL 1.1 |
-| UI, números de destaque | Instrument Sans (variável, 400–700) | `@fontsource-variable/instrument-sans@5.3.0` | SIL OFL 1.1 |
-| GUID, hash, chave | monoespaçada do sistema | — | — |
+| Títulos | Barlow Condensed 600 | `@fontsource/barlow-condensed@5.3.0` (subconjunto latin) | SIL OFL 1.1 |
+| Interface | IBM Plex Sans (variável, 100–700) | `@fontsource-variable/ibm-plex-sans@5.3.0` | SIL OFL 1.1 |
+| Hashes, ids, express_id e medidas | IBM Plex Mono 400 | `@fontsource/ibm-plex-mono@5.3.0` (subconjunto latin) | SIL OFL 1.1 |
 
-- **Só o subconjunto latin da serifa:** o português está no Latin-1. A sans inclui latin-ext.
-- **Números e nomes de elemento na sans.** O "1" da Instrument Serif se confunde com "l": "J-01" lia
-  "J-0l". Num instrumento de revisão isso é risco de leitura, então a serifa ficou para títulos de
-  projeto e da entrada.
-- **`check:dist`:** antes rejeitava qualquer `@font-face`. Agora exige que cada `url()` de
-  `@font-face` exista no próprio build. Uma `url()` externa continua acusada.
+- **Maiúsculas:** títulos em maiúsculas na faixa da revisão (nome do projeto) e na entrada (título,
+  cards e passos). O nome do elemento no detalhe usa Barlow com a grafia original.
+- **Mono:** usada em `express_id`, GlobalId, revisões, chave, tamanho de arquivo e tempos do 3D. Os
+  selos de disciplina (ARQ/EST) ficam na sans.
+- **Instrument Serif e Instrument Sans foram removidas.** O `check:dist` agora:
+  - aceita só as famílias do tema em `@font-face`;
+  - exige que cada `url()` exista no próprio build.
 
-## O que veio de cada referência (`C:\dev\ref-lepv\`)
+## Telas
 
-- **lepv.org:**
-  - papel off-white e tinta quase preta;
-  - vinho no botão primário e nos destaques;
-  - serifa estreita nos títulos, com itálico vinho numa palavra;
-  - sans neutra na UI e muito respiro na entrada;
-  - linhas finas no lugar de sombras;
-  - a linha ondulada vinho, usada só na entrada, como assinatura.
-- **Design1 (estúdio de arquitetura):** hierarquia tipográfica forte (título de entrada a 72 px) e
-  números grandes com rótulo pequeno, usados na faixa de resumo.
-- **Design2 (portfólio):** cards com cantos arredondados (`--radius` 10 px, card 14 px) e muito
-  espaço em volta dos títulos.
-- **Design3 (coworking):** contraste claro/escuro entre seções. A entrada termina numa faixa escura,
-  e o topo da revisão é uma faixa escura. Também vieram os números grandes em sans.
-
-## Adaptação por tela
-
-- **Entrada (editorial):**
-  - título serifado grande e resumo curto do que a revisão faz;
-  - onda vinho;
-  - formulário ou tabela de vínculos num card;
-  - faixa escura com os três passos reais da tela: enviar, confirmar e revisar. Passos de decisão e
-    exportação ainda não existem na build e ficaram de fora.
-- **Revisão (ferramenta densa):**
-  - faixa escura compacta com o nome do projeto e quatro números: elementos, lacunas, ambíguas e
-    sem geometria. Sem modelo analisado, lacunas e ambíguas mostram travessão, não zero;
-  - linha clara com arquivo, revisão e IDS de cada disciplina;
-  - lista e detalhe em superfície de card;
-  - área 3D sem decoração.
+- **Entrada:**
+  - faixa oliva com o eyebrow em texto, título em Barlow Condensed maiúsculo e resumo;
+  - filete ouro de 3 px por baixo, no lugar da onda vinho;
+  - o card "Novo projeto" fica centralizado em telas largas;
+  - os três passos reais da tela (enviar, confirmar, revisar) ficam numa seção `sunken`, com números em
+    `gold-text`.
+- **Revisão:**
+  - faixa oliva com filete ouro e nome do projeto;
+  - quatro números em ouro com plural correto: "1 Ambígua", "2 Ambíguas". Zero e "—" ficam no plural;
+  - linha clara com arquivo, revisão e IDS;
+  - lista com seleção em `accent-soft` e borda `accent`;
+  - fundo do viewer = `--viewer`;
+  - destaque 3D em `--gold`.
+- **Painel de detalhe:**
+  - texto com `break-words`;
+  - chave e revisão inteiras no DOM, truncadas com reticências, com `title` completo e botão copiar;
+  - em painel estreito (< 20rem), rótulo sobre valor, para os selos `nowrap` não vazarem.
 
 ## Pendências
 
-1. Escolha visual com Felipe e Nonato, conforme o §13.4. Este tema é uma das opções.
-2. O `<select>` de arquivo usa o controle nativo, com estilo do sistema no menu aberto.
-3. O destaque 3D continua `#f59e0b`, sem revisão de contraste contra `--viewer-bg` escuro.
-4. A logo "That Open Company" no canto do viewer vem da biblioteca, não do tema.
+1. **Escolha visual** com Felipe e Nonato (§13.4). Concorrem as três propostas do plano, a LEPV e esta.
+2. **Conferir os hex** com o manual de identidade visual do Exército e com a comunicação do IME.
+3. **Destaque 3D em ouro sobre fundo claro (1,58:1).** Opções, sem decisão tomada:
+   - contorno escuro no elemento destacado;
+   - fundo do viewer claro mais escuro;
+   - um ouro mais saturado só na cena.
+4. O `<select>` de arquivo usa o controle nativo, com estilo do sistema no menu aberto.
+5. A logo "That Open Company" no canto do viewer vem da biblioteca, não do tema.
