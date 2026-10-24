@@ -18,7 +18,14 @@ import { DiagnosticList, type FiltrosLista } from "../diagnostic/DiagnosticList"
 import { DisplayControls, type EstadoExibicao } from "../viewer/DisplayControls";
 import { ViewerPanel, type SituacaoViewer } from "../viewer/ViewerPanel";
 import type { ViewerAdapter } from "../viewer/ViewerPort";
-import { montarLinhas, resumirRevisao, totalLacunas, type LinhaElemento, type ModeloRevisao } from "./reviewData";
+import {
+  montarLinhas,
+  resumirRevisao,
+  rotuloContagem,
+  totalLacunas,
+  type LinhaElemento,
+  type ModeloRevisao,
+} from "./reviewData";
 
 interface Props {
   api: Api;
@@ -27,13 +34,30 @@ interface Props {
   onVoltar: () => void;
 }
 
-/** Número grande da faixa de resumo; null aparece como travessão, não como zero.
- *  Na sans: o "1" da serifa de título se confunde com "l". */
-function Numero({ rotulo, valor, testId, semValor }: { rotulo: string; valor: number | null; testId: string; semValor: string }) {
+/** Número grande da faixa de resumo; null aparece como travessão, não como zero. */
+function Numero({
+  singular,
+  plural,
+  valor,
+  testId,
+  semValor,
+}: {
+  singular: string;
+  plural: string;
+  valor: number | null;
+  testId: string;
+  semValor?: string;
+}) {
   return (
     <div className="grid min-w-16 gap-0.5">
-      <dt className="order-2 text-xs text-band-muted">{rotulo}</dt>
-      <dd className="order-1 text-3xl leading-none font-medium tracking-tight tabular-nums" data-testid={testId} title={valor === null ? semValor : undefined}>
+      <dt className="order-2 text-xs text-band-muted" data-testid={`${testId}-rotulo`}>
+        {rotuloContagem(valor, singular, plural)}
+      </dt>
+      <dd
+        className="order-1 font-display text-4xl leading-none text-gold tabular-nums"
+        data-testid={testId}
+        title={valor === null ? semValor : undefined}
+      >
         {valor ?? "—"}
       </dd>
     </div>
@@ -135,7 +159,7 @@ export function ReviewWorkspace({ api, project, createViewer, onVoltar }: Props)
 
   return (
     <div className="flex h-full flex-col">
-      <header className="bg-band text-band-foreground">
+      <header className="border-b-[3px] border-gold bg-band text-band-foreground">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
           <Button
             size="sm"
@@ -145,13 +169,25 @@ export function ReviewWorkspace({ api, project, createViewer, onVoltar }: Props)
           >
             <ArrowLeft aria-hidden /> Projeto
           </Button>
-          <h1 className="min-w-0 truncate font-serif text-3xl leading-none">{project.name}</h1>
+          <h1 className="min-w-0 truncate font-display text-3xl leading-none tracking-wide uppercase">{project.name}</h1>
           {resumo && (
             <dl className="ml-auto flex gap-x-8" aria-label="Resumo da revisão">
-              <Numero rotulo="Elementos" valor={resumo.elementos} testId="resumo-elementos" semValor="" />
-              <Numero rotulo="Lacunas" valor={resumo.lacunas} testId="resumo-lacunas" semValor="Nenhum modelo analisado" />
-              <Numero rotulo="Ambíguas" valor={resumo.ambiguas} testId="resumo-ambiguas" semValor="Nenhum modelo analisado" />
-              <Numero rotulo="Sem geometria" valor={resumo.semGeometria} testId="resumo-sem-geometria" semValor="" />
+              <Numero singular="Elemento" plural="Elementos" valor={resumo.elementos} testId="resumo-elementos" />
+              <Numero
+                singular="Lacuna"
+                plural="Lacunas"
+                valor={resumo.lacunas}
+                testId="resumo-lacunas"
+                semValor="Nenhum modelo analisado"
+              />
+              <Numero
+                singular="Ambígua"
+                plural="Ambíguas"
+                valor={resumo.ambiguas}
+                testId="resumo-ambiguas"
+                semValor="Nenhum modelo analisado"
+              />
+              <Numero singular="Sem geometria" plural="Sem geometria" valor={resumo.semGeometria} testId="resumo-sem-geometria" />
             </dl>
           )}
           <ThemeToggle
@@ -179,7 +215,7 @@ export function ReviewWorkspace({ api, project, createViewer, onVoltar }: Props)
       </div>
 
       {aviso && (
-        <p role="status" className="border-b bg-warning/10 px-4 py-1 text-sm">
+        <p role="status" className="border-b border-gold/60 bg-gold-soft px-4 py-1 text-sm">
           {aviso}
         </p>
       )}

@@ -78,3 +78,8 @@ export function resumirRevisao(modelos: ModeloRevisao[], linhas: LinhaElemento[]
     semGeometria: linhas.filter((l) => !l.record.has_geometry).length,
   };
 }
+
+/** Rótulo no singular só para exatamente 1; zero e "—" (null) ficam no plural. */
+export function rotuloContagem(valor: number | null, singular: string, plural: string): string {
+  return valor === 1 ? singular : plural;
+}

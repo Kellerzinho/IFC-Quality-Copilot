@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { montarLinhas, resumirRevisao, type ModeloRevisao } from "@/features/review/reviewData";
+import { montarLinhas, resumirRevisao, rotuloContagem, type ModeloRevisao } from "@/features/review/reviewData";
 
 import { ARQ, EST, fakeApi, J01, J02, LAJE_ARQ, LAJE_EST, PORTA, PROXY } from "../fixtures";
 
@@ -22,5 +22,14 @@ describe("faixa de resumo da revisão", () => {
   it("sem modelo analisado, lacunas e ambíguas ficam indefinidas, não zero", async () => {
     const m = (await modelos()).map((x) => ({ ...x, lacunas: null }));
     expect(resumirRevisao(m, montarLinhas(m))).toMatchObject({ elementos: 6, lacunas: null, ambiguas: null });
+  });
+
+  it.each([
+    [1, "Ambígua"],
+    [2, "Ambíguas"],
+    [0, "Ambíguas"],
+    [null, "Ambíguas"],
+  ])("rótulo de %s é %s", (valor, esperado) => {
+    expect(rotuloContagem(valor, "Ambígua", "Ambíguas")).toBe(esperado);
   });
 });
