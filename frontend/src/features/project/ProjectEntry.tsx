@@ -17,35 +17,6 @@ interface Props {
   onOpenReview: () => void;
 }
 
-/** Linha ondulada vinho: assinatura visual, só na entrada. */
-function Onda() {
-  return (
-    <svg
-      aria-hidden
-      className="assinatura-onda block h-12 w-full text-primary"
-      viewBox="0 0 1440 48"
-      preserveAspectRatio="none"
-      fill="none"
-    >
-      <path
-        d="M0 30 C 240 6, 520 8, 760 24 S 1220 46, 1440 14"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        vectorEffect="non-scaling-stroke"
-        pathLength={1}
-      />
-      <path
-        d="M0 40 C 300 30, 640 18, 980 26 S 1300 36, 1440 30"
-        stroke="currentColor"
-        strokeOpacity="0.35"
-        strokeWidth="1"
-        vectorEffect="non-scaling-stroke"
-        pathLength={1}
-      />
-    </svg>
-  );
-}
-
 const PASSOS = [
   { titulo: "Envie IFC e IDS", texto: "Uma linha por disciplina: arquitetura e estrutura, cada uma com a própria revisão." },
   { titulo: "Confirme o vínculo", texto: "O nome do arquivo nunca decide qual IDS vale para qual IFC. A confirmação é sua." },
@@ -59,19 +30,19 @@ export function ProjectEntry({ api, project, onProjectChange, onOpenReview }: Pr
 
   return (
     <div className="flex min-h-full flex-col">
-      <header className="border-b">
+      <header className="border-b-[3px] border-gold bg-band text-band-foreground">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-8">
-          <span className="font-serif text-xl">IFC Quality Copilot</span>
-          <ThemeToggle />
+          <span className="font-display text-lg tracking-wide uppercase">IFC Quality Copilot</span>
+          <ThemeToggle className="text-band-foreground hover:bg-band-foreground/10 hover:text-band-foreground" />
         </div>
-      </header>
-
-      <main className="flex-1">
-        <section className="mx-auto grid max-w-6xl items-end gap-x-16 gap-y-6 px-8 pt-16 pb-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
-          <h1 className="font-serif text-5xl leading-[1.04] tracking-tight text-balance lg:text-6xl xl:text-7xl">
-            Qualidade semântica de modelos IFC, com o engenheiro no <em className="text-primary">controle</em>.
-          </h1>
-          <div className="grid max-w-[52ch] gap-3 pb-2 text-base leading-relaxed text-muted-foreground">
+        <section className="mx-auto grid max-w-6xl items-end gap-x-16 gap-y-6 px-8 pt-10 pb-14 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+          <div className="grid gap-4">
+            <p className="text-sm text-band-muted">Instituto Militar de Engenharia · PIBITI 2026/2027</p>
+            <h1 className="font-display text-5xl leading-[0.98] tracking-tight text-balance uppercase lg:text-6xl xl:text-7xl">
+              Qualidade semântica de modelos IFC, com o engenheiro no controle
+            </h1>
+          </div>
+          <div className="grid max-w-[52ch] gap-3 pb-1 text-base leading-relaxed text-band-muted">
             <p>
               A revisão lê o IFC, aplica os requisitos do IDS e aponta as lacunas de cada elemento. O IFC enviado
               nunca é alterado.
@@ -79,14 +50,14 @@ export function ProjectEntry({ api, project, onProjectChange, onOpenReview }: Pr
             <p>Projeto com dois pares IFC/IDS: arquitetura e estrutura.</p>
           </div>
         </section>
+      </header>
 
-        <Onda />
-
-        <section className="mx-auto max-w-6xl px-8 py-10">
+      <main className="flex-1">
+        <section className="mx-auto max-w-6xl px-8 py-12">
           {!project ? (
-            <Card className="max-w-2xl">
+            <Card className="mx-auto max-w-2xl">
               <CardHeader>
-                <CardTitle className="font-serif text-3xl font-normal">Novo projeto</CardTitle>
+                <CardTitle className="font-display text-3xl tracking-wide uppercase">Novo projeto</CardTitle>
                 <CardDescription>Os arquivos ficam no armazenamento local da API (127.0.0.1).</CardDescription>
               </CardHeader>
               <CardContent>
@@ -118,7 +89,7 @@ export function ProjectEntry({ api, project, onProjectChange, onOpenReview }: Pr
           ) : (
             <Card>
               <CardHeader>
-                <CardTitle className="font-serif text-3xl font-normal">{project.name}</CardTitle>
+                <CardTitle className="font-display text-3xl tracking-wide uppercase">{project.name}</CardTitle>
                 <CardDescription className="max-w-[80ch]">
                   Envie IFC e IDS em cada linha e confirme o vínculo. Arquivos com nomes parecidos não são associados
                   automaticamente; a confirmação vale para as revisões (SHA-256) exibidas.
@@ -143,16 +114,16 @@ export function ProjectEntry({ api, project, onProjectChange, onOpenReview }: Pr
         </section>
       </main>
 
-      <section aria-label="Como funciona" className="bg-band text-band-foreground">
+      <section aria-label="Como funciona" className="border-t bg-muted">
         <ol className="mx-auto grid max-w-6xl gap-10 px-8 py-12 md:grid-cols-3">
           {PASSOS.map((passo, i) => (
             <li key={passo.titulo} className="grid grid-cols-[auto_1fr] gap-x-4">
-              <span className="font-serif text-5xl leading-none text-band-accent" aria-hidden>
+              <span className="font-display text-5xl leading-none text-gold-text" aria-hidden>
                 {i + 1}
               </span>
               <div className="grid gap-1">
-                <h2 className="font-serif text-2xl">{passo.titulo}</h2>
-                <p className="text-sm leading-relaxed text-band-muted">{passo.texto}</p>
+                <h2 className="font-display text-2xl tracking-wide uppercase">{passo.titulo}</h2>
+                <p className="text-sm leading-relaxed text-muted-foreground">{passo.texto}</p>
               </div>
             </li>
           ))}

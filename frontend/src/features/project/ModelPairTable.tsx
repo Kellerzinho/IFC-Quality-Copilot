@@ -41,7 +41,7 @@ function EnvioArquivo({
   onFile: (file: File) => void;
 }) {
   return (
-    <label className="inline-flex cursor-pointer items-center gap-1 text-xs font-medium text-primary underline-offset-2 hover:underline has-[:focus-visible]:rounded-sm has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-background">
+    <label className="inline-flex cursor-pointer items-center gap-1 text-xs font-medium text-accent underline-offset-2 hover:underline has-[:focus-visible]:rounded-sm has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-background">
       <FileUp className="size-3.5" aria-hidden />
       {label}
       <input
