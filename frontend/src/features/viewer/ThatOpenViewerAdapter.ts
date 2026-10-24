@@ -27,11 +27,10 @@ export const VIEWER_ASSETS = {
   fragmentsWorker: "/viewer/fragments-worker.mjs",
 } as const;
 
-const COR_DESTAQUE = new THREE.Color("#f59e0b");
-
-/** Fundo da cena pelo token --viewer-bg do tema; cinza claro se ausente. */
-function corDeFundo(el: HTMLElement): string {
-  return getComputedStyle(el).getPropertyValue("--viewer-bg").trim() || "#f5f5f5";
+/** Cor de um token do tema (--viewer, --gold); o valor padrão vale se o token faltar. */
+function corDoTema(el: HTMLElement | null, token: string, padrao: string): THREE.Color {
+  const valor = el ? getComputedStyle(el).getPropertyValue(token).trim() : "";
+  return new THREE.Color(valor || padrao);
 }
 const OPACIDADE_RAIO_X = 0.15;
 
@@ -102,7 +101,7 @@ export class ThatOpenViewerAdapter implements ViewerAdapter {
     const world = components.get(OBC.Worlds).create<OBC.SimpleScene, OBC.SimpleCamera, OBC.SimpleRenderer>();
     world.scene = new OBC.SimpleScene(components);
     world.scene.setup();
-    world.scene.three.background = new THREE.Color(corDeFundo(container));
+    world.scene.three.background = corDoTema(container, "--viewer", "#f5f5f5");
     world.renderer = new OBC.SimpleRenderer(components, container);
     world.camera = new OBC.SimpleCamera(components);
     components.init();
@@ -118,7 +117,7 @@ export class ThatOpenViewerAdapter implements ViewerAdapter {
     this.removerClique = this.instalarClique(world.renderer.three.domElement);
     // Troca de tema (classe .dark no <html>) só muda o fundo da cena.
     this.observadorTema = new MutationObserver(() => {
-      if (this.world) this.world.scene.three.background = new THREE.Color(corDeFundo(container));
+      if (this.world) this.world.scene.three.background = corDoTema(container, "--viewer", "#f5f5f5");
     });
     this.observadorTema.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
   }
@@ -231,7 +230,7 @@ export class ThatOpenViewerAdapter implements ViewerAdapter {
     const alvo = ref ? this.localDe(ref) : null;
     if (alvo) {
       await alvo.carregado.model.highlight([alvo.localId], {
-        color: COR_DESTAQUE,
+        color: corDoTema(this.container, "--gold", "#e4b750"),
         renderedFaces: FRAGS.RenderedFaces.TWO,
         opacity: 1,
         transparent: false,
