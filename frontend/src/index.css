@@ -1,109 +1,101 @@
-/* Tema "LEPV": proposta visual em avaliação; a escolha final de tema segue pendente
-   (plano M4 §13.4). Tokens shadcn/ui com tema claro e escuro (.dark no <html>).
-   Fontes locais via @fontsource (OFL-1.1), sem CDN: a CSP do build só permite 'self'.
-   Paleta, contrastes e licenças: docs/m4-tema-visual.md. */
+/* Tema "Oliva-Turquesa": proposta em avaliação; a escolha final de tema segue pendente
+   (plano M4 §13.4). Verde-oliva, azul-turquesa (arma de Engenharia) e ouro; códigos
+   aproximados, a conferir com o manual de identidade visual do Exército.
+   Tokens do tema (mesmos nomes no claro e no escuro) e, no @theme, o mapeamento para
+   os nomes do shadcn/ui. Fontes locais via @fontsource (OFL-1.1), sem CDN: a CSP só
+   permite 'self'. Papéis, contrastes e licenças: docs/m4-tema-visual.md.
+   Contraste AA dos pares de texto: tests/unit/contraste.test.ts. */
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "@fontsource/instrument-serif/latin-400.css";
-@import "@fontsource/instrument-serif/latin-400-italic.css";
-@import "@fontsource-variable/instrument-sans/index.css";
+@import "@fontsource/barlow-condensed/latin-600.css";
+@import "@fontsource-variable/ibm-plex-sans/wght.css";
+@import "@fontsource/ibm-plex-mono/latin-400.css";
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
   color-scheme: light;
-  --radius: 0.625rem;
-  /* papel, tinta e vinho */
-  --background: #f7f5f0;
-  --foreground: #1b1918;
-  --card: #fdfcf9;
-  --card-foreground: #1b1918;
-  --popover: #fdfcf9;
-  --popover-foreground: #1b1918;
-  --primary: #7b1e2c;
-  --primary-foreground: #fdfcf9;
-  --secondary: #ece8e0;
-  --secondary-foreground: #1b1918;
-  --muted: #ece8e0;
-  --muted-foreground: #5c5650;
-  --accent: #f1e5e3;
-  --accent-foreground: #4f121c;
-  --destructive: #b42318;
-  --destructive-foreground: #ffffff;
-  --warning: #c27c0e;
-  --border: #dcd6cc;
-  --input: #8f877c;
-  --ring: #7b1e2c;
-  /* faixa de contraste (seções escuras) */
-  --band: #1b1918;
-  --band-foreground: #f7f5f0;
-  --band-muted: #b9b1a7;
-  --band-accent: #e3a0a9;
-  /* fundo da cena 3D; lido pelo adaptador do viewer */
-  --viewer-bg: #efece6;
+  --radius: 0.5rem;
+  --bg: #f7f7f4;
+  --surface: #ffffff;
+  --sunken: #ebece6;
+  --line: #d8d8d1;
+  --ink: #1b1b18;
+  --muted: #555650;
+  --band: #292f0e;
+  --band-ink: #f7f7f4;
+  --band-muted: #d3dfa7;
+  --primary: #525b27;
+  --primary-ink: #ffffff;
+  --accent: #026266;
+  --accent-soft: #e1fdff;
+  --gold: #e4b750;
+  --gold-text: #6d5001;
+  --gold-soft: #fef6e5;
+  --danger: #b63b35;
+  --danger-soft: #fff4f2;
+  --viewer: #ebece6;
 }
 
 .dark {
   color-scheme: dark;
-  --background: #151312;
-  --foreground: #ede8e1;
-  --card: #1e1b19;
-  --card-foreground: #ede8e1;
-  --popover: #1e1b19;
-  --popover-foreground: #ede8e1;
-  --primary: #d9808e;
-  --primary-foreground: #1f0a0e;
-  --secondary: #2a2623;
-  --secondary-foreground: #ede8e1;
-  --muted: #2a2623;
-  --muted-foreground: #a9a097;
-  --accent: #3a2226;
-  --accent-foreground: #f4d9dc;
-  --destructive: #f0645a;
-  --destructive-foreground: #1f0a08;
-  --warning: #e0a040;
-  --border: #36312d;
-  --input: #7a7168;
-  --ring: #e08a97;
-  --band: #0d0c0b;
-  --band-foreground: #ede8e1;
-  --band-muted: #a9a097;
-  --band-accent: #e3a0a9;
-  --viewer-bg: #1a1816;
+  --bg: #141511;
+  --surface: #1f201c;
+  --sunken: #2b2c28;
+  --line: #40403a;
+  --ink: #ebece6;
+  --muted: #a2a29b;
+  --band: #0f110a;
+  --band-ink: #ebece6;
+  --band-muted: #b9c58e;
+  --primary: #b9c58e;
+  --primary-ink: #191d0a;
+  --accent: #56d3da;
+  --accent-soft: #02494d;
+  --gold: #e4b750;
+  --gold-text: #ffd16b;
+  --gold-soft: #392800;
+  --danger: #f57569;
+  --danger-soft: #560507;
+  --viewer: #1b1b18;
 }
 
+/* Papéis: primary = botões primários; accent = seleção, links, foco e toggles ligados;
+   gold = números do resumo, filete sob a faixa e destaque 3D; danger = erro e GUID repetido. */
 @theme inline {
-  --font-sans: "Instrument Sans Variable", ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
-  --font-serif: "Instrument Serif", ui-serif, Georgia, "Times New Roman", serif;
-  --font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --font-sans: "IBM Plex Sans Variable", ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-display: "Barlow Condensed", "Arial Narrow", ui-sans-serif, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
+  --color-background: var(--bg);
+  --color-foreground: var(--ink);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--ink);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--ink);
   --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
+  --color-primary-foreground: var(--primary-ink);
+  --color-secondary: var(--sunken);
+  --color-secondary-foreground: var(--ink);
+  --color-muted: var(--sunken);
+  --color-muted-foreground: var(--muted);
   --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-warning: var(--warning);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
+  --color-accent-soft: var(--accent-soft);
+  --color-destructive: var(--danger);
+  --color-destructive-soft: var(--danger-soft);
+  --color-gold: var(--gold);
+  --color-gold-text: var(--gold-text);
+  --color-gold-soft: var(--gold-soft);
+  --color-border: var(--line);
+  /* Borda de campo precisa de 3:1 contra a superfície; line não chega lá. */
+  --color-input: var(--muted);
+  --color-ring: var(--accent);
   --color-band: var(--band);
-  --color-band-foreground: var(--band-foreground);
+  --color-band-foreground: var(--band-ink);
   --color-band-muted: var(--band-muted);
-  --color-band-accent: var(--band-accent);
 }
 
 @layer base {
@@ -124,23 +116,6 @@
     *::after {
       animation-duration: 0.01ms !important;
       transition-duration: 0.01ms !important;
-    }
-  }
-}
-
-/* Único movimento automático: a onda da entrada se desenha uma vez. */
-@layer components {
-  .assinatura-onda path {
-    stroke-dasharray: 1;
-    stroke-dashoffset: 0;
-    animation: desenhar-onda 1.6s cubic-bezier(0.65, 0, 0.35, 1) both;
-  }
-  .assinatura-onda path + path {
-    animation-delay: 0.25s;
-  }
-  @keyframes desenhar-onda {
-    from {
-      stroke-dashoffset: 1;
     }
   }
 }
