@@ -29,7 +29,8 @@ function formatarValor(v: ObservedValue | null | undefined): string {
 
 function Campo({ rotulo, children }: { rotulo: string; children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[8rem_1fr] gap-2 text-sm">
+    // Painel estreito (< 20rem): rótulo sobre o valor, para selos nowrap não vazarem.
+    <div className="grid gap-x-2 text-sm @[20rem]:grid-cols-[8rem_minmax(0,1fr)]">
       <dt className="text-muted-foreground">{rotulo}</dt>
       <dd className="min-w-0 break-words">{children}</dd>
     </div>
@@ -134,7 +135,7 @@ export function DetailPanel({ linha, modelos, onIrPara }: Props) {
   const total = lacunas.resolvidas.length + lacunas.ambiguas.length;
 
   return (
-    <section aria-label="Detalhe" className="grid content-start gap-4 overflow-y-auto p-4">
+    <section aria-label="Detalhe" className="@container grid content-start gap-4 overflow-y-auto p-4">
       <header className="grid gap-1">
         <h2 className="font-display text-2xl leading-tight break-words" data-testid="detalhe-nome">
           {record.name ?? "(sem nome)"}
@@ -144,7 +145,7 @@ export function DetailPanel({ linha, modelos, onIrPara }: Props) {
         </p>
       </header>
 
-      <dl className="grid gap-1">
+      <dl className="grid gap-2">
         <Campo rotulo="Classe IFC">{record.ifc_class}</Campo>
         <Campo rotulo="express_id">
           <span className="font-mono" data-testid="detalhe-express">
