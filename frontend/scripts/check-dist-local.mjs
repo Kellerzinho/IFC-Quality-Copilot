@@ -26,6 +26,9 @@ const falhar = (arquivo, motivo) => falhas.push(`${relative(dist, arquivo)}: ${m
 // Hosts proibidos em QUALQUER arquivo do build (inclui JS).
 const CDN = /(fonts\.googleapis\.com|fonts\.gstatic\.com|cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com|use\.fontawesome\.com|kit\.fontawesome\.com|ajax\.googleapis\.com|esm\.sh|skypack\.dev|cdn\.tailwindcss\.com)/;
 
+// Famílias empacotadas pelo tema (frontend/src/index.css); qualquer outra é sobra.
+const FONTES_DO_TEMA = ["Barlow Condensed", "IBM Plex Sans Variable", "IBM Plex Mono"];
+
 // Strings conhecidas da That Open que contêm unpkg mas NÃO executam neste app:
 // IfcLoader.autoSetWasm (desligado: não usamos IfcLoader) e
 // FragmentsModels.getWorker (não chamado: worker local em /viewer/).
@@ -57,9 +60,11 @@ for (const arquivo of arquivos) {
   if (ext === ".css") {
     if (/@import\s+(url\()?\s*["']?(https?:)?\/\//i.test(texto)) falhar(arquivo, "@import de CSS externo");
     for (const m of texto.matchAll(/url\(\s*["']?((?:https?:)?\/\/[^"')]+)/gi)) falhar(arquivo, `url() externa (${m[1]})`);
-    // Fontes do tema (@fontsource) vêm empacotadas: todo src de @font-face precisa ser
-    // um arquivo deste build, servido pela própria origem.
+    // Fontes do tema (@fontsource) vêm empacotadas: só as famílias do tema, e todo src
+    // de @font-face precisa ser um arquivo deste build, servido pela própria origem.
     for (const bloco of texto.matchAll(/@font-face\s*\{[^}]*\}/gi)) {
+      const familia = bloco[0].match(/font-family:\s*["']?([^"';]+)/i)?.[1].trim();
+      if (!familia || !FONTES_DO_TEMA.includes(familia)) falhar(arquivo, `@font-face fora do tema (${familia ?? "sem família"})`);
       for (const m of bloco[0].matchAll(/url\(\s*["']?([^"')]+)/gi)) {
         const alvo = m[1].split(/[?#]/)[0];
         if (/^(?:[a-z]+:)?\/\//i.test(alvo) || /^data:/i.test(alvo)) continue; // externa já acusada acima; data: é local
