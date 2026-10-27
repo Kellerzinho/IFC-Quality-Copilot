@@ -1,0 +1,78 @@
+{
+  "ModelVersion": "2.0",
+  "OrganizationCode": "ifcqc-teste",
+  "DictionaryCode": "sintetico",
+  "DictionaryName": "Dicionário SINTÉTICO de teste",
+  "DictionaryVersion": "1.0",
+  "LanguageIsoCode": "pt-BR",
+  "LanguageOnly": false,
+  "UseOwnUri": false,
+  "License": "sintético, sem conteúdo de terceiros",
+  "Status": "Preview",
+  "Classes": [
+    {
+      "Code": "syn-parede",
+      "Name": "Parede sintética",
+      "ClassType": "Class",
+      "Definition": "Classe sintética de teste.",
+      "RelatedIfcEntityNamesList": ["IfcWall"],
+      "ClassProperties": [
+        {
+          "PropertyCode": "syn-acabamento",
+          "PropertySet": "SYN_Conjunto",
+          "IsRequired": false,
+          "AllowedValues": [{"Code": "a", "Value": "Acabamento A"}]
+        },
+        {
+          "PropertyUri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/FireRating",
+          "PropertySet": "Pset_WallCommon"
+        },
+        {
+          "PropertyCode": "syn-espessura",
+          "Unit": "mm",
+          "MinInclusive": 0
+        }
+      ]
+    },
+    {
+      "Code": "syn-material",
+      "Name": "Material sintético",
+      "ClassType": "Material"
+    }
+  ],
+  "Properties": [
+    {
+      "Code": "syn-acabamento",
+      "Name": "Acabamento",
+      "DataType": "String",
+      "Definition": "Acabamento sintético de teste.",
+      "AllowedValues": [
+        {"Code": "a", "Value": "Acabamento A"},
+        {"Code": "b", "Value": "Acabamento B"}
+      ]
+    },
+    {
+      "Code": "syn-codigo",
+      "Name": "Código numérico",
+      "DataType": "String",
+      "AllowedValues": [
+        {"Code": "01", "Value": "1"},
+        {"Code": "02", "Value": "2"}
+      ]
+    },
+    {"Code": "syn-ativo", "Name": "Ativo", "DataType": "Boolean"},
+    {"Code": "syn-pavimentos", "Name": "Pavimentos", "DataType": "Integer", "XSyntheticExtension": "campo desconhecido preservado"},
+    {"Code": "syn-espessura", "Name": "Espessura", "DataType": "Real", "Units": ["mm", "cm"], "Dimension": "1 0 0 0 0 0 0"},
+    {"Code": "syn-horario", "Name": "Horário", "DataType": "Time"},
+    {"Code": "syn-fator", "Name": "Fator", "DataType": "Real", "MinInclusive": 0, "MaxInclusive": 1},
+    {
+      "Code": "syn-nivel",
+      "Name": "Nível",
+      "DataType": "Integer",
+      "AllowedValues": [
+        {"Code": "0", "Value": "zero"},
+        {"Code": "1", "Value": "um"}
+      ]
+    }
+  ]
+}

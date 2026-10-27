@@ -79,6 +79,11 @@ def _project_member_is_allowlisted(name: str) -> bool:
         "data/evaluation/casa/README.md",
         "data/evaluation/legacy-reference.lock.json",
         "src/experiment/results/models.lock.json",
+        # Bundle IDS offline fixado (E3): licenças, atribuição e manifesto acompanham os XSD.
+        "data/ids_schema/1.0.0/ATTRIBUTION.md",
+        "data/ids_schema/1.0.0/LICENSE-IDS.txt",
+        "data/ids_schema/1.0.0/LICENSE-xmlschema.txt",
+        "data/ids_schema/1.0.0/manifest.json",
     }
     if name in exact:
         return True
@@ -222,9 +227,7 @@ def test_project_zip_contains_integral_ground_truths_and_legacy_lock(
     with zipfile.ZipFile(built_release / "payload/project.zip") as archive:
         assert "data/evaluation/legacy-reference.lock.json" in archive.namelist()
         for dataset, expected in (("predio", 4720), ("casa", 263)):
-            document = yaml.safe_load(
-                archive.read(f"data/evaluation/{dataset}/ground_truth.yaml")
-            )
+            document = yaml.safe_load(archive.read(f"data/evaluation/{dataset}/ground_truth.yaml"))
             assert document["metadata"]["protocol"] == "full-coverage-equivalent-v1"
             assert document["metadata"]["total_items"] == expected
             assert len(document["items"]) == expected

@@ -21,3 +21,6 @@ data/evaluation/*/ground_truth.yaml text eol=lf
 
 *.ifc -text
 *.zip -text
+
+# Preserve exact third-party bundle bytes and pinned hashes on every platform.
+data/ids_schema/1.0.0/** -text

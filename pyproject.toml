@@ -24,6 +24,13 @@ dependencies = [
     "psutil>=6.0",
 ]
 
+[project.optional-dependencies]
+e3 = [
+    "ifctester==0.8.5",
+    "ifcopenshell==0.8.5",
+    "xmlschema==4.3.2",
+]
+
 [dependency-groups]
 dev = [
     "pytest>=8.0",
@@ -63,6 +70,7 @@ testpaths = ["tests"]
 pythonpath = ["."]
 addopts = ["--strict-markers", "--strict-config", "-ra"]
 markers = [
+    "external_data: fontes reais locais, opt-in explícito IFCQC_RUN_EXTERNAL_CATALOG_TESTS=1",
     "slow: testes lentos (>1s)",
     "network: requer rede ou serviço externo (Ollama, bSDD)",
     "integration: testes de integração end-to-end",

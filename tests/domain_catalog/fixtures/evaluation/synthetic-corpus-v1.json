@@ -1,0 +1,49 @@
+{
+ "format": "ifcqc-catalog-evaluation-1",
+ "format_version": 1,
+ "corpus_id": "sintetico-contrato-e4-v1",
+ "generated_by": "testes automatizados (gerador sintético)",
+ "generation_method": "Casos SINTÉTICOS escritos à mão sobre factories.resolution_content(); rótulos sintéticos só para métricas de contrato.",
+ "cases": [
+  {
+   "case_id": "syn-status-parede",
+   "request": {"ifc_schema": "IFC4", "facet": "property", "set_name": "SYN_PsetA", "field_name": "Status", "entity": "IfcWall", "requirement_ref": "SYN-REQ-1"},
+   "origin": "synthetic", "stratum": "propriedade", "family": "SYN", "facet": "property", "split": "evaluation",
+   "source_refs": ["synthetic:linha-001"],
+   "expectation": {"allowed_statuses": ["exact"], "binding_id": "urn:uuid:00000000-0000-4000-8000-000000001040", "concept_id": "urn:uuid:00000000-0000-4000-8000-000000001020"}
+  },
+  {
+   "case_id": "syn-status-parede-duplicado",
+   "request": {"ifc_schema": "IFC4", "facet": "property", "set_name": "SYN_PsetA", "field_name": "Status", "entity": "IfcWall", "requirement_ref": "SYN-REQ-2"},
+   "origin": "synthetic", "stratum": "propriedade", "family": "SYN", "facet": "property", "split": "evaluation",
+   "source_refs": ["synthetic:linha-002"],
+   "expectation": {"allowed_statuses": ["exact"], "binding_id": "urn:uuid:00000000-0000-4000-8000-000000001040", "concept_id": "urn:uuid:00000000-0000-4000-8000-000000001020"}
+  },
+  {
+   "case_id": "syn-inexistente",
+   "request": {"ifc_schema": "IFC4", "facet": "property", "set_name": "SYN_PsetA", "field_name": "Inexistente", "entity": "IfcWall"},
+   "origin": "synthetic", "stratum": "negativo", "family": "SYN", "facet": "property", "split": "evaluation",
+   "source_refs": ["synthetic:linha-003"],
+   "expectation": {"allowed_statuses": ["unmapped"]}
+  },
+  {
+   "case_id": "syn-metodo-laje",
+   "request": {"ifc_schema": "IFC4", "facet": "property", "set_name": "SYN_Conjunto", "field_name": "SYN_Metodo", "entity": "IfcSlab"},
+   "origin": "synthetic", "stratum": "propriedade", "family": "SYN", "facet": "property", "split": "evaluation",
+   "source_refs": ["synthetic:linha-004"]
+  },
+  {
+   "case_id": "syn-area-pendente",
+   "request": {"ifc_schema": "IFC4", "facet": "property", "set_name": "SYN_Conjunto", "field_name": "SYN_AreaPendente", "entity": "IfcSlab"},
+   "origin": "synthetic", "stratum": "negativo-portador-pendente", "family": "SYN", "facet": "property", "split": "evaluation",
+   "source_refs": ["synthetic:linha-005"]
+  },
+  {
+   "case_id": "syn-fora-do-recorte",
+   "request": {"ifc_schema": "IFC2X3", "facet": "property", "set_name": "SYN_PsetA", "field_name": "Status", "entity": "IfcWall"},
+   "origin": "synthetic", "stratum": "propriedade", "family": "SYN", "facet": "property", "split": "evaluation",
+   "source_refs": ["synthetic:linha-006"],
+   "exclusion_reason": "schema fora do recorte IFC4 deste protocolo sintético"
+  }
+ ]
+}

@@ -1,0 +1,532 @@
+{
+  "keep_external": [
+    {
+      "file": "tests/domain_catalog/test_curation_daiane.py",
+      "test": "test_real_draft_enters_curation_unchanged_and_only_as_draft"
+    },
+    {
+      "file": "tests/domain_catalog/test_curation_daiane.py",
+      "test": "test_area_forma_uses_keep_undetermined_carrier_and_writing_blocked"
+    },
+    {
+      "file": "tests/domain_catalog/test_curation_daiane.py",
+      "test": "test_pending_items_and_unavailable_operations_are_visible"
+    },
+    {
+      "file": "tests/domain_catalog/test_curation_daiane.py",
+      "test": "test_under_policy_b_the_real_draft_cannot_reach_review"
+    },
+    {
+      "file": "tests/domain_catalog/test_curation_daiane.py",
+      "test": "test_no_candidate_can_exist_without_approval"
+    },
+    {
+      "file": "tests/domain_catalog/test_curation_daiane.py",
+      "test": "test_enabling_writing_on_area_forma_is_refused_by_the_model"
+    },
+    {
+      "file": "tests/domain_catalog/test_curation_daiane.py",
+      "test": "test_reconciling_the_carrier_while_the_decision_is_pending_is_flagged"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_coverage.py",
+      "test": "test_inventory_is_accounted_for_but_domain_is_not_accepted"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_coverage.py",
+      "test": "test_denominators_are_separate_and_closed"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_coverage.py",
+      "test": "test_matrix_findings_and_historical_counts_are_not_summed"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_coverage.py",
+      "test": "test_capability_axes_are_not_evaluated_without_evidence"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_coverage.py",
+      "test": "test_every_pending_has_a_localized_reason_code"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_every_a_and_b_record_has_exactly_one_disposition"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_missing_disposition_is_refused"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_duplicate_disposition_is_refused"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_orphan_disposition_is_refused"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_category_other_than_the_source_is_refused"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_unprojected_b_record_stays_pending_with_reason"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_base_other_than_the_inputs_is_refused"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_unknown_candidate_or_decision_reference_is_refused"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_candidate_destination_requires_a_candidate_citing_the_source"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_correspondence_with_unknown_record_is_refused"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_capability_axis_without_verified_evidence_is_refused"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_identity_registry_must_cover_every_candidate"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_tipo_revestimento_stays_three_concepts_and_is_not_merged"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_tipo_concretagem_keeps_one_concept_with_three_uses"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_area_forma_stays_pending_unwritable_and_linked_to_its_decision"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_cost_prop_never_replaces_eb_orcamento"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_source_literals_are_not_corrected"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_unspecified_scope_and_exact_class_are_preserved"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_candidates_are_drafts_refused_for_release"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_assistant_proposals_are_never_marked_as_human_decisions"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_synthetic_case_verifies_only_for_case"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_capability_evidence_is_rechecked_not_trusted"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_validation_claim_needs_compatible_facet_schema_and_executed_e3_cell"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_area_forma_validation_claim_is_outside_the_e3_ids_matrix"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_validation_claim_needs_anchors_outside_the_evidence"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_enrichment_claim_checks_the_loaded_bundle_manifest"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_nodeid_outside_the_trusted_allowlist_is_refused"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_self_declared_real_model_classifier_is_refused"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_real_correspondences_state_their_demonstrated_scope"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_area_forma_enrichment_claim_is_refused"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_case_that_exercised_another_binding_does_not_verify_this_one"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_self_supplied_bundle_anchor_is_refused"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_ids_cells_respect_the_e3_applicability_cell"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_scalar_type_gets_presence_only_and_measure_types_get_no_cell"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_duplicate_keys_and_repeated_ids_in_sets_are_refused"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_enrichment_requires_an_approved_carrier"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_same_executed_case_cannot_be_reused_for_another_binding"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_type_object_class_is_outside_the_e3_applicability_cell"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_distinct_cases_from_one_run_may_share_the_junit_report"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_sample.py",
+      "test": "test_draft_is_valid_for_curation_and_never_publishable"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_sample.py",
+      "test": "test_source_backed_proposals_cite_real_appendix_a_rows"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_sample.py",
+      "test": "test_evidence_policies_are_project_proposals_without_source_rows"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_sample.py",
+      "test": "test_sample_counts_are_35_draft_entities_and_one_pending_decision"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_sample.py",
+      "test": "test_bindings_keep_the_source_literals"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_sample.py",
+      "test": "test_tipo_concretagem_is_one_concept_whose_domain_matches_each_use"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_sample.py",
+      "test": "test_tipo_revestimento_uses_are_distinct_concepts_with_their_own_domains"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_sample.py",
+      "test": "test_no_alias_joins_the_three_revestimento_concepts_by_name"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_sample.py",
+      "test": "test_area_forma_stays_pending_with_write_disabled"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_sample.py",
+      "test": "test_area_forma_decision_keeps_both_carriers_open_until_evidence"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_sample.py",
+      "test": "test_resolution_reuses_the_concept_only_with_class_context"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_sample.py",
+      "test": "test_tipo_revestimento_depends_on_class_and_predefined_type"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_sample.py",
+      "test": "test_flooring_declared_by_the_type_object_selects_the_floor_use"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_sample.py",
+      "test": "test_covering_without_consulting_the_type_object_is_not_guessed"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_sample.py",
+      "test": "test_covering_with_conflicting_levels_is_not_assigned_to_either_use"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_sample.py",
+      "test": "test_slab_with_no_predefined_type_at_either_level_is_outside_the_sample"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_sample.py",
+      "test": "test_area_forma_resolves_with_pending_limits"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_sample.py",
+      "test": "test_real_field_outside_the_sample_is_unmapped"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_sample.py",
+      "test": "test_set_name_without_cedilla_does_not_resolve"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_sample.py",
+      "test": "test_policies_reference_operations_not_yet_available"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_sample.py",
+      "test": "test_draft_based_on_another_matrix_revision_is_refused"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_sample.py",
+      "test": "test_coverage_marks_only_sample_rows_as_draft"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_sample.py",
+      "test": "test_draft_cannot_carry_its_own_source_rows"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_sample.py",
+      "test": "test_draft_citing_a_row_absent_from_the_source_is_refused"
+    },
+    {
+      "file": "tests/domain_catalog/test_profile_curation.py",
+      "test": "test_real_candidates_are_refused_for_release"
+    },
+    {
+      "file": "tests/domain_catalog/test_profile_curation.py",
+      "test": "test_real_candidates_enter_curation_only_as_draft"
+    },
+    {
+      "file": "tests/domain_catalog/test_profile_projections.py",
+      "test": "test_regeneration_is_byte_identical"
+    },
+    {
+      "file": "tests/domain_catalog/test_profile_projections.py",
+      "test": "test_manifest_hashes_and_row_totals_close"
+    },
+    {
+      "file": "tests/domain_catalog/test_profile_projections.py",
+      "test": "test_unprojected_b_rows_are_present_with_reason"
+    },
+    {
+      "file": "tests/domain_catalog/test_profile_projections.py",
+      "test": "test_semantic_change_changes_identity_but_reserialization_does_not"
+    },
+    {
+      "file": "tests/domain_catalog/test_profile_projections.py",
+      "test": "test_permuting_unordered_collections_keeps_the_identity"
+    },
+    {
+      "file": "tests/domain_catalog/test_profile_projections.py",
+      "test": "test_permuted_reconciliation_builds_the_same_profile_and_projections"
+    },
+    {
+      "file": "tests/domain_catalog/test_profile_projections.py",
+      "test": "test_real_change_inside_an_id_set_changes_the_identity"
+    },
+    {
+      "file": "tests/domain_catalog/test_profile_projections.py",
+      "test": "test_manifest_declares_the_reconciliation_hash_scheme"
+    },
+    {
+      "file": "tests/domain_catalog/test_profile_projections.py",
+      "test": "test_builder_accepted_empty_correspondences_project_header_only"
+    },
+    {
+      "file": "tests/domain_catalog/test_profile_projections.py",
+      "test": "test_explicit_headers_match_the_written_files"
+    },
+    {
+      "file": "tests/domain_catalog/test_profile_projections.py",
+      "test": "test_divergent_existing_projection_is_not_overwritten"
+    },
+    {
+      "file": "tests/domain_catalog/test_profile_projections.py",
+      "test": "test_refusal_happens_before_creating_anything"
+    },
+    {
+      "file": "tests/domain_catalog/test_profile_projections.py",
+      "test": "test_new_revision_preserves_the_previous_set_recoverably"
+    },
+    {
+      "file": "tests/domain_catalog/test_profile_projections.py",
+      "test": "test_identical_regeneration_creates_no_revision"
+    },
+    {
+      "file": "tests/domain_catalog/test_profile_projections.py",
+      "test": "test_preexisting_revision_destination_with_other_content_is_refused"
+    },
+    {
+      "file": "tests/domain_catalog/test_profile_projections.py",
+      "test": "test_partial_write_failure_restores_the_previous_set"
+    },
+    {
+      "file": "tests/domain_catalog/test_profile_projections.py",
+      "test": "test_committed_e4_projections_match_regeneration"
+    },
+    {
+      "file": "tests/domain_catalog/test_profile_projections.py",
+      "test": "test_cli_writes_only_to_the_explicit_output"
+    },
+    {
+      "file": "tests/domain_catalog/test_profile_projections.py",
+      "test": "test_returning_to_an_already_archived_set_reuses_the_identical_archive"
+    },
+    {
+      "file": "tests/domain_catalog/test_profile_projections.py",
+      "test": "test_failed_write_removes_files_that_did_not_exist_before"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_import.py",
+      "test": "test_matrix_identity_is_the_versioned_lf_content"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_import.py",
+      "test": "test_matrix_identity_does_not_depend_on_checkout_line_endings"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_import.py",
+      "test": "test_every_record_becomes_one_assertion_with_stable_id"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_import.py",
+      "test": "test_denominators_match_the_audited_m3_table"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_import.py",
+      "test": "test_cost_prop_never_replaces_eb_orcamento"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_import.py",
+      "test": "test_locator_separates_printed_and_pdf_pages"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_import.py",
+      "test": "test_assertions_cite_dissertation_and_transcription"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_import.py",
+      "test": "test_absent_original_sources_are_registered_without_hash"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_import.py",
+      "test": "test_imported_sources_form_valid_content"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_import.py",
+      "test": "test_source_coverage_is_never_complete_while_appendix_b_is_pending"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_import.py",
+      "test": "test_reported_divergence_count_stays_apart_from_matrix_findings"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_import.py",
+      "test": "test_coverage_projection_has_one_row_per_assertion_with_separate_axes"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_import.py",
+      "test": "test_committed_projections_match_regeneration"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_appendix_b.py",
+      "test": "test_real_transcription_covers_every_specification_and_page"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_appendix_b.py",
+      "test": "test_real_transcription_denominators_come_from_the_visual_count"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_appendix_b.py",
+      "test": "test_real_property_requirements_stay_unprojected_without_category"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_appendix_b.py",
+      "test": "test_real_prohibition_keeps_its_modality_in_the_assertion"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_appendix_b.py",
+      "test": "test_real_transcription_has_no_curator_check"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_appendix_b.py",
+      "test": "test_real_cover_contact_is_redacted_explicitly"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_appendix_b.py",
+      "test": "test_real_transcription_records_both_checks_and_its_corrections"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_appendix_b.py",
+      "test": "test_real_transcription_check_level_is_assistant_only"
+    },
+    {
+      "file": "tests/domain_catalog/test_catalog_evaluation_integration.py",
+      "test": "test_draft_profile_gets_documentary_coverage_only"
+    }
+  ],
+  "keep_synthetic": [
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_validation_claim_without_cell_and_enrichment_claim_with_cell_are_refused"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_same_claim_without_domain_comparison_is_refused"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_profile.py",
+      "test": "test_same_claim_with_domain_compared_and_printed_target_relation_are_accepted"
+    },
+    {
+      "file": "tests/domain_catalog/test_profile_curation.py",
+      "test": "test_synthetic_import_is_idempotent_and_payload_collision_is_refused"
+    },
+    {
+      "file": "tests/domain_catalog/test_profile_curation.py",
+      "test": "test_failed_import_leaves_no_partial_event"
+    },
+    {
+      "file": "tests/domain_catalog/test_profile_curation.py",
+      "test": "test_approved_entities_are_never_imported"
+    }
+  ],
+  "exclude_literal": [
+    {
+      "file": "tests/domain_catalog/test_daiane_import.py",
+      "test": "test_source_literals_are_preserved_without_correction"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_import.py",
+      "test": "test_numeric_looking_domain_values_stay_text"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_import.py",
+      "test": "test_accented_and_structured_domains_are_preserved"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_import.py",
+      "test": "test_source_notes_are_kept_verbatim"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_import.py",
+      "test": "test_divergence_projection_keeps_every_item_verbatim"
+    },
+    {
+      "file": "tests/domain_catalog/test_daiane_appendix_b.py",
+      "test": "test_real_transcription_keeps_source_literals_uncorrected"
+    }
+  ]
+}
