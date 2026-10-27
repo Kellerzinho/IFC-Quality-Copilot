@@ -119,7 +119,7 @@ CORRESPONDENCE_FIELDS: tuple[str, ...] = (
     "decision_ids",
 )
 HUMAN_GATES: tuple[str, ...] = (
-    "revisão de significados, agrupamentos e equivalências por curador/especialista",
+    "revisão de significados, agrupamentos e equivalências por Felipe/especialista",
     "aceite do perfil de domínio (conteúdo exato, com hash) e publicação pela cadeia E2",
     "portador histórico de Area_Forma (IFC/exportação do IDS_Mestrado ou confirmação da autora)",
     "recebimento e conferência do XML IDS_Mestrado e da planilha editável (D10)",

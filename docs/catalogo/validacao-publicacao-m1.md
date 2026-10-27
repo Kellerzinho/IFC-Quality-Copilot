@@ -11,3 +11,12 @@ A primeira verificação da seleção pública teve 978 passes, um skip e uma fa
 G3 integrada completa, comparação de tipos com a base, cobertura combinada e validação privada externa ainda estão em andamento. Este candidato não deve ser apresentado como aprovado nesses gates antes da atualização deste registro.
 
 As fontes reais e logs pessoais não são distribuídos. Casos externos e motivos estão em `testes-externos.json`; skips padrão não contam como passes. Aprovação de código não aprova conteúdo, identidade, publicação operacional ou alteração IFC.
+
+
+## Compatibilidade histórica e entradas externas
+
+A primeira G3 integrada foi interrompida após cinco grupos concluídos, por uma correção necessária: generalizar um nome em `HUMAN_GATES` alterava os bytes serializados de uma projeção histórica. Um teste privado reproduziu a diferença; o texto contratual original foi restaurado sem regenerar dados nem afrouxar asserções. Essa rodada parcial não é um gate final.
+
+Após a correção, os 156 casos privados externos passaram em três grupos sequenciais (60 + 60 + 36), sem skips/falhas/erros. Incluem 145 parametrizações das 119 funções externas versionadas e 11 parametrizações das seis funções de transcrição mantidas somente na validação privada. Os dados permaneceram idênticos. Os seis testes sintéticos reintegrados pertencem à suíte pública. Comparação estrutural do código do catálogo, ignorando apenas docstrings e formatação, confirma equivalência com o domínio original preservado; a distribuição não muda a ciência.
+
+Mypy sobre a integração e a main-base: 101 erros legados em 26 arquivos em cada árvore, zero diagnósticos acrescentados/removidos. O resultado não é um mypy limpo. A G3 pública final será uma nova execução integral após o commit da correção, com 3.324 nodeids esperados, 145 skips externos nominais previstos e os recursos legados identificados separadamente.
