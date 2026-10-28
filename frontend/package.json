@@ -14,9 +14,11 @@
     "verify:local": "npm run build && npm run check:dist",
     "test": "vitest run",
     "gen:api": "uv run --directory .. python -m src.review_api.export_openapi frontend/openapi.json && openapi-typescript openapi.json -o src/shared/contracts.ts",
-    "check:api": "node scripts/check-api-types.mjs"
+    "check:api": "node scripts/check-api-types.mjs",
+    "e2e": "playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "@tailwindcss/vite": "4.3.3",
     "@testing-library/dom": "10.4.2",
     "@testing-library/jest-dom": "7.0.1",
