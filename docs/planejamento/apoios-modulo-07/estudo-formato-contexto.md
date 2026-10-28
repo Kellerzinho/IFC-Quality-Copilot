@@ -145,3 +145,86 @@ catálogo não foram executadas (exigiriam importar a branch do Felipe); a regra
 **Quando o dicionário da Juliana/M1 existir:** trocar o arquivo e o carregador por um leitor do release
 (`CatalogReader`), mapear `x_relacao` para o que o M1 adotar e levar as extensões ao M1 como proposta
 (conversões, faixas, não-sinônimos). O gerador já aceita outro `Vocabulary` (`generate_cases(vocab=...)`).
+
+## 9. Modo real: o que rodar quando houver autorização
+
+O harness está pronto e **travado**: `--real` sem `--confirmo-autorizacao "<registro>"` sai com código 2
+e não abre conexão. O cliente (`src/experiment/budget_v1/context_format_runner.py`) usa `POST /api/chat`
+do Ollama local com `format` = JSON Schema da saída (saída estruturada), `temperature 0`, `seed 20261028`,
+`num_ctx 4096`, `think: false`, timeout de 120 s por chamada, uma chamada por vez. Cada chamada vira uma
+linha em `research/M7/estudo-formato-contexto/resultados-real.jsonl`; rodar de novo **retoma** (linhas já
+gravadas não são refeitas, linha truncada por interrupção é refeita). Latência: relógio da chamada e
+tempos do Ollama (`total_duration`, `load_duration`, tokens). VRAM: pico por amostragem do `nvidia-smi`
+a cada 0,25 s durante a chamada.
+
+### Modelos (seleção automática da prospecção M7-09)
+
+`uv run python scripts/estudo_formato_contexto.py modelos` lista a decisão e o motivo de cada um. Padrão:
+licença Apache-2.0/MIT, tag publicada no Ollama e "GPU inteira" a 4k no perfil da RTX 4050 (cenário nominal).
+
+| Tag | Licença | Memória estimada a 4k (M7-09) | Observação |
+|---|---|---|---|
+| `qwen3:4b-q4_K_M` | Apache-2.0 | 3,68 GiB | |
+| `qwen3:4b-q8_0` | Apache-2.0 | 5,36 GiB | perto do limite de 6 GB |
+| `qwen3.5:4b-q4_K_M` | Apache-2.0 | 3,95 GiB | |
+| `qwen3.5:4b-q8_0` | Apache-2.0 | 5,72 GiB | no instantâneo medido ficaria com offload parcial: feche outros programas |
+
+Fora: Llama-3.2-3B e Llama-3.1-8B (licença condicionada; entram só com
+`--licenca-condicionada-autorizada "<decisão do orientador>"`, e o 8B não cabe em 6 GB); quantizações sem
+tag publicada (procedência); 8B/9B em Q4/Q8 (não cabem).
+
+### Antes de rodar (ações suas, fora deste harness)
+
+1. Baixar os modelos (≈ 14,4 GB em disco no total, tamanhos do catálogo Ollama):
+   `ollama pull qwen3:4b-q4_K_M`, `ollama pull qwen3:4b-q8_0`, `ollama pull qwen3.5:4b-q4_K_M`,
+   `ollama pull qwen3.5:4b-q8_0`. Registrar os digests (`ollama list`).
+2. Fechar navegador e IDE: a coleta da M7-09 mediu **0,84 GiB de RAM livre** de 7,71 GiB.
+3. Gerar os casos: `uv run python scripts/estudo_formato_contexto.py gerar --seed 20261028 --por-tipo 4`.
+
+### Comandos
+
+Piloto curto (recomendado primeiro; 16 casos × 16 células × 1 repetição = 256 chamadas por modelo):
+
+```powershell
+cd C:\dev\IFC-Quality-Copilot
+uv run python scripts/estudo_formato_contexto.py gerar --seed 20261028 --por-tipo 1 --out research/M7/estudo-formato-contexto/piloto
+uv run python scripts/estudo_formato_contexto.py harness --real --repeticoes 1 `
+  --casos research/M7/estudo-formato-contexto/piloto/casos.jsonl --out research/M7/estudo-formato-contexto/piloto `
+  --confirmo-autorizacao "<quem autorizou>, <data>, <meio>"
+```
+
+Grade completa (64 casos × 16 células × 3 repetições = 3.072 chamadas por modelo; 12.288 no total):
+
+```powershell
+uv run python scripts/estudo_formato_contexto.py harness --real `
+  --confirmo-autorizacao "<quem autorizou>, <data>, <meio>"
+```
+
+Um modelo por vez (útil para dividir em sessões): acrescentar `--modelos qwen3:4b-q4_K_M`. Interromper
+com Ctrl+C é seguro; o mesmo comando continua de onde parou.
+
+### Estimativa de tempo (NÃO medida; refazer com o piloto)
+
+Premissas: prompt de ~400–450 tokens (+ template de chat), saída de 40–70 tokens com o schema, RTX 4050
+Laptop (6 GB, ~192 GB/s). Avaliação do prompt ~800–1.500 tok/s; geração limitada por banda de memória:
+~45–60 tok/s em Q4_K_M e ~28–35 tok/s em Q8_0 para modelos de 4B.
+
+| Configuração | Por chamada | Piloto (256) | Grade completa (3.072) |
+|---|---|---|---|
+| 4B Q4_K_M (qwen3, qwen3.5) | ~1,3–2,0 s | ~6–9 min | ~65–100 min |
+| 4B Q8_0 (qwen3, qwen3.5) | ~2,0–3,0 s | ~9–13 min | ~100–155 min |
+| **4 modelos** | | **~30–45 min** | **~6–8 h** (+ ~10–30 s de carga por modelo) |
+
+Se a memória transbordar para a CPU (offload), o tempo por chamada pode multiplicar por 3–10; o pico de
+VRAM e a latência registrados no JSONL mostram isso já no piloto.
+
+### Uso esperado de memória na sua máquina (RTX 4050 6 GB, 8 GB RAM)
+
+- **VRAM:** a estimativa da M7-09 (pesos + KV f16 a 4k + 0,7 GiB de reserva CUDA) dá 3,7–4,0 GiB em Q4_K_M
+  e 5,4–5,7 GiB em Q8_0, de 6,0 GiB. O Q8 deixa pouca folga: com o Windows usando ~0,4 GiB da GPU, o
+  qwen3.5 Q8 pode cair em offload parcial.
+- **RAM:** servidor Ollama ~0,3–0,6 GiB residente com o modelo inteiro na GPU, mais leitura do arquivo do
+  modelo na carga (cache de disco, transitório) e ~0,2 GiB do harness Python. Com 8 GB e navegador aberto,
+  o sistema pode paginar; com offload, a RAM precisa comportar as camadas que ficaram na CPU.
+- Esses números são **estimativas**; o relatório real (`relatorio-real.json`) traz a VRAM de pico medida
+  por célula e a latência mediana/p90.
