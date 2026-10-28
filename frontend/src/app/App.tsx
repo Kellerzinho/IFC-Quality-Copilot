@@ -25,6 +25,12 @@ export function App({ api = apiPadrao, createViewer = viewerPadrao, initialProje
     return <ReviewWorkspace api={api} project={project} createViewer={createViewer} onVoltar={voltar} />;
   }
   return (
-    <ProjectEntry api={api} project={project} onProjectChange={setProject} onOpenReview={() => setView("revisao")} />
+    <ProjectEntry
+      api={api}
+      project={project}
+      onProjectChange={setProject}
+      onCloseProject={() => setProject(null)}
+      onOpenReview={() => setView("revisao")}
+    />
   );
 }

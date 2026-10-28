@@ -103,6 +103,7 @@ export function fakeApi(): Api & { [k: string]: ReturnType<typeof vi.fn> } {
   const revisoes: Record<string, string> = { "m-arq": REV_ARQ, "m-est": REV_EST };
   return {
     createProject: vi.fn(async () => PROJECT),
+    listProjects: vi.fn(async () => ({ schema_version: "m4-plataforma-base/1" as const, total: 0, items: [] })),
     getProject: vi.fn(async () => PROJECT),
     uploadSource: vi.fn(async () => ARQ),
     confirm: vi.fn(async () => ARQ),

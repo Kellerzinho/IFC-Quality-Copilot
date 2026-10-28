@@ -1,6 +1,6 @@
 // Cliente da API local de revisão. Caminhos e corpos tipados pelo OpenAPI gerado.
 import type { paths } from "./contracts";
-import type { ApiError, ElementList, GapList, ModelPairBinding, Project } from "./types";
+import type { ApiError, ElementList, GapList, ModelPairBinding, Project, ProjectList } from "./types";
 
 const BASE = "/api/v1";
 
@@ -42,6 +42,11 @@ export const api = {
       body: JSON.stringify({ name }),
     });
     return parse<Project>(resp);
+  },
+
+  /** Projetos salvos no armazenamento local, do alterado mais recentemente ao mais antigo. */
+  async listProjects(): Promise<ProjectList> {
+    return parse<ProjectList>(await fetch(`${BASE}/projects`));
   },
 
   async getProject(projectId: string): Promise<Project> {
