@@ -82,7 +82,7 @@ export function RecentProjects({ api, onOpen }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Projetos recentes</CardTitle>
+        <CardTitle className="font-display text-3xl tracking-wide uppercase">Projetos recentes</CardTitle>
         <CardDescription>Salvos neste computador, do mais recente ao mais antigo.</CardDescription>
       </CardHeader>
       <CardContent>

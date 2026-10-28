@@ -103,12 +103,11 @@ confere, nos temas claro e escuro, **20 pares de texto (≥ 4,5:1)** e **4 pares
 | gold-text / gold-soft | 7,0 | 9,9 |
 | danger / danger-soft | 5,3 | 5,4 |
 
-- **Fora do teste:** o destaque 3D em `gold` sobre o fundo do viewer claro (`#ebece6`) tem **1,58:1**.
-  - É contraste de objeto na cena, não de texto, e a identificação nunca depende só dele: a lista
-    marca o item com borda accent e o painel nomeia o elemento.
-  - Mesmo assim, fica abaixo dos 3:1 de componente gráfico.
-  - No escuro, o mesmo par dá 9,2:1.
-  - Ver **Pendências**.
+- **Destaque 3D:** o preenchimento em `gold` sobre o fundo do viewer claro (`#ebece6`) tem só
+  **1,58:1** (9,2:1 no escuro). Desde o merge da `feat/m4-plataforma-base` (2026-10-28), o elemento
+  destacado ganha um **contorno de 3 px** com a cor de maior contraste sobre o fundo atual: `#111827` no
+  claro e `#f9fafb` no escuro, ≥ 3:1 nos dois (teste em `tests/unit/realce.test.ts`). A troca de tema
+  recalcula a cor do contorno.
 - **Foco visível:** anel `accent` sólido de 2 px com offset em botão, campo, switch, item da lista, alça
   de redimensionamento e envio de arquivo (o anel fica no rótulo, porque o input é `sr-only`).
 - **Movimento:** não há movimento automático. Com `prefers-reduced-motion`, as transições vão a ~0.
@@ -156,9 +155,7 @@ No build, com CSP `font-src 'self'`, as três famílias carregam, com zero viola
 
 1. **Escolha visual** com Felipe e Nonato (§13.4). Concorrem as três propostas do plano, a LEPV e esta.
 2. **Conferir os hex** com o manual de identidade visual do Exército e com a comunicação do IME.
-3. **Destaque 3D em ouro sobre fundo claro (1,58:1).** Opções, sem decisão tomada:
-   - contorno escuro no elemento destacado;
-   - fundo do viewer claro mais escuro;
-   - um ouro mais saturado só na cena.
+3. ~~Destaque 3D em ouro sobre fundo claro (1,58:1)~~ — resolvido com o contorno escuro/claro
+   herdado da base (ver Contraste).
 4. O `<select>` de arquivo usa o controle nativo, com estilo do sistema no menu aberto.
 5. A logo "That Open Company" no canto do viewer vem da biblioteca, não do tema.
