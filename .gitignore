@@ -58,3 +58,9 @@ src/experiment/results/*
 !src/experiment/results/models.lock.json
 !src/experiment/results/2026-07-02-smoke/
 !src/experiment/results/2026-07-02-smoke-matriz/
+
+# M4 plataforma-base
+node_modules/
+tests/fixtures/m4/generated/
+frontend/public/viewer/
+frontend/dist/

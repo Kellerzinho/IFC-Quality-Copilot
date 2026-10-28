@@ -1,0 +1,1780 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "IFC Quality Copilot — API de revisão (M4)",
+    "description": "API local (127.0.0.1) da fatia plataforma-base. Lacuna e Sugestão são PROVISÓRIAS (aguardando M2/M3).",
+    "version": "m4-plataforma-base/1"
+  },
+  "paths": {
+    "/api/v1/projects": {
+      "get": {
+        "tags": [
+          "projetos"
+        ],
+        "summary": "List Projects",
+        "description": "Lista os projetos salvos no armazenamento local (mais recentes primeiro).",
+        "operationId": "listProjects",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "projetos"
+        ],
+        "summary": "Create Project",
+        "description": "Cria projeto com as linhas arquitetura e estrutura vazias.",
+        "operationId": "createProject",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}": {
+      "get": {
+        "tags": [
+          "projetos"
+        ],
+        "summary": "Get Project",
+        "description": "Retorna o projeto e suas duas linhas.",
+        "operationId": "getProject",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/models/{model_id}/ifc": {
+      "put": {
+        "tags": [
+          "projetos"
+        ],
+        "summary": "Upload Ifc",
+        "description": "Recebe os bytes do IFC (corpo application/octet-stream).",
+        "operationId": "uploadIfc",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "model_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Model Id"
+            }
+          },
+          {
+            "name": "filename",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255,
+              "title": "Filename"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelPairBinding"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/models/{model_id}/ids": {
+      "put": {
+        "tags": [
+          "projetos"
+        ],
+        "summary": "Upload Ids",
+        "description": "Recebe os bytes do IDS (corpo application/octet-stream).",
+        "operationId": "uploadIds",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "model_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Model Id"
+            }
+          },
+          {
+            "name": "filename",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255,
+              "title": "Filename"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelPairBinding"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/models/{model_id}/confirm": {
+      "post": {
+        "tags": [
+          "projetos"
+        ],
+        "summary": "Confirm Binding",
+        "description": "Confirma explicitamente o vínculo disciplina–IFC–IDS pelas revisões.",
+        "operationId": "confirmBinding",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "model_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Model Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmBindingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelPairBinding"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/models/{model_id}/elements": {
+      "get": {
+        "tags": [
+          "analise"
+        ],
+        "summary": "Get Elements",
+        "description": "Lista os elementos (IfcElement e IfcSpace, sem aberturas) do IFC da linha.",
+        "operationId": "listElements",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "model_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Model Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ElementList"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/models/{model_id}/elements/{express_id}": {
+      "get": {
+        "tags": [
+          "analise"
+        ],
+        "summary": "Get Element",
+        "description": "Resolve um express_id (ex.: vindo do viewer) para o ElementRecord da linha.\n\nUm id que não pertence à lista de elementos responde 404; nunca devolve\noutro elemento parecido.",
+        "operationId": "getElement",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "model_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Model Id"
+            }
+          },
+          {
+            "name": "express_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Express Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ElementRecord"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/models/{model_id}/ifc-file": {
+      "get": {
+        "tags": [
+          "analise"
+        ],
+        "summary": "Get Ifc File",
+        "description": "Serve os bytes do IFC da linha ao viewer; cabeçalho X-Ifc-Revision identifica a revisão.",
+        "operationId": "getIfcFile",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "model_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Model Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/octet-stream": {}
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/models/{model_id}/gaps": {
+      "get": {
+        "tags": [
+          "analise"
+        ],
+        "summary": "Get Gaps",
+        "description": "Lista lacunas PROVISÓRIAS (adaptador legado) de uma linha confirmada.",
+        "operationId": "listGaps",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "model_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Model Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GapList"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "sistema"
+        ],
+        "summary": "Health",
+        "description": "Indica que a API local está respondendo.",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AbstainedSuggestion": {
+        "additionalProperties": false,
+        "description": "Abstenção PROVISÓRIA: motivo sem valor algum (extra=forbid recusa value).",
+        "properties": {
+          "outcome": {
+            "const": "abstained",
+            "title": "Outcome",
+            "type": "string"
+          },
+          "schema_status": {
+            "const": "provisorio_aguardando_M2_M3",
+            "default": "provisorio_aguardando_M2_M3",
+            "title": "Schema Status",
+            "type": "string"
+          },
+          "field": {
+            "$ref": "#/components/schemas/FieldRef"
+          },
+          "reason": {
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome",
+          "field",
+          "reason"
+        ],
+        "title": "AbstainedSuggestion",
+        "type": "object"
+      },
+      "ApiError": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "correlation_id": {
+            "type": "string",
+            "title": "Correlation Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "correlation_id"
+        ],
+        "title": "ApiError",
+        "description": "Erro legível, sem stack trace nem caminho privado."
+      },
+      "ConfirmBindingRequest": {
+        "properties": {
+          "ifc_revision_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Ifc Revision Id"
+          },
+          "ids_revision_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Ids Revision Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "ifc_revision_id",
+          "ids_revision_id"
+        ],
+        "title": "ConfirmBindingRequest",
+        "description": "Confirmação explícita das revisões IFC e IDS de uma linha."
+      },
+      "CreateProjectRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "CreateProjectRequest",
+        "description": "Pedido de criação de projeto."
+      },
+      "ElementList": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "const": "m4-plataforma-base/1",
+            "title": "Schema Version",
+            "default": "m4-plataforma-base/1"
+          },
+          "model_id": {
+            "type": "string",
+            "title": "Model Id"
+          },
+          "ifc_revision_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Ifc Revision Id"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ElementRecord"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "model_id",
+          "ifc_revision_id",
+          "total",
+          "items"
+        ],
+        "title": "ElementList",
+        "description": "Elementos de uma revisão IFC, em ordem estável de express_id."
+      },
+      "ElementRecord": {
+        "properties": {
+          "ref": {
+            "$ref": "#/components/schemas/ElementRef"
+          },
+          "ifc_class": {
+            "type": "string",
+            "title": "Ifc Class"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "global_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Global Id",
+            "description": "Atributo IFC; não é identidade."
+          },
+          "global_id_state": {
+            "type": "string",
+            "enum": [
+              "unique",
+              "duplicated_in_file",
+              "missing"
+            ],
+            "title": "Global Id State"
+          },
+          "has_geometry": {
+            "type": "boolean",
+            "title": "Has Geometry"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "ref",
+          "ifc_class",
+          "global_id_state",
+          "has_geometry"
+        ],
+        "title": "ElementRecord",
+        "description": "Resumo de navegação de um elemento (não é evidência de requisito)."
+      },
+      "ElementRef": {
+        "additionalProperties": false,
+        "description": "Identidade de um elemento: modelo lógico + revisão IFC + express_id.\n\nO GlobalId NÃO faz parte da chave: dois arquivos (ou duas entidades do\nmesmo arquivo) podem repetir GlobalId e continuam sendo elementos distintos.\nO express_id só localiza a entidade naquela revisão; não indica\ncontinuidade entre revisões.",
+        "properties": {
+          "model_id": {
+            "minLength": 1,
+            "title": "Model Id",
+            "type": "string"
+          },
+          "ifc_revision_id": {
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Ifc Revision Id",
+            "type": "string"
+          },
+          "express_id": {
+            "exclusiveMinimum": 0,
+            "title": "Express Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "model_id",
+          "ifc_revision_id",
+          "express_id"
+        ],
+        "title": "ElementRef",
+        "type": "object"
+      },
+      "FieldAlternative": {
+        "additionalProperties": false,
+        "description": "Alternativa proposta: valor, método, evidências e limitações.",
+        "properties": {
+          "alternative_id": {
+            "title": "Alternative Id",
+            "type": "string"
+          },
+          "value": {
+            "$ref": "#/components/schemas/ProposedValue"
+          },
+          "method": {
+            "title": "Method",
+            "type": "string"
+          },
+          "evidence": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Evidence",
+            "type": "array"
+          },
+          "justification": {
+            "title": "Justification",
+            "type": "string"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Limitations",
+            "type": "array"
+          }
+        },
+        "required": [
+          "alternative_id",
+          "value",
+          "method",
+          "evidence",
+          "justification"
+        ],
+        "title": "FieldAlternative",
+        "type": "object"
+      },
+      "FieldRef": {
+        "additionalProperties": false,
+        "description": "Campo-alvo de enriquecimento num elemento identificado.",
+        "properties": {
+          "element": {
+            "$ref": "#/components/schemas/ElementRef"
+          },
+          "property_set": {
+            "title": "Property Set",
+            "type": "string"
+          },
+          "property_name": {
+            "title": "Property Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "element",
+          "property_set",
+          "property_name"
+        ],
+        "title": "FieldRef",
+        "type": "object"
+      },
+      "Gap": {
+        "properties": {
+          "schema_status": {
+            "type": "string",
+            "const": "provisorio_aguardando_M2_M3",
+            "title": "Schema Status",
+            "default": "provisorio_aguardando_M2_M3"
+          },
+          "gap_id": {
+            "type": "string",
+            "title": "Gap Id"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "legacy_ifc_analyzer",
+              "m4_adapter_marker"
+            ],
+            "title": "Origin"
+          },
+          "resolution": {
+            "type": "string",
+            "enum": [
+              "resolved",
+              "ambiguous",
+              "not_found"
+            ],
+            "title": "Resolution"
+          },
+          "element": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ElementRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/ElementRef"
+            },
+            "type": "array",
+            "title": "Candidates"
+          },
+          "global_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Global Id"
+          },
+          "ifc_class": {
+            "type": "string",
+            "title": "Ifc Class"
+          },
+          "element_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Element Name"
+          },
+          "requirement": {
+            "$ref": "#/components/schemas/GapRequirement"
+          },
+          "current_value": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ObservedValue"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "provisional_marker": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProvisionalMarkerObservation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "gap_id",
+          "origin",
+          "resolution",
+          "ifc_class",
+          "requirement"
+        ],
+        "title": "Gap",
+        "description": "Lacuna PROVISÓRIA — aguarda o diagnóstico canônico de M2.\n\n``origin`` separa o que veio do legado (``legacy_ifc_analyzer``) do que é\nobservação própria do adaptador (``m4_adapter_marker``). Quando o legado\naponta um GlobalId repetido no arquivo, ``resolution=\"ambiguous\"`` lista\ntodos os candidatos e nenhum é escolhido."
+      },
+      "GapList": {
+        "properties": {
+          "schema_status": {
+            "type": "string",
+            "const": "provisorio_aguardando_M2_M3",
+            "title": "Schema Status",
+            "default": "provisorio_aguardando_M2_M3"
+          },
+          "schema_version": {
+            "type": "string",
+            "const": "m4-plataforma-base/1",
+            "title": "Schema Version",
+            "default": "m4-plataforma-base/1"
+          },
+          "model_id": {
+            "type": "string",
+            "title": "Model Id"
+          },
+          "ifc_revision_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Ifc Revision Id"
+          },
+          "ids_revision_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Ids Revision Id"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Gap"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "model_id",
+          "ifc_revision_id",
+          "ids_revision_id",
+          "source",
+          "total",
+          "items",
+          "limitations"
+        ],
+        "title": "GapList",
+        "description": "Lacunas PROVISÓRIAS de uma linha confirmada."
+      },
+      "GapRequirement": {
+        "properties": {
+          "property_set": {
+            "type": "string",
+            "title": "Property Set"
+          },
+          "property_name": {
+            "type": "string",
+            "title": "Property Name"
+          },
+          "check": {
+            "type": "string",
+            "title": "Check"
+          },
+          "expected_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Value"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "specification": {
+            "type": "string",
+            "title": "Specification"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "property_set",
+          "property_name",
+          "check",
+          "specification"
+        ],
+        "title": "GapRequirement",
+        "description": "Requisito que originou a lacuna, como interpretado pelo parser legado."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Health": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status",
+            "default": "ok"
+          },
+          "schema_version": {
+            "type": "string",
+            "const": "m4-plataforma-base/1",
+            "title": "Schema Version",
+            "default": "m4-plataforma-base/1"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "Health",
+        "description": "Estado mínimo da API local."
+      },
+      "ModelPairBinding": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "model_id": {
+            "type": "string",
+            "title": "Model Id"
+          },
+          "discipline": {
+            "type": "string",
+            "enum": [
+              "architecture",
+              "structure"
+            ],
+            "title": "Discipline"
+          },
+          "ifc": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceArtifactRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ids": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceArtifactRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "confirmed": {
+            "type": "boolean",
+            "title": "Confirmed",
+            "default": false
+          },
+          "confirmed_ifc_revision_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmed Ifc Revision Id"
+          },
+          "confirmed_ids_revision_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmed Ids Revision Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "model_id",
+          "discipline"
+        ],
+        "title": "ModelPairBinding",
+        "description": "Linha disciplina–IFC–IDS de um projeto.\n\nA confirmação cobre as revisões efetivas: trocar o IFC ou o IDS invalida a\nconfirmação anterior. Nomes de arquivo nunca decidem o vínculo."
+      },
+      "ObservedValue": {
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "present",
+              "empty",
+              "null",
+              "property_absent",
+              "pset_absent"
+            ],
+            "title": "State"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "boolean",
+                  "integer",
+                  "real",
+                  "string",
+                  "other"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kind"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "state"
+        ],
+        "title": "ObservedValue",
+        "description": "Valor lido do IFC, sem conversão para texto.\n\n``present`` com 0 ou FALSE continua presente; ``empty`` é string vazia;\n``null`` é propriedade existente sem valor; ausências distinguem Pset e\npropriedade."
+      },
+      "Project": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "const": "m4-plataforma-base/1",
+            "title": "Schema Version",
+            "default": "m4-plataforma-base/1"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/ModelPairBinding"
+            },
+            "type": "array",
+            "title": "Models"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "name",
+          "models"
+        ],
+        "title": "Project",
+        "description": "Projeto com as duas linhas de modelo (arquitetura e estrutura)."
+      },
+      "ProjectList": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "const": "m4-plataforma-base/1",
+            "title": "Schema Version",
+            "default": "m4-plataforma-base/1"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectSummary"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "total",
+          "items"
+        ],
+        "title": "ProjectList",
+        "description": "Projetos do armazenamento local, do alterado mais recentemente ao mais antigo."
+      },
+      "ProjectSummary": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/ModelPairBinding"
+            },
+            "type": "array",
+            "title": "Models"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "name",
+          "created_at",
+          "updated_at",
+          "models"
+        ],
+        "title": "ProjectSummary",
+        "description": "Projeto salvo no armazenamento local, com as datas (UTC) e as duas linhas."
+      },
+      "ProposedSuggestion": {
+        "additionalProperties": false,
+        "description": "Sugestão PROVISÓRIA com ao menos uma alternativa (não autoriza escrita).",
+        "properties": {
+          "outcome": {
+            "const": "proposed",
+            "title": "Outcome",
+            "type": "string"
+          },
+          "schema_status": {
+            "const": "provisorio_aguardando_M2_M3",
+            "default": "provisorio_aguardando_M2_M3",
+            "title": "Schema Status",
+            "type": "string"
+          },
+          "field": {
+            "$ref": "#/components/schemas/FieldRef"
+          },
+          "alternatives": {
+            "items": {
+              "$ref": "#/components/schemas/FieldAlternative"
+            },
+            "minItems": 1,
+            "title": "Alternatives",
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "field",
+          "alternatives"
+        ],
+        "title": "ProposedSuggestion",
+        "type": "object"
+      },
+      "ProposedValue": {
+        "additionalProperties": false,
+        "description": "Valor tipado de uma alternativa.\n\n0 e FALSE podem ser propostas legítimas e são preservados como tipados;\n\"A definir\" nunca é valor e é recusado.",
+        "properties": {
+          "kind": {
+            "enum": [
+              "boolean",
+              "integer",
+              "real",
+              "string"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Value"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Unit"
+          }
+        },
+        "required": [
+          "kind",
+          "value"
+        ],
+        "title": "ProposedValue",
+        "type": "object"
+      },
+      "ProvisionalMarkerObservation": {
+        "properties": {
+          "observed_by": {
+            "type": "string",
+            "const": "m4_adapter",
+            "title": "Observed By",
+            "default": "m4_adapter"
+          },
+          "marker": {
+            "type": "string",
+            "enum": [
+              "A definir",
+              "0",
+              "FALSE"
+            ],
+            "title": "Marker"
+          },
+          "classification": {
+            "type": "string",
+            "const": "provisorio",
+            "title": "Classification",
+            "default": "provisorio"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "default": "Observação do adaptador M4, não do legado. Marcador tratado como provisório; não é valor confirmado."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "marker"
+        ],
+        "title": "ProvisionalMarkerObservation",
+        "description": "Observação do ADAPTADOR M4 (não do legado) sobre marcador provisório.\n\n\"A definir\", 0 e FALSE gravados como marcadores são classificados como\nprovisórios, nunca como valor real confirmado. O valor tipado original\npermanece em ``Gap.current_value``."
+      },
+      "SourceArtifactRef": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "ifc",
+              "ids"
+            ],
+            "title": "Role"
+          },
+          "revision_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Revision Id"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Size Bytes"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "ifc_schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ifc Schema"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "role",
+          "revision_id",
+          "size_bytes",
+          "display_name"
+        ],
+        "title": "SourceArtifactRef",
+        "description": "Referência imutável aos bytes de um IFC ou IDS recebido.\n\n``revision_id`` é o SHA-256 do conteúdo: o mesmo arquivo enviado com outro\nnome produz a mesma revisão. ``display_name`` é só apresentação."
+      },
+      "Suggestion": {
+        "discriminator": {
+          "mapping": {
+            "abstained": "#/components/schemas/AbstainedSuggestion",
+            "proposed": "#/components/schemas/ProposedSuggestion"
+          },
+          "propertyName": "outcome"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ProposedSuggestion"
+          },
+          {
+            "$ref": "#/components/schemas/AbstainedSuggestion"
+          }
+        ]
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

@@ -22,6 +22,7 @@ dependencies = [
     "pandas>=2.2",
     "PyYAML>=6.0",
     "psutil>=6.0",
+    "fastapi==0.143.0",
 ]
 
 [dependency-groups]
