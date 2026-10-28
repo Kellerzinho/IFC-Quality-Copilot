@@ -326,10 +326,17 @@ def test_retrieval_coverage_is_reported_only_for_retrieved_scope(
         assert (r.recuperacao_cobre_gabarito is None) == (r.escopo == "inteiro")
 
 
-def test_real_mode_is_blocked() -> None:
+@pytest.mark.parametrize("authorization", [None, "", "   "])
+def test_real_mode_is_blocked_without_explicit_authorization(authorization: str | None) -> None:
+    with pytest.raises(cf.RealModeBlocked, match="--confirmo-autorizacao"):
+        cf.require_mode("real", authorization)
+
+
+def test_real_mode_passes_only_with_authorization_record() -> None:
+    cf.require_mode("real", "orientador, 2026-11-03, e-mail")
+    cf.require_mode("dry_run")
     with pytest.raises(cf.RealModeBlocked):
-        cf.require_dry_run("real")
-    assert cf.REAL_MODE_AUTHORIZED is False
+        cf.require_mode("outro", "x")
 
 
 def test_module_has_no_llm_client_or_network_import() -> None:

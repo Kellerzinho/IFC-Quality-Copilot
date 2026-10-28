@@ -18,8 +18,8 @@ Três partes, todas SEM inferência:
 3. **Harness**: valida a resposta contra o JSON Schema de saída e pontua contra o
    gabarito. Em ``dry_run`` a resposta é simulada (oráculo ou perturbação
    determinística) só para exercitar o código. O modo real fica BLOQUEADO
-   (``RealModeBlocked``) até autorização explícita (M7-10); este módulo não
-   importa cliente de LLM nem abre conexão.
+   (``RealModeBlocked``) sem o registro explícito da autorização (M7-10); o cliente
+   está em ``context_format_runner.py``, e este módulo não abre conexão.
 
 Os valores de referência dos conceitos (classes C20–C50, cobrimentos por CAA) seguem a
 NBR 6118/NBR 8953 como vocabulário de domínio; os casos são fixtures de software, não
@@ -536,20 +536,21 @@ def simulated_response(case: SyntheticCase, simulator: Simulator, salt: str = ""
 
 
 class RealModeBlocked(RuntimeError):
-    """O modo real (inferência) não está autorizado nesta etapa."""
+    """O modo real (inferência) não foi autorizado explicitamente."""
 
 
-REAL_MODE_AUTHORIZED: Final = False
-"""Só muda por decisão registrada (M7-10, autorização de ensaio). Não há cliente de LLM aqui."""
-
-
-def require_dry_run(mode: str) -> None:
-    """Recusa qualquer modo diferente de ``dry_run`` enquanto não houver autorização."""
-    if mode != "dry_run" or REAL_MODE_AUTHORIZED:
-        raise RealModeBlocked(
-            "modo real bloqueado: inferência exige autorização registrada (plano M7-10); "
-            "este harness só roda em --dry-run"
-        )
+def require_mode(mode: str, authorization: str | None = None) -> None:
+    """``dry_run`` sempre passa; ``real`` exige o registro da autorização (texto não vazio,
+    p.ex. "orientador, 2026-11-03, e-mail"). Qualquer outro caso é recusado."""
+    if mode == "dry_run":
+        return
+    if mode == "real" and authorization and authorization.strip():
+        return
+    raise RealModeBlocked(
+        "modo real bloqueado: a inferência exige autorização registrada (plano M7-10). "
+        'Passe --confirmo-autorizacao "<quem autorizou, data, meio>" junto com --real; '
+        "sem isso, use --dry-run"
+    )
 
 
 class CellReport(_Model):
@@ -584,7 +585,7 @@ def run_dry(
     simulators: Sequence[Simulator] = ("oraculo", "ruidoso"),
 ) -> list[CellReport]:
     """Monta todos os prompts, conta tokens e pontua respostas simuladas por célula."""
-    require_dry_run("dry_run")
+    require_mode("dry_run")
     reports: list[CellReport] = []
     for fmt in formats:
         for scope in scopes:
