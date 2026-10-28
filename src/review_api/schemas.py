@@ -13,7 +13,7 @@ Regras de identidade:
 
 from typing import Annotated, Final, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
 
 SCHEMA_VERSION: Final = "m4-plataforma-base/1"
 PROVISIONAL_STATUS: Final = "provisorio_aguardando_M2_M3"
@@ -123,6 +123,24 @@ class Project(_Contract):
     project_id: str
     name: str
     models: list[ModelPairBinding]
+
+
+class ProjectSummary(_Contract):
+    """Projeto salvo no armazenamento local, com as datas (UTC) e as duas linhas."""
+
+    project_id: str
+    name: str
+    created_at: AwareDatetime
+    updated_at: AwareDatetime
+    models: list[ModelPairBinding]
+
+
+class ProjectList(_Contract):
+    """Projetos do armazenamento local, do alterado mais recentemente ao mais antigo."""
+
+    schema_version: Literal["m4-plataforma-base/1"] = SCHEMA_VERSION
+    total: int
+    items: list[ProjectSummary]
 
 
 class CreateProjectRequest(_Contract):

@@ -11,7 +11,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * List Projects
+         * @description Lista os projetos salvos no armazenamento local (mais recentes primeiro).
+         */
+        get: operations["listProjects"];
         put?: never;
         /**
          * Create Project
@@ -530,6 +534,44 @@ export interface components {
             models: components["schemas"]["ModelPairBinding"][];
         };
         /**
+         * ProjectList
+         * @description Projetos do armazenamento local, do alterado mais recentemente ao mais antigo.
+         */
+        ProjectList: {
+            /**
+             * Schema Version
+             * @default m4-plataforma-base/1
+             * @constant
+             */
+            schema_version: "m4-plataforma-base/1";
+            /** Total */
+            total: number;
+            /** Items */
+            items: components["schemas"]["ProjectSummary"][];
+        };
+        /**
+         * ProjectSummary
+         * @description Projeto salvo no armazenamento local, com as datas (UTC) e as duas linhas.
+         */
+        ProjectSummary: {
+            /** Project Id */
+            project_id: string;
+            /** Name */
+            name: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Models */
+            models: components["schemas"]["ModelPairBinding"][];
+        };
+        /**
          * ProposedSuggestion
          * @description Sugestão PROVISÓRIA com ao menos uma alternativa (não autoriza escrita).
          */
@@ -647,6 +689,26 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    listProjects: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectList"];
+                };
+            };
+        };
+    };
     createProject: {
         parameters: {
             query?: never;

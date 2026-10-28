@@ -15,11 +15,15 @@
 import * as OBC from "@thatopen/components";
 import * as FRAGS from "@thatopen/fragments";
 import * as THREE from "three";
+import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
+import { LineSegments2 } from "three/examples/jsm/lines/LineSegments2.js";
+import { LineSegmentsGeometry } from "three/examples/jsm/lines/LineSegmentsGeometry.js";
 
 import { elementKey } from "@/shared/elementKey";
 import type { ElementRef } from "@/shared/types";
 
 import { coletarFatos, construirMapa, resumoMapa, type MapaIdentidade } from "./idMap";
+import { aplicarRaioX, arestasDoItem, corContorno, type MemoriaRaioX } from "./realce";
 import type { EstadoModelo, ModeloParaCarregar, ViewerAdapter } from "./ViewerPort";
 
 export const VIEWER_ASSETS = {
@@ -33,6 +37,8 @@ function corDoTema(el: HTMLElement | null, token: string, padrao: string): THREE
   return new THREE.Color(valor || padrao);
 }
 const OPACIDADE_RAIO_X = 0.15;
+/** Espessura do contorno do destaque, em px de tela. */
+const ESPESSURA_CONTORNO = 3;
 
 type Mundo = OBC.SimpleWorld<OBC.SimpleScene, OBC.SimpleCamera, OBC.SimpleRenderer>;
 
@@ -94,6 +100,12 @@ export class ThatOpenViewerAdapter implements ViewerAdapter {
   private cancelados = new Set<string>();
   private removerClique: (() => void) | null = null;
   private observadorTema: MutationObserver | null = null;
+  /** Raio-X pedido por modelo — vale também para modelo que ainda está carregando. */
+  private readonly raioXPedido = new Map<string, boolean>();
+  private readonly memoriaRaioX: MemoriaRaioX = new WeakMap();
+  private contorno: LineSegments2 | null = null;
+  /** Cada destacar() invalida contornos ainda em construção de chamadas anteriores. */
+  private seqDestaque = 0;
 
   async montar(container: HTMLElement): Promise<void> {
     this.container = container;
@@ -109,15 +121,18 @@ export class ThatOpenViewerAdapter implements ViewerAdapter {
     const fragments = components.get(OBC.FragmentsManager);
     fragments.init(VIEWER_ASSETS.fragmentsWorker);
     fragments.core.settings.autoCoordinate = false;
-    world.camera.controls.addEventListener("rest", () => void fragments.core.update(true));
+    world.camera.controls.addEventListener("rest", () => void this.atualizarCena());
 
     this.components = components;
     this.world = world;
     this.fragments = fragments;
     this.removerClique = this.instalarClique(world.renderer.three.domElement);
-    // Troca de tema (classe .dark no <html>) só muda o fundo da cena.
+    // Troca de tema (classe .dark no <html>) muda o fundo da cena e, com ele, a cor do contorno.
     this.observadorTema = new MutationObserver(() => {
-      if (this.world) this.world.scene.three.background = corDoTema(container, "--viewer", "#f5f5f5");
+      if (!this.world) return;
+      const fundo = corDoTema(container, "--viewer", "#f5f5f5");
+      this.world.scene.three.background = fundo;
+      this.contorno?.material.color.copy(corContorno(fundo));
     });
     this.observadorTema.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
   }
@@ -185,8 +200,13 @@ export class ThatOpenViewerAdapter implements ViewerAdapter {
       model.useCamera(this.world.camera.three);
       this.world.scene.three.add(model.object);
       const mapa = construirMapa(modelo.modelId, modelo.elementos, await coletarFatos(model));
-      this.modelos.set(modelo.modelId, { model, mapa, visivel: true, raioX: false });
-      await this.fragments.core.update(true);
+      this.modelos.set(modelo.modelId, {
+        model,
+        mapa,
+        visivel: true,
+        raioX: this.raioXPedido.get(modelo.modelId) ?? false,
+      });
+      await this.atualizarCena();
       if (this.modelos.size === 1) await this.enquadrarTudo();
       await this.aplicarVisibilidade();
       await new Promise<void>((r) => requestAnimationFrame(() => r()));
@@ -221,11 +241,21 @@ export class ThatOpenViewerAdapter implements ViewerAdapter {
     return carregado && localId !== undefined ? { carregado, localId } : null;
   }
 
+  /** Atualiza os tiles do Fragments e reaplica o raio-X nos materiais recém-criados. */
+  private async atualizarCena(): Promise<void> {
+    await this.fragments?.core.update(true);
+    for (const carregado of this.modelos.values()) {
+      aplicarRaioX(carregado.model.object, carregado.raioX, OPACIDADE_RAIO_X, this.memoriaRaioX);
+    }
+  }
+
   async destacar(ref: ElementRef | null): Promise<void> {
     if (this.destacado) {
       const anterior = this.localDe(this.destacado);
       if (anterior) await anterior.carregado.model.resetHighlight([anterior.localId]);
     }
+    this.removerContorno();
+    const seq = ++this.seqDestaque;
     this.destacado = ref;
     const alvo = ref ? this.localDe(ref) : null;
     if (alvo) {
@@ -235,8 +265,46 @@ export class ThatOpenViewerAdapter implements ViewerAdapter {
         opacity: 1,
         transparent: false,
       });
+      await this.criarContorno(alvo.carregado.model, alvo.localId, seq);
     }
-    await this.fragments?.core.update(true);
+    await this.atualizarCena();
+  }
+
+  /**
+   * Contorno escuro (ou claro, conforme o fundo) sobre as arestas do elemento.
+   * A cor de destaque sozinha tem contraste ~1,9:1 sobre o fundo claro; o contorno
+   * passa de 3:1 nos dois temas (realce.ts). depthTest desligado: o contorno
+   * aparece mesmo quando o elemento está atrás de outro (laje EST sob o piso ARQ).
+   */
+  private async criarContorno(model: FRAGS.FragmentsModel, localId: number, seq: number): Promise<void> {
+    if (!this.world) return;
+    const [malhas = []] = await model.getItemsGeometry([localId]);
+    const pontos = arestasDoItem(malhas);
+    if (!pontos.length || seq !== this.seqDestaque) return;
+    const geometria = new LineSegmentsGeometry().setPositions(pontos);
+    const fundo = this.world.scene.three.background;
+    const material = new LineMaterial({
+      color: corContorno(fundo instanceof THREE.Color ? fundo : "#f5f5f5"),
+      linewidth: ESPESSURA_CONTORNO,
+      depthTest: false,
+      transparent: true,
+    });
+    const tela = this.world.renderer!.three.domElement;
+    material.resolution.set(tela.clientWidth || 1, tela.clientHeight || 1);
+    const linhas = new LineSegments2(geometria, material);
+    linhas.applyMatrix4(model.object.matrixWorld);
+    linhas.renderOrder = 10;
+    linhas.name = "m4-contorno-destaque";
+    this.world.scene.three.add(linhas);
+    this.contorno = linhas;
+  }
+
+  private removerContorno(): void {
+    if (!this.contorno) return;
+    this.contorno.removeFromParent();
+    this.contorno.geometry.dispose();
+    this.contorno.material.dispose();
+    this.contorno = null;
   }
 
   async isolar(refs: ElementRef[] | null): Promise<void> {
@@ -251,12 +319,16 @@ export class ThatOpenViewerAdapter implements ViewerAdapter {
   }
 
   async transparencia(modelId: string, ativa: boolean): Promise<void> {
+    this.raioXPedido.set(modelId, ativa);
     const carregado = this.modelos.get(modelId);
-    if (!carregado) return;
+    if (!carregado) return; // aplicado quando a carga terminar
     carregado.raioX = ativa;
-    if (ativa) await carregado.model.setOpacity(undefined, OPACIDADE_RAIO_X);
-    else await carregado.model.resetOpacity(undefined);
-    await this.fragments?.core.update(true);
+    await this.atualizarCena();
+  }
+
+  /** Estado do raio-X por modelo (apoio a teste e2e; não altera a cena). */
+  raioXAtivo(modelId: string): boolean {
+    return this.modelos.get(modelId)?.raioX ?? false;
   }
 
   /** Visibilidade = disciplina ligada ∩ isolamento (quando houver). */
@@ -275,7 +347,7 @@ export class ThatOpenViewerAdapter implements ViewerAdapter {
       const ids = [...this.isolamento].map((k) => mapa.localPorChave.get(k)).filter((v): v is number => v !== undefined);
       if (ids.length) await model.setVisible(ids, true);
     }
-    await this.fragments?.core.update(true);
+    await this.atualizarCena();
   }
 
   async enquadrar(ref: ElementRef): Promise<void> {
@@ -286,7 +358,7 @@ export class ThatOpenViewerAdapter implements ViewerAdapter {
     const esfera = caixa.getBoundingSphere(new THREE.Sphere());
     esfera.radius = Math.max(esfera.radius * 2.5, 1);
     await this.world.camera.controls.fitToSphere(esfera, true);
-    await this.fragments?.core.update(true);
+    await this.atualizarCena();
   }
 
   /** Centro projetado na tela (px do cliente) — apoio ao ensaio manual de cliques. */
@@ -313,6 +385,7 @@ export class ThatOpenViewerAdapter implements ViewerAdapter {
     this.removerClique?.();
     this.observadorTema?.disconnect();
     this.observadorTema = null;
+    this.removerContorno();
     this.conversor.encerrar();
     for (const id of [...this.modelos.keys()]) await this.descarregar(id);
     this.components?.dispose();
