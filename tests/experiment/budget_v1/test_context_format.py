@@ -83,16 +83,15 @@ def test_conversion_cases_carry_a_non_standard_unit(cases: list[cf.SyntheticCase
     for case in (c for c in cases if c.kind == "conversao"):
         [carrier] = [p for p in case.properties if f"{p.pset}.{p.name}" == case.gold.source]
         assert carrier.unit not in (None, cf.TARGET_UNIT[case.concept])
-        factor = {"Pa": 1e-6, "kN/cm²": 10, "kgf/cm²": cf.KGF_CM2_IN_MPA, "cm": 10, "m": 1000}[
-            carrier.unit
-        ]
+        factor = cf.VOCAB.conversions[str(cf.TARGET_UNIT[case.concept])][str(carrier.unit)]
         assert float(carrier.value) * factor == pytest.approx(case.gold.value, rel=1e-3)
 
 
 def test_class_strings_map_to_fck(cases: list[cf.SyntheticCase]) -> None:
     for case in (c for c in cases if c.kind == "classe"):
         [carrier] = [p for p in case.properties if f"{p.pset}.{p.name}" == case.gold.source]
-        assert str(carrier.value).startswith(f"C{int(case.gold.value)}")
+        fck = int(case.gold.value)
+        assert str(carrier.value) in {f"C{fck}", f"C-{fck}", f"C{fck}/{cf.VOCAB.cube_of[fck]}"}
         assert carrier.unit is None
 
 

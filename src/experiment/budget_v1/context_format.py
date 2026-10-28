@@ -41,7 +41,9 @@ from typing import Any, Final, Literal
 import jsonschema  # travado no uv.lock via mcp/streamlit
 from pydantic import BaseModel, ConfigDict, Field
 
-GENERATOR_VERSION: Final = "formato-contexto-gerador/1"
+from src.experiment.budget_v1.provisional_dictionary import Vocabulary, load_vocabulary
+
+GENERATOR_VERSION: Final = "formato-contexto-gerador/2"  # /2: vocabulário lido do dicionário
 HARNESS_VERSION: Final = "formato-contexto-harness/1"
 # Saída padrão: ignorada pelo git (.gitignore). Base provisória até a área operacional M6.
 DEFAULT_OUT: Final = Path("research") / "M7" / "estudo-formato-contexto"
@@ -60,7 +62,12 @@ ContextFormat = Literal["json_indentado", "json_compacto", "markdown", "tabela"]
 ContextScope = Literal["inteiro", "recuperado"]
 Language = Literal["pt", "en"]
 
+# Vocabulário (grafias, unidades, conversões, classes, tabelas) vem do dicionário provisório
+# data/dicionario_provisorio/conceitos-estruturais.json; nada disso fica fixo no código.
+VOCAB: Final[Vocabulary] = load_vocabulary()
 CONCEPTS: Final[tuple[Concept, ...]] = ("fck", "cobrimento", "caa")
+if set(VOCAB.concepts) != set(CONCEPTS):  # o estudo cobre exatamente estes três conceitos
+    raise ValueError(f"dicionário com conceitos inesperados: {VOCAB.concepts}")
 FORMATS: Final[tuple[ContextFormat, ...]] = (
     "json_indentado",
     "json_compacto",
@@ -69,9 +76,9 @@ FORMATS: Final[tuple[ContextFormat, ...]] = (
 )
 SCOPES: Final[tuple[ContextScope, ...]] = ("inteiro", "recuperado")
 LANGUAGES: Final[tuple[Language, ...]] = ("pt", "en")
-TARGET_UNIT: Final[dict[Concept, str | None]] = {"fck": "MPa", "cobrimento": "mm", "caa": None}
-
-KGF_CM2_IN_MPA: Final = 0.0980665
+TARGET_UNIT: Final[dict[str, str | None]] = VOCAB.target_unit
+KGF_CM2_IN_MPA: Final = VOCAB.conversions["MPa"]["kgf/cm²"]
+COVER_BY_CAA: Final[dict[str, dict[str, int]]] = VOCAB.cover_by_caa
 VALUE_TOLERANCE: Final = 0.01  # relativa, para comparar números convertidos
 
 
@@ -130,46 +137,10 @@ def output_json_schema() -> dict[str, Any]:
     return schema
 
 
-# --- vocabulário dos exportadores ---------------------------------------------------
+# --- distratores e armadilhas -------------------------------------------------------
 
-# Nomes como aparecem em exportadores reais/típicos. São variações de grafia, não aliases
-# aprovados do catálogo (M1 §2.2).
-EXPORTERS: Final[dict[str, dict[str, Any]]] = {
-    "revit_br": {
-        "pset": "Dados estruturais",
-        "fck": ["fck", "Resistência característica do concreto", "FCK (MPa)"],
-        "cobrimento": ["Cobrimento", "Cobrimento nominal", "Cobrimento (mm)"],
-        "caa": ["Classe de agressividade", "CAA"],
-    },
-    "tqs": {
-        "pset": "TQS_Concreto",
-        "fck": ["FCK", "Fck_Concreto", "Classe do concreto"],
-        "cobrimento": ["COBRIMENTO", "Cnom"],
-        "caa": ["CAA", "AGRESSIVIDADE"],
-    },
-    "eberick": {
-        "pset": "Eberick",
-        "fck": ["fck (MPa)", "Resistencia_Concreto", "Classe de resistência"],
-        "cobrimento": ["Cobrimento armadura", "cob"],
-        "caa": ["Classe Agressividade Ambiental"],
-    },
-    "tekla": {
-        "pset": "Tekla Common",
-        "fck": ["Concrete grade", "CONCRETE_STRENGTH"],
-        "cobrimento": ["Concrete cover", "COVER_THICKNESS"],
-        "caa": ["Exposure class"],
-    },
-    "generico_en": {
-        "pset": "Pset_ConcreteElementGeneral",
-        "fck": ["CompressiveStrength", "CharacteristicStrength"],
-        "cobrimento": ["ConcreteCover", "NominalCover"],
-        "caa": ["EnvironmentalAggressivenessClass"],
-    },
-}
-
+# Propriedades sem relação com os conceitos (ruído do exportador).
 DISTRACTORS: Final[list[tuple[str, Any, str | None]]] = [
-    ("fcd", 17.86, "MPa"),  # resistência de cálculo: NÃO é fck
-    ("fct,m", 2.56, "MPa"),
     ("Volume", 0.36, "m3"),
     ("Peso específico", 25.0, "kN/m3"),
     ("Aço", "CA-50", None),
@@ -182,50 +153,51 @@ ELEMENTS: Final[list[tuple[str, str]]] = [
     ("IfcSlab", "L{n}"),
     ("IfcFooting", "S{n}"),
 ]
-FCK_CLASSES: Final[list[int]] = [20, 25, 30, 35, 40, 45, 50]
-# NBR 6118, tabela 7.2 (cobrimento nominal, Δc = 10 mm), viga/pilar e laje, por CAA.
-COVER_BY_CAA: Final[dict[str, dict[str, int]]] = {
-    "I": {"viga_pilar": 25, "laje": 20},
-    "II": {"viga_pilar": 30, "laje": 25},
-    "III": {"viga_pilar": 40, "laje": 35},
-    "IV": {"viga_pilar": 50, "laje": 45},
-}
-# Eurocódigo: classe C{fck}/{fck,cube}; o cubo não entra no gabarito.
-CUBE_OF: Final[dict[int, int]] = {20: 25, 25: 30, 30: 37, 35: 45, 40: 50, 45: 55, 50: 60}
-CAA_WRITTEN: Final[dict[str, list[str]]] = {
-    "I": ["I", "CAA I", "1", "Fraca"],
-    "II": ["II", "CAA II", "2", "Moderada"],
-    "III": ["III", "CAA III", "3", "Forte"],
-    "IV": ["IV", "CAA IV", "4", "Muito forte"],
-}
+
+
+def _trap_value(term: str, fck: int) -> tuple[Any, str | None]:
+    """Valor plausível de um não-sinônimo do dicionário (fcd, fct,m, ExposureClass)."""
+    if term == "fcd":
+        return _round(fck / 1.4, 2), "MPa"  # fcd = fck / γc, γc = 1,4
+    if term.startswith("fct"):
+        return _round(0.3 * fck ** (2 / 3), 2), "MPa"
+    return "XC2", None  # classe de exposição EN 206
 
 
 def _round(value: float, digits: int = 4) -> float:
     return float(round(value, digits))
 
 
-def _fck_written(rng: random.Random, fck: int, kind: CaseKind) -> tuple[Any, str | None]:
+def _fck_written(
+    rng: random.Random, fck: int, kind: CaseKind, vocab: Vocabulary
+) -> tuple[Any, str | None]:
     """Valor e unidade do fck como o exportador escreveria, para o tipo de caso.
 
     Conflito usa a unidade padrão: o único motivo de abstenção deve ser o conflito.
     """
+    target = vocab.target_unit["fck"]
     if kind in ("direto", "conflito"):
-        return float(fck), "MPa"
+        return float(fck), target
     if kind == "conversao":
-        unit = rng.choice(["Pa", "kN/cm²", "kgf/cm²"])
-        value = {"Pa": fck * 1e6, "kN/cm²": fck / 10, "kgf/cm²": fck / KGF_CM2_IN_MPA}[unit]
-        return _round(value, 2), unit
+        factors = vocab.conversions[str(target)]
+        unit = rng.choice(sorted(u for u in factors if u != target))
+        return _round(fck / factors[unit], 2), unit
     if kind == "classe":
-        return rng.choice([f"C{fck}", f"C{fck}/{CUBE_OF[fck]}"]), None
+        # NBR (C25), Eurocódigo (C25/30) e a grafia da fonte Daiane (C-25, A8-013).
+        return rng.choice([f"C{fck}", f"C{fck}/{vocab.cube_of[fck]}", f"C-{fck}"]), None
     return float(fck), None  # unidade_no_nome / abstencao_sem_unidade
 
 
-def _cover_written(rng: random.Random, cover_mm: int, kind: CaseKind) -> tuple[Any, str | None]:
+def _cover_written(
+    rng: random.Random, cover_mm: int, kind: CaseKind, vocab: Vocabulary
+) -> tuple[Any, str | None]:
+    target = vocab.target_unit["cobrimento"]
     if kind in ("direto", "conflito"):
-        return cover_mm, "mm"
+        return cover_mm, target
     if kind == "conversao":
-        unit = rng.choice(["cm", "m"])
-        return _round(cover_mm / (10 if unit == "cm" else 1000), 4), unit
+        factors = vocab.conversions[str(target)]
+        unit = rng.choice(sorted(u for u in factors if u != target))
+        return _round(cover_mm / factors[unit], 4), unit
     return cover_mm, None
 
 
@@ -238,57 +210,58 @@ def _kinds_for(concept: Concept) -> list[CaseKind]:
     return common  # CAA é categórica: sem unidade por natureza
 
 
-def _pick_name(rng: random.Random, names: list[str], kind: CaseKind) -> str:
-    """Nome do portador coerente com o tipo (unidade no nome só quando o caso pede)."""
+def _pick_name(
+    rng: random.Random, names: list[str], kind: CaseKind, unit: str | None, vocab: Vocabulary
+) -> str:
+    """Nome do portador coerente com o tipo: classe só para aliases do binding de derivação
+    (StrengthClass); unidade no nome só quando o caso pede."""
     with_unit = [n for n in names if "(" in n]
-    without = [n for n in names if "(" not in n and "Classe" not in n and "grade" not in n]
+    without = [n for n in names if "(" not in n and n not in vocab.class_terms]
     if kind == "unidade_no_nome":
-        return rng.choice(with_unit) if with_unit else f"{rng.choice(names)} (MPa)"
+        return rng.choice(with_unit) if with_unit else f"{rng.choice(without or names)} ({unit})"
     if kind == "classe":
-        classy = [n for n in names if "Classe" in n or "grade" in n]
+        classy = [n for n in names if n in vocab.class_terms]
         return rng.choice(classy or names)
     return rng.choice(without or names)
 
 
-def generate_case(seed: int, index: int, concept: Concept, kind: CaseKind) -> SyntheticCase:
-    """Um caso determinístico (mesmos argumentos → mesmo caso)."""
+def generate_case(
+    seed: int, index: int, concept: Concept, kind: CaseKind, vocab: Vocabulary = VOCAB
+) -> SyntheticCase:
+    """Um caso determinístico (mesmos argumentos e dicionário → mesmo caso)."""
     rng = random.Random(f"{seed}:{index}:{concept}:{kind}")
-    exporter = rng.choice(sorted(EXPORTERS))
-    vocab = EXPORTERS[exporter]
+    exporter = rng.choice(sorted(vocab.exporters))
+    terms = vocab.exporters[exporter]
     ifc_class, pattern = rng.choice(ELEMENTS)
     element_name = pattern.format(n=rng.randint(1, 40))
-    pset = vocab["pset"]
-    caa = rng.choice(sorted(COVER_BY_CAA))
-    cover = COVER_BY_CAA[caa]["laje" if ifc_class == "IfcSlab" else "viga_pilar"]
-    fck = rng.choice(FCK_CLASSES)
+    pset = terms["pset"]
+    caa = rng.choice(sorted(vocab.cover_by_caa))
+    cover = vocab.cover_by_caa[caa]["laje" if ifc_class == "IfcSlab" else "viga_pilar"]
+    fck = rng.choice(vocab.fck_classes)
 
     props: list[NativeProperty] = [
         NativeProperty(pset=pset, name=n, value=v, unit=u) for n, v, u in rng.sample(DISTRACTORS, 3)
     ]
     gold: GoldAnswer
-    target_unit = TARGET_UNIT[concept]
+    target_unit = vocab.target_unit[concept]
 
     if kind == "abstencao_ausente":
-        if concept == "fck" and not any(p.name == "fcd" for p in props):
-            props.append(
-                NativeProperty(pset=pset, name="fcd", value=_round(fck / 1.4, 2), unit="MPa")
-            )
+        # Não-sinônimo do dicionário (fcd para fck, ExposureClass para CAA) como armadilha.
+        for term in vocab.non_synonyms.get(concept, ())[:1]:
+            trap, trap_unit = _trap_value(term, fck)
+            props.append(NativeProperty(pset=pset, name=term, value=trap, unit=trap_unit))
         gold = GoldAnswer(outcome="abstencao", reason="ausente")
     else:
-        name = _pick_name(rng, vocab[concept], kind)
+        name = _pick_name(rng, terms[concept], kind, target_unit, vocab)
         if concept == "fck":
-            value, unit = _fck_written(rng, fck, kind)
+            value, unit = _fck_written(rng, fck, kind, vocab)
             gold_value: float | str = float(fck)
         elif concept == "cobrimento":
-            value, unit = _cover_written(rng, cover, kind)
+            value, unit = _cover_written(rng, cover, kind, vocab)
             gold_value = float(cover)
-            if kind == "unidade_no_nome" and "(" not in name:
-                name = f"{name} (mm)"
         else:
-            value, unit = rng.choice(CAA_WRITTEN[caa]), None
+            value, unit = rng.choice(vocab.caa_written[caa]), None
             gold_value = caa
-        if kind == "unidade_no_nome" and concept == "cobrimento":
-            name = name.replace("(MPa)", "(mm)")
         props.append(NativeProperty(pset=pset, name=name, value=value, unit=unit))
         source = f"{pset}.{name}"
         if kind == "abstencao_sem_unidade":
@@ -296,11 +269,11 @@ def generate_case(seed: int, index: int, concept: Concept, kind: CaseKind) -> Sy
         elif kind == "conflito":
             other_pset = f"{pset} (tipo)"
             if concept == "fck":
-                other: Any = float(rng.choice([c for c in FCK_CLASSES if c != fck]))
+                other: Any = float(rng.choice([c for c in vocab.fck_classes if c != fck]))
             elif concept == "cobrimento":
                 other = float(cover) + 10
             else:
-                other = rng.choice([k for k in CAA_WRITTEN if k != caa])
+                other = rng.choice([k for k in vocab.caa_written if k != caa])
             props.append(NativeProperty(pset=other_pset, name=name, value=other, unit=unit))
             gold = GoldAnswer(outcome="abstencao", reason="conflito")
         else:
@@ -320,14 +293,16 @@ def generate_case(seed: int, index: int, concept: Concept, kind: CaseKind) -> Sy
     )
 
 
-def generate_cases(seed: int = 20261028, per_kind: int = 4) -> list[SyntheticCase]:
+def generate_cases(
+    seed: int = 20261028, per_kind: int = 4, vocab: Vocabulary = VOCAB
+) -> list[SyntheticCase]:
     """Conjunto balanceado: ``per_kind`` casos para cada (conceito, tipo) admissível."""
     cases: list[SyntheticCase] = []
     index = 0
     for concept in CONCEPTS:
         for kind in _kinds_for(concept):
             for _ in range(per_kind):
-                cases.append(generate_case(seed, index, concept, kind))
+                cases.append(generate_case(seed, index, concept, kind, vocab))
                 index += 1
     return cases
 
@@ -349,22 +324,8 @@ def read_jsonl(path: Path) -> list[SyntheticCase]:
 
 # --- recuperação e formatos ----------------------------------------------------------
 
-# Vocabulário genérico do conceito (natureza legítima de estímulo: tipologia/schema),
-# usado só pela recuperação lexical. Não contém nomes de exportador do gabarito.
-CONCEPT_TERMS: Final[dict[Concept, tuple[str, ...]]] = {
-    "fck": (
-        "fck",
-        "resistencia",
-        "compressive",
-        "strength",
-        "concreto",
-        "concrete",
-        "classe",
-        "grade",
-    ),
-    "cobrimento": ("cobrimento", "cover", "cnom", "cob"),
-    "caa": ("caa", "agressividade", "aggressiveness", "exposure"),
-}
+# Termos genéricos do conceito = aliases ``search`` do dicionário (natureza legítima de
+# estímulo: tipologia/schema), usados só pela recuperação lexical.
 RETRIEVE_TOP_K: Final = 3
 
 
@@ -373,9 +334,11 @@ def _norm(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", ascii_text.lower()).strip()
 
 
-def retrieve(case: SyntheticCase, k: int = RETRIEVE_TOP_K) -> list[NativeProperty]:
+def retrieve(
+    case: SyntheticCase, k: int = RETRIEVE_TOP_K, vocab: Vocabulary = VOCAB
+) -> list[NativeProperty]:
     """Recuperação lexical determinística: termos do conceito no nome/Pset; empate pela ordem."""
-    terms = CONCEPT_TERMS[case.concept]
+    terms = vocab.search_terms[case.concept]
 
     def score(prop: NativeProperty) -> int:
         words = set(_norm(f"{prop.pset} {prop.name}").split())
@@ -414,18 +377,22 @@ def render_context(case: SyntheticCase, fmt: ContextFormat, scope: ContextScope)
     return "\n".join(lines)
 
 
-_CONCEPT_LABEL: Final[dict[Language, dict[Concept, str]]] = {
-    "pt": {
-        "fck": "resistência característica à compressão do concreto (fck), em MPa",
-        "cobrimento": "cobrimento nominal da armadura, em mm",
-        "caa": "classe de agressividade ambiental (CAA), em algarismos romanos I a IV",
-    },
-    "en": {
-        "fck": "characteristic compressive strength of concrete (fck), in MPa",
-        "cobrimento": "nominal concrete cover of the reinforcement, in mm",
-        "caa": "environmental aggressiveness class (CAA), as a Roman numeral I to IV",
-    },
+_UNIT_WORDS: Final[dict[Language, tuple[str, str]]] = {
+    "pt": ("em", "um dos códigos"),
+    "en": ("in", "one of the codes"),
 }
+
+
+def concept_label(concept: Concept, language: Language, vocab: Vocabulary = VOCAB) -> str:
+    """Rótulo do conceito no prompt, montado do dicionário: label + unidade ou códigos."""
+    label = vocab.labels[concept].get(language) or vocab.labels[concept]["pt"]
+    unit_word, codes_word = _UNIT_WORDS[language]
+    unit = vocab.target_unit[concept]
+    if unit:
+        return f"{label}, {unit_word} {unit}"
+    return f"{label}, {codes_word} {', '.join(vocab.codes.get(concept, ()))}"
+
+
 _INSTRUCTION: Final[dict[Language, str]] = {
     "pt": (
         "Entre as propriedades do elemento abaixo, encontre a que corresponde a: {label}. "
@@ -448,7 +415,7 @@ def build_prompt(
     """Prompt completo: instrução + schema compacto + contexto. Nunca contém o gabarito."""
     schema = json.dumps(output_json_schema(), ensure_ascii=False, separators=(",", ":"))
     instruction = _INSTRUCTION[language].format(
-        label=_CONCEPT_LABEL[language][case.concept], schema=schema
+        label=concept_label(case.concept, language), schema=schema
     )
     return f"{instruction}\n\n{render_context(case, fmt, scope)}"
 
