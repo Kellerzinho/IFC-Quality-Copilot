@@ -7,6 +7,26 @@
   },
   "paths": {
     "/api/v1/projects": {
+      "get": {
+        "tags": [
+          "projetos"
+        ],
+        "summary": "List Projects",
+        "description": "Lista os projetos salvos no armazenamento local (mais recentes primeiro).",
+        "operationId": "listProjects",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectList"
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
           "projetos"
@@ -1458,6 +1478,75 @@
         ],
         "title": "Project",
         "description": "Projeto com as duas linhas de modelo (arquitetura e estrutura)."
+      },
+      "ProjectList": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "const": "m4-plataforma-base/1",
+            "title": "Schema Version",
+            "default": "m4-plataforma-base/1"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectSummary"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "total",
+          "items"
+        ],
+        "title": "ProjectList",
+        "description": "Projetos do armazenamento local, do alterado mais recentemente ao mais antigo."
+      },
+      "ProjectSummary": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/ModelPairBinding"
+            },
+            "type": "array",
+            "title": "Models"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "name",
+          "created_at",
+          "updated_at",
+          "models"
+        ],
+        "title": "ProjectSummary",
+        "description": "Projeto salvo no armazenamento local, com as datas (UTC) e as duas linhas."
       },
       "ProposedSuggestion": {
         "additionalProperties": false,

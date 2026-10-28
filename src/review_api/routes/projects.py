@@ -14,6 +14,7 @@ from src.review_api.schemas import (
     CreateProjectRequest,
     ModelPairBinding,
     Project,
+    ProjectList,
 )
 
 router = APIRouter(prefix="/api/v1", tags=["projetos"])
@@ -41,6 +42,13 @@ def _registry(request: Request) -> ProjectRegistry:
 def create_project(body: CreateProjectRequest, request: Request) -> Project:
     """Cria projeto com as linhas arquitetura e estrutura vazias."""
     return _registry(request).create_project(body.name)
+
+
+@router.get("/projects", response_model=ProjectList, operation_id="listProjects")
+def list_projects(request: Request) -> ProjectList:
+    """Lista os projetos salvos no armazenamento local (mais recentes primeiro)."""
+    items = _registry(request).list_projects()
+    return ProjectList(total=len(items), items=items)
 
 
 @router.get(

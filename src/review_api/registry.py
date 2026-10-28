@@ -1,7 +1,9 @@
 """Registro de projetos e armazenamento de fontes por hash — PROVISÓRIO.
 
-Projetos e vínculos vivem em memória (persistência durável é M4-12/M6). Os
-bytes recebidos ficam em ``<data_root>/blobs/<sha256>.<ifc|ids>``, imutáveis.
+Projetos e vínculos ficam em memória e são gravados em SQLite local
+(``project_store.py``) a cada alteração, para reabrir depois de reiniciar a API;
+sessão, recibos e decisões duráveis continuam sendo M4-12/M6. Os bytes
+recebidos ficam em ``<data_root>/blobs/<sha256>.<ifc|ids>``, imutáveis.
 Leitura de IFC é síncrona e serializada por um lock; a API a executa em
 threadpool. A M6 prevê fila de jobs para esse trabalho.
 """
@@ -10,6 +12,7 @@ import hashlib
 import os
 import threading
 import uuid
+from datetime import datetime
 from pathlib import Path
 
 import ifcopenshell
@@ -18,6 +21,7 @@ from loguru import logger
 from src.review_api.elements import list_elements
 from src.review_api.errors import ApiProblem
 from src.review_api.legacy_adapter import compute_gaps
+from src.review_api.project_store import ProjectStore, utc_now
 from src.review_api.schemas import (
     ArtifactRole,
     ConfirmBindingRequest,
@@ -26,6 +30,7 @@ from src.review_api.schemas import (
     Gap,
     ModelPairBinding,
     Project,
+    ProjectSummary,
     SourceArtifactRef,
 )
 from src.translator.ids_parser import parse_ids
@@ -65,7 +70,12 @@ class ProjectRegistry:
     def __init__(self, data_root: Path) -> None:
         """Inicializa armazenamento e caches."""
         self.store = ArtifactStore(data_root)
+        self._db = ProjectStore(data_root)
         self._projects: dict[str, Project] = {}
+        self._dates: dict[str, tuple[datetime, datetime]] = {}
+        for stored in self._db.load_all():
+            self._projects[stored.project.project_id] = stored.project
+            self._dates[stored.project.project_id] = (stored.created_at, stored.updated_at)
         self._lock = threading.RLock()
         self._ifc_lock = threading.RLock()
         self._ifc_cache: dict[str, ifcopenshell.file] = {}
@@ -84,9 +94,27 @@ class ProjectRegistry:
             for discipline in _DISCIPLINES
         ]
         project = Project(project_id=project_id, name=name, models=models)
+        now = utc_now()
         with self._lock:
+            self._db.save(project, now, now)
             self._projects[project_id] = project
+            self._dates[project_id] = (now, now)
         return project
+
+    def list_projects(self) -> list[ProjectSummary]:
+        """Projetos salvos, do alterado mais recentemente ao mais antigo."""
+        with self._lock:
+            items = [
+                ProjectSummary(
+                    project_id=p.project_id,
+                    name=p.name,
+                    created_at=self._dates[p.project_id][0],
+                    updated_at=self._dates[p.project_id][1],
+                    models=p.models,
+                )
+                for p in self._projects.values()
+            ]
+        return sorted(items, key=lambda s: (s.updated_at, s.project_id), reverse=True)
 
     def get_project(self, project_id: str) -> Project:
         """Retorna o projeto ou 404."""
@@ -108,7 +136,12 @@ class ProjectRegistry:
         with self._lock:
             project = self._projects[binding.project_id]
             models = [binding if m.model_id == binding.model_id else m for m in project.models]
-            self._projects[binding.project_id] = project.model_copy(update={"models": models})
+            updated = project.model_copy(update={"models": models})
+            created_at = self._dates[binding.project_id][0]
+            now = utc_now()
+            self._db.save(updated, created_at, now)
+            self._projects[binding.project_id] = updated
+            self._dates[binding.project_id] = (created_at, now)
 
     # -- fontes -----------------------------------------------------------
 
