@@ -1,4 +1,7 @@
 // Painel direito: identidade completa do selecionado e suas lacunas PROVISÓRIAS.
+import { Check, Copy } from "lucide-react";
+import { useState } from "react";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DISCIPLINE_LABEL } from "@/shared/elementKey";
@@ -26,10 +29,41 @@ function formatarValor(v: ObservedValue | null | undefined): string {
 
 function Campo({ rotulo, children }: { rotulo: string; children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[8rem_1fr] gap-2 text-sm">
+    // Painel estreito (< 20rem): rótulo sobre o valor, para selos nowrap não vazarem.
+    <div className="grid gap-x-2 text-sm @[20rem]:grid-cols-[8rem_minmax(0,1fr)]">
       <dt className="text-muted-foreground">{rotulo}</dt>
-      <dd className="min-w-0 break-all">{children}</dd>
+      <dd className="min-w-0 break-words">{children}</dd>
     </div>
+  );
+}
+
+/** Valor longo (hash, chave) truncado com reticências; texto completo no title e no DOM. */
+function ValorCopiavel({ valor, rotulo, testId }: { valor: string; rotulo: string; testId?: string }) {
+  const [copiado, setCopiado] = useState(false);
+  return (
+    <span className="flex min-w-0 items-center gap-1">
+      <span className="min-w-0 truncate font-mono text-xs" title={valor} data-testid={testId}>
+        {valor}
+      </span>
+      <Button
+        size="icon"
+        variant="ghost"
+        className="size-6 shrink-0"
+        aria-label={copiado ? `${rotulo} copiada` : `Copiar ${rotulo}`}
+        title={copiado ? "Copiado" : `Copiar ${rotulo}`}
+        onClick={async () => {
+          try {
+            await navigator.clipboard.writeText(valor);
+            setCopiado(true);
+            setTimeout(() => setCopiado(false), 1500);
+          } catch {
+            setCopiado(false);
+          }
+        }}
+      >
+        {copiado ? <Check aria-hidden className="size-3.5" /> : <Copy aria-hidden className="size-3.5" />}
+      </Button>
+    </span>
   );
 }
 
@@ -101,9 +135,9 @@ export function DetailPanel({ linha, modelos, onIrPara }: Props) {
   const total = lacunas.resolvidas.length + lacunas.ambiguas.length;
 
   return (
-    <section aria-label="Detalhe" className="grid content-start gap-4 overflow-y-auto p-4">
+    <section aria-label="Detalhe" className="@container grid content-start gap-4 overflow-y-auto p-4">
       <header className="grid gap-1">
-        <h2 className="text-base font-semibold break-all" data-testid="detalhe-nome">
+        <h2 className="font-display text-2xl leading-tight break-words" data-testid="detalhe-nome">
           {record.name ?? "(sem nome)"}
         </h2>
         <p className="text-sm text-muted-foreground" data-testid="detalhe-arquivo">
@@ -111,18 +145,18 @@ export function DetailPanel({ linha, modelos, onIrPara }: Props) {
         </p>
       </header>
 
-      <dl className="grid gap-1">
+      <dl className="grid gap-2">
         <Campo rotulo="Classe IFC">{record.ifc_class}</Campo>
         <Campo rotulo="express_id">
-          <span data-testid="detalhe-express">{record.ref.express_id}</span>
-        </Campo>
-        <Campo rotulo="Revisão IFC">
-          <span className="font-mono text-xs" title={record.ref.ifc_revision_id}>
-            {record.ref.ifc_revision_id.slice(0, 16)}…
+          <span className="font-mono" data-testid="detalhe-express">
+            {record.ref.express_id}
           </span>
         </Campo>
+        <Campo rotulo="Revisão IFC">
+          <ValorCopiavel valor={record.ref.ifc_revision_id} rotulo="revisão IFC" />
+        </Campo>
         <Campo rotulo="GlobalId">
-          {record.global_id ?? "ausente"} <span className="text-xs text-muted-foreground">(atributo, não identidade)</span>
+          <span className="font-mono">{record.global_id ?? "ausente"}</span> <span className="text-xs text-muted-foreground">(atributo, não identidade)</span>
           {record.global_id_state === "duplicated_in_file" && (
             <Badge variant="destructive" className="ml-1">
               repetido neste arquivo
@@ -131,9 +165,7 @@ export function DetailPanel({ linha, modelos, onIrPara }: Props) {
         </Campo>
         <Campo rotulo="Geometria">{record.has_geometry ? "sim" : "Elemento sem geometria disponível"}</Campo>
         <Campo rotulo="Chave">
-          <span className="font-mono text-xs" data-testid="detalhe-chave">
-            {linha.chave}
-          </span>
+          <ValorCopiavel valor={linha.chave} rotulo="chave" testId="detalhe-chave" />
         </Campo>
       </dl>
 

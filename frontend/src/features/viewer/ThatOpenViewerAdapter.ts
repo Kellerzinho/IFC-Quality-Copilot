@@ -31,7 +31,11 @@ export const VIEWER_ASSETS = {
   fragmentsWorker: "/viewer/fragments-worker.mjs",
 } as const;
 
-const COR_DESTAQUE = new THREE.Color("#f59e0b");
+/** Cor de um token do tema (--viewer, --gold); o valor padrão vale se o token faltar. */
+function corDoTema(el: HTMLElement | null, token: string, padrao: string): THREE.Color {
+  const valor = el ? getComputedStyle(el).getPropertyValue(token).trim() : "";
+  return new THREE.Color(valor || padrao);
+}
 const OPACIDADE_RAIO_X = 0.15;
 /** Espessura do contorno do destaque, em px de tela. */
 const ESPESSURA_CONTORNO = 3;
@@ -95,6 +99,7 @@ export class ThatOpenViewerAdapter implements ViewerAdapter {
   private isolamento: Set<string> | null = null;
   private cancelados = new Set<string>();
   private removerClique: (() => void) | null = null;
+  private observadorTema: MutationObserver | null = null;
   /** Raio-X pedido por modelo — vale também para modelo que ainda está carregando. */
   private readonly raioXPedido = new Map<string, boolean>();
   private readonly memoriaRaioX: MemoriaRaioX = new WeakMap();
@@ -108,7 +113,7 @@ export class ThatOpenViewerAdapter implements ViewerAdapter {
     const world = components.get(OBC.Worlds).create<OBC.SimpleScene, OBC.SimpleCamera, OBC.SimpleRenderer>();
     world.scene = new OBC.SimpleScene(components);
     world.scene.setup();
-    world.scene.three.background = new THREE.Color("#f5f5f5");
+    world.scene.three.background = corDoTema(container, "--viewer", "#f5f5f5");
     world.renderer = new OBC.SimpleRenderer(components, container);
     world.camera = new OBC.SimpleCamera(components);
     components.init();
@@ -122,6 +127,14 @@ export class ThatOpenViewerAdapter implements ViewerAdapter {
     this.world = world;
     this.fragments = fragments;
     this.removerClique = this.instalarClique(world.renderer.three.domElement);
+    // Troca de tema (classe .dark no <html>) muda o fundo da cena e, com ele, a cor do contorno.
+    this.observadorTema = new MutationObserver(() => {
+      if (!this.world) return;
+      const fundo = corDoTema(container, "--viewer", "#f5f5f5");
+      this.world.scene.three.background = fundo;
+      this.contorno?.material.color.copy(corContorno(fundo));
+    });
+    this.observadorTema.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
   }
 
   private instalarClique(dom: HTMLCanvasElement): () => void {
@@ -247,7 +260,7 @@ export class ThatOpenViewerAdapter implements ViewerAdapter {
     const alvo = ref ? this.localDe(ref) : null;
     if (alvo) {
       await alvo.carregado.model.highlight([alvo.localId], {
-        color: COR_DESTAQUE,
+        color: corDoTema(this.container, "--gold", "#e4b750"),
         renderedFaces: FRAGS.RenderedFaces.TWO,
         opacity: 1,
         transparent: false,
@@ -370,6 +383,8 @@ export class ThatOpenViewerAdapter implements ViewerAdapter {
 
   async destruir(): Promise<void> {
     this.removerClique?.();
+    this.observadorTema?.disconnect();
+    this.observadorTema = null;
     this.removerContorno();
     this.conversor.encerrar();
     for (const id of [...this.modelos.keys()]) await this.descarregar(id);

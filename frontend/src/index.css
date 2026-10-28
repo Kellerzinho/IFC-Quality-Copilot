@@ -1,63 +1,106 @@
-/* Tema neutro do shadcn/ui — PROVISÓRIO: a escolha visual (claro / escuro / compacto) está pendente.
-   Fontes do sistema; nenhuma fonte, ícone ou CSS externo. */
+/* Tema "Oliva-Turquesa": proposta em avaliação; a escolha final de tema segue pendente
+   (plano M4 §13.4). Verde-oliva, azul-turquesa (arma de Engenharia) e ouro; códigos
+   aproximados, a conferir com o manual de identidade visual do Exército.
+   Tokens do tema (mesmos nomes no claro e no escuro) e, no @theme, o mapeamento para
+   os nomes do shadcn/ui. Fontes locais via @fontsource (OFL-1.1), sem CDN: a CSP só
+   permite 'self'. Papéis, contrastes e licenças: docs/m4-tema-visual.md.
+   Contraste AA dos pares de texto: tests/unit/contraste.test.ts. */
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "@fontsource/barlow-condensed/latin-600.css";
+@import "@fontsource-variable/ibm-plex-sans/wght.css";
+@import "@fontsource/ibm-plex-mono/latin-400.css";
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  color-scheme: light;
   --radius: 0.5rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --warning: oklch(0.769 0.188 70.08);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --bg: #f7f7f4;
+  --surface: #ffffff;
+  --sunken: #ebece6;
+  --line: #d8d8d1;
+  --ink: #1b1b18;
+  --muted: #555650;
+  --band: #292f0e;
+  --band-ink: #f7f7f4;
+  --band-muted: #d3dfa7;
+  --primary: #525b27;
+  --primary-ink: #ffffff;
+  --accent: #026266;
+  --accent-soft: #e1fdff;
+  --gold: #e4b750;
+  --gold-text: #6d5001;
+  --gold-soft: #fef6e5;
+  --danger: #b63b35;
+  --danger-soft: #fff4f2;
+  --viewer: #ebece6;
 }
 
+.dark {
+  color-scheme: dark;
+  --bg: #141511;
+  --surface: #1f201c;
+  --sunken: #2b2c28;
+  --line: #40403a;
+  --ink: #ebece6;
+  --muted: #a2a29b;
+  --band: #0f110a;
+  --band-ink: #ebece6;
+  --band-muted: #b9c58e;
+  --primary: #b9c58e;
+  --primary-ink: #191d0a;
+  --accent: #56d3da;
+  --accent-soft: #02494d;
+  --gold: #e4b750;
+  --gold-text: #ffd16b;
+  --gold-soft: #392800;
+  --danger: #f57569;
+  --danger-soft: #560507;
+  --viewer: #1b1b18;
+}
+
+/* Papéis: primary = botões primários; accent = seleção, links, foco e toggles ligados;
+   gold = números do resumo, filete sob a faixa e destaque 3D; danger = erro e GUID repetido. */
 @theme inline {
-  --font-sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --font-sans: "IBM Plex Sans Variable", ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-display: "Barlow Condensed", "Arial Narrow", ui-sans-serif, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--bg);
+  --color-foreground: var(--ink);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--ink);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--ink);
   --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
+  --color-primary-foreground: var(--primary-ink);
+  --color-secondary: var(--sunken);
+  --color-secondary-foreground: var(--ink);
+  --color-muted: var(--sunken);
+  --color-muted-foreground: var(--muted);
   --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-warning: var(--warning);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
+  --color-accent-soft: var(--accent-soft);
+  --color-destructive: var(--danger);
+  --color-destructive-soft: var(--danger-soft);
+  --color-gold: var(--gold);
+  --color-gold-text: var(--gold-text);
+  --color-gold-soft: var(--gold-soft);
+  --color-border: var(--line);
+  /* Borda de campo precisa de 3:1 contra a superfície; line não chega lá. */
+  --color-input: var(--muted);
+  --color-ring: var(--accent);
+  --color-band: var(--band);
+  --color-band-foreground: var(--band-ink);
+  --color-band-muted: var(--band-muted);
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring;
   }
   html,
   body,
@@ -66,5 +109,13 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }

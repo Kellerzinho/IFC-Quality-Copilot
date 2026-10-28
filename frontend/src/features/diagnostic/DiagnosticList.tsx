@@ -98,12 +98,12 @@ export function DiagnosticList({ modelos, linhas, filtros, onFiltros, selecionad
                 aria-current={ativa ? "true" : undefined}
                 onClick={() => onSelecionar(linha)}
                 className={cn(
-                  "grid w-full gap-0.5 rounded-md border border-transparent px-2 py-1.5 text-left text-sm hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",
-                  ativa && "border-primary bg-accent",
+                  "grid w-full gap-0.5 rounded-md border border-transparent px-2 py-1.5 text-left text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none",
+                  ativa && "border-accent bg-accent-soft hover:bg-accent-soft",
                 )}
               >
                 <span className="flex items-center gap-1.5">
-                  <Badge variant="outline" className="font-mono">
+                  <Badge variant="outline">
                     {DISCIPLINE_SHORT[linha.binding.discipline]}
                   </Badge>
                   <span className="truncate font-medium">{r.name ?? "(sem nome)"}</span>
@@ -114,9 +114,9 @@ export function DiagnosticList({ modelos, linhas, filtros, onFiltros, selecionad
                   )}
                 </span>
                 <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  {r.ifc_class} · #{r.ref.express_id}
+                  {r.ifc_class} · <span className="font-mono">#{r.ref.express_id}</span>
                   {r.global_id_state === "duplicated_in_file" && (
-                    <span className="inline-flex items-center gap-0.5" title="GlobalId repetido neste arquivo">
+                    <span className="inline-flex items-center gap-0.5 text-destructive" title="GlobalId repetido neste arquivo">
                       <Copy className="size-3" aria-hidden /> GUID repetido
                     </span>
                   )}

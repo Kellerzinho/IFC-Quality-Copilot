@@ -58,3 +58,28 @@ export function montarLinhas(modelos: ModeloRevisao[]): LinhaElemento[] {
 export function totalLacunas(l: LacunasDoElemento): number {
   return l.resolvidas.length + l.ambiguas.length;
 }
+
+export interface ResumoRevisao {
+  elementos: number;
+  /** null = nenhum modelo analisado (sem vínculo confirmado). */
+  lacunas: number | null;
+  ambiguas: number | null;
+  semGeometria: number;
+}
+
+/** Números da faixa de resumo, somando os modelos carregados. */
+export function resumirRevisao(modelos: ModeloRevisao[], linhas: LinhaElemento[]): ResumoRevisao {
+  const analisados = modelos.filter((m) => m.lacunas !== null);
+  const gaps = analisados.flatMap((m) => m.lacunas ?? []);
+  return {
+    elementos: linhas.length,
+    lacunas: analisados.length ? gaps.length : null,
+    ambiguas: analisados.length ? gaps.filter((g) => g.resolution === "ambiguous").length : null,
+    semGeometria: linhas.filter((l) => !l.record.has_geometry).length,
+  };
+}
+
+/** Rótulo no singular só para exatamente 1; zero e "—" (null) ficam no plural. */
+export function rotuloContagem(valor: number | null, singular: string, plural: string): string {
+  return valor === 1 ? singular : plural;
+}
