@@ -1,7 +1,7 @@
 # Estudo de formato de contexto — protocolo (rascunho para aprovação)
 
 > **Estado:** protocolo e ferramentas em dry-run, 28/10/2026. **Nenhuma inferência foi executada.**
-> O modo real do harness está bloqueado no código (`REAL_MODE_AUTHORIZED = False`) até autorização
+> O modo real está pronto e travado: só roda com `--real --confirmo-autorizacao "<registro>"` (§9), após autorização
 > registrada (plano M7, tarefa M7-10). Este estudo é um ensaio de desenvolvimento ligado à M7-08
 > (condições de contexto) e à M7-10 (triagem); não é a rodada congelada do benchmark e não troca
 > modelo de rodada nenhuma (D7-16).
@@ -110,7 +110,7 @@ Por célula (formato × escopo × idioma × modelo × quantização):
 uv run python scripts/estudo_formato_contexto.py gerar --seed 20261028 --por-tipo 4
 uv run python scripts/estudo_formato_contexto.py harness --dry-run
 # saídas em research/M7/estudo-formato-contexto/ (ignorado pelo git)
-uv run python scripts/estudo_formato_contexto.py harness --real   # recusado (código 2)
+uv run python scripts/estudo_formato_contexto.py harness --real   # sem --confirmo-autorizacao: recusado (código 2)
 ```
 
 ## 8. Dicionário provisório × formato do catálogo M1
