@@ -58,3 +58,6 @@ src/experiment/results/*
 !src/experiment/results/models.lock.json
 !src/experiment/results/2026-07-02-smoke/
 !src/experiment/results/2026-07-02-smoke-matriz/
+
+# M7 — estudo de formato de contexto (casos sintéticos e relatórios do dry-run)
+research/M7/estudo-formato-contexto/

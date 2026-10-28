@@ -1,0 +1,1650 @@
+{
+  "x_status": "PROVISÓRIO — aguardando o dicionário da Juliana / M1. Não é release do catálogo nem conteúdo aprovado.",
+  "x_formato": "Aproximação do pacote ifcqc-catalog-package v1 (data/catalogs/schemas/catalog-v1.json, branch codex/m1-domain-catalog) num único JSON; diferenças em docs/planejamento/apoios-modulo-07/estudo-formato-contexto.md §8.",
+  "manifest": {
+    "format": "ifcqc-catalog-package",
+    "format_version": 1,
+    "catalog": {
+      "catalog_id": "urn:uuid:f570cc2d-c382-5029-933a-db8c57360a1c",
+      "namespace": "ifcqc.provisorio",
+      "namespace_status": "provisional",
+      "name": "Dicionário provisório — concreto estrutural (fck, cobrimento, CAA)",
+      "maintainer": "Nonato (M7)",
+      "language": "pt-BR",
+      "description": "Insumo do estudo M7-08 de formato de contexto."
+    },
+    "version": "0.1.0",
+    "created_at": "2026-10-28T00:00:00Z",
+    "content_origin": "synthetic_fixture",
+    "declared_schemas": [
+      "IFC2X3",
+      "IFC4"
+    ],
+    "terms": [
+      {
+        "component": "conteúdo",
+        "terms": "Uso interno de pesquisa; normas ABNT citadas por seção, sem reprodução."
+      }
+    ]
+  },
+  "source_artifacts": [
+    {
+      "id": "abnt:nbr6118-2023",
+      "title": "ABNT NBR 6118:2023 — Projeto de estruturas de concreto",
+      "artifact_type": "dictionary_snapshot",
+      "authors": [
+        "ABNT"
+      ],
+      "issued": "2023",
+      "terms": "Norma ABNT; citada por seção, sem reprodução de texto",
+      "notes": "Não adquirida no repositório; seções citadas a conferir pela curadoria M1."
+    },
+    {
+      "id": "abnt:nbr8953-2015",
+      "title": "ABNT NBR 8953:2015 — Concreto para fins estruturais — Classificação pela massa específica, por grupos de resistência e consistência",
+      "artifact_type": "dictionary_snapshot",
+      "authors": [
+        "ABNT"
+      ],
+      "issued": "2015",
+      "terms": "Norma ABNT; citada por seção, sem reprodução de texto",
+      "notes": "Não adquirida no repositório; seções a conferir."
+    },
+    {
+      "id": "bsi:ifc4-add2-tc1",
+      "title": "IFC4 ADD2 TC1 — Pset_ConcreteElementGeneral e Pset_MaterialConcrete",
+      "artifact_type": "dictionary_snapshot",
+      "authors": [
+        "buildingSMART International"
+      ],
+      "issued": "2017",
+      "location": "https://standards.buildingsmart.org/IFC/RELEASE/IFC4/ADD2_TC1/HTML/",
+      "terms": "Documentação pública do schema"
+    },
+    {
+      "id": "dai2025:dissertacao",
+      "title": "Dissertação Daiane (2025), Apêndice A — matriz canônica M3",
+      "artifact_type": "dissertation",
+      "terms": "Uso acadêmico; transcrição conferida pela pesquisa M3",
+      "location": "docs/pesquisa/modulo-03-contexto/matriz-canonica.json"
+    },
+    {
+      "id": "ifcqc:mapear-propriedades-termos",
+      "title": "Termos de busca do inventário de propriedades (scripts/mapear_propriedades.py, branch M3)",
+      "artifact_type": "research_matrix",
+      "terms": "Código do projeto",
+      "notes": "Lista DEFAULT_TERMS; inventário, não prova de equivalência."
+    }
+  ],
+  "source_assertions": [
+    {
+      "id": "abnt:nbr6118-2023.s8.2.1",
+      "source_artifact_id": "abnt:nbr6118-2023",
+      "locator": {
+        "table": "seção 8.2.1 (classes)"
+      },
+      "category": "metadata",
+      "target_literal": "fck — resistência característica à compressão do concreto",
+      "transcription_status": "registered",
+      "notes": [
+        "Classes conforme ABNT NBR 8953."
+      ]
+    },
+    {
+      "id": "abnt:nbr6118-2023.t7.1",
+      "source_artifact_id": "abnt:nbr6118-2023",
+      "locator": {
+        "table": "Tabela 7.1"
+      },
+      "category": "metadata",
+      "target_literal": "Classe de concreto mínima por CAA (concreto armado: I C20, II C25, III C30, IV C40)",
+      "transcription_status": "registered",
+      "notes": []
+    },
+    {
+      "id": "abnt:nbr6118-2023.t7.2",
+      "source_artifact_id": "abnt:nbr6118-2023",
+      "locator": {
+        "table": "Tabela 7.2"
+      },
+      "category": "metadata",
+      "target_literal": "Cobrimento nominal (Δc = 10 mm) por CAA e tipo de elemento",
+      "unit_literal": "mm",
+      "transcription_status": "registered",
+      "notes": [
+        "Seção 7.4.7 (cobrimento)."
+      ]
+    },
+    {
+      "id": "abnt:nbr6118-2023.t6.1",
+      "source_artifact_id": "abnt:nbr6118-2023",
+      "locator": {
+        "table": "Tabela 6.1"
+      },
+      "category": "metadata",
+      "target_literal": "Classe de agressividade ambiental (CAA): I fraca, II moderada, III forte, IV muito forte",
+      "transcription_status": "registered",
+      "notes": [
+        "Seção 6.4."
+      ]
+    },
+    {
+      "id": "abnt:nbr6118-2023.s12.3.3",
+      "source_artifact_id": "abnt:nbr6118-2023",
+      "locator": {
+        "table": "seção 12.3.3"
+      },
+      "category": "metadata",
+      "target_literal": "fcd = fck / γc (resistência de cálculo)",
+      "transcription_status": "registered",
+      "notes": [
+        "Base do não-sinônimo fck × fcd (M1 §2.2)."
+      ]
+    },
+    {
+      "id": "abnt:nbr8953-2015.t1",
+      "source_artifact_id": "abnt:nbr8953-2015",
+      "locator": {
+        "table": "Tabela 1 (Grupo I)"
+      },
+      "category": "metadata",
+      "target_literal": "Classes de resistência do Grupo I: C20 a C50 (fck em MPa)",
+      "transcription_status": "registered",
+      "notes": []
+    },
+    {
+      "id": "bsi:ifc4-add2-tc1.ConcreteElementGeneral",
+      "source_artifact_id": "bsi:ifc4-add2-tc1",
+      "locator": {
+        "xml_path": "Pset_ConcreteElementGeneral"
+      },
+      "category": "standard_property",
+      "target_literal": "StrengthClass; ConcreteCover; ExposureClass",
+      "set_literal": "Pset_ConcreteElementGeneral",
+      "transcription_status": "registered",
+      "notes": [
+        "ExposureClass segue a EN 206 (XC1…), não a CAA da NBR 6118."
+      ]
+    },
+    {
+      "id": "bsi:ifc4-add2-tc1.MaterialConcrete",
+      "source_artifact_id": "bsi:ifc4-add2-tc1",
+      "locator": {
+        "xml_path": "Pset_MaterialConcrete"
+      },
+      "category": "material",
+      "target_literal": "CompressiveStrength",
+      "set_literal": "Pset_MaterialConcrete",
+      "datatype_literal": "IfcPressureMeasure",
+      "transcription_status": "registered",
+      "notes": []
+    },
+    {
+      "id": "dai2025:dissertacao.A8-013",
+      "source_artifact_id": "dai2025:dissertacao",
+      "locator": {
+        "printed_page": 168,
+        "row_ref": "A8-013"
+      },
+      "category": "standard_property",
+      "target_literal": "StrengthClass",
+      "set_literal": "Pset_ConcreteElementGeneral",
+      "datatype_literal": "Texto (IfcLabel)",
+      "domain_literal_json": "[\"C-25\"]",
+      "transcription_status": "checked_by_research",
+      "notes": [
+        "Também A7-015 (IfcSlab) e A9-014 (IfcBeam)."
+      ]
+    },
+    {
+      "id": "ifcqc:mapear-propriedades-termos.DEFAULT_TERMS",
+      "source_artifact_id": "ifcqc:mapear-propriedades-termos",
+      "locator": {
+        "row_ref": "DEFAULT_TERMS"
+      },
+      "category": "metadata",
+      "target_literal": "fck, resistencia, concreto, classe, cobrimento, agressividade, caa, strength, cover, exposure",
+      "transcription_status": "registered",
+      "notes": []
+    }
+  ],
+  "concepts": [
+    {
+      "id": "urn:uuid:197dec34-fe26-5705-b53e-713174a17f60",
+      "code": "CONCRETO_FCK",
+      "logical_type": "decimal",
+      "dimension": "pressure",
+      "unit_id": "urn:uuid:da77ecae-bab9-5516-985f-07fbd4d16cdc",
+      "labels": [
+        {
+          "lang": "pt-BR",
+          "text": "Resistência característica à compressão do concreto (fck)"
+        },
+        {
+          "lang": "en",
+          "text": "Characteristic compressive strength of concrete (fck)"
+        }
+      ],
+      "definition": [
+        {
+          "lang": "pt-BR",
+          "text": "Valor característico da resistência à compressão do concreto aos 28 dias, que define a classe de resistência (C20 = 20 MPa)."
+        }
+      ],
+      "qualifiers": [
+        {
+          "name": "chave_estudo",
+          "value": "fck"
+        },
+        {
+          "name": "nome_padronizado",
+          "value": "EB_Orçamento.Concreto_fck_MPa"
+        }
+      ],
+      "source_assertion_ids": [
+        "abnt:nbr6118-2023.s8.2.1",
+        "abnt:nbr8953-2015.t1"
+      ],
+      "lifecycle": "draft",
+      "notes": "fcd (resistência de cálculo) e fct (tração) NÃO são sinônimos (M1 §2.2)."
+    },
+    {
+      "id": "urn:uuid:f2f6a36d-b866-5c31-b009-320b303c3c54",
+      "code": "COBRIMENTO_NOMINAL",
+      "logical_type": "decimal",
+      "dimension": "length",
+      "unit_id": "urn:uuid:c04d9ef5-fda7-5392-8e1d-6b4e86bcfbf7",
+      "labels": [
+        {
+          "lang": "pt-BR",
+          "text": "Cobrimento nominal da armadura (cnom)"
+        },
+        {
+          "lang": "en",
+          "text": "Nominal concrete cover (cnom)"
+        }
+      ],
+      "definition": [
+        {
+          "lang": "pt-BR",
+          "text": "Espessura de concreto entre a face externa da armadura mais próxima e a superfície do elemento, cobrimento mínimo acrescido da tolerância Δc."
+        }
+      ],
+      "qualifiers": [
+        {
+          "name": "chave_estudo",
+          "value": "cobrimento"
+        },
+        {
+          "name": "nome_padronizado",
+          "value": "EB_Orçamento.Cobrimento_Nominal_mm"
+        }
+      ],
+      "source_assertion_ids": [
+        "abnt:nbr6118-2023.t7.2"
+      ],
+      "lifecycle": "draft"
+    },
+    {
+      "id": "urn:uuid:6933a03b-0775-57f5-a864-f22b7ac31f66",
+      "code": "CLASSE_AGRESSIVIDADE_AMBIENTAL",
+      "logical_type": "code",
+      "value_set_id": "urn:uuid:1c536294-c335-5a70-90fb-e17748677962",
+      "labels": [
+        {
+          "lang": "pt-BR",
+          "text": "Classe de agressividade ambiental (CAA)"
+        },
+        {
+          "lang": "en",
+          "text": "Environmental aggressiveness class (CAA)"
+        }
+      ],
+      "definition": [
+        {
+          "lang": "pt-BR",
+          "text": "Classificação do ambiente de exposição da estrutura, de I (fraca) a IV (muito forte), que fixa cobrimento e classe mínima de concreto."
+        }
+      ],
+      "qualifiers": [
+        {
+          "name": "chave_estudo",
+          "value": "caa"
+        },
+        {
+          "name": "nome_padronizado",
+          "value": "EB_Orçamento.Classe_Agressividade"
+        }
+      ],
+      "source_assertion_ids": [
+        "abnt:nbr6118-2023.t6.1"
+      ],
+      "lifecycle": "draft"
+    }
+  ],
+  "units": [
+    {
+      "id": "urn:uuid:da77ecae-bab9-5516-985f-07fbd4d16cdc",
+      "symbol": "MPa",
+      "dimension": "pressure",
+      "labels": [
+        {
+          "lang": "pt-BR",
+          "text": "megapascal"
+        }
+      ],
+      "reference": "SI",
+      "lifecycle": "draft"
+    },
+    {
+      "id": "urn:uuid:c04d9ef5-fda7-5392-8e1d-6b4e86bcfbf7",
+      "symbol": "mm",
+      "dimension": "length",
+      "labels": [
+        {
+          "lang": "pt-BR",
+          "text": "milímetro"
+        }
+      ],
+      "reference": "SI",
+      "lifecycle": "draft"
+    }
+  ],
+  "value_sets": [
+    {
+      "id": "urn:uuid:1c536294-c335-5a70-90fb-e17748677962",
+      "value_type": "code",
+      "ordered": true,
+      "lifecycle": "draft",
+      "source_assertion_ids": [
+        "abnt:nbr6118-2023.t6.1"
+      ],
+      "values": [
+        {
+          "code": "I",
+          "labels": [
+            {
+              "lang": "pt-BR",
+              "text": "Fraca"
+            },
+            {
+              "lang": "en",
+              "text": "Weak"
+            }
+          ]
+        },
+        {
+          "code": "II",
+          "labels": [
+            {
+              "lang": "pt-BR",
+              "text": "Moderada"
+            },
+            {
+              "lang": "en",
+              "text": "Moderate"
+            }
+          ]
+        },
+        {
+          "code": "III",
+          "labels": [
+            {
+              "lang": "pt-BR",
+              "text": "Forte"
+            },
+            {
+              "lang": "en",
+              "text": "Strong"
+            }
+          ]
+        },
+        {
+          "code": "IV",
+          "labels": [
+            {
+              "lang": "pt-BR",
+              "text": "Muito forte"
+            },
+            {
+              "lang": "en",
+              "text": "Very strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "urn:uuid:1ba55e78-02af-5734-a3cc-d191409b941c",
+      "value_type": "code",
+      "ordered": true,
+      "lifecycle": "draft",
+      "source_assertion_ids": [
+        "abnt:nbr8953-2015.t1"
+      ],
+      "values": [
+        {
+          "code": "C20",
+          "labels": [
+            {
+              "lang": "pt-BR",
+              "text": "fck = 20 MPa"
+            }
+          ]
+        },
+        {
+          "code": "C25",
+          "labels": [
+            {
+              "lang": "pt-BR",
+              "text": "fck = 25 MPa"
+            }
+          ]
+        },
+        {
+          "code": "C30",
+          "labels": [
+            {
+              "lang": "pt-BR",
+              "text": "fck = 30 MPa"
+            }
+          ]
+        },
+        {
+          "code": "C35",
+          "labels": [
+            {
+              "lang": "pt-BR",
+              "text": "fck = 35 MPa"
+            }
+          ]
+        },
+        {
+          "code": "C40",
+          "labels": [
+            {
+              "lang": "pt-BR",
+              "text": "fck = 40 MPa"
+            }
+          ]
+        },
+        {
+          "code": "C45",
+          "labels": [
+            {
+              "lang": "pt-BR",
+              "text": "fck = 45 MPa"
+            }
+          ]
+        },
+        {
+          "code": "C50",
+          "labels": [
+            {
+              "lang": "pt-BR",
+              "text": "fck = 50 MPa"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "applicability_rules": [
+    {
+      "id": "urn:uuid:57c4fd48-d524-5739-b869-457ce6528576",
+      "entity_classes": [
+        "IfcBeam",
+        "IfcColumn",
+        "IfcFooting",
+        "IfcSlab"
+      ],
+      "include_subtypes": true,
+      "lifecycle": "draft",
+      "notes": "Elementos de concreto do recorte estrutural (Daiane A7–A9 e sapatas)."
+    }
+  ],
+  "bindings": [
+    {
+      "id": "urn:uuid:eab09e45-65f5-56eb-b053-93c53a59b60c",
+      "concept_id": "urn:uuid:197dec34-fe26-5705-b53e-713174a17f60",
+      "applicability_rule_id": "urn:uuid:57c4fd48-d524-5739-b869-457ce6528576",
+      "declared_schemas": [
+        "IFC2X3",
+        "IFC4"
+      ],
+      "carrier_kind": "property",
+      "set_name": "EB_Orçamento",
+      "set_kind": "custom",
+      "field_name": "Concreto_fck_MPa",
+      "ifc_type": "IfcReal",
+      "scope": "occurrence_or_type",
+      "carrier_status": "pending_reconciliation",
+      "value_set_id": null,
+      "write_enabled": false,
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Nome padronizado proposto; unidade no nome, como Espessura_VergaContraverga_cm (Daiane A2-019).",
+      "x_relacao": "portador_padronizado"
+    },
+    {
+      "id": "urn:uuid:1d48bda7-d2ab-567b-b8e5-2147c9906f22",
+      "concept_id": "urn:uuid:197dec34-fe26-5705-b53e-713174a17f60",
+      "applicability_rule_id": "urn:uuid:57c4fd48-d524-5739-b869-457ce6528576",
+      "declared_schemas": [
+        "IFC2X3",
+        "IFC4"
+      ],
+      "carrier_kind": "property",
+      "set_name": "Pset_ConcreteElementGeneral",
+      "set_kind": "standard",
+      "field_name": "StrengthClass",
+      "ifc_type": "IfcLabel",
+      "scope": "occurrence_or_type",
+      "carrier_status": "pending_reconciliation",
+      "value_set_id": "urn:uuid:1ba55e78-02af-5734-a3cc-d191409b941c",
+      "write_enabled": false,
+      "source_assertion_ids": [
+        "bsi:ifc4-add2-tc1.ConcreteElementGeneral",
+        "dai2025:dissertacao.A8-013"
+      ],
+      "lifecycle": "draft",
+      "notes": "Classe (C25, C25/30, C-25) → fck por regra; não é o mesmo campo.",
+      "x_relacao": "derivacao"
+    },
+    {
+      "id": "urn:uuid:f74e5996-683d-5646-99a3-1ec543330cdf",
+      "concept_id": "urn:uuid:197dec34-fe26-5705-b53e-713174a17f60",
+      "applicability_rule_id": "urn:uuid:57c4fd48-d524-5739-b869-457ce6528576",
+      "declared_schemas": [
+        "IFC2X3",
+        "IFC4"
+      ],
+      "carrier_kind": "material",
+      "set_name": "Pset_MaterialConcrete",
+      "set_kind": "standard",
+      "field_name": "CompressiveStrength",
+      "ifc_type": "IfcPressureMeasure",
+      "scope": "occurrence_or_type",
+      "carrier_status": "pending_reconciliation",
+      "value_set_id": null,
+      "write_enabled": false,
+      "source_assertion_ids": [
+        "bsi:ifc4-add2-tc1.MaterialConcrete"
+      ],
+      "lifecycle": "draft",
+      "notes": "Resistência do material; pode não ser o valor característico. Exige reconciliação.",
+      "x_relacao": "relacionado_nao_equivalente"
+    },
+    {
+      "id": "urn:uuid:d832f0a3-aa88-54b7-9eae-47634dcaa68e",
+      "concept_id": "urn:uuid:f2f6a36d-b866-5c31-b009-320b303c3c54",
+      "applicability_rule_id": "urn:uuid:57c4fd48-d524-5739-b869-457ce6528576",
+      "declared_schemas": [
+        "IFC2X3",
+        "IFC4"
+      ],
+      "carrier_kind": "property",
+      "set_name": "EB_Orçamento",
+      "set_kind": "custom",
+      "field_name": "Cobrimento_Nominal_mm",
+      "ifc_type": "IfcReal",
+      "scope": "occurrence_or_type",
+      "carrier_status": "pending_reconciliation",
+      "value_set_id": null,
+      "write_enabled": false,
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": null,
+      "x_relacao": "portador_padronizado"
+    },
+    {
+      "id": "urn:uuid:d76b815c-af1e-5d5f-82cd-cb8a4b3f9be9",
+      "concept_id": "urn:uuid:f2f6a36d-b866-5c31-b009-320b303c3c54",
+      "applicability_rule_id": "urn:uuid:57c4fd48-d524-5739-b869-457ce6528576",
+      "declared_schemas": [
+        "IFC2X3",
+        "IFC4"
+      ],
+      "carrier_kind": "property",
+      "set_name": "Pset_ConcreteElementGeneral",
+      "set_kind": "standard",
+      "field_name": "ConcreteCover",
+      "ifc_type": "IfcPositiveLengthMeasure",
+      "scope": "occurrence_or_type",
+      "carrier_status": "pending_reconciliation",
+      "value_set_id": null,
+      "write_enabled": false,
+      "source_assertion_ids": [
+        "bsi:ifc4-add2-tc1.ConcreteElementGeneral"
+      ],
+      "lifecycle": "draft",
+      "notes": "Ausente no IFC2X3; existe no IFC4.",
+      "x_relacao": "portador_padronizado"
+    },
+    {
+      "id": "urn:uuid:aee21c69-9726-53d2-ba63-a5ea9c3c99a2",
+      "concept_id": "urn:uuid:6933a03b-0775-57f5-a864-f22b7ac31f66",
+      "applicability_rule_id": "urn:uuid:57c4fd48-d524-5739-b869-457ce6528576",
+      "declared_schemas": [
+        "IFC2X3",
+        "IFC4"
+      ],
+      "carrier_kind": "property",
+      "set_name": "EB_Orçamento",
+      "set_kind": "custom",
+      "field_name": "Classe_Agressividade",
+      "ifc_type": "IfcLabel",
+      "scope": "occurrence_or_type",
+      "carrier_status": "pending_reconciliation",
+      "value_set_id": "urn:uuid:1c536294-c335-5a70-90fb-e17748677962",
+      "write_enabled": false,
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": null,
+      "x_relacao": "portador_padronizado"
+    },
+    {
+      "id": "urn:uuid:5cbb50a6-4ed2-55c8-bbef-1ce5860a266b",
+      "concept_id": "urn:uuid:6933a03b-0775-57f5-a864-f22b7ac31f66",
+      "applicability_rule_id": "urn:uuid:57c4fd48-d524-5739-b869-457ce6528576",
+      "declared_schemas": [
+        "IFC2X3",
+        "IFC4"
+      ],
+      "carrier_kind": "property",
+      "set_name": "Pset_ConcreteElementGeneral",
+      "set_kind": "standard",
+      "field_name": "ExposureClass",
+      "ifc_type": "IfcLabel",
+      "scope": "occurrence_or_type",
+      "carrier_status": "pending_reconciliation",
+      "value_set_id": null,
+      "write_enabled": false,
+      "source_assertion_ids": [
+        "bsi:ifc4-add2-tc1.ConcreteElementGeneral"
+      ],
+      "lifecycle": "draft",
+      "notes": "Classes EN 206 (XC1…XA3) ≠ CAA NBR 6118; correspondência exige tabela aprovada.",
+      "x_relacao": "relacionado_nao_equivalente"
+    }
+  ],
+  "aliases": [
+    {
+      "id": "urn:uuid:c6fb6c46-b11e-5d5f-92fe-ec7d6110a5f9",
+      "term": "fck",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "Dados estruturais"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:eab09e45-65f5-56eb-b053-93c53a59b60c",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador revit_br (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:402d976c-612d-5d68-9976-973ada80f58d",
+      "term": "Resistência característica do concreto",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "Dados estruturais"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:eab09e45-65f5-56eb-b053-93c53a59b60c",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador revit_br (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:42cbfb4c-d86e-5822-b95d-5491bafb4338",
+      "term": "FCK (MPa)",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "Dados estruturais"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:eab09e45-65f5-56eb-b053-93c53a59b60c",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador revit_br (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:9263140d-71f0-5761-91b1-2ad1e8792dfb",
+      "term": "Cobrimento",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "Dados estruturais"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:d832f0a3-aa88-54b7-9eae-47634dcaa68e",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador revit_br (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:818e0462-131f-5284-bdd0-e8d0f6a4d533",
+      "term": "Cobrimento nominal",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "Dados estruturais"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:d832f0a3-aa88-54b7-9eae-47634dcaa68e",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador revit_br (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:c3c8cd22-5a7c-5ce2-be2c-e4a438241d14",
+      "term": "Cobrimento (mm)",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "Dados estruturais"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:d832f0a3-aa88-54b7-9eae-47634dcaa68e",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador revit_br (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:a746269a-3203-5713-b911-0998ce56c667",
+      "term": "Classe de agressividade",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "Dados estruturais"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:aee21c69-9726-53d2-ba63-a5ea9c3c99a2",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador revit_br (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:6500b766-65b3-5517-849a-681612ad1495",
+      "term": "CAA",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "Dados estruturais"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:aee21c69-9726-53d2-ba63-a5ea9c3c99a2",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador revit_br (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:ce6eac64-d056-5f0a-8219-fee78f86371d",
+      "term": "FCK",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "TQS_Concreto"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:eab09e45-65f5-56eb-b053-93c53a59b60c",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador tqs (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:0cca950d-a250-5c81-a924-33c473a7cdcd",
+      "term": "Fck_Concreto",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "TQS_Concreto"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:eab09e45-65f5-56eb-b053-93c53a59b60c",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador tqs (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:4a61e967-30d1-59cf-ae54-ead8cf6d8345",
+      "term": "Classe do concreto",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "TQS_Concreto"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:1d48bda7-d2ab-567b-b8e5-2147c9906f22",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador tqs (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:a0c9a4db-7476-5f36-9127-d239edec0980",
+      "term": "COBRIMENTO",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "TQS_Concreto"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:d832f0a3-aa88-54b7-9eae-47634dcaa68e",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador tqs (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:52ae4eeb-a41b-50e8-a3b0-d8b552b5c98a",
+      "term": "Cnom",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "TQS_Concreto"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:d832f0a3-aa88-54b7-9eae-47634dcaa68e",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador tqs (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:b38de070-e237-55dd-837b-c3ed8a565455",
+      "term": "CAA",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "TQS_Concreto"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:aee21c69-9726-53d2-ba63-a5ea9c3c99a2",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador tqs (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:fe620098-f2db-53ac-8172-6d2497daa4e8",
+      "term": "AGRESSIVIDADE",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "TQS_Concreto"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:aee21c69-9726-53d2-ba63-a5ea9c3c99a2",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador tqs (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:431867ba-b90e-55f1-a270-12e9fbdc28c0",
+      "term": "fck (MPa)",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "Eberick"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:eab09e45-65f5-56eb-b053-93c53a59b60c",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador eberick (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:821886fb-a94c-57d5-8f37-cc9827c14a6f",
+      "term": "Resistencia_Concreto",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "Eberick"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:eab09e45-65f5-56eb-b053-93c53a59b60c",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador eberick (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:e0b1aa83-31fa-5039-bce4-949402e61e60",
+      "term": "Classe de resistência",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "Eberick"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:1d48bda7-d2ab-567b-b8e5-2147c9906f22",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador eberick (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:532c3b87-2baf-5185-8f52-3e9388ffa2fd",
+      "term": "Cobrimento armadura",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "Eberick"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:d832f0a3-aa88-54b7-9eae-47634dcaa68e",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador eberick (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:9889f63f-cf55-543c-a880-a4fdf022e4dd",
+      "term": "cob",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "Eberick"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:d832f0a3-aa88-54b7-9eae-47634dcaa68e",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador eberick (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:6852e92e-aa8e-5635-b556-cf376eaf1c4a",
+      "term": "Classe Agressividade Ambiental",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "Eberick"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:aee21c69-9726-53d2-ba63-a5ea9c3c99a2",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador eberick (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:1aca8b33-6cf9-5361-87d5-ed547dea3f48",
+      "term": "Concrete grade",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "Tekla Common"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:1d48bda7-d2ab-567b-b8e5-2147c9906f22",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador tekla (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:5a33f1c0-7495-5666-9ce9-49baa313245f",
+      "term": "CONCRETE_STRENGTH",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "Tekla Common"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:eab09e45-65f5-56eb-b053-93c53a59b60c",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador tekla (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:8490916d-a106-507a-822b-89e7734bd19e",
+      "term": "Concrete cover",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "Tekla Common"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:d832f0a3-aa88-54b7-9eae-47634dcaa68e",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador tekla (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:7de89bf7-db38-5daa-89ed-3b50b267d4af",
+      "term": "COVER_THICKNESS",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "Tekla Common"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:d832f0a3-aa88-54b7-9eae-47634dcaa68e",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador tekla (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:724c2ba3-18db-5e9a-a6f2-f5ad403b0bd4",
+      "term": "Exposure class",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "Tekla Common"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:aee21c69-9726-53d2-ba63-a5ea9c3c99a2",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador tekla (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:6d100c92-c0db-59f3-a2c8-cbc4266403d2",
+      "term": "CompressiveStrength",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "Pset_ConcreteElementGeneral"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:eab09e45-65f5-56eb-b053-93c53a59b60c",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador generico_en (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:b5682ad0-923d-5fd8-b2e5-c365e74f455a",
+      "term": "CharacteristicStrength",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "Pset_ConcreteElementGeneral"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:eab09e45-65f5-56eb-b053-93c53a59b60c",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador generico_en (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:274ea8e6-0079-5ec2-87a3-d8c6525b15ed",
+      "term": "StrengthClass",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "Pset_ConcreteElementGeneral"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:1d48bda7-d2ab-567b-b8e5-2147c9906f22",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador generico_en (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:661ab16a-d16c-5356-9154-ebd74968350b",
+      "term": "ConcreteCover",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "Pset_ConcreteElementGeneral"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:d832f0a3-aa88-54b7-9eae-47634dcaa68e",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador generico_en (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:983491f8-b39f-586c-a3e5-4ed6e4a87774",
+      "term": "NominalCover",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "Pset_ConcreteElementGeneral"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:d832f0a3-aa88-54b7-9eae-47634dcaa68e",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador generico_en (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:65d77193-b113-5fc7-bd70-4444fe88c3e7",
+      "term": "EnvironmentalAggressivenessClass",
+      "lang": null,
+      "purpose": "representation_match",
+      "scope": {
+        "set_names": [
+          "Pset_ConcreteElementGeneral"
+        ],
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": null,
+      "target_binding_id": "urn:uuid:aee21c69-9726-53d2-ba63-a5ea9c3c99a2",
+      "source_assertion_ids": [],
+      "lifecycle": "draft",
+      "notes": "Grafia do exportador generico_en (sintética, a confirmar no inventário M3)."
+    },
+    {
+      "id": "urn:uuid:454eb494-59d0-54d1-bd62-2daf23e07f77",
+      "term": "fck",
+      "lang": null,
+      "purpose": "search",
+      "scope": {
+        "set_names": null,
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": "urn:uuid:197dec34-fe26-5705-b53e-713174a17f60",
+      "target_binding_id": null,
+      "source_assertion_ids": [
+        "ifcqc:mapear-propriedades-termos.DEFAULT_TERMS"
+      ],
+      "lifecycle": "draft",
+      "notes": null
+    },
+    {
+      "id": "urn:uuid:ea969c37-d3a8-5182-ab04-cbb741afff6c",
+      "term": "resistencia",
+      "lang": "pt",
+      "purpose": "search",
+      "scope": {
+        "set_names": null,
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": "urn:uuid:197dec34-fe26-5705-b53e-713174a17f60",
+      "target_binding_id": null,
+      "source_assertion_ids": [
+        "ifcqc:mapear-propriedades-termos.DEFAULT_TERMS"
+      ],
+      "lifecycle": "draft",
+      "notes": null
+    },
+    {
+      "id": "urn:uuid:d2b16126-6208-56c5-88f4-fdb625c2d1d8",
+      "term": "compressive",
+      "lang": "en",
+      "purpose": "search",
+      "scope": {
+        "set_names": null,
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": "urn:uuid:197dec34-fe26-5705-b53e-713174a17f60",
+      "target_binding_id": null,
+      "source_assertion_ids": [
+        "ifcqc:mapear-propriedades-termos.DEFAULT_TERMS"
+      ],
+      "lifecycle": "draft",
+      "notes": null
+    },
+    {
+      "id": "urn:uuid:a778fdca-3283-5915-8612-4371ade30ce9",
+      "term": "strength",
+      "lang": "en",
+      "purpose": "search",
+      "scope": {
+        "set_names": null,
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": "urn:uuid:197dec34-fe26-5705-b53e-713174a17f60",
+      "target_binding_id": null,
+      "source_assertion_ids": [
+        "ifcqc:mapear-propriedades-termos.DEFAULT_TERMS"
+      ],
+      "lifecycle": "draft",
+      "notes": null
+    },
+    {
+      "id": "urn:uuid:d01e1ea4-4f49-5999-93a8-a65e17876ef7",
+      "term": "concreto",
+      "lang": "pt",
+      "purpose": "search",
+      "scope": {
+        "set_names": null,
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": "urn:uuid:197dec34-fe26-5705-b53e-713174a17f60",
+      "target_binding_id": null,
+      "source_assertion_ids": [
+        "ifcqc:mapear-propriedades-termos.DEFAULT_TERMS"
+      ],
+      "lifecycle": "draft",
+      "notes": null
+    },
+    {
+      "id": "urn:uuid:a91a4103-26f1-54b4-956e-6b2da767d241",
+      "term": "concrete",
+      "lang": "en",
+      "purpose": "search",
+      "scope": {
+        "set_names": null,
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": "urn:uuid:197dec34-fe26-5705-b53e-713174a17f60",
+      "target_binding_id": null,
+      "source_assertion_ids": [
+        "ifcqc:mapear-propriedades-termos.DEFAULT_TERMS"
+      ],
+      "lifecycle": "draft",
+      "notes": null
+    },
+    {
+      "id": "urn:uuid:ced1420a-c1ac-5107-98d7-7054b66cb09d",
+      "term": "classe",
+      "lang": "pt",
+      "purpose": "search",
+      "scope": {
+        "set_names": null,
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": "urn:uuid:197dec34-fe26-5705-b53e-713174a17f60",
+      "target_binding_id": null,
+      "source_assertion_ids": [
+        "ifcqc:mapear-propriedades-termos.DEFAULT_TERMS"
+      ],
+      "lifecycle": "draft",
+      "notes": null
+    },
+    {
+      "id": "urn:uuid:f29b489f-316a-52eb-99b2-59f8940f66c4",
+      "term": "grade",
+      "lang": "en",
+      "purpose": "search",
+      "scope": {
+        "set_names": null,
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": "urn:uuid:197dec34-fe26-5705-b53e-713174a17f60",
+      "target_binding_id": null,
+      "source_assertion_ids": [
+        "ifcqc:mapear-propriedades-termos.DEFAULT_TERMS"
+      ],
+      "lifecycle": "draft",
+      "notes": null
+    },
+    {
+      "id": "urn:uuid:4f2e055a-e960-54bc-9766-30a6d82eaf07",
+      "term": "cobrimento",
+      "lang": "pt",
+      "purpose": "search",
+      "scope": {
+        "set_names": null,
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": "urn:uuid:f2f6a36d-b866-5c31-b009-320b303c3c54",
+      "target_binding_id": null,
+      "source_assertion_ids": [
+        "ifcqc:mapear-propriedades-termos.DEFAULT_TERMS"
+      ],
+      "lifecycle": "draft",
+      "notes": null
+    },
+    {
+      "id": "urn:uuid:99dacf4b-553f-58dd-a131-19bedc71ec74",
+      "term": "cover",
+      "lang": "en",
+      "purpose": "search",
+      "scope": {
+        "set_names": null,
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": "urn:uuid:f2f6a36d-b866-5c31-b009-320b303c3c54",
+      "target_binding_id": null,
+      "source_assertion_ids": [
+        "ifcqc:mapear-propriedades-termos.DEFAULT_TERMS"
+      ],
+      "lifecycle": "draft",
+      "notes": null
+    },
+    {
+      "id": "urn:uuid:a8c2a707-2534-5ae4-b64d-ed33ec8d375e",
+      "term": "cnom",
+      "lang": null,
+      "purpose": "search",
+      "scope": {
+        "set_names": null,
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": "urn:uuid:f2f6a36d-b866-5c31-b009-320b303c3c54",
+      "target_binding_id": null,
+      "source_assertion_ids": [
+        "ifcqc:mapear-propriedades-termos.DEFAULT_TERMS"
+      ],
+      "lifecycle": "draft",
+      "notes": null
+    },
+    {
+      "id": "urn:uuid:5bafa027-5b58-58a2-9c95-44e8a0ddb3bb",
+      "term": "cob",
+      "lang": "pt",
+      "purpose": "search",
+      "scope": {
+        "set_names": null,
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": "urn:uuid:f2f6a36d-b866-5c31-b009-320b303c3c54",
+      "target_binding_id": null,
+      "source_assertion_ids": [
+        "ifcqc:mapear-propriedades-termos.DEFAULT_TERMS"
+      ],
+      "lifecycle": "draft",
+      "notes": null
+    },
+    {
+      "id": "urn:uuid:5e477707-1ce1-5072-b6cf-305891a14875",
+      "term": "caa",
+      "lang": null,
+      "purpose": "search",
+      "scope": {
+        "set_names": null,
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": "urn:uuid:6933a03b-0775-57f5-a864-f22b7ac31f66",
+      "target_binding_id": null,
+      "source_assertion_ids": [
+        "ifcqc:mapear-propriedades-termos.DEFAULT_TERMS"
+      ],
+      "lifecycle": "draft",
+      "notes": null
+    },
+    {
+      "id": "urn:uuid:07dfd7b1-99da-5729-b445-24b7ffa8e7da",
+      "term": "agressividade",
+      "lang": "pt",
+      "purpose": "search",
+      "scope": {
+        "set_names": null,
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": "urn:uuid:6933a03b-0775-57f5-a864-f22b7ac31f66",
+      "target_binding_id": null,
+      "source_assertion_ids": [
+        "ifcqc:mapear-propriedades-termos.DEFAULT_TERMS"
+      ],
+      "lifecycle": "draft",
+      "notes": null
+    },
+    {
+      "id": "urn:uuid:7025f8b7-2c77-5b56-8d6c-0d02bbd8f021",
+      "term": "aggressiveness",
+      "lang": "en",
+      "purpose": "search",
+      "scope": {
+        "set_names": null,
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": "urn:uuid:6933a03b-0775-57f5-a864-f22b7ac31f66",
+      "target_binding_id": null,
+      "source_assertion_ids": [
+        "ifcqc:mapear-propriedades-termos.DEFAULT_TERMS"
+      ],
+      "lifecycle": "draft",
+      "notes": null
+    },
+    {
+      "id": "urn:uuid:bf574fc3-6201-52c3-9c1a-2512ffa8a984",
+      "term": "exposure",
+      "lang": "en",
+      "purpose": "search",
+      "scope": {
+        "set_names": null,
+        "entity_classes": null,
+        "schemas": null
+      },
+      "target_concept_id": "urn:uuid:6933a03b-0775-57f5-a864-f22b7ac31f66",
+      "target_binding_id": null,
+      "source_assertion_ids": [
+        "ifcqc:mapear-propriedades-termos.DEFAULT_TERMS"
+      ],
+      "lifecycle": "draft",
+      "notes": null
+    }
+  ],
+  "x_extensoes_provisorias": {
+    "conversoes_para_unidade_do_conceito": {
+      "MPa": {
+        "MPa": 1,
+        "Pa": 1e-06,
+        "kPa": 0.001,
+        "kN/cm²": 10,
+        "kgf/cm²": 0.0980665
+      },
+      "mm": {
+        "mm": 1,
+        "cm": 10,
+        "m": 1000
+      }
+    },
+    "faixas_plausiveis": {
+      "fck": {
+        "min": 20,
+        "max": 50,
+        "unidade": "MPa",
+        "fonte": "abnt:nbr8953-2015.t1",
+        "nota": "Grupo I; Grupo II (C55–C100) fora do recorte"
+      },
+      "cobrimento": {
+        "min": 15,
+        "max": 60,
+        "unidade": "mm",
+        "fonte": "abnt:nbr6118-2023.t7.2",
+        "nota": "faixa da tabela com folga; não substitui a verificação"
+      }
+    },
+    "cobrimento_nominal_por_caa_mm": {
+      "fonte": "abnt:nbr6118-2023.t7.2",
+      "valores": {
+        "I": {
+          "viga_pilar": 25,
+          "laje": 20
+        },
+        "II": {
+          "viga_pilar": 30,
+          "laje": 25
+        },
+        "III": {
+          "viga_pilar": 40,
+          "laje": 35
+        },
+        "IV": {
+          "viga_pilar": 50,
+          "laje": 45
+        }
+      }
+    },
+    "classe_por_fck_cubo_eurocodigo": {
+      "20": 25,
+      "25": 30,
+      "30": 37,
+      "35": 45,
+      "40": 50,
+      "45": 55,
+      "50": 60
+    },
+    "grafias_da_caa": {
+      "I": [
+        "I",
+        "CAA I",
+        "1",
+        "Fraca"
+      ],
+      "II": [
+        "II",
+        "CAA II",
+        "2",
+        "Moderada"
+      ],
+      "III": [
+        "III",
+        "CAA III",
+        "3",
+        "Forte"
+      ],
+      "IV": [
+        "IV",
+        "CAA IV",
+        "4",
+        "Muito forte"
+      ]
+    },
+    "nao_sinonimos": [
+      {
+        "termo": "fcd",
+        "conceito": "CONCRETO_FCK",
+        "motivo": "resistência de cálculo (fcd = fck/γc), outra grandeza (M1 §2.2)",
+        "fonte": "abnt:nbr6118-2023.s12.3.3"
+      },
+      {
+        "termo": "fct,m",
+        "conceito": "CONCRETO_FCK",
+        "motivo": "resistência média à tração, outra grandeza"
+      },
+      {
+        "termo": "ExposureClass",
+        "conceito": "CLASSE_AGRESSIVIDADE_AMBIENTAL",
+        "motivo": "classes EN 206; relacionado, não equivalente"
+      }
+    ],
+    "exportadores": {
+      "revit_br": "Dados estruturais",
+      "tqs": "TQS_Concreto",
+      "eberick": "Eberick",
+      "tekla": "Tekla Common",
+      "generico_en": "Pset_ConcreteElementGeneral"
+    }
+  }
+}
