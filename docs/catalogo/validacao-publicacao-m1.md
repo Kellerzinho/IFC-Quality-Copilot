@@ -1,3 +1,5 @@
+> Atualização de 09/11/2026: consulte [a revalidação e o estado atual dos gates](revalidacao-m1-2026-11-09.md). O texto abaixo é o registro histórico de 27/10.
+
 # Validação da integração pública M1
 
 Base integrada: `7b29cb824c659cec13fc2bc7fcb1b525136d8edc` (main com PRs #2, #3 e #4). Não inclui PRs #5/#6 nem correções isoladas reservadas. Esta é uma entrega de software com perfil de pesquisa externo, não publicação de catálogo aceito.
