@@ -58,3 +58,12 @@ src/experiment/results/*
 !src/experiment/results/models.lock.json
 !src/experiment/results/2026-07-02-smoke/
 !src/experiment/results/2026-07-02-smoke-matriz/
+
+# M1: fontes/perfis reais e evidências locais não fazem parte da distribuição pública
+data/catalogs/fixtures/
+data/catalogs/sources/
+data/catalogs/profiles/
+docs/catalogo/e4/
+docs/catalogo/cobertura-daiane.csv
+docs/catalogo/divergencias-daiane.csv
+docs/catalogo/projecoes-daiane.json

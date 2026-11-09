@@ -60,3 +60,7 @@ da frente 4 foi autorizado em tarefa separada; sua decisão de dois pares IFC–
 federação visual no MVP está no índice de planejamento, sem evidência cruzada entre arquivos.
 Outros planos serão indexados quando elaborados, sem antecipar implementação.
 Esta documentação não implementa capacidades nem altera resultados, dados ou código.
+
+## Catálogo de domínio M1
+
+[Implementação local, curadoria e distribuição pública](catalogo/README.md): código e testes sintéticos, perfil de pesquisa externo, operação/recuperação e validação integrada. Aceite semântico permanece separado.

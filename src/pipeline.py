@@ -1,20 +1,14 @@
 """Orquestração principal: diagnóstico → regras → LLM → validação → escrita."""
 
+import inspect
 import json
 import os
-import inspect
 from collections.abc import Callable
+from contextlib import suppress
 from functools import lru_cache
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-
-@lru_cache(maxsize=64)
-def _cached_signature_params(func: Any) -> frozenset[str]:
-    """Cache de inspect.signature(func).parameters keys; evita reflexão em hot paths."""
-    return frozenset(inspect.signature(func).parameters)
-
-import ifcopenshell
 from loguru import logger
 
 from src.audit.logger import AuditLogger
@@ -47,6 +41,19 @@ from src.translator.ids_parser import parse_ids
 from src.translator.rule_generator import apply_rules, generate_rules
 from src.validation.post_validator import PostValidator
 from src.writer.ifc_writer import IFCWriter
+
+if TYPE_CHECKING:
+    from src.artifacts.storage import LocalArtifactStore
+    from src.operations.database import OperationalStore
+    from src.suggestion_engine.catalog_operations import E3OperationBundle
+    from src.validation.catalog_analysis import CatalogAnalysisReceipt, CatalogAnalysisRequest
+
+
+@lru_cache(maxsize=64)
+def _cached_signature_params(func: Any) -> frozenset[str]:
+    """Cache de inspect.signature(func).parameters keys; evita reflexão em hot paths."""
+    return frozenset(inspect.signature(func).parameters)
+
 
 # Mapeamento element_class → pset padrão para correções pset_missing
 _PSET_FOR_CLASS: dict[str, str] = {
@@ -171,10 +178,8 @@ class QualityPipeline:
         if self.bsdd_client is not None:
             self.bsdd_client.close()
         if self.suggestion_cache is not None:
-            try:
+            with suppress(Exception):
                 self.suggestion_cache.close()
-            except Exception:
-                pass
 
     # ------------------------------------------------------------------
     # Diagnóstico
@@ -212,7 +217,11 @@ class QualityPipeline:
             }
             new_issues: list[Issue] = []
             for issue in ids_issues:
-                key = (issue.element_guid, issue.issue_type, issue.context.get("check_property", ""))
+                key = (
+                    issue.element_guid,
+                    issue.issue_type,
+                    issue.context.get("check_property", ""),
+                )
                 if key not in existing_keys:
                     new_issues.append(issue)
                     existing_keys.add(key)
@@ -281,15 +290,19 @@ class QualityPipeline:
             on_progress=on_progress,
             reuse_map=reuse_map,
         )
-        combined: list[tuple[Issue, SuggestionSet]] = list(zip(self.report.issues, llm_sets))
+        combined: list[tuple[Issue, SuggestionSet]] = list(
+            zip(self.report.issues, llm_sets, strict=False)
+        )
         issue_order = {issue.id: idx for idx, issue in enumerate(self.report.issues)}
 
         if self.profile is not None:
             profile_types = set(self.profile.issue_types)
-            combined.sort(key=lambda pair: (
-                0 if pair[0].issue_type in profile_types else 1,
-                issue_order.get(pair[0].id, len(self.report.issues)),
-            ))
+            combined.sort(
+                key=lambda pair: (
+                    0 if pair[0].issue_type in profile_types else 1,
+                    issue_order.get(pair[0].id, len(self.report.issues)),
+                )
+            )
         else:
             combined.sort(key=lambda pair: issue_order.get(pair[0].id, len(self.report.issues)))
 
@@ -398,9 +411,7 @@ class QualityPipeline:
     # Aplicação de correções
     # ------------------------------------------------------------------
 
-    def apply_correction(
-        self, issue_id: str, value: Any, decision: str, user: str
-    ) -> AuditEntry:
+    def apply_correction(self, issue_id: str, value: Any, decision: str, user: str) -> AuditEntry:
         """Aplica correção aprovada pelo engenheiro e registra na auditoria."""
         pair = self.get_issue_by_id(issue_id)
         if pair is None:
@@ -527,7 +538,11 @@ class QualityPipeline:
         logger.info("Arquivo BCF exportado: {}", saved_bcf)
         logger.info(
             "export: IFC={} CSV={} JSON={} BCF={} metrics={}",
-            saved_ifc, saved_csv, saved_json, saved_bcf, metrics_out,
+            saved_ifc,
+            saved_csv,
+            saved_json,
+            saved_bcf,
+            metrics_out,
         )
         return {
             "ifc": saved_ifc,
@@ -581,8 +596,7 @@ class QualityPipeline:
             raise ValueError("Nenhum perfil selecionado")
 
         relevant_issues = [
-            i for i in self.report.issues
-            if i.issue_type in self.profile.issue_types
+            i for i in self.report.issues if i.issue_type in self.profile.issue_types
         ]
         # total_checks = regras aplicadas via IDS + total de issues do diagnóstico base
         total_checks = self._ids_rules_count + self.report.total_issues
@@ -606,8 +620,7 @@ class QualityPipeline:
 
         score = self.compute_readiness()
         relevant_issues = [
-            i for i in self.report.issues
-            if i.issue_type in self.profile.issue_types
+            i for i in self.report.issues if i.issue_type in self.profile.issue_types
         ]
         issues_by_type: dict[str, int] = {}
         for issue in relevant_issues:
@@ -724,9 +737,7 @@ class QualityPipeline:
         if issue.issue_type == "pset_missing":
             prop = issue.context.get("check_property", "")
             pset = self._resolve_target_pset(issue)
-            _, old_props = self.writer.preencher_pset(
-                issue.element_guid, pset, {prop: value}
-            )
+            _, old_props = self.writer.preencher_pset(issue.element_guid, pset, {prop: value})
             return old_props.get(prop)
 
         if issue.issue_type == "quantity_missing":
@@ -1011,3 +1022,24 @@ class QualityPipeline:
         if self.report is not None:
             return list(self.report.issues)
         return []
+
+
+def run_catalog_analysis(
+    request: "CatalogAnalysisRequest",
+    *,
+    store: "OperationalStore",
+    artifacts: "LocalArtifactStore",
+    operation_bundle: "E3OperationBundle",
+) -> "CatalogAnalysisReceipt":
+    """Executa um run E3 já enfileirado (opt-in; condição ``m1-e3-evidence-v1``).
+
+    Delegação fina para ``src.validation.catalog_analysis``: diagnóstico IDS formal,
+    anexo do catálogo fixado e enriquecimento determinístico M3, persistidos na
+    autoridade operacional. Não instancia ``QualityPipeline``, writer, LLM, bSDD nem
+    caches legados, e não altera o comportamento de quem não chama esta função.
+    """
+    from src.validation.catalog_analysis import execute_catalog_analysis
+
+    return execute_catalog_analysis(
+        request, store=store, artifacts=artifacts, operation_bundle=operation_bundle
+    )

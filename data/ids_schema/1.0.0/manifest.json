@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "files": {
+    "ids.xsd": {
+      "sha256": "8975dc18bd18f08a345a430a22bf317a54d94671b7db01400042fa43b6c0d1f3",
+      "archive": "buildingSMART-IDS-v1.0.0.zip",
+      "archive_sha256": "8475fd2e5f43d15c8380af3fe3eae5ccec273d950352f502a445297b17caf4f8",
+      "member": "IDS-1.0.0/Development/ids.xsd"
+    },
+    "LICENSE-IDS.txt": {
+      "sha256": "692a4aeb135d527412ac7a395eae7fe093daa10a029abcd893a6b8facb3ee136",
+      "archive": "buildingSMART-IDS-v1.0.0.zip",
+      "archive_sha256": "8475fd2e5f43d15c8380af3fe3eae5ccec273d950352f502a445297b17caf4f8",
+      "member": "IDS-1.0.0/LICENSE"
+    },
+    "XML/xml.xsd": {
+      "sha256": "61960fb3131e38022caad5360e2f33a3382578ab3c80cd58bd74320ede61b20c",
+      "archive": "xmlschema-4.3.2-py3-none-any.whl",
+      "archive_sha256": "cf5c970a30f6ebcb3da35260e694704cc0b6794d8ace46125bb2a95e38ed9307",
+      "member": "xmlschema/schemas/XML/xml.xsd"
+    },
+    "XSD_1.0/XMLSchema.xsd": {
+      "sha256": "4ea1bb11bdc8894ef2bca08b36910a8ab2b123c3e6dc8c1723d56ff5dfc5a9b8",
+      "archive": "xmlschema-4.3.2-py3-none-any.whl",
+      "archive_sha256": "cf5c970a30f6ebcb3da35260e694704cc0b6794d8ace46125bb2a95e38ed9307",
+      "member": "xmlschema/schemas/XSD_1.0/XMLSchema.xsd"
+    },
+    "XSD_1.0/datatypes.xsd": {
+      "sha256": "9b7fa77be9372687f654f5013177e3f87db0ce598e43f534d6d7c1628d513b37",
+      "archive": "xmlschema-4.3.2-py3-none-any.whl",
+      "archive_sha256": "cf5c970a30f6ebcb3da35260e694704cc0b6794d8ace46125bb2a95e38ed9307",
+      "member": "xmlschema/schemas/XSD_1.0/datatypes.xsd"
+    },
+    "XSI/XMLSchema-instance.xsd": {
+      "sha256": "21992a2e3e7825a9d6dedd65d74a2ff7c2e3eb537c82e3e32342189428413637",
+      "archive": "xmlschema-4.3.2-py3-none-any.whl",
+      "archive_sha256": "cf5c970a30f6ebcb3da35260e694704cc0b6794d8ace46125bb2a95e38ed9307",
+      "member": "xmlschema/schemas/XSI/XMLSchema-instance.xsd"
+    },
+    "LICENSE-xmlschema.txt": {
+      "sha256": "de71695b2db6819ee4478ef39f5f202aab9f0c8750168c2986467ea8e5fa2997",
+      "archive": "xmlschema-4.3.2-py3-none-any.whl",
+      "archive_sha256": "cf5c970a30f6ebcb3da35260e694704cc0b6794d8ace46125bb2a95e38ed9307",
+      "member": "xmlschema-4.3.2.dist-info/licenses/LICENSE"
+    }
+  },
+  "uri_map": {
+    "http://www.w3.org/2001/xml.xsd": "XML/xml.xsd",
+    "http://www.w3.org/2001/XMLSchema.xsd": "XSD_1.0/XMLSchema.xsd",
+    "http://www.w3.org/2001/XMLSchema": "XSD_1.0/XMLSchema.xsd",
+    "http://www.w3.org/2001/XMLSchema-instance": "XSI/XMLSchema-instance.xsd",
+    "http://standards.buildingsmart.org/IDS/1.0/ids.xsd": "ids.xsd"
+  }
+}
